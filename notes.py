@@ -7,7 +7,6 @@ import wx
 import os
 import pickle
 from page import Page
-from board import Board
 from board import Content
 from board import Header
 from canvas import Canvas
@@ -29,8 +28,10 @@ class MyFrame(wx.Frame):
 
         self.ui_ready = False
         self.InitUI() # sets up the sizer and the buttons' bindings
+        self.GetCurrentBoard().SetFocus()
 
         # Keyboard shortcuts
+        # accels is populated in InitUI()
         self.SetAcceleratorTable(wx.AcceleratorTable(self.accels))
 
 
@@ -38,7 +39,7 @@ class MyFrame(wx.Frame):
 
     def GetCurrentBoard(self):
         """Returns the active board."""
-        return self.board
+        return self.notebook.GetCurrentPage().board
 
     def PlaceNewCard(self, subclass, below = False):
         """
@@ -51,7 +52,7 @@ class MyFrame(wx.Frame):
         
         # if there are no cards, place this one on the top left corner
         if len(self.GetCurrentBoard().GetCards()) < 1:
-            pos = (Board.CARD_PADDING, Board.CARD_PADDING)
+            pos = (Page.CARD_PADDING, Page.CARD_PADDING)
 
         elif self.GetCurrentBoard().GetFocusedCard():
             pos = self.GetCurrentBoard().CalculateNewCardPosition(self.GetCurrentBoard().GetFocusedCard().GetPosition(), below)
@@ -60,7 +61,7 @@ class MyFrame(wx.Frame):
             rects = [c.GetRect() for c in self.GetCurrentBoard().GetCards()]
             rights = [r.right for r in rects]
             top = min([r.top for r in rects])
-            left = max(rights) + Board.CARD_PADDING
+            left = max(rights) + Page.CARD_PADDING
             pos = (left, top)
 
         if subclass == "Content":
@@ -173,13 +174,13 @@ class MyFrame(wx.Frame):
         self.accels.append(wx.AcceleratorEntry(wx.ACCEL_CTRL   , ord("D"), debug_item.GetId()))
         self.accels.append(wx.AcceleratorEntry(wx.ACCEL_CTRL   , ord("F"), search_item.GetId()))
         self.accels.append(wx.AcceleratorEntry(wx.ACCEL_CTRL   , ord("C"), search_item.GetId()))
-        self.accels.append(wx.AcceleratorEntry(wx.ACCEL_CTRL   , wx.WXK_TAB, ctrltab_item.GetId()))        
-        self.accels.append(wx.AcceleratorEntry(wx.ACCEL_NORMAL , 27, unsel_item.GetId())) # ESC
+        self.accels.append(wx.AcceleratorEntry(wx.ACCEL_NORMAL , 27,       unsel_item.GetId())) # ESC
+        self.accels.append(wx.AcceleratorEntry(wx.ACCEL_CTRL   , wx.WXK_TAB, ctrltab_item.GetId()))                
         self.accels.append(wx.AcceleratorEntry(wx.ACCEL_CTRL   , wx.WXK_RETURN, nwcdr_item.GetId()))
         self.accels.append(wx.AcceleratorEntry(wx.ACCEL_ALT    , wx.WXK_RETURN, nwhdr_item.GetId()))
         self.accels.append(wx.AcceleratorEntry(wx.ACCEL_SHIFT|wx.ACCEL_CTRL , wx.WXK_RETURN, nwcdb_item.GetId()))
         self.accels.append(wx.AcceleratorEntry(wx.ACCEL_SHIFT|wx.ACCEL_ALT  , wx.WXK_RETURN, nwhdb_item.GetId()))
-        self.accels.append(wx.AcceleratorEntry(wx.ACCEL_SHIFT|wx.ACCEL_CTRL , wx.WXK_TAB, ctrlshfttab_item.GetId()))
+        self.accels.append(wx.AcceleratorEntry(wx.ACCEL_SHIFT|wx.ACCEL_CTRL , wx.WXK_TAB,    ctrlshfttab_item.GetId()))
 
         # finish up        
         bar.Append(file_menu, "&File")
@@ -223,7 +224,6 @@ class MyFrame(wx.Frame):
             self.CreateStatusBar()
             self.InitSearchBar()
             
-        self.Layout()
         self.ui_ready = True
 
     def InitNotebook(self, size = Page.DEFAULT_SZ):
@@ -231,7 +231,7 @@ class MyFrame(wx.Frame):
 
         # make starting page
         pg = Page(nb, size = size)
-        pg.board.SetBackgroundColour(Page.BACKGROUND_CL)
+        # pg.board.SetBackgroundColour(Page.BACKGROUND_CL)
         nb.AddPage(pg, "TabOne")
 
         # UI setup
@@ -264,12 +264,7 @@ class MyFrame(wx.Frame):
         self.StatusBar.SetStatusText(s)
 
     def OnDebug(self, ev):
-        c = self.GetCurrentBoard().GetCards()[0]
-        sz = c.GetSize()
-        print sz
-        sz.Scale(0.5, 0.5)
-        c.SetSize((sz.width, sz.height))
-        self.Refresh()
+        print len(self.board.GetSelection())
 
     def Save(self, out_file, d):
         """Save the data in the dict d in the file out_file."""
@@ -333,7 +328,6 @@ class MyFrame(wx.Frame):
 
     def OnCtrlShftTab(self, ev):
         """Selects previous card."""
-        print "ctrl shft tab"
         card = self.FindFocus().GetParent()
         self.GetCurrentBoard().GetPrevCard(card).SetFocus()
 

@@ -8,15 +8,15 @@ import wx.richtext as rt
 
 
 ######################
-# Board Class
+# BoardBase Class
 ######################
 
-class Board(wx.ScrolledWindow):
-    CARD_PADDING = 15
+class BoardBase(wx.ScrolledWindow):
     MOVING_RECT_THICKNESS = 1
+    BACKGROUND_CL = "#AAAAAA"    
 
     def __init__(self, parent, id = wx.ID_ANY, pos = (0, 0), size = (20, 20)):
-        super(Board, self).__init__(parent, size = size)
+        super(BoardBase, self).__init__(parent, size = size)
 
         self.cards = []
         self.selected_cards = []
@@ -32,6 +32,7 @@ class Board(wx.ScrolledWindow):
         self.Bind(wx.EVT_MOUSE_CAPTURE_LOST, self.OnMouseCaptureLost)
 
         # Other gui setup
+        self.SetBackgroundColour(BoardBase.BACKGROUND_CL)
         self.SetScrollbars(20, 20, 6000, 6000) # method from wx.ScrolledWindow, NOT wx.Window
         self.SetFocus()
 
@@ -105,6 +106,9 @@ class Board(wx.ScrolledWindow):
         """Rescales every card to scale. Use this to zoom in and out."""
         print "board.SetScale()"
 
+    def GetSelection(self):
+        return self.selected_cards
+
     def SelectCard(self, card, new_sel = False):
         """
         Selects the card. If new_sel is True, erase all other
@@ -122,6 +126,7 @@ class Board(wx.ScrolledWindow):
                 self.PaintCardRect(c, c.GetPosition(), refresh = False)
 
     def UnselectCard(self, card):
+        print "unselect"
         if card in self.selected_cards:
             self.selected_cards.remove(card)
             self.EraseCardRect(card, card.GetPosition())
@@ -148,6 +153,13 @@ class Board(wx.ScrolledWindow):
 
         self.UnselectAll()
         for c in new: self.SelectCard(c, False)
+
+    def DeleteSelected(self):
+        sel = self.selected_cards
+        for c in sel:
+            c.Hide()
+            self.cards.remove(c)
+        self.UnselectAll()
         
     def GetFocusedCard(self):
         """Returns the card currently in focus, or None."""
@@ -361,11 +373,11 @@ class Board(wx.ScrolledWindow):
         if below:
             bottoms = [r.bottom for r in rects if rect.Intersects(r)]
             if len(bottoms) > 0:
-                pos.y = max(bottoms) + self.CARD_PADDING
+                pos.y = max(bottoms) + Board.CARD_PADDING
         else:
             rights = [r.right for r in rects if rect.Intersects(r)]
             if len(rights) > 0:
-                pos.x = max(rights) + self.CARD_PADDING
+                pos.x = max(rights) + Board.CARD_PADDING
                 
         return pos
     
@@ -411,7 +423,71 @@ class BoardMenu(wx.Menu):
     def OnClose(self, ev):
         self.GetParent().Close()            
 
+
+
+######################
+# Board Class
+######################
+
+class Board(wx.Panel):
+    CARD_PADDING = 15
+
+    def __init__(self, parent, id = wx.ID_ANY, pos = (0, 0), size = (20, 20)):
+        super(Board, self).__init__(parent, size = size)
+
+        hbox = wx.BoxSizer(wx.HORIZONTAL)
+        self.SetSizer(hbox)
+
+        # UI steup
+        self.InitBar()
+        self.InitBoard(pos, size)
+
+
+    ### Auxiliary functions
+
+    def InitBar(self):
+        hbox = self.GetSizer()
+        if not hbox: hbox = wx.BoxSizer(wx.HORIZONTAL)
+
+        # make UI
+        toolbar = wx.ToolBar(self, wx.ID_ANY, style=wx.TB_VERTICAL)
+        del_it = toolbar.AddLabelTool(wx.ID_ANY, "Delete",
+                                      wx.ArtProvider.GetBitmap(wx.ART_DELETE),
+                                      kind=wx.ITEM_NORMAL)
+        cpy_it = toolbar.AddLabelTool(wx.ID_ANY, "Copy",
+                                      wx.ArtProvider.GetBitmap(wx.ART_COPY),
+                                      kind=wx.ITEM_NORMAL)
+        toolbar.Realize()
+
+        # layout
+        vbox = wx.BoxSizer(wx.VERTICAL)
+        vbox.Add(toolbar, proportion=0, flag=wx.TOP, border=1)
+
+        hbox.Add(vbox, proportion=0, flag=wx.LEFT|wx.EXPAND, border=1)
+
+        # bindings
+        self.Bind(wx.EVT_TOOL, self.OnDelete, del_it)
+        self.Bind(wx.EVT_TOOL, self.OnCopy, cpy_it)
+
+    def InitBoard(self, pos, size):
+        hbox = self.GetSizer()
+        if not hbox: hbox = wx.BoxSizer(wx.HORIZONTAL)
+            
+        board = BoardBase(self, id=id, pos=pos, size=size)
+        vbox2 = wx.BoxSizer(wx.VERTICAL)
+        vbox2.Add(board, proportion=1, flag=wx.ALL|wx.EXPAND, border=1)
+        hbox.Add(vbox2, proportion=1, flag=wx.ALL|wx.EXPAND,  border=1)
         
+        # set members
+        self.board = board
+
+    def OnCopy(self, ev):
+        self.board.CopySelected()
+
+    def OnDelete(self, ev):
+        self.board.DeleteSelected()
+    
+
 
 ######################
 # Card Class
@@ -552,10 +628,7 @@ class Content(Card):
         kindbut = wx.Button(self, wx.ID_ANY, label = "kind", size = (33, 23), style = wx.BORDER_NONE)
         kindbut.SetOwnFont(wx.Font(8, wx.FONTFAMILY_DEFAULT, wx.FONTSTYLE_ITALIC, wx.FONTWEIGHT_NORMAL, False))
         content = rt.RichTextCtrl(self, value = "Write here...", size = (10, 10))
-        del_but = wx.BitmapButton(self, wx.ID_ANY, bitmap = wx.ArtProvider.GetBitmap(wx.ART_DELETE))
-        cpy_but = wx.BitmapButton(self, wx.ID_ANY, bitmap = wx.ArtProvider.GetBitmap(wx.ART_COPY))
         # label   = wx.StaticText(self, wx.ID_ANY, label = str(self.label), style = wx.ALIGN_RIGHT)
-        # label   = wx.TextCtrl(self, wx.ID_ANY, value = str(self.label), style = wx.ALIGN_RIGHT)
         
         # Boxes
         hbox1 = wx.BoxSizer(wx.HORIZONTAL)
@@ -565,23 +638,18 @@ class Content(Card):
         hbox2 = wx.BoxSizer(wx.HORIZONTAL)
         hbox2.Add(content, proportion=1, flag=wx.ALL|wx.EXPAND, border=Card.BORDER_WIDTH)        
 
-        hbox3 = wx.BoxSizer(wx.HORIZONTAL)        
-        hbox3.Add(del_but, proportion=0, flag=wx.RIGHT, border=Card.BORDER_WIDTH)
-        hbox3.Add(cpy_but, proportion=0, flag=wx.RIGHT, border=Card.BORDER_WIDTH)
+        # hbox3 = wx.BoxSizer(wx.HORIZONTAL)        
         # hbox3.Add(label  , proportion=0, flag=wx.RIGHT, border=Card.BORDER_WIDTH)
 
         vbox = wx.BoxSizer(wx.VERTICAL)                
         vbox.Add(hbox1, proportion=0, flag=wx.LEFT |wx.EXPAND, border=Card.BORDER_WIDTH)
         vbox.Add(hbox2, proportion=1, flag=wx.LEFT |wx.EXPAND, border=Card.BORDER_WIDTH)
-        vbox.Add(hbox3, proportion=0, flag=wx.RIGHT|wx.EXPAND, border=Card.BORDER_WIDTH)
+        # vbox.Add(hbox3, proportion=0, flag=wx.RIGHT|wx.EXPAND, border=Card.BORDER_WIDTH)
         
         # Bindings
         title.Bind(wx.EVT_SET_FOCUS, self.OnTextFocus)
         kindbut.Bind(wx.EVT_BUTTON, self.OnKindPressed)
         content.Bind(wx.EVT_SET_FOCUS, self.OnTextFocus)
-        del_but.Bind(wx.EVT_BUTTON, self.OnDeletePressed)
-        cpy_but.Bind(wx.EVT_BUTTON, self.OnCopyPressed)
-        # label.Bind(  wx.EVT_TEXT, self.OnTextEntry)
 
         self.kindbut = kindbut
         self.title = title
@@ -601,9 +669,6 @@ class Content(Card):
 
     ### Callbacks
 
-    def OnTextEntry(self, ev):
-        self.label = int(ev.GetString())
-
     def OnTextFocus(self, ev):
         ctrl = ev.GetEventObject()
         if ctrl.GetValue() == "title..." or ctrl.GetValue() == "Write here...":
@@ -611,18 +676,11 @@ class Content(Card):
         # if not skipped, there will be no blinking cursor!
         ev.Skip()
 
-    def OnDeletePressed(self, ev):
-        self.Show(False)        
-        parent = self.GetParent()
-        parent.UnselectCard(self)
-        parent.GetCards().remove(self)
-        # parent.GetParent().Log("Card deleted.")
-
-    def OnCopyPressed(self, ev):
-        parent = self.GetParent()
-        # pos = parent.CalculateNewCardPosition(self.GetPosition())
-        pos = self.GetPosition() + (Board.CARD_PADDING, Board.CARD_PADDING)
-        parent.NewCard(pos, title=self.GetTitle(), kind=self.GetKind(), content=self.GetContent())
+    # def OnCopyPressed(self, ev):
+    #     parent = self.GetParent()
+    #     # pos = parent.CalculateNewCardPosition(self.GetPosition())
+    #     pos = self.GetPosition() + (Board.CARD_PADDING, Board.CARD_PADDING)
+    #     parent.NewCard(pos, title=self.GetTitle(), kind=self.GetKind(), content=self.GetContent())
 
     def OnKindPressed(self, ev):
         ctrl = ev.GetEventObject()

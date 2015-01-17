@@ -15,7 +15,7 @@ from canvas import Canvas
 
 class Page(wx.Panel):
     DEFAULT_SZ = (20, 20)
-    BACKGROUND_CL = "#AAAAAA"    
+    CARD_PADDING = Board.CARD_PADDING
 
     def __init__(self, parent, id = wx.ID_ANY, pos = (0, 0), size = DEFAULT_SZ):
         super(Page, self).__init__(parent, wx.ID_ANY, pos, size = size)
@@ -60,7 +60,7 @@ class Page(wx.Panel):
     def InitBoard(self, size = DEFAULT_SZ):
         # make new
         bd = Board(self, size = size)
-        bd.SetBackgroundColour(Page.BACKGROUND_CL)
+        # bd.SetBackgroundColour(Page.BACKGROUND_CL)
 
         # # UI setup
         vbox = self.GetSizer()
@@ -70,7 +70,7 @@ class Page(wx.Panel):
         vbox.Add(bd_box, proportion=1, flag=wx.LEFT|wx.EXPAND, border=1)
         
         # set members
-        self.board = bd
+        self.board = bd.board
         self.board_box = bd_box
         
         self.board.Show()        
