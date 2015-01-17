@@ -36,10 +36,6 @@ class MyFrame(wx.Frame):
 
     ### Behavior Functions
 
-    # def GetBackgroundColour(self):
-    #     return Page.BACKGROUND_CL
-    #     # return self.BACKGROUND_CL
-
     def GetCurrentBoard(self):
         """Returns the active board."""
         return self.board
@@ -210,16 +206,16 @@ class MyFrame(wx.Frame):
         sz = (20, 20)
         # # cleanup the previous UI, if any
         if self.ui_ready:
-            sz = self.page.GetSize()
-            self.page.Hide()
+            pg = self.notebook.GetCurrentPage()
+            sz = pg.GetSize()
+            pg.Hide()
             self.sheet = None
             self.SetSizer(None)
 
         # make new UI
         vbox = wx.BoxSizer(wx.VERTICAL)
         self.SetSizer(vbox)
-        # self.InitNotebook(sz)
-        self.InitPage(sz)
+        self.InitNotebook(sz)
 
         # execute only the first time
         if not self.ui_ready:
@@ -231,11 +227,12 @@ class MyFrame(wx.Frame):
         self.ui_ready = True
 
     def InitNotebook(self, size = Page.DEFAULT_SZ):
-        self.InitPage(size)
-
-        # pn = wx.Panel(self)        
         nb = wx.Notebook(self, wx.ID_ANY, size=size)
-        nb.AddPage(self.page, "TabOne")
+
+        # make starting page
+        pg = Page(nb, size = size)
+        pg.board.SetBackgroundColour(Page.BACKGROUND_CL)
+        nb.AddPage(pg, "TabOne")
 
         # UI setup
         vbox = self.GetSizer()
@@ -246,28 +243,11 @@ class MyFrame(wx.Frame):
 
         # set members
         self.notebook = nb
-
-    def InitPage(self, size = Page.DEFAULT_SZ):
-        # make new
-        pg = Page(self, size = size)
-        # pg.board.SetBackgroundColour(Page.BACKGROUND_CL)
-    
-        # UI setup
-        vbox = self.GetSizer()
-        if not vbox: vbox = wx.BoxSizer(wx.VERTICAL)
-        pg_box = wx.BoxSizer(wx.HORIZONTAL)
-        pg_box.Add(pg, proportion=1, flag=wx.ALL|wx.EXPAND, border=1)
-        vbox.Add(pg_box, proportion=1, flag=wx.ALL|wx.EXPAND, border=1)
-
-        # set members
-        self.page = pg
-        self.board = pg.board
-        # self.page_box = pg_box
+        self.board = pg.board        
 
     def CreateBitmap(self):
         """Take a picture of the current card board."""
         # Create a DC for the whole screen area
-        # print "CreateBitmap"
         rect = self.GetCurrentBoard().GetScreenRect()
         bmp = wx.EmptyBitmap(rect.width, rect.height)
 
@@ -287,7 +267,6 @@ class MyFrame(wx.Frame):
         c = self.GetCurrentBoard().GetCards()[0]
         sz = c.GetSize()
         print sz
-        print "scaling..."
         sz.Scale(0.5, 0.5)
         c.SetSize((sz.width, sz.height))
         self.Refresh()
@@ -428,10 +407,10 @@ class MyFrame(wx.Frame):
                            wx.FD_OPEN | wx.FD_FILE_MUST_EXIST)
         if fd.ShowModal() == wx.ID_CANCEL: return # user changed her mind
 
-        self.InitUI()           # setup new UI elements
-        self.GetCurrentBoard().Hide()       # hide while we load/paint all the info
-        self.Load(fd.GetPath()) # load and paint all cards
-        self.GetCurrentBoard().Show()       # show everything at the same time
+        self.InitUI()                     # setup new UI elements
+        self.GetCurrentBoard().Hide()     # hide while we load/paint all the info
+        self.Load(fd.GetPath())           # load and paint all cards
+        self.GetCurrentBoard().Show()     # show everything at the same time
         
         self.cur_file = fd.GetPath()
         self.Log("Opened file" + self.cur_file)        

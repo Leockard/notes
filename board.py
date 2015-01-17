@@ -319,7 +319,6 @@ class Board(wx.ScrolledWindow):
         self.PopupMenu(BoardMenu(self.GetParent()), ev.GetPosition())
 
     def OnSize(self, ev):
-        print ev.GetSize()
         self.SetSize(ev.GetSize())
 
             
