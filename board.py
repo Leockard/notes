@@ -79,7 +79,7 @@ class BoardBase(wx.ScrolledWindow):
         cards.sort(key = lambda x: x.label)
         return cards[-1]
 
-    def NewCard(self, pos, label = -1, title = "title...", kind = "kind", content = "Write here..."):
+    def NewCard(self, pos, label = -1, title="", kind="kind", content=""):
         if label == -1: label = len(self.cards)
         newcard = Content(self, label, wx.ID_ANY, pos, title, kind, content)
         newcard.SetFocus()
@@ -92,7 +92,7 @@ class BoardBase(wx.ScrolledWindow):
         self.cards.append(newcard)
         return newcard
 
-    def NewHeader(self, pos, label = -1, txt = "header..."):
+    def NewHeader(self, pos, label = -1, txt=""):
         if label == -1: label = len(self.cards)
         newhead = Header(self, label, wx.ID_ANY, pos, txt)
         newhead.SetFocus()
@@ -126,7 +126,6 @@ class BoardBase(wx.ScrolledWindow):
                 self.PaintCardRect(c, c.GetPosition(), refresh = False)
 
     def UnselectCard(self, card):
-        print "unselect"
         if card in self.selected_cards:
             self.selected_cards.remove(card)
             self.EraseCardRect(card, card.GetPosition())
@@ -530,7 +529,8 @@ class Header(Card):
     ### Auxiliary functions
     def SetupUI(self):
         # Controls
-        txt = wx.TextCtrl(self, wx.ID_ANY, value = "header...", style = wx.TE_RICH)
+        txt = wx.TextCtrl(self, wx.ID_ANY, style = wx.TE_RICH)
+        txt.SetHint("Header")
         
         # Boxes
         hbox1 = wx.BoxSizer(wx.HORIZONTAL)
@@ -539,9 +539,6 @@ class Header(Card):
         vbox = wx.BoxSizer(wx.VERTICAL)                
         vbox.Add(txt, proportion=0, flag=wx.LEFT|wx.EXPAND, border=Card.BORDER_WIDTH)
         
-        # Bindings
-        txt.Bind(wx.EVT_SET_FOCUS, self.OnTextFocus)
-
         self.header = txt
         self.SetSizer(vbox)
         self.Show(True)
@@ -552,15 +549,8 @@ class Header(Card):
                 "pos": self.GetPosition(), "header": self.GetHeader()}
 
 
-    ### Callbacks
-    def OnTextFocus(self, ev):
-        ctrl = ev.GetEventObject()
-        if ctrl.GetValue() == "header...":
-            ctrl.ChangeValue("")
-        # if not skipped, there will be no blinking cursor!
-        ev.Skip()
 
-        
+            
 
 ######################
 # Class Content
@@ -587,10 +577,8 @@ class Content(Card):
     def __init__(self, parent, label, id, pos, title = "title...", kind = "kind", content = "Write here..."):
         super(Content, self).__init__(parent, id, pos, self.DEFAULT_SZ,
                                    style = wx.BORDER_RAISED|wx.TAB_TRAVERSAL)
-        # self.size = self.DEFAULT_SZ
         self.label = label
-        # self.orig_pos = pos
-        self.SetupUI()
+        self.InitUI()
         self.SetKind(kind)
         self.title.SetValue(title)
         self.content.SetValue(content)
@@ -622,12 +610,14 @@ class Content(Card):
     
     ### Auxiliary functions
     
-    def SetupUI(self):
+    def InitUI(self):
         # Controls
-        title = wx.TextCtrl(self, wx.ID_ANY, value = "title...", style = wx.TE_RICH)
+        title = wx.TextCtrl(self, wx.ID_ANY, style = wx.TE_RICH)
+        title.SetHint("Title")
         kindbut = wx.Button(self, wx.ID_ANY, label = "kind", size = (33, 23), style = wx.BORDER_NONE)
         kindbut.SetOwnFont(wx.Font(8, wx.FONTFAMILY_DEFAULT, wx.FONTSTYLE_ITALIC, wx.FONTWEIGHT_NORMAL, False))
-        content = rt.RichTextCtrl(self, value = "Write here...", size = (10, 10))
+        content = rt.RichTextCtrl(self, size = (10, 10))
+        # content.SetHint("Write here...")
         # label   = wx.StaticText(self, wx.ID_ANY, label = str(self.label), style = wx.ALIGN_RIGHT)
         
         # Boxes
@@ -647,9 +637,8 @@ class Content(Card):
         # vbox.Add(hbox3, proportion=0, flag=wx.RIGHT|wx.EXPAND, border=Card.BORDER_WIDTH)
         
         # Bindings
-        title.Bind(wx.EVT_SET_FOCUS, self.OnTextFocus)
         kindbut.Bind(wx.EVT_BUTTON, self.OnKindPressed)
-        content.Bind(wx.EVT_SET_FOCUS, self.OnTextFocus)
+        content.Bind(wx.EVT_KEY_DOWN, self.OnKeyDown)
 
         self.kindbut = kindbut
         self.title = title
@@ -669,12 +658,18 @@ class Content(Card):
 
     ### Callbacks
 
-    def OnTextFocus(self, ev):
-        ctrl = ev.GetEventObject()
-        if ctrl.GetValue() == "title..." or ctrl.GetValue() == "Write here...":
-            ctrl.ChangeValue("")
-        # if not skipped, there will be no blinking cursor!
-        ev.Skip()
+    def OnKeyDown(self, ev):
+        ### skip TAB, so that we don't input \t and tab traversal still works
+        if ev.GetKeyCode() != 9:
+            ev.ResumePropagation(True)
+            ev.Skip()
+
+    # def OnTextFocus(self, ev):
+    #     ctrl = ev.GetEventObject()
+    #     if ctrl.GetValue() == "title..." or ctrl.GetValue() == "Write here...":
+    #         ctrl.ChangeValue("")
+    #     # if not skipped, there will be no blinking cursor!
+    #     ev.Skip()
 
     # def OnCopyPressed(self, ev):
     #     parent = self.GetParent()

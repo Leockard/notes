@@ -24,7 +24,10 @@ class MyFrame(wx.Frame):
 
         self.accels = [] # will hold keyboard shortcuts aka accelerators
         self.SetTitle("Notes")
-        self.cur_file = ""        
+        self.cur_file = ""
+        # contains the current search index
+        # when not searching, set to None
+        self.searching = None
 
         self.ui_ready = False
         self.InitUI() # sets up the sizer and the buttons' bindings
@@ -72,8 +75,9 @@ class MyFrame(wx.Frame):
 
     def Search(self, ev):
         """
-        Search the current text in the search control in all of the Cards texts.
-        Cycle through frinds with ctrl + G."""
+        Search the current text in the search bar in all of the Cards' texts.
+        Cycle through finds with ctrl + G.
+        """
         # gather all values in which to search
         # including the control they appear in
         txt_ctrls = []
@@ -94,9 +98,17 @@ class MyFrame(wx.Frame):
         print "finds: " + str(len(finds))
 
         # focus on the first find
-        finds[0].SetFocus()
-        finds[0].SetSelection(0, 3)
-        self.search_ctrl.SetFocus()
+        if finds:
+            # finds[0].SetFocus()
+            # finds[0].SetSelection(0, 3)
+            # self.search_ctrl.SetFocus()
+            self.search_find = finds
+            # save the current index in search_find
+            # when done searching, set to None
+            self.searching = 0         
+
+    def CancelSearch(self, ev):
+        self.searching = None
 
                     
     ### Auxiliary functions
@@ -151,21 +163,25 @@ class MyFrame(wx.Frame):
         # to append to the AcceleratorTable
         search_menu = wx.Menu()
         search_item = wx.MenuItem(search_menu, wx.ID_ANY, "Search")
+        next_item   = wx.MenuItem(search_menu, wx.ID_ANY, "Next")
+        prev_item   = wx.MenuItem(search_menu, wx.ID_ANY, "Previous")
         search_menu.AppendItem(search_item)
 
         # bindings
-        self.Bind(wx.EVT_MENU, self.OnQuit     , quit_item)
-        self.Bind(wx.EVT_MENU, self.OnCopy     , copy_item)
-        self.Bind(wx.EVT_MENU, self.OnSave     , save_item)
-        self.Bind(wx.EVT_MENU, self.OnOpen     , open_item)
-        self.Bind(wx.EVT_MENU, self.OnCtrlTab  , ctrltab_item)
-        self.Bind(wx.EVT_MENU, self.OnHArrange , harr_item)
-        self.Bind(wx.EVT_MENU, self.OnVArrange , varr_item)
-        self.Bind(wx.EVT_MENU, self.OnDebug    , debug_item)
-        self.Bind(wx.EVT_MENU, self.OnEsc      , unsel_item)
-        self.Bind(wx.EVT_MENU, self.OnCtrlF    , search_item)
-        self.Bind(wx.EVT_MENU, self.OnCtrlRet  , nwcdr_item)
-        self.Bind(wx.EVT_MENU, self.OnAltRet   , nwhdr_item)
+        self.Bind(wx.EVT_MENU, self.OnQuit      , quit_item)
+        self.Bind(wx.EVT_MENU, self.OnCopy      , copy_item)
+        self.Bind(wx.EVT_MENU, self.OnSave      , save_item)
+        self.Bind(wx.EVT_MENU, self.OnOpen      , open_item)
+        self.Bind(wx.EVT_MENU, self.OnCtrlTab   , ctrltab_item)
+        self.Bind(wx.EVT_MENU, self.OnHArrange  , harr_item)
+        self.Bind(wx.EVT_MENU, self.OnVArrange  , varr_item)
+        self.Bind(wx.EVT_MENU, self.OnDebug     , debug_item)
+        self.Bind(wx.EVT_MENU, self.OnEsc       , unsel_item)
+        self.Bind(wx.EVT_MENU, self.OnCtrlF     , search_item)
+        self.Bind(wx.EVT_MENU, self.OnCtrlG     , next_item)
+        self.Bind(wx.EVT_MENU, self.OnCtrlShftG , prev_item)
+        self.Bind(wx.EVT_MENU, self.OnCtrlRet   , nwcdr_item)
+        self.Bind(wx.EVT_MENU, self.OnAltRet    , nwhdr_item)
         self.Bind(wx.EVT_MENU, self.OnCtrlShftTab , ctrlshfttab_item)        
         self.Bind(wx.EVT_MENU, self.OnCtrlShftRet , nwcdb_item)
         self.Bind(wx.EVT_MENU, self.OnAltShftRet  , nwhdb_item)        
@@ -173,11 +189,12 @@ class MyFrame(wx.Frame):
         # shortcuts
         self.accels.append(wx.AcceleratorEntry(wx.ACCEL_CTRL   , ord("D"), debug_item.GetId()))
         self.accels.append(wx.AcceleratorEntry(wx.ACCEL_CTRL   , ord("F"), search_item.GetId()))
-        self.accels.append(wx.AcceleratorEntry(wx.ACCEL_CTRL   , ord("C"), search_item.GetId()))
+        self.accels.append(wx.AcceleratorEntry(wx.ACCEL_CTRL   , ord("G"), next_item.GetId()))
         self.accels.append(wx.AcceleratorEntry(wx.ACCEL_NORMAL , 27,       unsel_item.GetId())) # ESC
         self.accels.append(wx.AcceleratorEntry(wx.ACCEL_CTRL   , wx.WXK_TAB, ctrltab_item.GetId()))                
         self.accels.append(wx.AcceleratorEntry(wx.ACCEL_CTRL   , wx.WXK_RETURN, nwcdr_item.GetId()))
         self.accels.append(wx.AcceleratorEntry(wx.ACCEL_ALT    , wx.WXK_RETURN, nwhdr_item.GetId()))
+        self.accels.append(wx.AcceleratorEntry(wx.ACCEL_SHIFT|wx.ACCEL_CTRL , ord("G"), prev_item.GetId()))        
         self.accels.append(wx.AcceleratorEntry(wx.ACCEL_SHIFT|wx.ACCEL_CTRL , wx.WXK_RETURN, nwcdb_item.GetId()))
         self.accels.append(wx.AcceleratorEntry(wx.ACCEL_SHIFT|wx.ACCEL_ALT  , wx.WXK_RETURN, nwhdb_item.GetId()))
         self.accels.append(wx.AcceleratorEntry(wx.ACCEL_SHIFT|wx.ACCEL_CTRL , wx.WXK_TAB,    ctrlshfttab_item.GetId()))
@@ -191,15 +208,21 @@ class MyFrame(wx.Frame):
 
     def InitSearchBar(self):
         if not self.ui_ready:
+            # make new
             ctrl = wx.SearchCtrl(self, wx.ID_ANY, style=wx.TE_PROCESS_ENTER)
             ctrl.Bind(wx.EVT_SEARCHCTRL_SEARCH_BTN, self.Search)
+            ctrl.Bind(wx.EVT_SEARCHCTRL_CANCEL_BTN, self.CancelSearch)
             ctrl.Bind(wx.EVT_TEXT_ENTER, self.Search)
         else:
+            # or get the old one
             ctrl = self.search_ctrl
+
+        # position
         top = self.GetCurrentBoard().GetRect().top
         right = self.GetCurrentBoard().GetRect().right - ctrl.GetRect().width
         ctrl.SetPosition((right, top))
 
+        # stuff
         ctrl.Hide()
         self.search_ctrl = ctrl
 
@@ -273,19 +296,31 @@ class MyFrame(wx.Frame):
 
     def Load(self, path):
         carddict = {}
+        board = self.GetCurrentBoard()
         with open(path, 'r') as f: carddict = pickle.load(f)
         for id, values in carddict.iteritems():
             if values["class"] == "Content":
-                self.GetCurrentBoard().NewCard(pos     = values["pos"],
-                                   label   = values["label"],
-                                   title   = values["title"],
-                                   kind    = values["kind"],
-                                   content = values["content"])
+                board.NewCard(pos     = values["pos"],
+                              label   = values["label"],
+                              title   = values["title"],
+                              kind    = values["kind"],
+                              content = values["content"])
             elif values["class"] == "Header":
-                self.GetCurrentBoard().NewHeader(pos   = values["pos"],
-                                     label = values["label"],
-                                     txt   = values["header"])
+                board.NewHeader(pos   = values["pos"],
+                                label = values["label"],
+                                txt   = values["header"])
 
+    def AddAccelerator(self, entry):
+        """entry should be a AcceleratorEntry()."""
+        self.accels.append()
+        self.SetAcceleratorTable(wx.AcceleratorTable(self.accels))
+
+    def RemoveAccelerator(self, entry):
+        """entry should be the same AcceleratorEntry object that was passed to AddAccelerator()."""
+        if entry in self.accels:
+            self.accels.remove(entry)
+        self.SetAcceleratorTable(wx.AcceleratorTable(self.accels))
+                
         
     ### Callbacks
 
@@ -316,10 +351,41 @@ class MyFrame(wx.Frame):
 
     def OnCtrlF(self, ev):
         """Show/hide the search control."""
+        print "ctrl f"
         shwn = self.search_ctrl.IsShown()
-        if not shwn: self.InitSearchBar()
-        self.search_ctrl.Show(not shwn)
-        self.search_ctrl.SetFocus()
+        
+        if not shwn:
+            self.InitSearchBar()
+            self.search_ctrl.Show()
+            self.search_ctrl.SetFocus()
+        else:
+            self.search_ctrl.Hide()
+            self.board.SetFocus()
+            self.searching = None
+
+    def OnCtrlG(self, ev):
+        """Go to next search find."""
+        print "ctrl g"
+        if self.searching != None:
+            i = self.searching + 1
+            if i >= len(self.search_find): i = 0
+            print "searching" + str(i)                
+            self.search_find[i].SetFocus()
+            self.search_find[i].SetSelection(0, 3)
+            self.search_ctrl.SetFocus()
+            self.searching = i
+
+    def OnCtrlShftG(self, ev):
+        """Go to previous search find."""
+        print "ctrl shft g"
+        if self.searching != None:
+            i = self.searching - 1
+            if i < 0: i = len(self.search_find) - 1
+            print "searching: " + str(i)                
+            self.search_find[i].SetFocus()
+            self.search_find[i].SetSelection(0, 3)
+            self.search_ctrl.SetFocus()
+            self.searching = i
     
     def OnCtrlTab(self, ev):
         """Selects next card."""
