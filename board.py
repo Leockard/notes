@@ -5,6 +5,7 @@
 
 import wx
 import wx.richtext as rt
+from wx.lib.floatcanvas import FloatCanvas as fc
 
 
 ######################
@@ -13,11 +14,12 @@ import wx.richtext as rt
 
 class BoardBase(wx.ScrolledWindow):
     MOVING_RECT_THICKNESS = 1
-    BACKGROUND_CL = "#AAAAAA"    
+    BACKGROUND_CL = "#CCCCCC"
+    PIXELS_PER_SCROLL = 20
 
-    def __init__(self, parent, id = wx.ID_ANY, pos = (0, 0), size = (20, 20)):
-        super(BoardBase, self).__init__(parent, size = size)
-
+    def __init__(self, parent, id=wx.ID_ANY, pos=(0,0), size=wx.DefaultSize):
+        super(BoardBase, self).__init__(parent, id=id, pos=pos, size=size, style=wx.BORDER_NONE)
+        
         self.cards = []
         self.selected_cards = []
         self.moving_cards_pos = []
@@ -30,10 +32,11 @@ class BoardBase(wx.ScrolledWindow):
         self.Bind(wx.EVT_LEFT_UP, self.OnLeftUp)
         self.Bind(wx.EVT_LEFT_DCLICK, self.OnLeftDClick)
         self.Bind(wx.EVT_MOUSE_CAPTURE_LOST, self.OnMouseCaptureLost)
+        self.Bind(wx.EVT_CHILD_FOCUS, self.OnChildFocus)
 
         # Other gui setup
         self.SetBackgroundColour(BoardBase.BACKGROUND_CL)
-        self.SetScrollbars(20, 20, 6000, 6000) # method from wx.ScrolledWindow, NOT wx.Window
+        # self.SetScrollbars(BoardBase.PIXELS_PER_SCROLL, BoardBase.PIXELS_PER_SCROLL, 6000, 6000) # method from wx.ScrolledWindow, NOT wx.Window
         self.SetFocus()
 
         
@@ -43,11 +46,23 @@ class BoardBase(wx.ScrolledWindow):
         """Returns a list of all cards held by the Board."""
         return self.cards
 
+    def GetHeaders(self):
+        """Returns a list of all Header cards."""
+        return [h for h in self.cards if isinstance(h, Header)]
+
+    def GetContents(self):
+        """Returns a list of all Content cards."""
+        return [h for h in self.cards if isinstance(h, Content)]
+
     def GetCard(self, label):
-        """Returns the card with the label, or None."""
+        """Returns the card with the (internal) label, or None."""
         li = [c for c in self.cards if c.label == label]
         if li: return li[0]
         else: return None
+
+    def GetContentsByKind(self, kind):
+        """Returns a list of all Content cards of the kind. kind should be a Content.X_LBL constant."""
+        return [c for c in self.GetContents() if c.GetKind() == kind]
 
     def GetNextCard(self, card, cycle=True):
         """Returns the card with label consecutive to that of the argument, or None.
@@ -81,7 +96,7 @@ class BoardBase(wx.ScrolledWindow):
 
     def NewCard(self, pos, label = -1, title="", kind="kind", content=""):
         if label == -1: label = len(self.cards)
-        newcard = Content(self, label, wx.ID_ANY, pos, title, kind, content)
+        newcard = Content(self, label, pos=pos, title=title, kind=kind, content=content)
         newcard.SetFocus()
         self.SelectCard(newcard, True)
         
@@ -224,6 +239,9 @@ class BoardBase(wx.ScrolledWindow):
 
     def OnChar(self, ev):
         print ev.GetKeyCode()
+
+    def OnChildFocus(self, ev):
+        pass # important to avoid automatic scrolling to focused child
 
     def OnCardLeftDown(self, ev):
         """Called when a child card has been clicked."""
@@ -438,41 +456,41 @@ class Board(wx.Panel):
         self.SetSizer(hbox)
 
         # UI steup
-        self.InitBar()
-        self.InitBoard(pos, size)
+        # self.InitBar()
+        self.InitBoard(pos=pos, size=size)
 
 
     ### Auxiliary functions
 
-    def InitBar(self):
-        hbox = self.GetSizer()
-        if not hbox: hbox = wx.BoxSizer(wx.HORIZONTAL)
+    # def InitBar(self):
+    #     hbox = self.GetSizer()
+    #     if not hbox: hbox = wx.BoxSizer(wx.HORIZONTAL)
 
-        # make UI
-        toolbar = wx.ToolBar(self, wx.ID_ANY, style=wx.TB_VERTICAL)
-        del_it = toolbar.AddLabelTool(wx.ID_ANY, "Delete",
-                                      wx.ArtProvider.GetBitmap(wx.ART_DELETE),
-                                      kind=wx.ITEM_NORMAL)
-        cpy_it = toolbar.AddLabelTool(wx.ID_ANY, "Copy",
-                                      wx.ArtProvider.GetBitmap(wx.ART_COPY),
-                                      kind=wx.ITEM_NORMAL)
-        toolbar.Realize()
+    #     # make UI
+    #     toolbar = wx.ToolBar(self, wx.ID_ANY, style=wx.TB_VERTICAL)
+    #     del_it = toolbar.AddLabelTool(wx.ID_ANY, "Delete",
+    #                                   wx.ArtProvider.GetBitmap(wx.ART_DELETE),
+    #                                   kind=wx.ITEM_NORMAL)
+    #     cpy_it = toolbar.AddLabelTool(wx.ID_ANY, "Copy",
+    #                                   wx.ArtProvider.GetBitmap(wx.ART_COPY),
+    #                                   kind=wx.ITEM_NORMAL)
+    #     toolbar.Realize()
 
-        # layout
-        vbox = wx.BoxSizer(wx.VERTICAL)
-        vbox.Add(toolbar, proportion=0, flag=wx.TOP, border=1)
+    #     # layout
+    #     vbox = wx.BoxSizer(wx.VERTICAL)
+    #     vbox.Add(toolbar, proportion=0, flag=wx.TOP, border=1)
 
-        hbox.Add(vbox, proportion=0, flag=wx.LEFT|wx.EXPAND, border=1)
+    #     hbox.Add(vbox, proportion=0, flag=wx.LEFT|wx.EXPAND, border=1)
 
-        # bindings
-        self.Bind(wx.EVT_TOOL, self.OnDelete, del_it)
-        self.Bind(wx.EVT_TOOL, self.OnCopy, cpy_it)
+    #     # bindings
+    #     self.Bind(wx.EVT_TOOL, self.OnDelete, del_it)
+    #     self.Bind(wx.EVT_TOOL, self.OnCopy, cpy_it)
 
     def InitBoard(self, pos, size):
         hbox = self.GetSizer()
         if not hbox: hbox = wx.BoxSizer(wx.HORIZONTAL)
             
-        board = BoardBase(self, id=id, pos=pos, size=size)
+        board = BoardBase(self, pos=pos, size=size)
         vbox2 = wx.BoxSizer(wx.VERTICAL)
         vbox2.Add(board, proportion=1, flag=wx.ALL|wx.EXPAND, border=1)
         hbox.Add(vbox2, proportion=1, flag=wx.ALL|wx.EXPAND,  border=1)
@@ -480,11 +498,11 @@ class Board(wx.Panel):
         # set members
         self.board = board
 
-    def OnCopy(self, ev):
-        self.board.CopySelected()
+    # def OnCopy(self, ev):
+    #     self.board.CopySelected()
 
-    def OnDelete(self, ev):
-        self.board.DeleteSelected()
+    # def OnDelete(self, ev):
+    #     self.board.DeleteSelected()
     
 
 
@@ -494,11 +512,12 @@ class Board(wx.Panel):
 
 class Card(wx.Panel):
     BORDER_WIDTH = 2
+    BORDER_THICK = 5
     
     def __init__(self, parent, id, pos, size, style):
         """Base class for every window that will be placed on Board. Override SetupUI()."""
         super(Card, self).__init__(parent, id, pos, size, style)
-
+        
     def SetupUI(self):
         pass
 
@@ -557,30 +576,46 @@ class Header(Card):
 ######################
 
 class Content(Card):
-    # Sizes
+    # sizes
     DEFAULT_SZ = (250, 150)
     BIG_SZ     = (350, 250)
 
-    # Labels
+    # labels
     DEFAULT_LBL    = "kind"
     CONCEPT_LBL    = "C"
     ASSUMPTION_LBL = "A"
     RESEARCH_LBL   = "R"
     FACT_LBL       = "F"
-    # Colors
-    DEFAULT_CL    = (220, 218, 213, 255)
-    CONCEPT_CL    = (0, 128, 0, 255)
-    ASSUMPTION_CL = (250, 128, 114, 255)
-    RESEARCH_CL   = (255, 165, 0, 255)
-    FACT_CL       = (70, 130, 180, 255)
 
-    def __init__(self, parent, label, id, pos, title = "title...", kind = "kind", content = "Write here..."):
-        super(Content, self).__init__(parent, id, pos, self.DEFAULT_SZ,
-                                   style = wx.BORDER_RAISED|wx.TAB_TRAVERSAL)
+    # colours
+    DEFAULT_CL    = (220, 218, 213, 255)
+    # thanks paletton.com!    
+    # border colours    
+    CONCEPT_CL    = (149, 246, 214, 255)
+    ASSUMPTION_CL = (255, 188, 154, 255)
+    RESEARCH_CL   = (255, 232, 154, 255)
+    FACT_CL       = (169, 163, 247, 255)
+    # content background colours
+    CONCEPT_BG_CL    = (242, 254, 250, 255) 
+    ASSUMPTION_BG_CL = (255, 247, 243, 255)
+    RESEARCH_BG_CL   = (255, 252, 243, 255) 
+    FACT_BG_CL       = (245, 244, 254, 255)
+    # content text colours
+    CONCEPT_CNT_CL    = (24, 243, 171, 255)
+    ASSUMPTION_CNT_CL = (255, 102, 25, 255)
+    RESEARCH_CNT_CL   = (255, 202, 25, 255)
+    FACT_CNT_CL       = (68, 54, 244, 255)
+    
+
+    def __init__(self, parent, label, id=wx.ID_ANY, pos=wx.DefaultPosition, size=DEFAULT_SZ, title="title...", kind="kind", content="Write here..."):
+        super(Content, self).__init__(parent, id=id, pos=pos, size=size,
+                                      style=wx.BORDER_RAISED|wx.TAB_TRAVERSAL)
         self.label = label
         self.InitUI()
         self.SetKind(kind)
-        self.title.SetValue(title)
+        # self.title.SetValue(title)
+        # print "title from init: " + str(title)
+        self.title.SetLabel(title)
         self.content.SetValue(content)
 
         
@@ -596,28 +631,22 @@ class Content(Card):
         return self.kindbut.GetLabel()
 
     def SetKind(self, kind):
-        if kind == "kind":
-            self.kindbut.SetLabel("kind")
-        else:
-            self.kindbut.SetLabel(kind[0])
-            
-        if   kind == Content.CONCEPT_LBL    : self.SetBackgroundColour(Content.CONCEPT_CL)
-        elif kind == Content.ASSUMPTION_LBL : self.SetBackgroundColour(Content.ASSUMPTION_CL)
-        elif kind == Content.RESEARCH_LBL   : self.SetBackgroundColour(Content.RESEARCH_CL)
-        elif kind == Content.FACT_LBL       : self.SetBackgroundColour(Content.FACT_CL)
-        else                                : self.SetBackgroundColour(Content.DEFAULT_CL)
+        if kind == "kind": self.kindbut.SetLabel("kind")
+        else:              self.kindbut.SetLabel(kind[0])
+        self.SetColours(kind)
 
     
     ### Auxiliary functions
     
     def InitUI(self):
         # Controls
-        title = wx.TextCtrl(self, wx.ID_ANY, style = wx.TE_RICH)
-        title.SetHint("Title")
-        kindbut = wx.Button(self, wx.ID_ANY, label = "kind", size = (33, 23), style = wx.BORDER_NONE)
+        # title = wx.TextCtrl(self, style = wx.TE_RICH)
+        title = EditText(self, label="foo")
+        # title.SetHint("Title")
+        kindbut = wx.Button(self, label = "kind", size=(33, 23), style=wx.BORDER_NONE)
         kindbut.SetOwnFont(wx.Font(8, wx.FONTFAMILY_DEFAULT, wx.FONTSTYLE_ITALIC, wx.FONTWEIGHT_NORMAL, False))
         content = rt.RichTextCtrl(self, size = (10, 10))
-        # content.SetHint("Write here...")
+        content.SetHint("Write here...")
         # label   = wx.StaticText(self, wx.ID_ANY, label = str(self.label), style = wx.ALIGN_RIGHT)
         
         # Boxes
@@ -626,14 +655,14 @@ class Content(Card):
         hbox1.Add(kindbut, proportion=0, flag=wx.RIGHT,          border=Card.BORDER_WIDTH)
 
         hbox2 = wx.BoxSizer(wx.HORIZONTAL)
-        hbox2.Add(content, proportion=1, flag=wx.ALL|wx.EXPAND, border=Card.BORDER_WIDTH)        
+        hbox2.Add(content, proportion=1, flag=wx.EXPAND, border=Card.BORDER_THICK)
 
         # hbox3 = wx.BoxSizer(wx.HORIZONTAL)        
         # hbox3.Add(label  , proportion=0, flag=wx.RIGHT, border=Card.BORDER_WIDTH)
 
         vbox = wx.BoxSizer(wx.VERTICAL)                
-        vbox.Add(hbox1, proportion=0, flag=wx.LEFT |wx.EXPAND, border=Card.BORDER_WIDTH)
-        vbox.Add(hbox2, proportion=1, flag=wx.LEFT |wx.EXPAND, border=Card.BORDER_WIDTH)
+        vbox.Add(hbox1, proportion=0, flag=wx.ALL|wx.EXPAND, border=Card.BORDER_WIDTH)
+        vbox.Add(hbox2, proportion=1, flag=wx.ALL|wx.EXPAND, border=Card.BORDER_THICK)
         # vbox.Add(hbox3, proportion=0, flag=wx.RIGHT|wx.EXPAND, border=Card.BORDER_WIDTH)
         
         # Bindings
@@ -654,6 +683,26 @@ class Content(Card):
                 "kind": self.GetKind(),
                 "title": self.GetTitle(),
                 "content": self.GetContent()}
+
+    def SetColours(self, kind):
+        if   kind == Content.CONCEPT_LBL:
+             self.SetBackgroundColour(Content.CONCEPT_CL)
+             self.content.SetBackgroundColour(Content.CONCEPT_BG_CL)
+             # self.content.BeginTextColour(Content.CONCEPT_CNT_CL)
+        elif kind == Content.ASSUMPTION_LBL:
+             self.SetBackgroundColour(Content.ASSUMPTION_CL)
+             self.content.SetBackgroundColour(Content.ASSUMPTION_BG_CL)
+             # self.content.BeginTextColour(Content.ASSUMPTION_CNT_CL)
+        elif kind == Content.RESEARCH_LBL:
+             self.SetBackgroundColour(Content.RESEARCH_CL)
+             self.content.SetBackgroundColour(Content.RESEARCH_BG_CL)
+             # self.content.BeginTextColour(Content.RESEARCH_CNT_CL)
+        elif kind == Content.FACT_LBL:
+             self.SetBackgroundColour(Content.FACT_CL)
+             self.content.SetBackgroundColour(Content.FACT_BG_CL)
+             # self.content.BeginTextColour(Content.FACT_CNT_CL)
+        else:
+             self.SetBackgroundColour(Content.DEFAULT_CL)
 
 
     ### Callbacks
@@ -716,6 +765,78 @@ class KindSelectMenu(wx.Menu):
             self.card.SetKind(kind)
 
 
+            
+######################
+# Auxiliary functions
+######################
+            
+class EditText(wx.Control):
+
+    def __init__(self, parent, id = wx.ID_ANY, label="", pos=wx.DefaultPosition, size=wx.DefaultSize):
+        super(EditText, self).__init__(parent, id=id, pos=pos, size=size, style=wx.BORDER_NONE)
+
+        self.InheritAttributes()
+        self.BackgroundColour = parent.BackgroundColour
+
+        self.text  = wx.StaticText(self, label=label, style=wx.BORDER_NONE|wx.ST_NO_AUTORESIZE)
+        self.entry = wx.TextCtrl(self,   value=label, style=wx.BORDER_SUNKEN|wx.TE_PROCESS_ENTER)
+
+        box = wx.BoxSizer(wx.HORIZONTAL)
+        box.Add(self.text,  proportion=1, flag=wx.ALL|wx.EXPAND, border=0)
+        box.Add(self.entry, proportion=1, flag=wx.ALL|wx.EXPAND, border=0)
+        self.SetSizer(box)
+
+        self.text.Bind(wx.EVT_LEFT_DOWN, self.ShowEntry)
+        self.entry.Bind(wx.EVT_LEFT_DOWN, self.ShowText)
+        self.entry.Bind(wx.EVT_TEXT_ENTER, self.ShowText)
+        self.entry.Bind(wx.EVT_KILL_FOCUS, self.ShowText)
+
+        self.text.Show()
+        self.entry.Hide()        
+        self.Show()
+
+
+    ### Behavior functions
+
+    def SetLabel(self, lbl):
+        # print "label passed to SetLabel: " + str(lbl)
+        self.text.SetLabel(lbl)
+        self.entry.SetValue(lbl)
+        return super(EditText, self).SetLabel(lbl)        
+
+    def SetValue(self, lbl):
+        self.SetLabel(lbl)
+
+    def GetLabel(self):
+        print "getlabel"
+        return self.text.GetLabel()
+
+    def GetValue(self):
+        return self.GetLabel()
+
+    def ShowEntry(self, ev):
+        print "show entry: " + str(ev.GetEventObject())
+        self.text.Hide()
+        self.entry.Show()
+        self.entry.SetFocus()
+
+    def ShowText(self, ev):
+        print "showtext: " + str(ev.GetEventObject())
+        self.entry.Hide()
+        self.text.SetLabel(self.entry.GetValue())
+        self.text.Show()
+
+
+    ### Auxiliary functions
+    
+    def ShouldInheritColours(self):
+        return True
+
+    def InheritBackgroundColour(self):
+        return True
+
+
+            
 ######################
 # Auxiliary functions
 ######################

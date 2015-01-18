@@ -13,8 +13,8 @@ import wx
 ######################
 
 class Canvas(wx.Control):
-    def __init__(self, parent, id):
-        wx.Control.__init__(self, parent, id=wx.ID_ANY, style=wx.NO_FULL_REPAINT_ON_RESIZE)
+    def __init__(self, parent, id=wx.ID_ANY, size=wx.DefaultSize):
+        wx.Control.__init__(self, parent, id=id, size=size, style=wx.NO_FULL_REPAINT_ON_RESIZE|wx.BORDER_NONE)
 
         # print "__init__"
         self.SetBackgroundColour("WHITE")
@@ -33,6 +33,7 @@ class Canvas(wx.Control):
         self.Bind(wx.EVT_SIZE, self.OnSize)
         self.Bind(wx.EVT_IDLE, self.OnIdle)
         self.Bind(wx.EVT_PAINT, self.OnPaint)
+        self.Bind(wx.EVT_SHOW, self.OnShow) # or hide
         # self.Bind(wx.EVT_ERASE_BACKGROUND, self.OnEraseBackground)
 
 
@@ -81,6 +82,10 @@ class Canvas(wx.Control):
 
 
     ### Callbacks
+
+    def OnShow(self, ev):
+        if ev.IsShown():
+            self.DrawLines(wx.BufferedDC(None, self.buffer))
     
     def OnLeftDown(self, ev):
         """called when the left mouse button is pressed"""
@@ -99,9 +104,10 @@ class Canvas(wx.Control):
         """
         Called when the mouse is in motion.  If the left button is
         dragging then draw a line from the last event position to the
-        current one.  Save the coordinants for redraws.
+        current one.  Save the coordinates for redraws.
         """
         if ev.Dragging() and ev.LeftIsDown():
+            # all drawings over dc will not be saved in self.buffer...
             dc = wx.BufferedDC(wx.ClientDC(self), self.buffer)
             dc.BeginDrawing()
             dc.SetPen(self.pen)
@@ -147,6 +153,4 @@ class Canvas(wx.Control):
             dc.SetClippingRect(rect)
         dc.Clear()
         # print "onerase"
-        # bmp = wx.Bitmap("butterfly.jpg")
-        # dc.DrawBitmap(bmp, 0, 0)
 

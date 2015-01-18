@@ -4,7 +4,7 @@
 # Page class: contains a Board and a canvas, plus functionality to switch between the two
 
 import wx
-from board import Board
+from board import *
 from canvas import Canvas
 
 
@@ -14,15 +14,67 @@ from canvas import Canvas
 ######################
 
 class Page(wx.Panel):
-    DEFAULT_SZ = (20, 20)
     CARD_PADDING = Board.CARD_PADDING
+    PIXELS_PER_SCROLL = 20
 
-    def __init__(self, parent, id = wx.ID_ANY, pos = (0, 0), size = DEFAULT_SZ):
-        super(Page, self).__init__(parent, wx.ID_ANY, pos, size = size)
+    VIEW_CH_DEF = "View"
+    VIEW_CH_C = "Concepts"
+    VIEW_CH_A = "Assumptions"
+    VIEW_CH_R = "Research"
+    VIEW_CH_F = "Facts"
+    VIEW_CHOICES = (VIEW_CH_DEF, VIEW_CH_C, VIEW_CH_A, VIEW_CH_R, VIEW_CH_F)
 
+    def __init__(self, parent, id=wx.ID_ANY, pos=wx.DefaultPosition, size = wx.DefaultSize):
+        super(Page, self).__init__(parent, id=id, pos=pos, size=size)
+
+        self.resizing = False
+        self.scale = 1.0
         self.ui_ready = False
         self.InitUI()
+        self.board.SetScrollbars(Page.PIXELS_PER_SCROLL, Page.PIXELS_PER_SCROLL, 6000, 6000) # method from wx.ScrolledWindow, NOT wx.Window
 
+        self.Bind(wx.EVT_PAINT, self.OnPaint)
+
+
+    ### Behavior functions
+
+    def ResizeChildren(self):
+        print "resizechildren at scale: " + str(self.scale)
+        self.resizing = True
+        ch = self.GetChildren()
+        print "children: " + str(len(ch))            
+        for c in ch:
+            print "child: " + str(c)
+            c.Hide()
+            pos = c.GetPosition()
+            c.SetPosition((pos.x * self.scale, pos.y * self.scale))
+            sz = c.GetSize()
+            c.SetSize((sz.width * self.scale, sz.height * self.scale))
+            c.Show()
+            
+        self.resizing = False
+
+
+    ### Behavior functions
+
+    def SetupCanvas(self):
+        """Setsup the canvas background. Call before showing the Canvas."""
+        rect = self.board.GetRect()                
+        self.canvas.SetSize((rect.width, rect.height))
+
+        bmp = wx.EmptyBitmap(rect.width, rect.height)
+        dc = wx.MemoryDC()           # MemoryDCs are for painting over BMPs
+        dc.SelectObject(bmp)
+        
+        # off = self.board.GetClientAreaOrigin()
+        dc.Blit(0, 0, rect.width, rect.height, wx.ClientDC(self.board),
+                rect.x, rect.y)      # offset in the original DC
+        dc.SelectObject(wx.NullBitmap)
+
+        self.canvas.buffer = bmp
+        self.canvas.Refresh()
+
+                
     ### Auxiliary functions
 
     def InitUI(self):
@@ -41,64 +93,94 @@ class Page(wx.Panel):
         vbox = wx.BoxSizer(wx.VERTICAL)
         self.SetSizer(vbox)
         self.InitBoard(sz)
-        # self.InitCanvas()
+        self.InitCanvas()
 
         # execute only the first time
         if not self.ui_ready:
-            self.zoom = wx.Choice(self, wx.ID_ANY, choices=["100%", "50%", "150%", "200%"])
-            self.zoom.Bind(wx.EVT_CHOICE, self.OnZoom)            
-            self.toggle_but = wx.Button(self, label = "Toggle")
-            self.toggle_but.Bind(wx.EVT_BUTTON, self.OnToggle)
+            self.toggle = wx.Button(self, label = "Toggle")
+            self.toggle.Bind(wx.EVT_BUTTON, self.OnToggle)
+
+            # self.view = wx.Choice(self, choices=["Normal", "Research"])
+            self.view = wx.Choice(self, choices=Page.VIEW_CHOICES)
+            self.view.SetSelection(0)
+            self.view.Bind(wx.EVT_CHOICE, self.OnView)
+                        
+            self.zoom = wx.Choice(self, choices=["100%", "50%", "150%", "200%"])
+            self.zoom.SetSelection(0)
+            self.zoom.Bind(wx.EVT_CHOICE, self.OnZoom)
             
         hbox = wx.BoxSizer(wx.HORIZONTAL)
-        hbox.Add(self.toggle_but, proportion=1, flag=wx.LEFT|wx.EXPAND, border=1)
-        hbox.Add(self.zoom,       proportion=1, flag=wx.LEFT|wx.EXPAND, border=1)
-        vbox.Add(hbox, proportion=0, flag=wx.LEFT, border=1)
+        hbox.Add(self.toggle, proportion=0, flag=wx.LEFT|wx.EXPAND, border=1)
+        hbox.Add(self.view,   proportion=0, flag=wx.LEFT|wx.EXPAND, border=1)
+
+        zbox = wx.BoxSizer(wx.VERTICAL) # must be vertical so that ALIGN_RIGHT works
+        zbox.Add(self.zoom, proportion=1, flag=wx.ALIGN_RIGHT, border=1)
+        hbox.Add(zbox,      proportion=1, flag=wx.ALIGN_RIGHT|wx.EXPAND, border=1)
+        
+        vbox.Add(hbox, proportion=0, flag=wx.LEFT|wx.EXPAND, border=1)
 
         self.ui_ready = True
 
-    def InitBoard(self, size = DEFAULT_SZ):
+    def InitBoard(self, id=wx.ID_ANY, size=wx.DefaultSize):
         # make new
-        bd = Board(self, size = size)
-        # bd.SetBackgroundColour(Page.BACKGROUND_CL)
+        bd = Board(self, size=size)
 
         # # UI setup
         vbox = self.GetSizer()
         if not vbox: vbox = wx.BoxSizer(wx.VERTICAL)
-        bd_box = wx.BoxSizer(wx.HORIZONTAL)
-        bd_box.Add(bd,   proportion=1, flag=wx.LEFT|wx.EXPAND, border=1)
-        vbox.Add(bd_box, proportion=1, flag=wx.LEFT|wx.EXPAND, border=1)
+        box = wx.BoxSizer(wx.HORIZONTAL)
+        box.Add(bd,   proportion=1, flag=wx.ALL|wx.EXPAND, border=1)
+        vbox.Add(box, proportion=1, flag=wx.ALL|wx.EXPAND, border=1)
         
         # set members
         self.board = bd.board
-        self.board_box = bd_box
-        
         self.board.Show()        
 
-    # def InitCanvas(self):
-    #     # make new
-    #     ctrl = Canvas(self, wx.ID_ANY)
+    def InitCanvas(self, id=wx.ID_ANY, size=wx.DefaultSize):
+        # make new
+        ctrl = Canvas(self, size=size)
         
-    #     # UI setup
-    #     vbox = self.GetSizer()
-    #     if not vbox: vbox = wx.BoxSizer(wx.VERTICAL)
-    #     bmp_box = wx.BoxSizer(wx.HORIZONTAL)
-    #     bmp_box.Add(ctrl, proportion=1, flag=wx.ALL|wx.EXPAND, border=1)
+        # UI setup
+        vbox = self.GetSizer()
+        if not vbox: vbox = wx.BoxSizer(wx.VERTICAL)
+        box = wx.BoxSizer(wx.HORIZONTAL)
+        box.Add(ctrl, proportion=1, flag=wx.ALL|wx.EXPAND, border=1)
+        vbox.Add(box, proportion=1, flag=wx.ALL|wx.EXPAND, border=1)
 
-    #     # Set members
-    #     self.bmp_ctrl = ctrl
-    #     self.bmp_box = bmp_box
-        
-    #     self.bmp_ctrl.Hide()
+        # Set members
+        self.canvas = ctrl
+        self.canvas.Hide()
 
 
     ### Callbacks
 
+    def OnPaint(self, ev):
+        pass
+
     def OnToggle(self, ev):
-        print "Page.OnToggle"
+        if self.board.IsShown():
+            self.board.Hide()
+            self.SetupCanvas()
+            self.canvas.Show()
+        else:
+            self.board.Show()
+            self.canvas.Hide()
         
     def OnZoom(self, ev):
-        print "Page.OnZoom"
-    
-    def OnSize(self, ev):
-        self.SetSize(ev.GetSize())
+        scale = float(ev.GetString()[:-1]) / 100
+        self.scale = scale
+        print "Page.OnZoom: " + str(scale)
+        self.Refresh()
+
+    def OnView(self, ev):
+        s = ev.GetString()
+        if   s == Page.VIEW_CH_C: show = self.board.GetContentsByKind(Content.CONCEPT_LBL)
+        elif s == Page.VIEW_CH_A: show = self.board.GetContentsByKind(Content.ASSUMPTION_LBL)
+        elif s == Page.VIEW_CH_R: show = self.board.GetContentsByKind(Content.RESEARCH_LBL)
+        elif s == Page.VIEW_CH_F: show = self.board.GetContentsByKind(Content.FACT_LBL)
+        else: show = self.board.GetCards()
+            
+        show = list(set(show) | set(self.board.GetHeaders()))
+        hide = list(set(self.board.GetCards()) - set(show))
+        for c in show: c.Show()
+        for c in hide: c.Hide()

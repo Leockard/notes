@@ -25,12 +25,10 @@ class MyFrame(wx.Frame):
         self.accels = [] # will hold keyboard shortcuts aka accelerators
         self.SetTitle("Notes")
         self.cur_file = ""
-        # contains the current search index
-        # when not searching, set to None
-        self.searching = None
-
+        self.searching = None      # contains the current search index
+                                   # when not searching, set to None
         self.ui_ready = False
-        self.InitUI() # sets up the sizer and the buttons' bindings
+        self.InitUI()              # sets up the sizer and the buttons' bindings
         self.GetCurrentBoard().SetFocus()
 
         # Keyboard shortcuts
@@ -131,6 +129,7 @@ class MyFrame(wx.Frame):
         # edit menu
         edit_menu        = wx.Menu()
         copy_item        = wx.MenuItem(edit_menu, wx.ID_COPY, "Copy")
+        delt_item        = wx.MenuItem(edit_menu, wx.ID_DELETE, "Delete")
         nwcdr_item       = wx.MenuItem(edit_menu, wx.ID_ANY, "New Card: Right")
         nwcdb_item       = wx.MenuItem(edit_menu, wx.ID_ANY, "New Card: Below")
         nwhdr_item       = wx.MenuItem(edit_menu, wx.ID_ANY, "New Header: Right")
@@ -140,6 +139,7 @@ class MyFrame(wx.Frame):
         unsel_item       = wx.MenuItem(edit_menu, wx.ID_ANY, "Unselect All")
 
         edit_menu.AppendItem(copy_item)
+        edit_menu.AppendItem(delt_item)
         edit_menu.AppendItem(nwcdr_item)
         edit_menu.AppendItem(nwcdb_item)
         edit_menu.AppendItem(nwhdr_item)
@@ -170,6 +170,7 @@ class MyFrame(wx.Frame):
         # bindings
         self.Bind(wx.EVT_MENU, self.OnQuit      , quit_item)
         self.Bind(wx.EVT_MENU, self.OnCopy      , copy_item)
+        self.Bind(wx.EVT_MENU, self.OnDelete    , delt_item)
         self.Bind(wx.EVT_MENU, self.OnSave      , save_item)
         self.Bind(wx.EVT_MENU, self.OnOpen      , open_item)
         self.Bind(wx.EVT_MENU, self.OnCtrlTab   , ctrltab_item)
@@ -187,17 +188,19 @@ class MyFrame(wx.Frame):
         self.Bind(wx.EVT_MENU, self.OnAltShftRet  , nwhdb_item)        
 
         # shortcuts
-        self.accels.append(wx.AcceleratorEntry(wx.ACCEL_CTRL   , ord("D"), debug_item.GetId()))
-        self.accels.append(wx.AcceleratorEntry(wx.ACCEL_CTRL   , ord("F"), search_item.GetId()))
-        self.accels.append(wx.AcceleratorEntry(wx.ACCEL_CTRL   , ord("G"), next_item.GetId()))
-        self.accels.append(wx.AcceleratorEntry(wx.ACCEL_NORMAL , 27,       unsel_item.GetId())) # ESC
-        self.accels.append(wx.AcceleratorEntry(wx.ACCEL_CTRL   , wx.WXK_TAB, ctrltab_item.GetId()))                
-        self.accels.append(wx.AcceleratorEntry(wx.ACCEL_CTRL   , wx.WXK_RETURN, nwcdr_item.GetId()))
-        self.accels.append(wx.AcceleratorEntry(wx.ACCEL_ALT    , wx.WXK_RETURN, nwhdr_item.GetId()))
-        self.accels.append(wx.AcceleratorEntry(wx.ACCEL_SHIFT|wx.ACCEL_CTRL , ord("G"), prev_item.GetId()))        
+        self.accels.append(wx.AcceleratorEntry(wx.ACCEL_NORMAL, 27, unsel_item.GetId())) # ESC
+        self.accels.append(wx.AcceleratorEntry(wx.ACCEL_NORMAL, 127, delt_item.GetId())) # DEL
+        
+        self.accels.append(wx.AcceleratorEntry(wx.ACCEL_CTRL, ord("D"),      debug_item.GetId()))
+        self.accels.append(wx.AcceleratorEntry(wx.ACCEL_CTRL, ord("F"),      search_item.GetId()))
+        self.accels.append(wx.AcceleratorEntry(wx.ACCEL_CTRL, ord("G"),      next_item.GetId()))
+        self.accels.append(wx.AcceleratorEntry(wx.ACCEL_CTRL, wx.WXK_TAB,    ctrltab_item.GetId()))                
+        self.accels.append(wx.AcceleratorEntry(wx.ACCEL_CTRL, wx.WXK_RETURN, nwcdr_item.GetId()))
+        self.accels.append(wx.AcceleratorEntry(wx.ACCEL_ALT, wx.WXK_RETURN, nwhdr_item.GetId()))
+        self.accels.append(wx.AcceleratorEntry(wx.ACCEL_SHIFT|wx.ACCEL_CTRL , ord("G"), prev_item.GetId()))
         self.accels.append(wx.AcceleratorEntry(wx.ACCEL_SHIFT|wx.ACCEL_CTRL , wx.WXK_RETURN, nwcdb_item.GetId()))
-        self.accels.append(wx.AcceleratorEntry(wx.ACCEL_SHIFT|wx.ACCEL_ALT  , wx.WXK_RETURN, nwhdb_item.GetId()))
         self.accels.append(wx.AcceleratorEntry(wx.ACCEL_SHIFT|wx.ACCEL_CTRL , wx.WXK_TAB,    ctrlshfttab_item.GetId()))
+        self.accels.append(wx.AcceleratorEntry(wx.ACCEL_SHIFT|wx.ACCEL_ALT  , wx.WXK_RETURN, nwhdb_item.GetId()))
 
         # finish up        
         bar.Append(file_menu, "&File")
@@ -226,6 +229,19 @@ class MyFrame(wx.Frame):
         ctrl.Hide()
         self.search_ctrl = ctrl
 
+    def InitToolBar(self):
+        toolbar = self.CreateToolBar(style=wx.TB_VERTICAL)
+        del_it = toolbar.AddLabelTool(wx.ID_ANY, "Delete",
+                                      wx.ArtProvider.GetBitmap(wx.ART_DELETE),
+                                      kind=wx.ITEM_NORMAL)
+        cpy_it = toolbar.AddLabelTool(wx.ID_ANY, "Copy",
+                                      wx.ArtProvider.GetBitmap(wx.ART_COPY),
+                                      kind=wx.ITEM_NORMAL)
+
+        # bindings
+        self.Bind(wx.EVT_TOOL, self.OnDelete, del_it)
+        self.Bind(wx.EVT_TOOL, self.OnCopy, cpy_it)
+
     def InitUI(self):
         sz = (20, 20)
         # # cleanup the previous UI, if any
@@ -243,14 +259,15 @@ class MyFrame(wx.Frame):
 
         # execute only the first time
         if not self.ui_ready:
-            self.InitMenuBar()            
+            self.InitMenuBar()
             self.CreateStatusBar()
             self.InitSearchBar()
+            self.InitToolBar()
             
         self.ui_ready = True
 
-    def InitNotebook(self, size = Page.DEFAULT_SZ):
-        nb = wx.Notebook(self, wx.ID_ANY, size=size)
+    def InitNotebook(self, size = wx.DefaultSize):
+        nb = wx.Notebook(self, size=size)
 
         # make starting page
         pg = Page(nb, size = size)
@@ -287,7 +304,8 @@ class MyFrame(wx.Frame):
         self.StatusBar.SetStatusText(s)
 
     def OnDebug(self, ev):
-        print len(self.board.GetSelection())
+        print self.board.GetCards()[0].title.text.GetSize()
+        print self.board.GetCards()[0].title.entry.GetSize()
 
     def Save(self, out_file, d):
         """Save the data in the dict d in the file out_file."""
@@ -302,7 +320,7 @@ class MyFrame(wx.Frame):
             if values["class"] == "Content":
                 board.NewCard(pos     = values["pos"],
                               label   = values["label"],
-                              title   = values["title"],
+                              title   = str(values["title"]),
                               kind    = values["kind"],
                               content = values["content"])
             elif values["class"] == "Header":
@@ -342,6 +360,12 @@ class MyFrame(wx.Frame):
             self.Log("Copy " + str(len(self.GetCurrentBoard().selected_cards)) + " Cards.")
             self.GetCurrentBoard().CopySelected()
 
+    def OnDelete(self, ev):
+        """Delete selected cards."""
+        if self.GetCurrentBoard().selected_cards:
+            self.Log("Delete " + str(len(self.GetCurrentBoard().selected_cards)) + " Cards.")
+            self.GetCurrentBoard().DeleteSelected()
+
     def OnZoom(self, ev):
         """Zoom in and out."""
         scale = ev.GetString()[:-1] # all strings have the % sign at the end
@@ -369,10 +393,10 @@ class MyFrame(wx.Frame):
         if self.searching != None:
             i = self.searching + 1
             if i >= len(self.search_find): i = 0
-            print "searching" + str(i)                
             self.search_find[i].SetFocus()
             self.search_find[i].SetSelection(0, 3)
-            self.search_ctrl.SetFocus()
+            pos = self.search_find[i].GetPosition()
+            self.GetCurrentBoard().Scroll(-1, pos.y / Page.PIXELS_PER_SCROLL)
             self.searching = i
 
     def OnCtrlShftG(self, ev):
@@ -381,11 +405,15 @@ class MyFrame(wx.Frame):
         if self.searching != None:
             i = self.searching - 1
             if i < 0: i = len(self.search_find) - 1
-            print "searching: " + str(i)                
             self.search_find[i].SetFocus()
             self.search_find[i].SetSelection(0, 3)
-            self.search_ctrl.SetFocus()
             self.searching = i
+
+    def OnToolBarDelete(self, ev):
+        print "toolbar delete"
+
+    def OnToolBarCopy(self, ev):
+        print "toolbar copy"
     
     def OnCtrlTab(self, ev):
         """Selects next card."""
@@ -396,28 +424,6 @@ class MyFrame(wx.Frame):
         """Selects previous card."""
         card = self.FindFocus().GetParent()
         self.GetCurrentBoard().GetPrevCard(card).SetFocus()
-
-    def OnToggle(self, ev):
-        """Toggle card / drawing modes."""
-        # self.CreateBitmap()
-        if self.GetCurrentBoard().IsShown():
-            self.GetCurrentBoard().Hide()
-            self.bmp_ctrl.SetSize(self.GetCurrentBoard().GetClientSize())
-            
-            dc = wx.MemoryDC()
-            bmp = self.CreateBitmap()
-            dc.SelectObject(bmp)
-            # print "calling SetBackground"
-            self.bmp_ctrl.SetBackground(bmp)
-            dc.SelectObject(wx.NullBitmap)
-            
-            self.bmp_ctrl.Show()
-            self.GetSizer().Layout()
-            # print "end toggling"
-        else:
-            self.bmp_ctrl.Hide()
-            self.GetCurrentBoard().Show()
-            self.GetSizer().Layout()
 
     def OnBitmapShow(self, ev):
         """Called when the bitmap is shown:enalbe scribbling mode."""
@@ -463,8 +469,10 @@ class MyFrame(wx.Frame):
     def OnOpen(self, ev):
         """Open file."""
         # ask for a file name
-        fd = wx.FileDialog(self, "Open", os.getcwd(), "", "P files (*.p)|*.p",
+        fd = wx.FileDialog(self, "Open", os.getcwd(), "", "P files (*.p)|*.p|All files|*.*",
                            wx.FD_OPEN | wx.FD_FILE_MUST_EXIST)
+        # fd = wx.FileDialog(self, "Open", os.getcwd(), "", "",
+        #                    wx.FD_OPEN | wx.FD_FILE_MUST_EXIST)
         if fd.ShowModal() == wx.ID_CANCEL: return # user changed her mind
 
         self.InitUI()                     # setup new UI elements
