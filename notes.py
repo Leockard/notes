@@ -40,7 +40,9 @@ class MyFrame(wx.Frame):
 
     def GetCurrentBoard(self):
         """Returns the active board."""
-        return self.notebook.GetCurrentPage().board
+        pg = self.notebook.GetCurrentPage()
+        if pg: return pg.board
+        else: return None
 
     def PlaceNewCard(self, subclass, below = False):
         """
@@ -50,25 +52,26 @@ class MyFrame(wx.Frame):
         Card in the board, if any. below=True creates it below.
         """
         pos = (0, 0)
+        board = self.GetCurrentBoard()
         
         # if there are no cards, place this one on the top left corner
-        if len(self.GetCurrentBoard().GetCards()) < 1:
+        if len(board.GetCards()) < 1:
             pos = (Page.CARD_PADDING, Page.CARD_PADDING)
 
-        elif self.GetCurrentBoard().GetFocusedCard():
-            pos = self.GetCurrentBoard().CalculateNewCardPosition(self.GetCurrentBoard().GetFocusedCard().GetPosition(), below)
+        elif board.GetFocusedCard():
+            pos = board.CalculateNewCardPosition(board.GetFocusedCard().GetPosition(), below)
         
         else: # otherwise, move it to the right of the last one
-            rects = [c.GetRect() for c in self.GetCurrentBoard().GetCards()]
+            rects = [c.GetRect() for c in board.GetCards()]
             rights = [r.right for r in rects]
             top = min([r.top for r in rects])
             left = max(rights) + Page.CARD_PADDING
             pos = (left, top)
 
-        if subclass == "Content":
-            self.GetCurrentBoard().NewCard(pos)
-        elif subclass == "Header":
-            self.GetCurrentBoard().NewHeader(pos)
+        if subclass == "Content":  new = board.NewCard(pos)
+        elif subclass == "Header": new = board.NewHeader(pos)
+        board.SelectCard(new, True)
+        new.SetFocus()
         self.Log("New " + subclass + " card created.")
 
     def Search(self, ev):
@@ -212,7 +215,7 @@ class MyFrame(wx.Frame):
     def InitSearchBar(self):
         if not self.ui_ready:
             # make new
-            ctrl = wx.SearchCtrl(self, wx.ID_ANY, style=wx.TE_PROCESS_ENTER)
+            ctrl = wx.SearchCtrl(self, style=wx.TE_PROCESS_ENTER)
             ctrl.Bind(wx.EVT_SEARCHCTRL_SEARCH_BTN, self.Search)
             ctrl.Bind(wx.EVT_SEARCHCTRL_CANCEL_BTN, self.CancelSearch)
             ctrl.Bind(wx.EVT_TEXT_ENTER, self.Search)
@@ -252,15 +255,17 @@ class MyFrame(wx.Frame):
             self.sheet = None
             self.SetSizer(None)
 
+
         # make new UI
         vbox = wx.BoxSizer(wx.VERTICAL)
         self.SetSizer(vbox)
-        self.InitNotebook(sz)
+        # self.InitNotebook(sz)                                            
 
-        # execute only the first time
+        # execute only the first time; order matters
         if not self.ui_ready:
             self.InitMenuBar()
             self.CreateStatusBar()
+            self.InitNotebook(sz)            
             self.InitSearchBar()
             self.InitToolBar()
             
@@ -272,7 +277,7 @@ class MyFrame(wx.Frame):
         # make starting page
         pg = Page(nb, size = size)
         # pg.board.SetBackgroundColour(Page.BACKGROUND_CL)
-        nb.AddPage(pg, "TabOne")
+        nb.AddPage(pg, "Unittled Notes")
 
         # UI setup
         vbox = self.GetSizer()
@@ -283,7 +288,7 @@ class MyFrame(wx.Frame):
 
         # set members
         self.notebook = nb
-        self.board = pg.board        
+        self.board = pg.board
 
     def CreateBitmap(self):
         """Take a picture of the current card board."""
@@ -304,8 +309,7 @@ class MyFrame(wx.Frame):
         self.StatusBar.SetStatusText(s)
 
     def OnDebug(self, ev):
-        print self.board.GetCards()[0].title.text.GetSize()
-        print self.board.GetCards()[0].title.entry.GetSize()
+        print self.FindFocus()
 
     def Save(self, out_file, d):
         """Save the data in the dict d in the file out_file."""
@@ -471,11 +475,14 @@ class MyFrame(wx.Frame):
         # ask for a file name
         fd = wx.FileDialog(self, "Open", os.getcwd(), "", "P files (*.p)|*.p|All files|*.*",
                            wx.FD_OPEN | wx.FD_FILE_MUST_EXIST)
-        # fd = wx.FileDialog(self, "Open", os.getcwd(), "", "",
-        #                    wx.FD_OPEN | wx.FD_FILE_MUST_EXIST)
         if fd.ShowModal() == wx.ID_CANCEL: return # user changed her mind
 
-        self.InitUI()                     # setup new UI elements
+        # self.InitUI()                     # setup new UI elements
+        pg = Page(self.notebook)
+        self.notebook.AddPage(pg, fd.GetPath())
+        index = self.notebook.GetSelection()
+        self.notebook.SetSelection(index + 1)
+
         self.GetCurrentBoard().Hide()     # hide while we load/paint all the info
         self.Load(fd.GetPath())           # load and paint all cards
         self.GetCurrentBoard().Show()     # show everything at the same time

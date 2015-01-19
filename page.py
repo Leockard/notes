@@ -31,7 +31,7 @@ class Page(wx.Panel):
         self.scale = 1.0
         self.ui_ready = False
         self.InitUI()
-        self.board.SetScrollbars(Page.PIXELS_PER_SCROLL, Page.PIXELS_PER_SCROLL, 6000, 6000) # method from wx.ScrolledWindow, NOT wx.Window
+        # self.board.SetScrollbars(Page.PIXELS_PER_SCROLL, Page.PIXELS_PER_SCROLL, 6000, 6000) # method from wx.ScrolledWindow, NOT wx.Window
 
         self.Bind(wx.EVT_PAINT, self.OnPaint)
 

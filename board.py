@@ -24,6 +24,10 @@ class BoardBase(wx.ScrolledWindow):
         self.selected_cards = []
         self.moving_cards_pos = []
         self.cur_scale = 1.0
+        self.content_size = wx.Size(size[0], size[1])
+
+        # UI elements
+        self.InitSizeBar()
 
         # Bindings
         self.Bind(wx.EVT_SIZE, self.OnSize)
@@ -36,7 +40,6 @@ class BoardBase(wx.ScrolledWindow):
 
         # Other gui setup
         self.SetBackgroundColour(BoardBase.BACKGROUND_CL)
-        # self.SetScrollbars(BoardBase.PIXELS_PER_SCROLL, BoardBase.PIXELS_PER_SCROLL, 6000, 6000) # method from wx.ScrolledWindow, NOT wx.Window
         self.SetFocus()
 
         
@@ -98,23 +101,35 @@ class BoardBase(wx.ScrolledWindow):
         if label == -1: label = len(self.cards)
         newcard = Content(self, label, pos=pos, title=title, kind=kind, content=content)
         newcard.SetFocus()
+        self.cards.append(newcard)        
         self.SelectCard(newcard, True)
-        
+
+        # bindings        
         newcard.Bind(wx.EVT_LEFT_DOWN, self.OnCardLeftDown)
         newcard.Bind(wx.EVT_KILL_FOCUS, self.OnCardKillFocus)
         newcard.Bind(wx.EVT_SET_FOCUS, self.OnCardSetFocus)
+        # newcard.Bind(wx.EVT_ENTER_WINDOW, self.OnMouseOverCard)
+        # newcard.Bind(wx.EVT_LEAVE_WINDOW, self.OnMouseLeaveCard)
+
+        # content size        
+        rect = newcard.GetRect()
+        self.ResizeContent(wx.Point(rect.right, rect.bottom))
         
-        self.cards.append(newcard)
         return newcard
 
     def NewHeader(self, pos, label = -1, txt=""):
         if label == -1: label = len(self.cards)
         newhead = Header(self, label, wx.ID_ANY, pos, txt)
         newhead.SetFocus()
-        
+        self.cards.append(newhead)        
+
+        # bindings        
         newhead.Bind(wx.EVT_LEFT_DOWN, self.OnCardLeftDown)
         
-        self.cards.append(newhead)
+        # content size        
+        rect = newhead.GetRect()
+        self.ResizeContent(wx.Point(rect.right, rect.bottom))
+
         return newhead
 
     def SetScale(self, scale):
@@ -181,6 +196,8 @@ class BoardBase(wx.ScrolledWindow):
             obj = self.FindFocus()
             if isinstance(obj, Card):
                 return obj
+            elif isinstance(obj.GetParent(), EditText):
+                return obj.GetGrandParent()
             else:
                 return obj.GetParent()
         else:
@@ -227,6 +244,14 @@ class BoardBase(wx.ScrolledWindow):
         for c in arrange:
             c.SetPosition(wx.Point(left, top))
             top = c.GetRect().bottom + Board.CARD_PADDING
+
+    def ResizeContent(self, point, pad=True):
+        """If necessary, enlarge the content to include the point, with or without padding."""
+        if point.x > self.content_size.x:
+            self.content_size.x = point.x + Board.CARD_PADDING
+        if point.y > self.content_size.y:
+            self.content_size.y = point.y + Board.CARD_PADDING
+        self.RecalculateScrollbars()
 
                     
     ### Callbacks
@@ -347,12 +372,66 @@ class BoardBase(wx.ScrolledWindow):
     def OnRightDown(self, ev):
         self.PopupMenu(BoardMenu(self.GetParent()), ev.GetPosition())
 
-    def OnSize(self, ev):
-        self.SetSize(ev.GetSize())
+    def OnMouseOverCard(self, ev):
+        print "over card"
+        card = ev.GetEventObject()
+        pos = self.GetSizeBarPosition(card)
+        if pos != (-1, -1):
+            self.sizebar.SetPosition(pos)
+            self.sizebar.Show()
 
+        card.Unbind(wx.EVT_ENTER_WINDOW)
+
+    def OnMouseLeaveCard(self, ev):
+        print "leave card"
+        self.sizebar.Hide()
+        ev.GetEventObject().Bind(wx.EVT_ENTER_WINDOW, self.OnMouseOverCard)
+
+    def OnSize(self, ev):
+        new_sz = ev.GetSize()
+        if new_sz.x > self.content_size.x:
+            self.content_size.x = new_sz.x
+        if new_sz.y > self.content_size.y:
+            self.content_size.y = new_sz.y
+        self.RecalculateScrollbars()
+        
             
     ### Auxiliary functions
 
+    def RecalculateScrollbars(self):
+        # method from wx.ScrolledWindow, NOT wx.Window
+        sz = self.GetSize()
+        if self.content_size.x > sz.x or self.content_size.y > sz.y:
+            step = BoardBase.PIXELS_PER_SCROLL
+            xunits = int(self.content_size.x / float(step))
+            yunits = int(self.content_size.y / float(step))
+            self.SetScrollbars(step, step, xunits, yunits)
+
+    def GetSizeBarPosition(self, card):
+        if isinstance(card, Content):
+            top = card.content.GetRect().top + card.GetRect().top
+            left = card.GetRect().right - self.sizebar.GetRect().width
+            return (left + 5, top)
+        else:
+            return (-1, -1)
+
+    def InitSizeBar(self):
+        bar = wx.Panel(self)
+        sz = (10, 10)
+
+        coll = wx.BitmapButton(bar, bitmap=wx.ArtProvider.GetBitmap(wx.ART_MINUS, size=sz))
+        maxz = wx.BitmapButton(bar, bitmap=wx.ArtProvider.GetBitmap(wx.ART_PLUS, size=sz))
+        delt = wx.BitmapButton(bar, bitmap=wx.ArtProvider.GetBitmap(wx.ART_CLOSE, size=sz))
+
+        box = wx.BoxSizer(wx.VERTICAL)
+        box.Add(coll, proportion=1)
+        box.Add(maxz, proportion=1)
+        box.Add(delt, proportion=1)
+
+        bar.SetSizerAndFit(box)
+        bar.Hide()
+        self.sizebar = bar
+        
     def PaintRect(self, rect, thick = MOVING_RECT_THICKNESS, style = wx.SOLID, refresh = True):
         """Paints a rectangle. Use style = wx.TRANSPARENT to erase a rectangle."""
         dc = wx.ClientDC(self)
@@ -577,8 +656,9 @@ class Header(Card):
 
 class Content(Card):
     # sizes
-    DEFAULT_SZ = (250, 150)
-    BIG_SZ     = (350, 250)
+    DEFAULT_SZ  = (250, 150)
+    BIG_SZ      = (350, 250)
+    KIND_BTN_SZ = (33, 23)
 
     # labels
     DEFAULT_LBL    = "kind"
@@ -607,7 +687,7 @@ class Content(Card):
     FACT_CNT_CL       = (68, 54, 244, 255)
     
 
-    def __init__(self, parent, label, id=wx.ID_ANY, pos=wx.DefaultPosition, size=DEFAULT_SZ, title="title...", kind="kind", content="Write here..."):
+    def __init__(self, parent, label, id=wx.ID_ANY, pos=wx.DefaultPosition, size=DEFAULT_SZ, title="", kind=DEFAULT_LBL, content=""):
         super(Content, self).__init__(parent, id=id, pos=pos, size=size,
                                       style=wx.BORDER_RAISED|wx.TAB_TRAVERSAL)
         self.label = label
@@ -615,8 +695,8 @@ class Content(Card):
         self.SetKind(kind)
         # self.title.SetValue(title)
         # print "title from init: " + str(title)
-        self.title.SetLabel(title)
-        self.content.SetValue(content)
+        if title: self.title.SetLabel(title)
+        if content: self.content.SetValue(content)
 
         
     ### Behavior functions
@@ -641,13 +721,14 @@ class Content(Card):
     def InitUI(self):
         # Controls
         # title = wx.TextCtrl(self, style = wx.TE_RICH)
-        title = EditText(self, label="foo")
+        title = EditText(self)
         # title.SetHint("Title")
-        kindbut = wx.Button(self, label = "kind", size=(33, 23), style=wx.BORDER_NONE)
+        
+        kindbut = wx.Button(self, label = "kind", size=Content.KIND_BTN_SZ, style=wx.BORDER_NONE)
         kindbut.SetOwnFont(wx.Font(8, wx.FONTFAMILY_DEFAULT, wx.FONTSTYLE_ITALIC, wx.FONTWEIGHT_NORMAL, False))
+        
         content = rt.RichTextCtrl(self, size = (10, 10))
         content.SetHint("Write here...")
-        # label   = wx.StaticText(self, wx.ID_ANY, label = str(self.label), style = wx.ALIGN_RIGHT)
         
         # Boxes
         hbox1 = wx.BoxSizer(wx.HORIZONTAL)
@@ -787,9 +868,11 @@ class EditText(wx.Control):
         self.SetSizer(box)
 
         self.text.Bind(wx.EVT_LEFT_DOWN, self.ShowEntry)
+        self.text.Bind(wx.EVT_TEXT_ENTER, self.ShowEntry)
         self.entry.Bind(wx.EVT_LEFT_DOWN, self.ShowText)
         self.entry.Bind(wx.EVT_TEXT_ENTER, self.ShowText)
         self.entry.Bind(wx.EVT_KILL_FOCUS, self.ShowText)
+        self.Bind(wx.EVT_SET_FOCUS, self.OnFocus)
 
         self.text.Show()
         self.entry.Hide()        
@@ -834,6 +917,15 @@ class EditText(wx.Control):
 
     def InheritBackgroundColour(self):
         return True
+
+    
+    ### Callbacks
+
+    def OnFocus(self, ev):
+        if self.text.IsShown():
+            self.text.SetFocus()
+        else:
+            self.entry.SetFocus()
 
 
             
