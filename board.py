@@ -145,8 +145,8 @@ class BoardBase(AutoSize):
         newcard.Bind(wx.EVT_LEFT_DOWN, self.OnCardLeftDown)
         newcard.Bind(wx.EVT_KILL_FOCUS, self.OnCardKillFocus)
         newcard.Bind(wx.EVT_SET_FOCUS, self.OnCardSetFocus)
-        # newcard.Bind(wx.EVT_ENTER_WINDOW, self.OnMouseOverCard)
-        # newcard.Bind(wx.EVT_LEAVE_WINDOW, self.OnMouseLeaveCard)
+        newcard.Bind(wx.EVT_ENTER_WINDOW, self.OnMouseOverCard)
+        newcard.Bind(wx.EVT_LEAVE_WINDOW, self.OnMouseLeaveCard)
 
         # content size        
         self.FitToChildren()
@@ -280,6 +280,10 @@ class BoardBase(AutoSize):
                     
     ### Callbacks
 
+    def __del__(self):
+        pass
+        # self.sizebar.timer.Stop()
+
     def OnCardSetFocus(self, ev):
         pass
 
@@ -403,12 +407,14 @@ class BoardBase(AutoSize):
         if pos != (-1, -1):
             self.sizebar.SetPosition(pos)
             self.sizebar.Show()
+            wx.CallLater(3000, self.sizebar.Hide)
+            # self.sizebar.timer.Start()
 
         card.Unbind(wx.EVT_ENTER_WINDOW)
 
     def OnMouseLeaveCard(self, ev):
         print "leave card"
-        self.sizebar.Hide()
+        # self.sizebar.Hide()
         ev.GetEventObject().Bind(wx.EVT_ENTER_WINDOW, self.OnMouseOverCard)
         
             
@@ -416,9 +422,9 @@ class BoardBase(AutoSize):
 
     def GetSizeBarPosition(self, card):
         if isinstance(card, Content):
-            top = card.content.GetRect().top + card.GetRect().top
-            left = card.GetRect().right - self.sizebar.GetRect().width
-            return (left + 5, top)
+            top = card.GetRect().top
+            left = card.GetRect().right
+            return (left, top)
         else:
             return (-1, -1)
 
@@ -426,6 +432,7 @@ class BoardBase(AutoSize):
         bar = wx.Panel(self)
         sz = (10, 10)
 
+        # buttons
         coll = wx.BitmapButton(bar, bitmap=wx.ArtProvider.GetBitmap(wx.ART_MINUS, size=sz))
         maxz = wx.BitmapButton(bar, bitmap=wx.ArtProvider.GetBitmap(wx.ART_PLUS, size=sz))
         delt = wx.BitmapButton(bar, bitmap=wx.ArtProvider.GetBitmap(wx.ART_CLOSE, size=sz))
@@ -434,8 +441,12 @@ class BoardBase(AutoSize):
         box.Add(coll, proportion=1)
         box.Add(maxz, proportion=1)
         box.Add(delt, proportion=1)
-
         bar.SetSizerAndFit(box)
+
+        # # timer
+        # bar.timer = wx.Timer(bar)
+        # bar.Bind(wx.EVT_TIMER, self.OnSizeBarTimer, bar.timer)
+
         bar.Hide()
         self.sizebar = bar
         
@@ -502,6 +513,8 @@ class BoardBase(AutoSize):
         self.Show()
 
         return carddict
+
+    ### Callbacks
 
     
 
