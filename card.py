@@ -2,6 +2,7 @@
 # Card classes. The windows that go in a BoardBase.
 
 import wx
+import os
 import wx.richtext as rt
 import cardbar as CardBar
 
@@ -304,12 +305,31 @@ class Image(Card):
     ### Auxiliary functions
     
     def InitUI(self):
-        img = wx.BitmapButton(self, bitmap=wx.ArtProvider.GetBitmap(wx.ART_MISSING_IMAGE), size=self.DEFAULT_SZ)
+        btn = wx.BitmapButton(self, bitmap=wx.ArtProvider.GetBitmap(wx.ART_MISSING_IMAGE), size=self.DEFAULT_SZ)
         
         vbox = wx.BoxSizer(wx.VERTICAL)
-        vbox.Add(img, proportion=1, flag=wx.ALL|wx.EXPAND, border=Card.BORDER_WIDTH)
-        self.SetSizer(vbox)        
+        vbox.Add(btn, proportion=1, flag=wx.ALL|wx.EXPAND, border=Card.BORDER_WIDTH)
+        self.SetSizer(vbox)
 
+        self.btn = btn
+        btn.Bind(wx.EVT_BUTTON, self.OnButton)
+
+        
+    ### Callbacks
+
+    def OnButton(self, ev):
+        fd = wx.FileDialog(self, "Save", os.getcwd(), "", "All files (*.*)|*.*",
+                           wx.FD_OPEN | wx.FD_FILE_MUST_EXIST)
+        if fd.ShowModal() == wx.ID_CANCEL: return # user changed her mind
+
+        bmp = wx.Bitmap(fd.GetPath())
+        img = wx.StaticBitmap(self)
+        img.SetBitmap(bmp)
+        img.SetSize(bmp.GetSize())
+        
+        self.btn.Hide()
+        self.GetSizer().Add(img, proportion=1, flag=wx.ALL|wx.EXPAND, border=Card.BORDER_WIDTH)
+        self.Fit()
 
 
 ######################
