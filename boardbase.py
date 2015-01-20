@@ -27,8 +27,8 @@ class BoardBase(AutoSize):
         self.cur_scale = 1.0
 
         # UI elements
-        self.InitSizeBar()
-        self.FitToChildren()
+        # self.InitSizeBar()
+        # self.FitToChildren()
 
         # Bindings
         self.Bind(wx.EVT_LEFT_DOWN, self.OnLeftDown)
@@ -351,20 +351,22 @@ class BoardBase(AutoSize):
     def OnMouseOverCard(self, ev):
         print "over card"
         card = ev.GetEventObject()
-        card.Unbind(wx.EVT_ENTER_WINDOW)        
-        self.sizebar.Associate(card)
-        self.sizebar.Show()
+        card.Unbind(wx.EVT_ENTER_WINDOW)
+        card.ShowBar()
+        # self.sizebar.Associate(card)
+        # self.sizebar.Show()
 
     def OnMouseLeaveCard(self, ev):
         print "leave card"
-        ev.GetEventObject().Bind(wx.EVT_ENTER_WINDOW, self.OnMouseOverCard)
+        card = ev.GetEventObject()
+        card.Bind(wx.EVT_ENTER_WINDOW, self.OnMouseOverCard)
         
             
     ### Auxiliary functions
 
-    def InitSizeBar(self):
-        bar = CardBar(self)
-        self.sizebar = bar
+    # def InitSizeBar(self):
+    #     bar = CardBar(self)
+    #     self.sizebar = bar
         
     def PaintRect(self, rect, thick = MOVING_RECT_THICKNESS, style = wx.SOLID, refresh = True):
         """Paints a rectangle. Use style = wx.TRANSPARENT to erase a rectangle."""

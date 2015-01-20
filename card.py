@@ -3,6 +3,7 @@
 
 import wx
 import wx.richtext as rt
+import cardbar as CardBar
 
 
 ######################
@@ -12,10 +13,34 @@ import wx.richtext as rt
 class Card(wx.Panel):
     BORDER_WIDTH = 2
     BORDER_THICK = 5
+    # bar = CardBar.GetBar()
+    bar = None
     
     def __init__(self, parent, id, pos, size, style):
         """Base class for every window that will be placed on Board. Override SetupUI()."""
         super(Card, self).__init__(parent, id, pos, size, style)
+        if Card.bar == None:
+            Card.bar = CardBar.Create(self.GetParent())
+
+
+    ### Behavior functions
+
+    def __del__(self):
+        print "card destructor"
+    
+    def GetLabel(self):
+        return self.label
+
+    def ShowBar(self):
+        CardBar.Associate(self)
+        print "calling bar show"
+        self.bar.Show()
+        
+    def HideBar(self):
+        print "calling bar hide"
+        self.bar.Hide()
+        
+    ### Auxiliary functions
         
     def InitUI(self):
         """Override me!"""
@@ -23,9 +48,6 @@ class Card(wx.Panel):
 
     def Dump(self):
         """Override me!"""
-
-    def GetLabel():
-        return self.label
 
 
     
@@ -261,62 +283,6 @@ class KindSelectMenu(wx.Menu):
 ######################
 # Auxiliary classes
 ######################
-
-class CardBar(wx.Panel):
-    BUTTON_SZ = (10, 10)
-    def __init__(self, parent, orient=wx.VERTICAL, id=wx.ID_ANY, pos=wx.DefaultPosition, size=wx.DefaultSize, style=0):
-        super(CardBar, self).__init__(parent, id=id, pos=pos, size=size, style=style)
-        self.card = None
-
-        # buttons
-        coll = wx.BitmapButton(self, bitmap=wx.ArtProvider.GetBitmap(wx.ART_MINUS, size=self.BUTTON_SZ))
-        maxz = wx.BitmapButton(self, bitmap=wx.ArtProvider.GetBitmap(wx.ART_PLUS,  size=self.BUTTON_SZ))
-        delt = wx.BitmapButton(self, bitmap=wx.ArtProvider.GetBitmap(wx.ART_CLOSE, size=self.BUTTON_SZ))
-
-        # UI
-        box = wx.BoxSizer(orient)
-        box.Add(coll, proportion=1)
-        box.Add(maxz, proportion=1)
-        box.Add(delt, proportion=1)
-        self.SetSizerAndFit(box)
-        self.Hide()        
-
-        # Bindigns
-        self.Bind(wx.EVT_SHOW, self.OnShow)
-        coll.Bind(wx.EVT_BUTTON, self.OnCollapse)
-        maxz.Bind(wx.EVT_BUTTON, self.OnMaximize)
-        delt.Bind(wx.EVT_BUTTON, self.OnClose)
-
-        
-    ### Behavior functions
-
-    def Associate(self, card):
-        """Associate this bar to card: buttons in the sizebar will operate on it."""
-        self.card = card
-        
-    def SetOwnPosition(self):
-        if isinstance(self.card, Content):
-            top = self.card.GetRect().top
-            left = self.card.GetRect().right
-            self.SetPosition((left, top))
-
-
-    ### Callbacks
-
-    def OnShow(self, ev):
-        self.SetOwnPosition()
-        if ev.IsShown(): wx.CallLater(3000, self.Hide)
-
-    def OnCollapse(self, ev):
-        print "collapse"
-
-    def OnMaximize(self, ev):
-        print "maximize"
-
-    def OnClose(self, ev):
-        print "close"
-
-
                 
 class EditText(wx.Control):
     def __init__(self, parent, id = wx.ID_ANY, label="", pos=wx.DefaultPosition, size=wx.DefaultSize):
