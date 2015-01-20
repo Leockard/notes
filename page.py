@@ -29,14 +29,29 @@ class Page(wx.Panel):
 
         self.resizing = False
         self.scale = 1.0
+        self.content_size = wx.Size(size[0], size[1])
+        
         self.ui_ready = False
         self.InitUI()
+        
         # self.board.SetScrollbars(Page.PIXELS_PER_SCROLL, Page.PIXELS_PER_SCROLL, 6000, 6000) # method from wx.ScrolledWindow, NOT wx.Window
-
-        self.Bind(wx.EVT_PAINT, self.OnPaint)
-
+        # self.Bind(wx.EVT_PAINT, self.OnPaint)
+        # self.Bind(wx.EVT_SIZE, self.OnSize)
+        # self.board.Bind(wx.EVT_SIZE, self.OnSize)
+        # self.canvas.Bind(wx.EVT_SIZE, self.OnSize)
+        
 
     ### Behavior functions
+
+    # def RecalculateScrollbars(self):
+    #     sz = self.GetSize()
+    #     if self.content_size.x > sz.x or self.content_size.y > sz.y:
+    #         step = BoardBase.PIXELS_PER_SCROLL
+    #         xunits = int(self.content_size.x / float(step))
+    #         yunits = int(self.content_size.y / float(step))
+    #         # method from wx.ScrolledWindow, NOT wx.Window
+    #         self.board.SetScrollbars(step, step, xunits, yunits)
+    #         self.canvas.SetScrollbars(step, step, xunits, yunits)
 
     def ResizeChildren(self):
         print "resizechildren at scale: " + str(self.scale)
@@ -59,15 +74,19 @@ class Page(wx.Panel):
 
     def SetupCanvas(self):
         """Setsup the canvas background. Call before showing the Canvas."""
+        print "setup canvas"
         rect = self.board.GetRect()                
         self.canvas.SetSize((rect.width, rect.height))
 
-        bmp = wx.EmptyBitmap(rect.width, rect.height)
+        # bmp = wx.EmptyBitmap(rect.width, rect.height)
+        bmp = wx.EmptyBitmap(self.board.content_size.x,self.board.content_size.y)
         dc = wx.MemoryDC()           # MemoryDCs are for painting over BMPs
         dc.SelectObject(bmp)
         
         # off = self.board.GetClientAreaOrigin()
-        dc.Blit(0, 0, rect.width, rect.height, wx.ClientDC(self.board),
+        # dc.Blit(0, 0, rect.width, rect.height, wx.ClientDC(self.board),
+        #         rect.x, rect.y)      # offset in the original DC 
+        dc.Blit(0, 0, self.board.content_size.x, self.board.content_size.y, wx.ClientDC(self.board),
                 rect.x, rect.y)      # offset in the original DC
         dc.SelectObject(wx.NullBitmap)
 
@@ -154,13 +173,26 @@ class Page(wx.Panel):
 
     ### Callbacks
 
+    def OnSize(self, ev):
+        print "page onsize"
+        new_sz = ev.GetSize()
+        print "size: " + str(new_sz)
+        print "cont: " + str(self.content_size)
+        if new_sz.x > self.content_size.x:
+            self.content_size.x = new_sz.x
+        if new_sz.y > self.content_size.y:
+            self.content_size.y = new_sz.y
+        # self.RecalculateScrollbars()
+        # self.board.SetSize(ev.GetSize())
+        # self.canvas.SetSize(ev.GetSize())
+
     def OnPaint(self, ev):
         pass
 
     def OnToggle(self, ev):
         if self.board.IsShown():
-            self.board.Hide()
             self.SetupCanvas()
+            self.board.Hide()
             self.canvas.Show()
         else:
             self.board.Show()

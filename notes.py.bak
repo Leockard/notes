@@ -1,0 +1,318 @@
+#!/usr/bin/python
+
+# notes.py
+# main class and executable for note taking application
+
+import wx
+import os
+import pickle
+from board import Board
+from board import Card
+from canvas import Canvas
+
+
+######################
+# Main Frame class
+######################
+
+class MyFrame(wx.Frame):
+    BACKGROUND_CL = "#AAAAAA"
+
+    def __init__(self, parent):
+        super(MyFrame, self).__init__(parent, -1, "Board", size = (800, 600),
+                                      style=wx.DEFAULT_FRAME_STYLE | wx.NO_FULL_REPAINT_ON_RESIZE)
+
+        self.accels = [] # will hold keyboard shortcuts aka accelerators
+        self.SetTitle("Notes")
+        self.cur_file = ""        
+
+        self.ui_ready = False
+        self.InitUI() # sets up the sizer and the buttons' bindings
+
+        # Keyboard shortcuts
+        self.SetAcceleratorTable(wx.AcceleratorTable(self.accels))
+
+
+    ### Behavior Functions
+
+    def GetBackgroundColour(self):
+        return self.BACKGROUND_CL
+
+                    
+    ### Auxiliary functions
+
+    def InitMenuBar(self):
+        bar = wx.MenuBar()
+
+        # file menu
+        file_menu = wx.Menu()                
+        open_item = wx.MenuItem(file_menu, wx.ID_OPEN, "&Open")
+        save_item = wx.MenuItem(file_menu, wx.ID_SAVE, "&Save")
+        quit_item = wx.MenuItem(file_menu, wx.ID_EXIT, "&Quit")
+
+        file_menu.Append(wx.ID_NEW, "&New")        
+        file_menu.AppendItem(open_item)
+        file_menu.AppendItem(save_item)
+        file_menu.AppendSeparator()
+        file_menu.AppendItem(quit_item)
+
+        # edit menu
+        edit_menu = wx.Menu()        
+        ctrlret_item = wx.MenuItem(edit_menu, wx.ID_ANY, "New Card")
+        ctrltab_item = wx.MenuItem(edit_menu, wx.ID_ANY, "Next Card")
+                        
+        edit_menu.AppendItem(ctrlret_item)
+        edit_menu.AppendItem(ctrltab_item)
+
+        # layout menu
+        layout_menu = wx.Menu()                
+        harr_item = wx.MenuItem(layout_menu, wx.ID_ANY, "Arrange &Horizontally")
+        varr_item = wx.MenuItem(layout_menu, wx.ID_ANY, "Arrange &Vertically")
+        layout_menu.AppendItem(harr_item)
+        layout_menu.AppendItem(varr_item)
+
+        # debug menu
+        debug_menu = wx.Menu()                
+        debug_item = wx.MenuItem(debug_menu, wx.ID_ANY, "&Debug")
+        debug_menu.AppendItem(debug_item)
+
+        # bindings
+        self.Bind(wx.EVT_MENU, self.OnQuit, quit_item)
+        self.Bind(wx.EVT_MENU, self.OnSave, save_item)
+        self.Bind(wx.EVT_MENU, self.OnOpen, open_item)
+        self.Bind(wx.EVT_MENU, self.OnCtrlRet, ctrlret_item)
+        self.Bind(wx.EVT_MENU, self.OnCtrlTab, ctrltab_item)
+        self.Bind(wx.EVT_MENU, self.OnHArrange, harr_item)
+        self.Bind(wx.EVT_MENU, self.OnVArrange, varr_item)
+        self.Bind(wx.EVT_MENU, self.OnDebug, debug_item)
+
+        # shortcuts
+        self.accels.append(wx.AcceleratorEntry(wx.ACCEL_CTRL, wx.WXK_RETURN, ctrlret_item.GetId()))
+        self.accels.append(wx.AcceleratorEntry(wx.ACCEL_CTRL, wx.WXK_TAB, ctrltab_item.GetId()))
+        self.accels.append(wx.AcceleratorEntry(wx.ACCEL_CTRL, ord("D"), debug_item.GetId()))
+
+        # finish up        
+        bar.Append(file_menu, "&File")
+        bar.Append(edit_menu, "&Edit")
+        bar.Append(layout_menu, "&Layout")        
+        bar.Append(debug_menu, "&Debug")
+        self.SetMenuBar(bar)
+
+    def InitUI(self):
+        # print "init ui. ready: " + str(self.ui_ready)
+        sz = (20, 20)
+        if self.ui_ready:
+            sz = self.board.GetSize()
+            self.board = None
+            self.board_box = None
+            self.bmp_ctrl = None
+            self.bmp_box = None
+
+        vbox = wx.BoxSizer(wx.VERTICAL)
+        self.SetSizer(vbox)
+        self.InitBoard(sz)
+        self.InitCanvas()
+        self.board.Show()
+        self.bmp_ctrl.Hide()
+
+        if not self.ui_ready:
+            self.InitMenuBar()            
+            self.CreateStatusBar()            
+            self.toggle_but = wx.Button(self, label = "Toggle")
+            self.toggle_but.Bind(wx.EVT_BUTTON, self.OnToggle)
+            
+        hbox = wx.BoxSizer(wx.HORIZONTAL)
+        hbox.Add(self.toggle_but, flag=wx.LEFT, border=1)
+        vbox.Add(hbox, proportion=0, flag=wx.LEFT, border=1)
+
+        self.ui_ready = True
+    
+    def InitBoard(self, size = (20, 20)):
+        # make new
+        bd = Board(self, size = size)
+        bd.SetBackgroundColour(MyFrame.BACKGROUND_CL)
+
+        # UI setup
+        vbox = self.GetSizer()
+        if not vbox: vbox = wx.BoxSizer(wx.VERTICAL)
+        bd_box = wx.BoxSizer(wx.HORIZONTAL)
+        bd_box.Add(bd, proportion=1, flag=wx.ALL|wx.EXPAND, border=1)
+        vbox.Add(bd_box, proportion=1, flag=wx.ALL|wx.EXPAND, border=1)
+        
+        # set members
+        self.board = bd
+        self.board_box = bd_box        
+
+    def InitCanvas(self):
+        # make new
+        ctrl = Canvas(self, wx.ID_ANY)
+        
+        # UI setup
+        vbox = self.GetSizer()
+        if not vbox: vbox = wx.BoxSizer(wx.VERTICAL)
+        
+        bmp_box = wx.BoxSizer(wx.HORIZONTAL)
+        bmp_box.Add(ctrl, proportion=1, flag=wx.ALL|wx.EXPAND, border=1)
+
+        # Set members
+        self.bmp_ctrl = ctrl
+        self.bmp_box = bmp_box
+
+    def CreateBitmap(self):
+        """Take a picture of the current card board."""
+        # Create a DC for the whole screen area
+        # print "CreateBitmap"
+        rect = self.board.GetScreenRect()
+        bmp = wx.EmptyBitmap(rect.width, rect.height)
+
+        dc = wx.MemoryDC() # MemoryDCs are for painting over BMPs
+        dc.SelectObject(bmp)
+        dc.Blit(0, 0, rect.width, rect.height, wx.ScreenDC(),
+                 rect.x, rect.y) # offset in the original DC
+        dc.SelectObject(wx.NullBitmap)
+
+        return bmp
+
+    def Log(self, s):
+        """Log the string s into the status bar."""
+        self.StatusBar.SetStatusText(s)
+
+    def OnDebug(self, ev):
+        # print len(self.board.GetCards())
+        # print len(self.board.selected_cards)
+        print len(self.board.selected_cards)
+        for c in self.board.selected_cards:
+            print c
+
+    def Save(self, out_file, d):
+        """Save the data in the dict d in the file out_file."""
+        # for k in d.keys():
+        #     print d[k]
+        with open(out_file, 'w') as out:
+            pickle.dump(d, out)
+
+        
+    ### Callbacks
+
+    def OnHArrange(self, ev):
+        self.board.HArrangeSelectedCards()
+        self.Log("Horizontal arrange.")
+
+    def OnVArrange(self, ev):
+        self.board.VArrangeSelectedCards()
+        self.Log("Vertical arrange.")
+    
+    def OnCtrlTab(self, ev):
+        """Selects next card."""
+        parent = self.FindFocus().GetParent()
+        if isinstance(parent, Card):
+            i = self.board.GetCards().index(parent)
+            i += 1
+            if i >= len(self.board.GetCards()):
+                i = 0
+            self.board.GetCards()[i].SetFocus()
+
+    def OnToggle(self, ev):
+        """Toggle card / drawing modes."""
+        # self.CreateBitmap()
+        if self.board.IsShown():
+            self.board.Hide()
+            self.bmp_ctrl.SetSize(self.board.GetClientSize())
+            
+            dc = wx.MemoryDC()
+            bmp = self.CreateBitmap()
+            dc.SelectObject(bmp)
+            # print "calling SetBackground"
+            self.bmp_ctrl.SetBackground(bmp)
+            dc.SelectObject(wx.NullBitmap)
+            
+            self.bmp_ctrl.Show()
+            self.GetSizer().Layout()
+            # print "end toggling"
+        else:
+            self.bmp_ctrl.Hide()
+            self.board.Show()
+            self.GetSizer().Layout()
+
+    def OnBitmapShow(self, ev):
+        """Called when the bitmap is shown:enalbe scribbling mode."""
+        if ev.IsShown():
+            print "bitmap show"
+
+    def OnBitmapLeftDown(self, ev):
+        print "bitmap click"
+    
+    def OnCtrlRet(self, ev):
+        """Add a new card to the board."""
+        pos = (0, 0)
+        
+        # if there are no cards, place this one on the top left corner
+        if len(self.board.GetCards()) < 1:
+            pos = (Board.CARD_PADDING, Board.CARD_PADDING)
+        
+        else: # otherwise, move it to the right of the last one
+            rects = [c.GetRect() for c in self.board.GetCards()]
+            rights = [r.right for r in rects]
+            top = min([r.top for r in rects])
+            left = max(rights) + Board.CARD_PADDING
+            pos = (left, top)
+            
+        self.board.NewCard(pos)
+
+    def OnSave(self, ev):
+        """Save file."""
+        # if there's a current file, save it
+        if self.cur_file != "":
+            self.Save(self.cur_file, self.board.Dump())
+            
+        else: # else, ask for a file name
+            fd = wx.FileDialog(self, "Save", os.getcwd(), "", "P files (*.p)|*.p",
+                               wx.FD_SAVE | wx.FD_OVERWRITE_PROMPT)
+            if fd.ShowModal() == wx.ID_CANCEL: return # user changed her mind
+
+            # let Save() worry about serializing
+            self.Save(fd.GetPath(), self.board.Dump())
+            self.cur_file = fd.GetPath()
+
+        self.Log("Saved file" + self.cur_file)
+
+    def OnOpen(self, ev):
+        """Open file."""
+        # ask for a file name
+        fd = wx.FileDialog(self, "Open", os.getcwd(), "", "P files (*.p)|*.p",
+                           wx.FD_OPEN | wx.FD_FILE_MUST_EXIST)
+        if fd.ShowModal() == wx.ID_CANCEL: return # user changed her mind
+
+        # setup new UI elements
+        self.InitUI()
+
+        # hdie while we load/paint all the info
+        self.board.Hide()
+
+        # and then load and paint all cards
+        carddict = {}
+        with open(fd.GetPath(), 'r') as f: carddict = pickle.load(f)
+        for id, values in carddict.iteritems():
+            self.board.NewCard(pos     = values["pos"],
+                               title   = values["title"],
+                               kind    = values["kind"],
+                               content = values["content"])
+
+        self.cur_file = fd.GetPath()
+        self.board_box.ShowItems(True)
+
+        # show everything at the same time
+        self.board.Show()
+
+        self.Log("Opened file" + self.cur_file)        
+
+    def OnQuit(self, ev):
+        """Quit program."""
+        self.Close()
+
+
+if __name__ == "__main__":
+    app = wx.App()
+    frame = MyFrame(None)
+    frame.Show(True)
+    app.MainLoop()

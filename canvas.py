@@ -12,11 +12,10 @@ import wx
 # Canvas Class
 ######################
 
-class Canvas(wx.Control):
+class Canvas(wx.ScrolledWindow):
     def __init__(self, parent, id=wx.ID_ANY, size=wx.DefaultSize):
-        wx.Control.__init__(self, parent, id=id, size=size, style=wx.NO_FULL_REPAINT_ON_RESIZE|wx.BORDER_NONE)
-
-        # print "__init__"
+        super(Canvas, self).__init__(parent, id=id, size=size, style=wx.NO_FULL_REPAINT_ON_RESIZE|wx.BORDER_NONE)
+    
         self.SetBackgroundColour("WHITE")
         self.thickness = 1
         self.colour = "BLACK"
@@ -50,22 +49,17 @@ class Canvas(wx.Control):
         dc.EndDrawing()
 
     def SetBackground(self, bg):
-        # print "SetBackground"
         dest = wx.ClientDC(self)
-        # dest = wx.MemoryDC()
-        # print "selecting self.buffer of size: " + str(self.buffer.GetSize())
-        # dest.SelectObject(self.buffer)
-        # print "drawing bg: " + str(bg.GetSize())
         dest.DrawBitmap(bg, 0, 0)
-        # dest.SelectObject(wx.NullBitmap)
 
                 
     ### Auxiliary functions
     
     def InitBuffer(self):
         """Initialize the bitmap used for buffering the display."""
-        # print "InitBuffer"
+        print "Canvas.InitBuffer"
         size = self.GetClientSize()
+        # size = self.content_size
         # print "making new buffer"
         buf = wx.EmptyBitmap(max(1, size.width), max(1, size.height))
         dc = wx.BufferedDC(None, buf)
@@ -77,6 +71,7 @@ class Canvas(wx.Control):
         dc.SetBackground(wx.Brush(self.GetBackgroundColour()))
         dc.Clear()
         self.DrawLines(dc)
+        print "setting reinitbuffer to False from InitBuffer"
         self.reInitBuffer = False
         self.buffer = buf
 
@@ -120,8 +115,16 @@ class Canvas(wx.Control):
 
     def OnSize(self, ev):
         # print "OnSize" + str(ev.GetSize())
-        self.SetSize(ev.GetSize())
-        self.reInitBuffer = True
+        new_sz = ev.GetSize()
+        self.SetSize(new_sz)
+        # if new_sz.x > self.content_size.x:
+        #     self.content_size.x = new_sz.x
+        #     print "setting reInitBuffer to True from OnSize"
+        #     self.reInitBuffer = True            
+        # if new_sz.y > self.content_size.y:
+        #     self.content_size.y = new_sz.y
+        #     print "setting reInitBuffer to True from OnSize"
+        #     self.reInitBuffer = True
 
     def OnIdle(self, ev):
         """
@@ -132,6 +135,7 @@ class Canvas(wx.Control):
         """
         if self.reInitBuffer:
             # print "OnIdle: reInitBuffer = True"
+            print "calling InitBuffer from OnIdle"
             self.InitBuffer()
             self.Refresh(False)
 
@@ -143,7 +147,7 @@ class Canvas(wx.Control):
         dc = wx.BufferedPaintDC(self, self.buffer)
 
     def OnEraseBackground(self, evt):
-        #  http://www.blog.pythonlibrary.org/2010/03/18/wxpython-putting-a-background-image-on-a-panel/
+        # http://www.blog.pythonlibrary.org/2010/03/18/wxpython-putting-a-background-image-on-a-panel/
         # print "OnErase"
         dc = evt.GetDC()
     
