@@ -92,7 +92,7 @@ class BoardBase(AutoSize):
         cards.sort(key = lambda x: x.label)
         return cards[-1]
 
-    def NewContent(self, pos, label = -1, title="", kind="kind", content=""):
+    def NewContent(self, pos, label=-1, title="", kind="kind", content=""):
         if label == -1: label = len(self.cards)
         newcard = Content(self, label, pos=pos, title=title, kind=kind, content=content)
         newcard.SetFocus()
@@ -108,9 +108,9 @@ class BoardBase(AutoSize):
         self.FitToChildren()
         return newcard
 
-    def NewHeader(self, pos, label = -1, txt=""):
+    def NewHeader(self, pos, label=-1, txt=""):
         if label == -1: label = len(self.cards)
-        newhead = Header(self, label, wx.ID_ANY, pos, txt)
+        newhead = Header(self, label, pos=pos, header=txt)
         newhead.SetFocus()
         self.cards.append(newhead)        
 
@@ -119,6 +119,15 @@ class BoardBase(AutoSize):
         
         self.FitToChildren()
         return newhead
+
+    def NewImage(self, pos, label=-1, fp=""):
+        if label == -1: label = len(self.cards)
+        newimg = Image(self, label, pos=pos)
+        newimg.SetFocus()
+        self.cards.append(newimg)
+        
+        self.FitToChildren()
+        return newimg
 
     def GetSelection(self):
         return self.selected_cards

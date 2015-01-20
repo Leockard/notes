@@ -68,8 +68,9 @@ class MyFrame(wx.Frame):
             left = max(rights) + Page.CARD_PADDING
             pos = (left, top)
 
-        if subclass == "Content":  new = board.NewContent(pos)
-        elif subclass == "Header": new = board.NewHeader(pos)
+        if   subclass == "Content": new = board.NewContent(pos)
+        elif subclass == "Header":  new = board.NewHeader(pos)
+        elif subclass == "Image":   new = board.NewImage(pos)
         board.SelectCard(new, True)
         new.SetFocus()
         self.Log("New " + subclass + " card created.")
@@ -442,7 +443,7 @@ class MyFrame(wx.Frame):
         self.PlaceNewCard("Header", True)
 
     def OnImage(self, ev):
-        print "inserting image"
+        self.PlaceNewCard("Image", False)
 
     def OnSave(self, ev):
         """Save file."""
