@@ -59,8 +59,8 @@ class Card(wx.Panel):
 class Header(Card):
     DEFAULT_SZ = (150, 32)
     
-    def __init__(self, parent, label, id, pos, header = "header..."):
-        super(Header, self).__init__(parent, label, id, pos, Header.DEFAULT_SZ,
+    def __init__(self, parent, label, id=wx.ID_ANY, pos=wx.DefaultPosition, header = "header..."):
+        super(Header, self).__init__(parent, label, id=id, pos=pos, size=Header.DEFAULT_SZ,
                                      style = wx.BORDER_RAISED|wx.TAB_TRAVERSAL)
         self.InitUI()
         self.header.SetValue(header)
