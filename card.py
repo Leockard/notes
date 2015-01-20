@@ -16,11 +16,13 @@ class Card(wx.Panel):
     # bar = CardBar.GetBar()
     bar = None
     
-    def __init__(self, parent, id, pos, size, style):
+    def __init__(self, parent, label, id=wx.ID_ANY, pos=wx.DefaultPosition, size=wx.DefaultSize, style=0):
         """Base class for every window that will be placed on Board. Override SetupUI()."""
         super(Card, self).__init__(parent, id, pos, size, style)
         if Card.bar == None:
             Card.bar = CardBar.Create(self.GetParent())
+
+        self.label = label
 
 
     ### Behavior functions
@@ -57,11 +59,11 @@ class Header(Card):
     DEFAULT_SZ = (150, 32)
     
     def __init__(self, parent, label, id, pos, header = "header..."):
-        super(Header, self).__init__(parent, id, pos, Header.DEFAULT_SZ,
+        super(Header, self).__init__(parent, label, id, pos, Header.DEFAULT_SZ,
                                      style = wx.BORDER_RAISED|wx.TAB_TRAVERSAL)
-        self.SetupUI()
+        self.InitUI()
         self.header.SetValue(header)
-        self.label = label
+        
 
 
     ### Behavior Functions
@@ -131,13 +133,11 @@ class Content(Card):
     
 
     def __init__(self, parent, label, id=wx.ID_ANY, pos=wx.DefaultPosition, size=DEFAULT_SZ, title="", kind=DEFAULT_LBL, content=""):
-        super(Content, self).__init__(parent, id=id, pos=pos, size=size,
+        super(Content, self).__init__(parent, label, id=id, pos=pos, size=size,
                                       style=wx.BORDER_RAISED|wx.TAB_TRAVERSAL)
-        self.label = label
 
         self.InitUI()
         self.SetKind(kind)
-        # self.title.SetValue(title)
         if title: self.title.SetLabel(title)
         if content: self.content.SetValue(content)
 
@@ -289,7 +289,20 @@ class KindSelectMenu(wx.Menu):
             self.card.SetKind(kind)
 
 
-            
+
+######################
+# Class Image
+######################            
+
+class Image(Card):
+    def __init__(self, parent, label, id=wx.ID_ANY, pos=wx.DefaultPosition, size=wx.DefaultSize):
+        super(Card, self).__init__(parent, id=id, pos=pos, size=size, style=wx.BORDER_RAISED)
+        self.InitUI()
+        
+        
+
+
+
 ######################
 # Auxiliary classes
 ######################
