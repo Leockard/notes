@@ -345,13 +345,13 @@ class BoardBase(AutoSize):
         self.NewCard(pos)
 
     def OnMouseOverCard(self, ev):
-        print "over card"
+        # print "over card"
         card = ev.GetEventObject()
         card.Unbind(wx.EVT_ENTER_WINDOW)
         card.ShowBar()
 
     def OnMouseLeaveCard(self, ev):
-        print "leave card"
+        # print "leave card"
         card = ev.GetEventObject()
         card.Bind(wx.EVT_ENTER_WINDOW, self.OnMouseOverCard)
         

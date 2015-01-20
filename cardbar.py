@@ -61,7 +61,6 @@ def OnShow(ev):
     top = ASSOC_CARD.GetRect().top
     left = ASSOC_CARD.GetRect().right
     BAR.SetPosition((left, top))
-    print BAR.GetPosition()
     if ev.IsShown():
         BAR.Show()
         wx.CallLater(3000, BAR.Hide)

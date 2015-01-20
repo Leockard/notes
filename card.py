@@ -26,18 +26,16 @@ class Card(wx.Panel):
     ### Behavior functions
 
     def __del__(self):
-        print "card destructor"
+        pass
     
     def GetLabel(self):
         return self.label
 
     def ShowBar(self):
         CardBar.Associate(self)
-        print "calling bar show"
         self.bar.Show()
         
     def HideBar(self):
-        print "calling bar hide"
         self.bar.Hide()
         
     ### Auxiliary functions
@@ -100,9 +98,10 @@ class Header(Card):
 
 class Content(Card):
     # sizes
-    DEFAULT_SZ  = (250, 150)
-    BIG_SZ      = (350, 250)
-    KIND_BTN_SZ = (33, 23)
+    DEFAULT_SZ   = (250, 150)
+    COLLAPSED_SZ = (250, 30)
+    BIG_SZ       = (350, 250)
+    KIND_BTN_SZ  = (33, 23)
 
     # labels
     DEFAULT_LBL    = "kind"
@@ -135,6 +134,7 @@ class Content(Card):
         super(Content, self).__init__(parent, id=id, pos=pos, size=size,
                                       style=wx.BORDER_RAISED|wx.TAB_TRAVERSAL)
         self.label = label
+
         self.InitUI()
         self.SetKind(kind)
         # self.title.SetValue(title)
@@ -144,7 +144,20 @@ class Content(Card):
 
         
     ### Behavior functions
-    
+
+    def Collapse(self):
+        if not self.IsCollapsed():
+            self.content.Hide()
+            self.SetSize(self.COLLAPSED_SZ)
+
+    def UnCollapse(self):
+        if self.IsCollapsed():
+            self.content.Show()
+            self.SetSize(self.DEFAULT_SZ)
+
+    def IsCollapsed(self):
+        return not self.content.IsShown()
+
     def GetTitle(self):
         return self.title.GetValue()
 
@@ -185,7 +198,8 @@ class Content(Card):
         # hbox3 = wx.BoxSizer(wx.HORIZONTAL)        
         # hbox3.Add(label  , proportion=0, flag=wx.RIGHT, border=Card.BORDER_WIDTH)
 
-        vbox = wx.BoxSizer(wx.VERTICAL)                
+        vbox = wx.BoxSizer(wx.VERTICAL)
+        self.SetSizer(vbox)
         vbox.Add(hbox1, proportion=0, flag=wx.ALL|wx.EXPAND, border=Card.BORDER_WIDTH)
         vbox.Add(hbox2, proportion=1, flag=wx.ALL|wx.EXPAND, border=Card.BORDER_THICK)
         # vbox.Add(hbox3, proportion=0, flag=wx.RIGHT|wx.EXPAND, border=Card.BORDER_WIDTH)
@@ -197,7 +211,6 @@ class Content(Card):
         self.kindbut = kindbut
         self.title = title
         self.content = content
-        self.SetSizer(vbox)
         self.Show(True)
 
     def Dump(self):

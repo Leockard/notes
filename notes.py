@@ -309,7 +309,9 @@ class MyFrame(wx.Frame):
         self.StatusBar.SetStatusText(s)
 
     def OnDebug(self, ev):
-        print self.FindFocus()
+        card = self.board.GetCards()[0]
+        if card.IsCollapsed(): card.UnCollapse()
+        else: card.Collapse()
 
     def Save(self, out_file, d):
         """Save the data in the dict d in the file out_file."""
