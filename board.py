@@ -8,11 +8,49 @@ import wx.richtext as rt
 from wx.lib.floatcanvas import FloatCanvas as fc
 
 
+
+class AutoSize(wx.ScrolledWindow):
+    SCROLL_STEP = 20
+    
+    def __init__(self, parent, id=wx.ID_ANY, pos=wx.DefaultPosition, size=wx.DefaultSize, style=0):
+        super(AutoSize, self).__init__(parent, id=id, pos=pos, size=size, style=style)
+        self.Bind(wx.EVT_SIZE, self.OnSize)
+        self.SetScrollRate(self.SCROLL_STEP, self.SCROLL_STEP)
+        self.content_sz = wx.Size(size[0], size[1])
+        self.SetVirtualSize(size)
+
+    def OnSize(self, ev):
+        # print "AutoSize.OnSize"
+        real_sz = ev.GetSize()
+        virt_sz = self.content_sz
+        # print "real: "+ str(real_sz)
+        # print "virt: " + str(virt_sz)
+        if real_sz.x > virt_sz.x: self.content_sz = wx.Size(real_sz.x, virt_sz.y)
+        if real_sz.y > virt_sz.y: self.content_sz = wx.Size(virt_sz.x, real_sz.y)
+        self.SetVirtualSize(self.content_sz)
+
+    def FitToChildren(self):
+        """Call to set the virtual (content) size to fit the children."""
+        rects = [c.GetRect() for c in self.GetChildren()]
+        # left   = min(rects, key=lambda r: r.left)       # don't add windows in negative positions
+        # top    = min(rects, key=lambda r: r.top)        # don't add windows in negative positions
+        right  = max(rects, key=lambda r: r.right).right
+        bottom = max(rects, key=lambda r: r.bottom).bottom
+        sz = self.content_sz
+        if right  > sz.x: sz = wx.Size(right, sz.y)
+        if bottom > sz.y: sz = wx.Size(sz.x, bottom)
+        self.content_sz = sz
+        self.SetVirtualSize(self.content_sz)
+
+
+
+
+
 ######################
 # BoardBase Class
 ######################
 
-class BoardBase(wx.ScrolledWindow):
+class BoardBase(AutoSize):
     MOVING_RECT_THICKNESS = 1
     BACKGROUND_CL = "#CCCCCC"
     PIXELS_PER_SCROLL = 20
@@ -24,13 +62,12 @@ class BoardBase(wx.ScrolledWindow):
         self.selected_cards = []
         self.moving_cards_pos = []
         self.cur_scale = 1.0
-        self.content_size = wx.Size(size[0], size[1])
 
         # UI elements
         self.InitSizeBar()
+        self.FitToChildren()
 
         # Bindings
-        self.Bind(wx.EVT_SIZE, self.OnSize)
         self.Bind(wx.EVT_RIGHT_DOWN, self.OnRightDown)
         self.Bind(wx.EVT_LEFT_DOWN, self.OnLeftDown)
         self.Bind(wx.EVT_LEFT_UP, self.OnLeftUp)
@@ -112,9 +149,7 @@ class BoardBase(wx.ScrolledWindow):
         # newcard.Bind(wx.EVT_LEAVE_WINDOW, self.OnMouseLeaveCard)
 
         # content size        
-        rect = newcard.GetRect()
-        self.ResizeContent(wx.Point(rect.right, rect.bottom))
-        
+        self.FitToChildren()
         return newcard
 
     def NewHeader(self, pos, label = -1, txt=""):
@@ -126,10 +161,7 @@ class BoardBase(wx.ScrolledWindow):
         # bindings        
         newhead.Bind(wx.EVT_LEFT_DOWN, self.OnCardLeftDown)
         
-        # content size        
-        rect = newhead.GetRect()
-        self.ResizeContent(wx.Point(rect.right, rect.bottom))
-
+        self.FitToChildren()
         return newhead
 
     def SetScale(self, scale):
@@ -244,14 +276,6 @@ class BoardBase(wx.ScrolledWindow):
         for c in arrange:
             c.SetPosition(wx.Point(left, top))
             top = c.GetRect().bottom + Board.CARD_PADDING
-
-    def ResizeContent(self, point, pad=True):
-        """If necessary, enlarge the content to include the point, with or without padding."""
-        if point.x > self.content_size.x:
-            self.content_size.x = point.x + Board.CARD_PADDING
-        if point.y > self.content_size.y:
-            self.content_size.y = point.y + Board.CARD_PADDING
-        self.RecalculateScrollbars()
 
                     
     ### Callbacks
@@ -386,26 +410,9 @@ class BoardBase(wx.ScrolledWindow):
         print "leave card"
         self.sizebar.Hide()
         ev.GetEventObject().Bind(wx.EVT_ENTER_WINDOW, self.OnMouseOverCard)
-
-    def OnSize(self, ev):
-        new_sz = ev.GetSize()
-        if new_sz.x > self.content_size.x:
-            self.content_size.x = new_sz.x
-        if new_sz.y > self.content_size.y:
-            self.content_size.y = new_sz.y
-        self.RecalculateScrollbars()
         
             
     ### Auxiliary functions
-
-    def RecalculateScrollbars(self):
-        # method from wx.ScrolledWindow, NOT wx.Window
-        sz = self.GetSize()
-        if self.content_size.x > sz.x or self.content_size.y > sz.y:
-            step = BoardBase.PIXELS_PER_SCROLL
-            xunits = int(self.content_size.x / float(step))
-            yunits = int(self.content_size.y / float(step))
-            self.SetScrollbars(step, step, xunits, yunits)
 
     def GetSizeBarPosition(self, card):
         if isinstance(card, Content):
@@ -570,9 +577,9 @@ class Board(wx.Panel):
         if not hbox: hbox = wx.BoxSizer(wx.HORIZONTAL)
             
         board = BoardBase(self, pos=pos, size=size)
-        vbox2 = wx.BoxSizer(wx.VERTICAL)
-        vbox2.Add(board, proportion=1, flag=wx.ALL|wx.EXPAND, border=1)
-        hbox.Add(vbox2, proportion=1, flag=wx.ALL|wx.EXPAND,  border=1)
+        vbox = wx.BoxSizer(wx.VERTICAL)
+        vbox.Add(board, proportion=1, flag=wx.ALL|wx.EXPAND, border=1)
+        hbox.Add(vbox,  proportion=1, flag=wx.ALL|wx.EXPAND, border=1)
         
         # set members
         self.board = board
