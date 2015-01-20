@@ -6,7 +6,7 @@ import wx
 
 
 ######################
-# BoardBase Class
+# Auxiliary classes
 ######################
 
 class AutoSize(wx.ScrolledWindow):
