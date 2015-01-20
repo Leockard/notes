@@ -6,17 +6,19 @@
 # http://www.wxpython.org/download.php
 
 import wx
+from utilities import AutoSize
 
 
 ######################
 # Canvas Class
 ######################
 
-class Canvas(wx.ScrolledWindow):
+class Canvas(AutoSize):
+# class Canvas(wx.Panel):
     def __init__(self, parent, id=wx.ID_ANY, size=wx.DefaultSize):
         super(Canvas, self).__init__(parent, id=id, size=size, style=wx.NO_FULL_REPAINT_ON_RESIZE|wx.BORDER_NONE)
     
-        self.SetBackgroundColour("WHITE")
+        # self.SetBackgroundColour("WHITE")
         self.thickness = 1
         self.colour = "BLACK"
         self.pen = wx.Pen(self.colour, self.thickness, wx.SOLID)

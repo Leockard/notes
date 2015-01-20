@@ -4,6 +4,7 @@
 # Page class: contains a Board and a canvas, plus functionality to switch between the two
 
 import wx
+from utilities import AutoSize
 from board import *
 from canvas import Canvas
 
@@ -13,7 +14,8 @@ from canvas import Canvas
 # Page class
 ######################
 
-class Page(wx.Panel):
+# class Page(wx.Panel):
+class Page(AutoSize):
     CARD_PADDING = Board.CARD_PADDING
     PIXELS_PER_SCROLL = 20
 
@@ -32,7 +34,9 @@ class Page(wx.Panel):
         self.content_size = wx.Size(size[0], size[1])
         self.ui_ready = False
         self.InitUI()
-        
+
+        self.Bind(wx.EVT_SIZE, self.OnSize)
+
 
     ### Behavior functions
 
@@ -58,19 +62,30 @@ class Page(wx.Panel):
     def SetupCanvas(self):
         """Setsup the canvas background. Call before showing the Canvas."""
         print "setup canvas"
-        rect = self.board.GetRect()                
-        self.canvas.SetSize((rect.width, rect.height))
+        # set real size
+        # rect = self.board.GetRect()
+        # self.canvas.SetSize((rect.width, rect.height))
+        self.canvas.SetSize(self.board.GetSize())
+        self.canvas.UpdateContentSize(self.board.GetSize())
 
-        bmp = wx.EmptyBitmap(rect.width, rect.height)
+        # set virtual size
+        sz = self.board.content_sz
+        self.canvas.SetVirtualSize(sz)
+
+        # draw all of the board (virtual size) in the canvas
+        bmp = wx.EmptyBitmap(sz.width, sz.height)
         dc = wx.MemoryDC()
         dc.SelectObject(bmp)
         
         # off = self.board.GetClientAreaOrigin()
         dc.Blit(0, 0,                         # pos
-                rect.width, rect.height,      # size
+                sz.width, sz.height,          # size
                 wx.ClientDC(self.board),      # src
-                rect.x, rect.y)               # offset
+                0, 0)                         # offset
         dc.SelectObject(wx.NullBitmap)
+
+        # let the canvas handle its own scrollbars
+        self.canvas.FitToChildren()
 
         self.canvas.buffer = bmp
         self.canvas.Refresh()
@@ -154,6 +169,13 @@ class Page(wx.Panel):
 
 
     ### Callbacks
+
+    def OnSize(self, ev):
+        self.board.UpdateContentSize(ev.GetSize())
+        self.canvas.UpdateContentSize(ev.GetSize())
+        print self.canvas.content_sz
+        # important to skip the event for Sizers to work correctly
+        ev.Skip()
 
     def OnToggle(self, ev):
         if self.board.IsShown():

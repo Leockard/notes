@@ -14,23 +14,41 @@ class AutoSize(wx.ScrolledWindow):
     
     def __init__(self, parent, id=wx.ID_ANY, pos=wx.DefaultPosition, size=wx.DefaultSize, style=0):
         super(AutoSize, self).__init__(parent, id=id, pos=pos, size=size, style=style)
-        self.Bind(wx.EVT_SIZE, self.OnSize)
+        self.Bind(wx.EVT_SIZE, self.AutoSizeOnSize)
         self.SetScrollRate(self.SCROLL_STEP, self.SCROLL_STEP)
         self.content_sz = wx.Size(size[0], size[1])
         self.SetVirtualSize(size)
 
-    def OnSize(self, ev):
-        # print "AutoSize.OnSize"
-        real_sz = ev.GetSize()
+    def UpdateContentSize(self, sz):
+        """
+        If sz contains a dimension that is bigger than the
+        current virtual size, change the virtual size.
+        """
+        flag = False
         virt_sz = self.content_sz
-        # print "real: "+ str(real_sz)
-        # print "virt: " + str(virt_sz)
-        if real_sz.x > virt_sz.x: self.content_sz = wx.Size(real_sz.x, virt_sz.y)
-        if real_sz.y > virt_sz.y: self.content_sz = wx.Size(virt_sz.x, real_sz.y)
-        self.SetVirtualSize(self.content_sz)
+        
+        if sz.x > virt_sz.x:
+            flag = True
+            self.content_sz = wx.Size(sz.x, self.content_sz.y)
+        if sz.y > virt_sz.y:
+            flag = True
+            self.content_sz = wx.Size(self.content_sz.x, sz.y)
+            
+        if flag:
+            self.SetVirtualSize(self.content_sz)
+
+    def AutoSizeOnSize(self, ev):
+        print "AutoSize.OnSize"
+        self.UpdateContentSize(ev.GetSize())
 
     def FitToChildren(self):
-        """Call to set the virtual (content) size to fit the children."""
+        """
+        Call to set the virtual (content) size to fit the children. If there are
+        no children, keeps the virtual size as it is (does not shrink).
+        """
+        children = self.GetChildren()
+        if len(children) == 0: return
+        
         rects = [c.GetRect() for c in self.GetChildren()]
         # left   = min(rects, key=lambda r: r.left)       # don't add windows in negative positions
         # top    = min(rects, key=lambda r: r.top)        # don't add windows in negative positions
