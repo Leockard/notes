@@ -295,11 +295,20 @@ class KindSelectMenu(wx.Menu):
 ######################            
 
 class Image(Card):
+    DEFAULT_SZ = (50, 50)
+    
     def __init__(self, parent, label, id=wx.ID_ANY, pos=wx.DefaultPosition, size=wx.DefaultSize):
         super(Card, self).__init__(parent, id=id, pos=pos, size=size, style=wx.BORDER_RAISED)
         self.InitUI()
+
+    ### Auxiliary functions
+    
+    def InitUI(self):
+        img = wx.BitmapButton(self, bitmap=wx.ArtProvider.GetBitmap(wx.ART_MISSING_IMAGE), size=self.DEFAULT_SZ)
         
-        
+        vbox = wx.BoxSizer(wx.VERTICAL)
+        vbox.Add(img, proportion=1, flag=wx.ALL|wx.EXPAND, border=Card.BORDER_WIDTH)
+        self.SetSizer(vbox)        
 
 
 
