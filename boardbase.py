@@ -92,7 +92,7 @@ class BoardBase(AutoSize):
         cards.sort(key = lambda x: x.label)
         return cards[-1]
 
-    def NewCard(self, pos, label = -1, title="", kind="kind", content=""):
+    def NewContent(self, pos, label = -1, title="", kind="kind", content=""):
         if label == -1: label = len(self.cards)
         newcard = Content(self, label, pos=pos, title=title, kind=kind, content=content)
         newcard.SetFocus()
@@ -160,7 +160,7 @@ class BoardBase(AutoSize):
         for c in sel:
             pos = c.GetPosition() + (self.CARD_PADDING, self.CARD_PADDING)
             if isinstance(c, Content):
-                new.append(self.NewCard(pos, -1, c.GetTitle(), c.GetKind(), c.GetContent()))
+                new.append(self.NewContent(pos, -1, c.GetTitle(), c.GetKind(), c.GetContent()))
             if isinstance(c, Header):
                 new.append(self.NewHeader(pos, -1, c.GetHeader()))
 
@@ -342,7 +342,7 @@ class BoardBase(AutoSize):
 
     def OnLeftDClick(self, ev):
         pos = self.CalculateNewCardPosition(ev.GetPosition())
-        self.NewCard(pos)
+        self.NewContent(pos)
 
     def OnMouseOverCard(self, ev):
         card = ev.GetEventObject()

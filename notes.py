@@ -68,7 +68,7 @@ class MyFrame(wx.Frame):
             left = max(rights) + Page.CARD_PADDING
             pos = (left, top)
 
-        if subclass == "Content":  new = board.NewCard(pos)
+        if subclass == "Content":  new = board.NewContent(pos)
         elif subclass == "Header": new = board.NewHeader(pos)
         board.SelectCard(new, True)
         new.SetFocus()
@@ -328,11 +328,11 @@ class MyFrame(wx.Frame):
         with open(path, 'r') as f: carddict = pickle.load(f)
         for id, values in carddict.iteritems():
             if values["class"] == "Content":
-                board.NewCard(pos     = values["pos"],
-                              label   = values["label"],
-                              title   = str(values["title"]),
-                              kind    = values["kind"],
-                              content = values["content"])
+                board.NewContent(pos     = values["pos"],
+                                 label   = values["label"],
+                                 title   = str(values["title"]),
+                                 kind    = values["kind"],
+                                 content = values["content"])
             elif values["class"] == "Header":
                 board.NewHeader(pos   = values["pos"],
                                 label = values["label"],
