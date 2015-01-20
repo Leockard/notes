@@ -315,8 +315,7 @@ class MyFrame(wx.Frame):
         self.StatusBar.SetStatusText(s)
 
     def OnDebug(self, ev):
-        import card
-        card.Image(self.board, -1)
+        print self.board.GetCards()[0].path
 
     def Save(self, out_file, d):
         """Save the data in the dict d in the file out_file."""
@@ -338,6 +337,10 @@ class MyFrame(wx.Frame):
                 board.NewHeader(pos   = values["pos"],
                                 label = values["label"],
                                 txt   = values["header"])
+            elif values["class"] == "Image":
+                board.NewImage(pos   = values["pos"],
+                               label = values["label"],
+                               path  = values["path"])
 
     def AddAccelerator(self, entry):
         """entry should be a AcceleratorEntry()."""

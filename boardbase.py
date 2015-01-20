@@ -120,9 +120,9 @@ class BoardBase(AutoSize):
         self.FitToChildren()
         return newhead
 
-    def NewImage(self, pos, label=-1, fp=""):
+    def NewImage(self, pos, label=-1, path=None):
         if label == -1: label = len(self.cards)
-        newimg = Image(self, label, pos=pos)
+        newimg = Image(self, label, pos=pos, path=path)
         newimg.SetFocus()
         self.cards.append(newimg)
         

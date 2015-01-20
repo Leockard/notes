@@ -298,21 +298,51 @@ class KindSelectMenu(wx.Menu):
 class Image(Card):
     DEFAULT_SZ = (50, 50)
     
-    def __init__(self, parent, label, id=wx.ID_ANY, pos=wx.DefaultPosition, size=wx.DefaultSize):
-        super(Card, self).__init__(parent, id=id, pos=pos, size=size, style=wx.BORDER_RAISED)
-        self.InitUI()
+    def __init__(self, parent, label, path=None, id=wx.ID_ANY, pos=wx.DefaultPosition, size=wx.DefaultSize):
+        super(Image, self).__init__(parent, label, id=id, pos=pos, size=size, style=wx.BORDER_RAISED)
+        print "init: " + str(path)
+        self.btn = None
+        self.InitUI(path)
+        self.path = path
+
+
+    ### Behavior funtions
+
+    def SetImage(self, path):
+        bmp = wx.Bitmap(path)
+        img = wx.StaticBitmap(self)
+        img.SetBitmap(bmp)
+        img.SetSize(bmp.GetSize())
+        
+        if self.btn:
+            self.btn.Hide()
+            del self.btn
+            self.btn = None
+
+        self.path = path
+        self.GetSizer().Add(img, proportion=1, flag=wx.ALL|wx.EXPAND, border=Card.BORDER_WIDTH * 2)
+        self.Fit()
 
     ### Auxiliary functions
     
-    def InitUI(self):
-        btn = wx.BitmapButton(self, bitmap=wx.ArtProvider.GetBitmap(wx.ART_MISSING_IMAGE), size=self.DEFAULT_SZ)
-        
+    def InitUI(self, path=None):
         vbox = wx.BoxSizer(wx.VERTICAL)
-        vbox.Add(btn, proportion=1, flag=wx.ALL|wx.EXPAND, border=Card.BORDER_WIDTH)
         self.SetSizer(vbox)
 
-        self.btn = btn
-        btn.Bind(wx.EVT_BUTTON, self.OnButton)
+        if not path:
+            btn = wx.BitmapButton(self, bitmap=wx.ArtProvider.GetBitmap(wx.ART_MISSING_IMAGE), size=self.DEFAULT_SZ)
+            vbox.Add(btn, proportion=1, flag=wx.ALL|wx.EXPAND, border=Card.BORDER_WIDTH)            
+            self.btn = btn
+            btn.Bind(wx.EVT_BUTTON, self.OnButton)
+        else:
+            self.SetImage(path)        
+
+    def Dump(self):
+        pos = self.GetPosition()
+        return {"class": "Image",
+                "label": self.label,
+                "pos": (pos.x, pos.y),
+                "path": self.path}
 
         
     ### Callbacks
@@ -321,16 +351,9 @@ class Image(Card):
         fd = wx.FileDialog(self, "Save", os.getcwd(), "", "All files (*.*)|*.*",
                            wx.FD_OPEN | wx.FD_FILE_MUST_EXIST)
         if fd.ShowModal() == wx.ID_CANCEL: return # user changed her mind
+        self.SetImage(fd.GetPath())
 
-        bmp = wx.Bitmap(fd.GetPath())
-        img = wx.StaticBitmap(self)
-        img.SetBitmap(bmp)
-        img.SetSize(bmp.GetSize())
         
-        self.btn.Hide()
-        self.GetSizer().Add(img, proportion=1, flag=wx.ALL|wx.EXPAND, border=Card.BORDER_WIDTH)
-        self.Fit()
-
 
 ######################
 # Auxiliary classes
