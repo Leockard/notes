@@ -92,8 +92,6 @@ class Header(Card):
         return {"class": "Header", "label": self.label,
                 "pos": self.GetPosition(), "header": self.GetHeader()}
 
-
-
             
 
 ######################

@@ -26,10 +26,6 @@ class BoardBase(AutoSize):
         self.moving_cards_pos = []
         self.cur_scale = 1.0
 
-        # UI elements
-        # self.InitSizeBar()
-        # self.FitToChildren()
-
         # Bindings
         self.Bind(wx.EVT_LEFT_DOWN, self.OnLeftDown)
         self.Bind(wx.EVT_LEFT_UP, self.OnLeftUp)
@@ -353,8 +349,6 @@ class BoardBase(AutoSize):
         card = ev.GetEventObject()
         card.Unbind(wx.EVT_ENTER_WINDOW)
         card.ShowBar()
-        # self.sizebar.Associate(card)
-        # self.sizebar.Show()
 
     def OnMouseLeaveCard(self, ev):
         print "leave card"
@@ -363,10 +357,6 @@ class BoardBase(AutoSize):
         
             
     ### Auxiliary functions
-
-    # def InitSizeBar(self):
-    #     bar = CardBar(self)
-    #     self.sizebar = bar
         
     def PaintRect(self, rect, thick = MOVING_RECT_THICKNESS, style = wx.SOLID, refresh = True):
         """Paints a rectangle. Use style = wx.TRANSPARENT to erase a rectangle."""
@@ -417,7 +407,7 @@ class BoardBase(AutoSize):
         """Returns a dict with all the info in the current cards."""
         carddict = {}
 
-        # we put the scrollbars at the top, to get the real positions
+        # we put the scrollbars at the origin, to get the real positions
         self.Hide()
         view_start = self.GetViewStart()
         self.Scroll(0, 0)
