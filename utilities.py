@@ -76,4 +76,3 @@ def MakeEncirclingRect(p1, p2):
     w = abs(p1[0] - p2[0])
     h = abs(p1[1] - p2[1])
     return wx.Rect(l, t, w, h)
-        
