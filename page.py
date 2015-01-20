@@ -36,28 +36,11 @@ class Page(wx.Panel):
 
     ### Behavior functions
 
-    def ResizeChildren(self):
-        print "resizechildren at scale: " + str(self.scale)
-        self.resizing = True
-        ch = self.GetChildren()
-        print "children: " + str(len(ch))            
-        for c in ch:
-            print "child: " + str(c)
-            c.Hide()
-            pos = c.GetPosition()
-            c.SetPosition((pos.x * self.scale, pos.y * self.scale))
-            sz = c.GetSize()
-            c.SetSize((sz.width * self.scale, sz.height * self.scale))
-            c.Show()
-            
-        self.resizing = False
-
 
     ### Behavior functions
 
     def SetupCanvas(self):
         """Setsup the canvas background. Call before showing the Canvas."""
-        print "setup canvas"
         rect = self.board.GetRect()                
         self.canvas.SetSize((rect.width, rect.height))
 
@@ -167,7 +150,6 @@ class Page(wx.Panel):
     def OnZoom(self, ev):
         scale = float(ev.GetString()[:-1]) / 100
         self.scale = scale
-        print "Page.OnZoom: " + str(scale)
         self.Refresh()
 
     def OnView(self, ev):

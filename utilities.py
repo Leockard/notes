@@ -20,11 +20,8 @@ class AutoSize(wx.ScrolledWindow):
         self.SetVirtualSize(size)
 
     def OnSize(self, ev):
-        # print "AutoSize.OnSize"
         real_sz = ev.GetSize()
         virt_sz = self.content_sz
-        # print "real: "+ str(real_sz)
-        # print "virt: " + str(virt_sz)
         if real_sz.x > virt_sz.x: self.content_sz = wx.Size(real_sz.x, virt_sz.y)
         if real_sz.y > virt_sz.y: self.content_sz = wx.Size(virt_sz.x, real_sz.y)
         self.SetVirtualSize(self.content_sz)

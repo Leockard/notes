@@ -95,9 +95,6 @@ class MyFrame(wx.Frame):
         for txt, ctrl in txt_ctrls:
             if txt.find(s) > -1: finds.append(ctrl)
 
-        print "controls: " + str(len(txt_ctrls))
-        print "finds: " + str(len(finds))
-
         # focus on the first find
         if finds:
             # finds[0].SetFocus()
@@ -376,12 +373,10 @@ class MyFrame(wx.Frame):
         """Zoom in and out."""
         scale = ev.GetString()[:-1] # all strings have the % sign at the end
         scale = float(scale) / 100
-        print scale
         self.GetCurrentBoard().SetScale(scale)
 
     def OnCtrlF(self, ev):
         """Show/hide the search control."""
-        print "ctrl f"
         shwn = self.search_ctrl.IsShown()
         
         if not shwn:
@@ -395,7 +390,6 @@ class MyFrame(wx.Frame):
 
     def OnCtrlG(self, ev):
         """Go to next search find."""
-        print "ctrl g"
         if self.searching != None:
             i = self.searching + 1
             if i >= len(self.search_find): i = 0
@@ -407,7 +401,6 @@ class MyFrame(wx.Frame):
 
     def OnCtrlShftG(self, ev):
         """Go to previous search find."""
-        print "ctrl shft g"
         if self.searching != None:
             i = self.searching - 1
             if i < 0: i = len(self.search_find) - 1
@@ -415,12 +408,6 @@ class MyFrame(wx.Frame):
             self.search_find[i].SetSelection(0, 3)
             self.searching = i
 
-    def OnToolBarDelete(self, ev):
-        print "toolbar delete"
-
-    def OnToolBarCopy(self, ev):
-        print "toolbar copy"
-    
     def OnCtrlTab(self, ev):
         """Selects next card."""
         card = self.FindFocus().GetParent()
@@ -431,14 +418,6 @@ class MyFrame(wx.Frame):
         card = self.FindFocus().GetParent()
         self.GetCurrentBoard().GetPrevCard(card).SetFocus()
 
-    def OnBitmapShow(self, ev):
-        """Called when the bitmap is shown:enalbe scribbling mode."""
-        if ev.IsShown():
-            print "bitmap show"
-
-    def OnBitmapLeftDown(self, ev):
-        print "bitmap click"
-    
     def OnCtrlRet(self, ev):
         """Add a new content card to the board, to the right of the current card."""
         self.PlaceNewCard("Content", False)

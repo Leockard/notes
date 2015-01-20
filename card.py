@@ -138,7 +138,6 @@ class Content(Card):
         self.InitUI()
         self.SetKind(kind)
         # self.title.SetValue(title)
-        # print "title from init: " + str(title)
         if title: self.title.SetLabel(title)
         if content: self.content.SetValue(content)
 
@@ -325,7 +324,6 @@ class EditText(wx.Control):
     ### Behavior functions
 
     def SetLabel(self, lbl):
-        # print "label passed to SetLabel: " + str(lbl)
         self.text.SetLabel(lbl)
         self.entry.SetValue(lbl)
         return super(EditText, self).SetLabel(lbl)        
@@ -334,20 +332,17 @@ class EditText(wx.Control):
         self.SetLabel(lbl)
 
     def GetLabel(self):
-        print "getlabel"
         return self.text.GetLabel()
 
     def GetValue(self):
         return self.GetLabel()
 
     def ShowEntry(self, ev):
-        print "show entry: " + str(ev.GetEventObject())
         self.text.Hide()
         self.entry.Show()
         self.entry.SetFocus()
 
     def ShowText(self, ev):
-        print "showtext: " + str(ev.GetEventObject())
         self.entry.Hide()
         self.text.SetLabel(self.entry.GetValue())
         self.text.Show()
