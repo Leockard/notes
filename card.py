@@ -50,7 +50,7 @@ class Card(wx.Panel):
 
     
 ######################
-# Card Header
+# Class Header
 ######################
 
 class Header(Card):
