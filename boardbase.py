@@ -351,14 +351,9 @@ class BoardBase(AutoSize):
     def OnMouseOverCard(self, ev):
         print "over card"
         card = ev.GetEventObject()
-        pos = self.GetSizeBarPosition(card)
-        if pos != (-1, -1):
-            self.sizebar.SetPosition(pos)
-            self.sizebar.Show()
-            wx.CallLater(3000, self.sizebar.Hide)
-            # self.sizebar.timer.Start()
-
-        card.Unbind(wx.EVT_ENTER_WINDOW)
+        card.Unbind(wx.EVT_ENTER_WINDOW)        
+        self.sizebar.Associate(card)
+        self.sizebar.Show()
 
     def OnMouseLeaveCard(self, ev):
         print "leave card"
@@ -366,14 +361,6 @@ class BoardBase(AutoSize):
         
             
     ### Auxiliary functions
-
-    def GetSizeBarPosition(self, card):
-        if isinstance(card, Content):
-            top = card.GetRect().top
-            left = card.GetRect().right
-            return (left, top)
-        else:
-            return (-1, -1)
 
     def InitSizeBar(self):
         bar = CardBar(self)
