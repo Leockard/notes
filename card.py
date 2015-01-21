@@ -305,7 +305,6 @@ class Image(Card):
     
     def __init__(self, parent, label, path=None, id=wx.ID_ANY, pos=wx.DefaultPosition, size=wx.DefaultSize):
         super(Image, self).__init__(parent, label, id=id, pos=pos, size=size, style=wx.BORDER_RAISED)
-        print "init: " + str(path)
         self.btn = None
         self.InitUI(path)
         self.path = path
