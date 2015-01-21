@@ -64,7 +64,8 @@ class Header(Card):
         super(Header, self).__init__(parent, label, id=id, pos=pos, size=Header.DEFAULT_SZ,
                                      style = wx.BORDER_RAISED|wx.TAB_TRAVERSAL)
         self.InitUI()
-        self.header.SetValue(header)
+        # self.header.SetValue(header)
+        self.header.SetLabel(header)
         
 
 
@@ -75,7 +76,8 @@ class Header(Card):
     ### Auxiliary functions
     def InitUI(self):
         # Controls
-        txt = wx.TextCtrl(self, wx.ID_ANY, style = wx.TE_RICH)
+        # txt = wx.TextCtrl(self, wx.ID_ANY, style = wx.TE_RICH)
+        txt = EditText(self, wx.ID_ANY)
         txt.SetHint("Header")
         
         # Boxes
@@ -180,7 +182,7 @@ class Content(Card):
         # controls
         # title = wx.TextCtrl(self, style = wx.TE_RICH)
         title = EditText(self)
-        title.SetFont(wx.Font(12, wx.SWISS, wx.ITALIC, wx.BOLD))
+        # title.SetFont(wx.Font(12, wx.SWISS, wx.ITALIC, wx.BOLD))
         title.SetHint("Title...")
         
         kindbut = wx.Button(self, label = "kind", size=Content.KIND_BTN_SZ, style=wx.BORDER_NONE)
@@ -377,9 +379,10 @@ class Text(st.GenStaticText):
     
 class EditText(wx.Panel):
     DEFAULT_SZ = (200, 25)
+    DEFAULT_FONT = (12, wx.SWISS, wx.ITALIC, wx.BOLD)
     
-    def __init__(self, parent, id = wx.ID_ANY, label="", pos=wx.DefaultPosition, size=DEFAULT_SZ):
-        super(EditText, self).__init__(parent, id=id, pos=pos, size=size, style=wx.BORDER_NONE|wx.TAB_TRAVERSAL)
+    def __init__(self, parent, id = wx.ID_ANY, label="", pos=wx.DefaultPosition, size=DEFAULT_SZ, style=wx.BORDER_NONE|wx.TAB_TRAVERSAL):
+        super(EditText, self).__init__(parent, id=id, pos=pos, size=size, style=style)
 
         # self.text  = st.GenStaticText(self, label=label, style=wx.BORDER_NONE, size=size)
         self.text  = Text(self, label=label, style=wx.BORDER_NONE, size=size)
@@ -399,6 +402,7 @@ class EditText(wx.Panel):
         self.entry.Bind(wx.EVT_KILL_FOCUS, self.ShowText)
         self.Bind(wx.EVT_SET_FOCUS, self.OnFocus)
 
+        self.text.SetFont(wx.Font(self.DEFAULT_FONT[0], self.DEFAULT_FONT[1], self.DEFAULT_FONT[2], self.DEFAULT_FONT[3]))
         self.text.Show()
         self.entry.Hide()
         self.Show()
