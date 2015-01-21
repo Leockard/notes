@@ -381,12 +381,6 @@ class MyFrame(wx.Frame):
             self.Log("Delete " + str(len(self.GetCurrentBoard().selected_cards)) + " Cards.")
             self.GetCurrentBoard().DeleteSelected()
 
-    def OnZoom(self, ev):
-        """Zoom in and out."""
-        scale = ev.GetString()[:-1] # all strings have the % sign at the end
-        scale = float(scale) / 100
-        self.GetCurrentBoard().SetScale(scale)
-
     def OnCtrlF(self, ev):
         """Show/hide the search control."""
         shwn = self.search_ctrl.IsShown()
