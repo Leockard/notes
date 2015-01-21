@@ -332,14 +332,14 @@ class BoardBase(AutoSize):
             self.drag_select = True
             
             # erase the last one selection rect
-            self.PaintRect((self.init_pos[0], self.init_pos[1],
+            self.PaintRect(wx.Rect(self.init_pos[0], self.init_pos[1],
                             self.cur_pos[0], self.cur_pos[1]),
                             style = wx.TRANSPARENT,
                             refresh = False)
             
             # and draw the current one
             final_pos = ev.GetPosition() - self.init_pos
-            self.PaintRect((self.init_pos[0], self.init_pos[1],
+            self.PaintRect(wx.Rect(self.init_pos[0], self.init_pos[1],
                             final_pos[0], final_pos[1]),
                             refresh = False)
 
@@ -385,7 +385,7 @@ class BoardBase(AutoSize):
         dc.SetBrush(wx.Brush(self.GetBackgroundColour()))
         dc.SetPen(wx.Pen("BLACK", thick, style))
         dc.DrawRectangle(rect[0], rect[1], rect[2], rect[3])
-        if refresh: self.Refresh()
+        if refresh: self.RefreshRect(rect)
         
     def PaintCardRect(self, card, pos, thick = MOVING_RECT_THICKNESS, style = wx.SOLID, refresh = True):
         """Paints a rectangle just big enough to encircle card.GetRect(), at pos."""
@@ -395,7 +395,7 @@ class BoardBase(AutoSize):
         self.PaintRect(rect, thick=thick, style=style, refresh=refresh)
 
     def EraseCardRect(self, card, pos, thick = MOVING_RECT_THICKNESS, refresh = True):
-        """Erases a rectangle drawn by PaintCardRect()."""        
+        """Erases a rectangle drawn by PaintCardRect()."""
         # Brush is for background, Pen is for foreground
         x, y, w, h = card.GetRect()        
         rect = wx.Rect(pos[0], pos[1], w, h)
