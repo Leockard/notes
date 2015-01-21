@@ -422,13 +422,11 @@ class MyFrame(wx.Frame):
 
     def OnCtrlTab(self, ev):
         """Selects next card."""
-        card = self.FindFocus().GetParent()
-        self.GetCurrentBoard().GetNextCard(card).SetFocus()
+        self.GetCurrentBoard().GetNextCard(self.FindFocus()).SetFocus()
 
     def OnCtrlShftTab(self, ev):
         """Selects previous card."""
-        card = self.FindFocus().GetParent()
-        self.GetCurrentBoard().GetPrevCard(card).SetFocus()
+        self.GetCurrentBoard().GetPrevCard(self.FindFocus()).SetFocus()
 
     def OnCtrlRet(self, ev):
         """Add a new content card to the board, to the right of the current card."""

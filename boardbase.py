@@ -62,9 +62,15 @@ class BoardBase(AutoSize):
         """Returns a list of all Content cards of the kind. kind should be a Content.X_LBL constant."""
         return [c for c in self.GetContents() if c.GetKind() == kind]
 
-    def GetNextCard(self, card, cycle=True):
+    def GetNextCard(self, ctrl, cycle=True):
         """Returns the card with label consecutive to that of the argument, or None.
         If cycle=True, and card is the Card with the last label, return the Card with first label."""
+        card = ctrl.GetParent()
+        if not isinstance(card, Card):
+            card = card.GetParent()
+            if not isinstance(card, Card):
+                return
+
         greater_lbl = [c for c in self.cards if c.label > card.label]
         greater_lbl.sort(key = lambda x: x.label)
         if greater_lbl:
@@ -77,9 +83,15 @@ class BoardBase(AutoSize):
         cards.sort(key = lambda x: x.label)
         return cards[0]
 
-    def GetPrevCard(self, card, cycle=True):
+    def GetPrevCard(self, ctrl, cycle=True):
         """Returns the card with label previous to that of the argument, or None.
         If cycle=True, and card is the Card with the last label, return the Card with last label."""
+        card = ctrl.GetParent()
+        if not isinstance(card, Card):
+            card = card.GetParent()
+            if not isinstance(card, Card):
+                return
+
         lesser_lbl = [c for c in self.cards if c.label < card.label]
         lesser_lbl.sort(key = lambda x: x.label)
         if lesser_lbl:
