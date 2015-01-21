@@ -71,7 +71,7 @@ class Header(Card):
 
     ### Behavior Functions
     def GetHeader(self):
-        return self.header.GetValue()
+        return self.header.GetLabel()
 
     ### Auxiliary functions
     def InitUI(self):
@@ -162,7 +162,7 @@ class Content(Card):
         return not self.content.IsShown()
 
     def GetTitle(self):
-        return self.title.GetValue()
+        return self.title.GetLabel()
 
     def GetContent(self):
         return self.content.GetValue()
@@ -431,7 +431,7 @@ class EditText(wx.Panel):
         return super(EditText, self).SetLabel(lbl)        
 
     def GetLabel(self):
-        return self.GetLabel()
+        return self.text.GetLabel()
 
     def ShowEntry(self, ev):
         print self.text.AcceptsFocus()
