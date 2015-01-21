@@ -391,8 +391,8 @@ class EditText(wx.Panel):
                                  size=size)
 
         box = wx.BoxSizer(wx.HORIZONTAL)
-        box.Add(self.text,  proportion=1, flag=wx.ALL|wx.EXPAND, border=0)
-        box.Add(self.entry, proportion=1, flag=wx.ALL|wx.EXPAND, border=0)
+        box.Add(self.text,  proportion=1, flag=wx.LEFT|wx.EXPAND, border=5)
+        box.Add(self.entry, proportion=1, flag=wx.ALL|wx.EXPAND,  border=0)
         self.SetSizer(box)
 
         self.text.Bind(wx.EVT_LEFT_DOWN, self.ShowEntry)
@@ -419,6 +419,7 @@ class EditText(wx.Panel):
         self.text.SetFont(font)
 
     def SetBackgroundColour(self, cl):
+        super(EditText, self).SetBackgroundColour(cl)
         self.text.SetBackgroundColour(cl)
 
     def SetEntryColour(self, cl):
