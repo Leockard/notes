@@ -137,7 +137,7 @@ class BoardBase(AutoSize):
         newimg = Image(self, label, pos=pos, path=path)
         newimg.SetFocus()
         self.cards.append(newimg)
-        
+
         self.FitToChildren()
         return newimg
 

@@ -31,7 +31,7 @@ class MyFrame(wx.Frame):
         self.InitUI()              # sets up the sizer and the buttons' bindings
         self.GetCurrentBoard().SetFocus()
 
-        # Keyboard shortcuts
+        # keyboard shortcuts
         # accels is populated in InitUI()
         self.SetAcceleratorTable(wx.AcceleratorTable(self.accels))
 
