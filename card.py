@@ -4,6 +4,7 @@
 import wx
 import os
 import wx.richtext as rt
+import wx.lib.stattext as st
 import cardbar as CardBar
 
 
@@ -176,10 +177,11 @@ class Content(Card):
     ### Auxiliary functions
     
     def InitUI(self):
-        # Controls
+        # controls
         # title = wx.TextCtrl(self, style = wx.TE_RICH)
         title = EditText(self)
-        # title.SetHint("Title")
+        title.SetFont(wx.Font(12, wx.SWISS, wx.ITALIC, wx.BOLD))
+        title.SetHint("Title...")
         
         kindbut = wx.Button(self, label = "kind", size=Content.KIND_BTN_SZ, style=wx.BORDER_NONE)
         kindbut.SetOwnFont(wx.Font(8, wx.FONTFAMILY_DEFAULT, wx.FONTSTYLE_ITALIC, wx.FONTWEIGHT_NORMAL, False))
@@ -187,24 +189,20 @@ class Content(Card):
         content = rt.RichTextCtrl(self, size = (10, 10))
         content.SetHint("Write here...")
         
-        # Boxes
+        # boxes
         hbox1 = wx.BoxSizer(wx.HORIZONTAL)
-        hbox1.Add(title,   proportion=1, flag=wx.LEFT|wx.CENTER, border=Card.BORDER_WIDTH)
-        hbox1.Add(kindbut, proportion=0, flag=wx.RIGHT,          border=Card.BORDER_WIDTH)
+        hbox1.Add(title,   proportion=1, flag=wx.ALL|wx.EXPAND, border=Card.BORDER_WIDTH)
+        hbox1.Add(kindbut, proportion=0, flag=wx.ALL,           border=Card.BORDER_WIDTH)
 
         hbox2 = wx.BoxSizer(wx.HORIZONTAL)
         hbox2.Add(content, proportion=1, flag=wx.EXPAND, border=Card.BORDER_THICK)
-
-        # hbox3 = wx.BoxSizer(wx.HORIZONTAL)        
-        # hbox3.Add(label  , proportion=0, flag=wx.RIGHT, border=Card.BORDER_WIDTH)
 
         vbox = wx.BoxSizer(wx.VERTICAL)
         self.SetSizer(vbox)
         vbox.Add(hbox1, proportion=0, flag=wx.ALL|wx.EXPAND, border=Card.BORDER_WIDTH)
         vbox.Add(hbox2, proportion=1, flag=wx.ALL|wx.EXPAND, border=Card.BORDER_THICK)
-        # vbox.Add(hbox3, proportion=0, flag=wx.RIGHT|wx.EXPAND, border=Card.BORDER_WIDTH)
         
-        # Bindings
+        # bindings
         kindbut.Bind(wx.EVT_BUTTON, self.OnKindPressed)
         content.Bind(wx.EVT_KEY_DOWN, self.OnKeyDown)
 
@@ -226,21 +224,26 @@ class Content(Card):
         if   kind == Content.CONCEPT_LBL:
              self.SetBackgroundColour(Content.CONCEPT_CL)
              self.content.SetBackgroundColour(Content.CONCEPT_BG_CL)
-             # self.content.BeginTextColour(Content.CONCEPT_CNT_CL)
+             self.title.SetBackgroundColour(Content.CONCEPT_CL)
+             self.title.SetEntryColour(Content.CONCEPT_BG_CL)
         elif kind == Content.ASSUMPTION_LBL:
              self.SetBackgroundColour(Content.ASSUMPTION_CL)
              self.content.SetBackgroundColour(Content.ASSUMPTION_BG_CL)
-             # self.content.BeginTextColour(Content.ASSUMPTION_CNT_CL)
+             self.title.SetBackgroundColour(Content.ASSUMPTION_CL)
+             self.title.SetEntryColour(Content.ASSUMPTION_BG_CL)
         elif kind == Content.RESEARCH_LBL:
              self.SetBackgroundColour(Content.RESEARCH_CL)
              self.content.SetBackgroundColour(Content.RESEARCH_BG_CL)
-             # self.content.BeginTextColour(Content.RESEARCH_CNT_CL)
+             self.title.SetBackgroundColour(Content.RESEARCH_CL)
+             self.title.SetEntryColour(Content.RESEARCH_BG_CL)
         elif kind == Content.FACT_LBL:
              self.SetBackgroundColour(Content.FACT_CL)
              self.content.SetBackgroundColour(Content.FACT_BG_CL)
-             # self.content.BeginTextColour(Content.FACT_CNT_CL)
+             self.title.SetBackgroundColour(Content.FACT_CL)
+             self.title.SetEntryColour(Content.FACT_BG_CL)
         else:
              self.SetBackgroundColour(Content.DEFAULT_CL)
+             self.title.SetBackgroundColour(Content.DEFAULT_CL)
 
 
     ### Callbacks
@@ -358,16 +361,31 @@ class Image(Card):
 ######################
 # Auxiliary classes
 ######################
-                
-class EditText(wx.Control):
-    def __init__(self, parent, id = wx.ID_ANY, label="", pos=wx.DefaultPosition, size=wx.DefaultSize):
-        super(EditText, self).__init__(parent, id=id, pos=pos, size=size, style=wx.BORDER_NONE)
 
-        self.InheritAttributes()
-        self.BackgroundColour = parent.BackgroundColour
 
-        self.text  = wx.StaticText(self, label=label, style=wx.BORDER_NONE|wx.ST_NO_AUTORESIZE)
-        self.entry = wx.TextCtrl(self,   value=label, style=wx.BORDER_SUNKEN|wx.TE_PROCESS_ENTER)
+class Text(st.GenStaticText):
+    def __init__(self, parent, id=wx.ID_ANY, label="", size=wx.DefaultSize, style=0):
+        super(Text, self).__init__(parent, label=label, style=wx.BORDER_NONE, size=size)
+
+    def AcceptsFocus(self):
+        return True
+
+    def AcceptsFocusFromKeyboard(self):
+        return True
+
+
+    
+class EditText(wx.Panel):
+    DEFAULT_SZ = (200, 25)
+    
+    def __init__(self, parent, id = wx.ID_ANY, label="", pos=wx.DefaultPosition, size=DEFAULT_SZ):
+        super(EditText, self).__init__(parent, id=id, pos=pos, size=size, style=wx.BORDER_NONE|wx.TAB_TRAVERSAL)
+
+        # self.text  = st.GenStaticText(self, label=label, style=wx.BORDER_NONE, size=size)
+        self.text  = Text(self, label=label, style=wx.BORDER_NONE, size=size)
+        self.entry = wx.TextCtrl(self, value=label,
+                                 style=wx.BORDER_SUNKEN|wx.TE_PROCESS_ENTER|wx.TE_MULTILINE,
+                                 size=size)
 
         box = wx.BoxSizer(wx.HORIZONTAL)
         box.Add(self.text,  proportion=1, flag=wx.ALL|wx.EXPAND, border=0)
@@ -375,35 +393,44 @@ class EditText(wx.Control):
         self.SetSizer(box)
 
         self.text.Bind(wx.EVT_LEFT_DOWN, self.ShowEntry)
-        self.text.Bind(wx.EVT_TEXT_ENTER, self.ShowEntry)
+        self.text.Bind(wx.EVT_KEY_DOWN, self.OnKeyDown)
         self.entry.Bind(wx.EVT_LEFT_DOWN, self.ShowText)
         self.entry.Bind(wx.EVT_TEXT_ENTER, self.ShowText)
         self.entry.Bind(wx.EVT_KILL_FOCUS, self.ShowText)
         self.Bind(wx.EVT_SET_FOCUS, self.OnFocus)
 
         self.text.Show()
-        self.entry.Hide()        
+        self.entry.Hide()
         self.Show()
 
 
     ### Behavior functions
+
+    def SetHint(self, txt):
+        # note we are not calling SetLabel on purpose.
+        # we only need to change the label of text, not of entry
+        self.text.SetLabel(txt)
+
+    def SetFont(self, font):
+        self.text.SetFont(font)
+
+    def SetBackgroundColour(self, cl):
+        self.text.SetBackgroundColour(cl)
+
+    def SetEntryColour(self, cl):
+        self.entry.SetBackgroundColour(cl)
 
     def SetLabel(self, lbl):
         self.text.SetLabel(lbl)
         self.entry.SetValue(lbl)
         return super(EditText, self).SetLabel(lbl)        
 
-    def SetValue(self, lbl):
-        self.SetLabel(lbl)
-
     def GetLabel(self):
-        return self.text.GetLabel()
-
-    def GetValue(self):
         return self.GetLabel()
 
     def ShowEntry(self, ev):
-        self.text.Hide()
+        print self.text.AcceptsFocus()
+        print self.text.AcceptsFocusFromKeyboard()
         self.entry.Show()
         self.entry.SetFocus()
 
@@ -411,20 +438,23 @@ class EditText(wx.Control):
         self.entry.Hide()
         self.text.SetLabel(self.entry.GetValue())
         self.text.Show()
+        self.text.SetFocus()
 
 
     ### Auxiliary functions
-    
-    def ShouldInheritColours(self):
-        return True
-
-    def InheritBackgroundColour(self):
-        return True
 
     
     ### Callbacks
 
+    def OnKeyDown(self, ev):
+        code = ev.GetKeyCode()
+        if code == 9:
+            ev.Skip()
+        if code == 13 or code == 32 or code in range(65, 91) or code in range(97, 123):
+            self.ShowEntry(None) # ShowEntry doesn't really use its event
+
     def OnFocus(self, ev):
+        print "receiving focus"
         if self.text.IsShown():
             self.text.SetFocus()
         else:
