@@ -7,7 +7,6 @@ from utilities import MakeEncirclingRect
 from card import *
 
 
-
 ######################
 # BoardBase Class
 ######################
@@ -24,6 +23,7 @@ class BoardBase(AutoSize):
         self.cards = []
         self.selected_cards = []
         self.moving_cards_pos = []
+        self.drag_select = False
         self.cur_scale = 1.0
 
         # Bindings
@@ -325,11 +325,12 @@ class BoardBase(AutoSize):
         # initiate drag select
         self.init_pos = ev.GetPosition()
         self.cur_pos = ev.GetPosition()
-        self.drag_select = True
         self.Bind(wx.EVT_MOTION, self.OnDragSelect)
 
     def OnDragSelect(self, ev):
         if ev.Dragging() and not self.moving_cards_pos:
+            self.drag_select = True
+            
             # erase the last one selection rect
             self.PaintRect((self.init_pos[0], self.init_pos[1],
                             self.cur_pos[0], self.cur_pos[1]),
@@ -398,7 +399,7 @@ class BoardBase(AutoSize):
         # Brush is for background, Pen is for foreground
         x, y, w, h = card.GetRect()        
         rect = wx.Rect(pos[0], pos[1], w, h)
-        rect = rect.Inflate(2 * thick, 2 * thick)        
+        rect = rect.Inflate(2 * thick, 2 * thick)
         self.PaintRect(rect, thick=thick, style=wx.TRANSPARENT, refresh=refresh)
 
     def CalculateNewCardPosition(self, newpos, below = False):
