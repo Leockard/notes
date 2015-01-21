@@ -7,7 +7,6 @@ from utilities import MakeEncirclingRect
 from card import *
 
 
-
 ######################
 # BoardBase Class
 ######################
@@ -24,6 +23,7 @@ class BoardBase(AutoSize):
         self.cards = []
         self.selected_cards = []
         self.moving_cards_pos = []
+        self.drag_select = False
         self.cur_scale = 1.0
 
         # Bindings
@@ -62,9 +62,15 @@ class BoardBase(AutoSize):
         """Returns a list of all Content cards of the kind. kind should be a Content.X_LBL constant."""
         return [c for c in self.GetContents() if c.GetKind() == kind]
 
-    def GetNextCard(self, card, cycle=True):
+    def GetNextCard(self, ctrl, cycle=True):
         """Returns the card with label consecutive to that of the argument, or None.
         If cycle=True, and card is the Card with the last label, return the Card with first label."""
+        card = ctrl.GetParent()
+        if not isinstance(card, Card):
+            card = card.GetParent()
+            if not isinstance(card, Card):
+                return
+
         greater_lbl = [c for c in self.cards if c.label > card.label]
         greater_lbl.sort(key = lambda x: x.label)
         if greater_lbl:
@@ -77,9 +83,15 @@ class BoardBase(AutoSize):
         cards.sort(key = lambda x: x.label)
         return cards[0]
 
-    def GetPrevCard(self, card, cycle=True):
+    def GetPrevCard(self, ctrl, cycle=True):
         """Returns the card with label previous to that of the argument, or None.
         If cycle=True, and card is the Card with the last label, return the Card with last label."""
+        card = ctrl.GetParent()
+        if not isinstance(card, Card):
+            card = card.GetParent()
+            if not isinstance(card, Card):
+                return
+
         lesser_lbl = [c for c in self.cards if c.label < card.label]
         lesser_lbl.sort(key = lambda x: x.label)
         if lesser_lbl:
@@ -92,7 +104,7 @@ class BoardBase(AutoSize):
         cards.sort(key = lambda x: x.label)
         return cards[-1]
 
-    def NewCard(self, pos, label = -1, title="", kind="kind", content=""):
+    def NewContent(self, pos, label=-1, title="", kind="kind", content=""):
         if label == -1: label = len(self.cards)
         newcard = Content(self, label, pos=pos, title=title, kind=kind, content=content)
         newcard.SetFocus()
@@ -108,9 +120,9 @@ class BoardBase(AutoSize):
         self.FitToChildren()
         return newcard
 
-    def NewHeader(self, pos, label = -1, txt=""):
+    def NewHeader(self, pos, label=-1, txt=""):
         if label == -1: label = len(self.cards)
-        newhead = Header(self, label, wx.ID_ANY, pos, txt)
+        newhead = Header(self, label, pos=pos, header=txt)
         newhead.SetFocus()
         self.cards.append(newhead)        
 
@@ -119,6 +131,15 @@ class BoardBase(AutoSize):
         
         self.FitToChildren()
         return newhead
+
+    def NewImage(self, pos, label=-1, path=None):
+        if label == -1: label = len(self.cards)
+        newimg = Image(self, label, pos=pos, path=path)
+        newimg.SetFocus()
+        self.cards.append(newimg)
+
+        self.FitToChildren()
+        return newimg
 
     def GetSelection(self):
         return self.selected_cards
@@ -160,7 +181,7 @@ class BoardBase(AutoSize):
         for c in sel:
             pos = c.GetPosition() + (self.CARD_PADDING, self.CARD_PADDING)
             if isinstance(c, Content):
-                new.append(self.NewCard(pos, -1, c.GetTitle(), c.GetKind(), c.GetContent()))
+                new.append(self.NewContent(pos, -1, c.GetTitle(), c.GetKind(), c.GetContent()))
             if isinstance(c, Header):
                 new.append(self.NewHeader(pos, -1, c.GetHeader()))
 
@@ -304,20 +325,21 @@ class BoardBase(AutoSize):
         # initiate drag select
         self.init_pos = ev.GetPosition()
         self.cur_pos = ev.GetPosition()
-        self.drag_select = True
         self.Bind(wx.EVT_MOTION, self.OnDragSelect)
 
     def OnDragSelect(self, ev):
         if ev.Dragging() and not self.moving_cards_pos:
+            self.drag_select = True
+            
             # erase the last one selection rect
-            self.PaintRect((self.init_pos[0], self.init_pos[1],
+            self.PaintRect(wx.Rect(self.init_pos[0], self.init_pos[1],
                             self.cur_pos[0], self.cur_pos[1]),
                             style = wx.TRANSPARENT,
                             refresh = False)
             
             # and draw the current one
             final_pos = ev.GetPosition() - self.init_pos
-            self.PaintRect((self.init_pos[0], self.init_pos[1],
+            self.PaintRect(wx.Rect(self.init_pos[0], self.init_pos[1],
                             final_pos[0], final_pos[1]),
                             refresh = False)
 
@@ -342,16 +364,14 @@ class BoardBase(AutoSize):
 
     def OnLeftDClick(self, ev):
         pos = self.CalculateNewCardPosition(ev.GetPosition())
-        self.NewCard(pos)
+        self.NewContent(pos)
 
     def OnMouseOverCard(self, ev):
-        # print "over card"
         card = ev.GetEventObject()
         card.Unbind(wx.EVT_ENTER_WINDOW)
         card.ShowBar()
 
     def OnMouseLeaveCard(self, ev):
-        # print "leave card"
         card = ev.GetEventObject()
         card.Bind(wx.EVT_ENTER_WINDOW, self.OnMouseOverCard)
         
@@ -365,7 +385,7 @@ class BoardBase(AutoSize):
         dc.SetBrush(wx.Brush(self.GetBackgroundColour()))
         dc.SetPen(wx.Pen("BLACK", thick, style))
         dc.DrawRectangle(rect[0], rect[1], rect[2], rect[3])
-        if refresh: self.Refresh()
+        if refresh: self.RefreshRect(rect)
         
     def PaintCardRect(self, card, pos, thick = MOVING_RECT_THICKNESS, style = wx.SOLID, refresh = True):
         """Paints a rectangle just big enough to encircle card.GetRect(), at pos."""
@@ -375,11 +395,11 @@ class BoardBase(AutoSize):
         self.PaintRect(rect, thick=thick, style=style, refresh=refresh)
 
     def EraseCardRect(self, card, pos, thick = MOVING_RECT_THICKNESS, refresh = True):
-        """Erases a rectangle drawn by PaintCardRect()."""        
+        """Erases a rectangle drawn by PaintCardRect()."""
         # Brush is for background, Pen is for foreground
         x, y, w, h = card.GetRect()        
         rect = wx.Rect(pos[0], pos[1], w, h)
-        rect = rect.Inflate(2 * thick, 2 * thick)        
+        rect = rect.Inflate(2 * thick, 2 * thick)
         self.PaintRect(rect, thick=thick, style=wx.TRANSPARENT, refresh=refresh)
 
     def CalculateNewCardPosition(self, newpos, below = False):

@@ -31,7 +31,7 @@ class MyFrame(wx.Frame):
         self.InitUI()              # sets up the sizer and the buttons' bindings
         self.GetCurrentBoard().SetFocus()
 
-        # Keyboard shortcuts
+        # keyboard shortcuts
         # accels is populated in InitUI()
         self.SetAcceleratorTable(wx.AcceleratorTable(self.accels))
 
@@ -68,8 +68,9 @@ class MyFrame(wx.Frame):
             left = max(rights) + Page.CARD_PADDING
             pos = (left, top)
 
-        if subclass == "Content":  new = board.NewCard(pos)
-        elif subclass == "Header": new = board.NewHeader(pos)
+        if   subclass == "Content": new = board.NewContent(pos)
+        elif subclass == "Header":  new = board.NewHeader(pos)
+        elif subclass == "Image":   new = board.NewImage(pos)
         board.SelectCard(new, True)
         new.SetFocus()
         self.Log("New " + subclass + " card created.")
@@ -95,9 +96,6 @@ class MyFrame(wx.Frame):
         for txt, ctrl in txt_ctrls:
             if txt.find(s) > -1: finds.append(ctrl)
 
-        print "controls: " + str(len(txt_ctrls))
-        print "finds: " + str(len(finds))
-
         # focus on the first find
         if finds:
             # finds[0].SetFocus()
@@ -119,95 +117,103 @@ class MyFrame(wx.Frame):
 
         # file menu
         file_menu = wx.Menu()                
-        open_item = wx.MenuItem(file_menu, wx.ID_OPEN, "&Open")
-        save_item = wx.MenuItem(file_menu, wx.ID_SAVE, "&Save")
-        quit_item = wx.MenuItem(file_menu, wx.ID_EXIT, "&Quit")
+        open_it = wx.MenuItem(file_menu, wx.ID_OPEN, "&Open")
+        save_it = wx.MenuItem(file_menu, wx.ID_SAVE, "&Save")
+        quit_it = wx.MenuItem(file_menu, wx.ID_EXIT, "&Quit")
 
         file_menu.Append(wx.ID_NEW, "&New")        
-        file_menu.AppendItem(open_item)
-        file_menu.AppendItem(save_item)
+        file_menu.AppendItem(open_it)
+        file_menu.AppendItem(save_it)
         file_menu.AppendSeparator()
-        file_menu.AppendItem(quit_item)
+        file_menu.AppendItem(quit_it)
 
         # edit menu
-        edit_menu        = wx.Menu()
-        copy_item        = wx.MenuItem(edit_menu, wx.ID_COPY, "Copy")
-        delt_item        = wx.MenuItem(edit_menu, wx.ID_DELETE, "Delete")
-        nwcdr_item       = wx.MenuItem(edit_menu, wx.ID_ANY, "New Card: Right")
-        nwcdb_item       = wx.MenuItem(edit_menu, wx.ID_ANY, "New Card: Below")
-        nwhdr_item       = wx.MenuItem(edit_menu, wx.ID_ANY, "New Header: Right")
-        nwhdb_item       = wx.MenuItem(edit_menu, wx.ID_ANY, "New Header: Below")
-        ctrltab_item     = wx.MenuItem(edit_menu, wx.ID_ANY, "Next Card")
-        ctrlshfttab_item = wx.MenuItem(edit_menu, wx.ID_ANY, "Previous Card")
-        unsel_item       = wx.MenuItem(edit_menu, wx.ID_ANY, "Unselect All")
+        edit_menu = wx.Menu()
+        copy_it        = wx.MenuItem(edit_menu, wx.ID_COPY, "Copy")
+        delt_it        = wx.MenuItem(edit_menu, wx.ID_DELETE, "Delete")
+        ctrltab_it     = wx.MenuItem(edit_menu, wx.ID_ANY, "Next Card")
+        ctrlshfttab_it = wx.MenuItem(edit_menu, wx.ID_ANY, "Previous Card")
+        unsel_it       = wx.MenuItem(edit_menu, wx.ID_ANY, "Unselect All")
 
-        edit_menu.AppendItem(copy_item)
-        edit_menu.AppendItem(delt_item)
-        edit_menu.AppendItem(nwcdr_item)
-        edit_menu.AppendItem(nwcdb_item)
-        edit_menu.AppendItem(nwhdr_item)
-        edit_menu.AppendItem(nwhdb_item)
-        edit_menu.AppendItem(ctrltab_item)
+        edit_menu.AppendItem(copy_it)
+        edit_menu.AppendItem(delt_it)
+        edit_menu.AppendItem(ctrltab_it)
 
+        # insert menu
+        insert_menu = wx.Menu()
+        contr_it = wx.MenuItem(insert_menu, wx.ID_ANY, "New Card: Right")
+        contb_it = wx.MenuItem(insert_menu, wx.ID_ANY, "New Card: Below")
+        headr_it = wx.MenuItem(insert_menu, wx.ID_ANY, "New Header: Right")
+        headb_it = wx.MenuItem(insert_menu, wx.ID_ANY, "New Header: Below")
+        img_it   = wx.MenuItem(insert_menu, wx.ID_ANY, "Insert image")
+
+        insert_menu.AppendItem(contr_it)
+        insert_menu.AppendItem(contb_it)
+        insert_menu.AppendItem(headr_it)
+        insert_menu.AppendItem(headb_it)        
+        insert_menu.AppendItem(img_it)
+        
         # layout menu
         layout_menu = wx.Menu()                
-        harr_item = wx.MenuItem(layout_menu, wx.ID_ANY, "Arrange &Horizontally")
-        varr_item = wx.MenuItem(layout_menu, wx.ID_ANY, "Arrange &Vertically")
-        layout_menu.AppendItem(harr_item)
-        layout_menu.AppendItem(varr_item)
+        harr_it = wx.MenuItem(layout_menu, wx.ID_ANY, "Arrange &Horizontally")
+        varr_it = wx.MenuItem(layout_menu, wx.ID_ANY, "Arrange &Vertically")
+        layout_menu.AppendItem(harr_it)
+        layout_menu.AppendItem(varr_it)
 
         # debug menu
         debug_menu = wx.Menu()                
-        debug_item = wx.MenuItem(debug_menu, wx.ID_ANY, "&Debug")
-        debug_menu.AppendItem(debug_item)
+        debug_it = wx.MenuItem(debug_menu, wx.ID_ANY, "&Debug")
+        debug_menu.AppendItem(debug_it)
 
         # search menu
         # this is an invisible search menu, used only to have a MenuItem
         # to append to the AcceleratorTable
         search_menu = wx.Menu()
-        search_item = wx.MenuItem(search_menu, wx.ID_ANY, "Search")
-        next_item   = wx.MenuItem(search_menu, wx.ID_ANY, "Next")
-        prev_item   = wx.MenuItem(search_menu, wx.ID_ANY, "Previous")
-        search_menu.AppendItem(search_item)
+        search_it = wx.MenuItem(search_menu, wx.ID_ANY, "Search")
+        next_it   = wx.MenuItem(search_menu, wx.ID_ANY, "Next")
+        prev_it   = wx.MenuItem(search_menu, wx.ID_ANY, "Previous")
+        search_menu.AppendItem(search_it)
 
         # bindings
-        self.Bind(wx.EVT_MENU, self.OnQuit      , quit_item)
-        self.Bind(wx.EVT_MENU, self.OnCopy      , copy_item)
-        self.Bind(wx.EVT_MENU, self.OnDelete    , delt_item)
-        self.Bind(wx.EVT_MENU, self.OnSave      , save_item)
-        self.Bind(wx.EVT_MENU, self.OnOpen      , open_item)
-        self.Bind(wx.EVT_MENU, self.OnCtrlTab   , ctrltab_item)
-        self.Bind(wx.EVT_MENU, self.OnHArrange  , harr_item)
-        self.Bind(wx.EVT_MENU, self.OnVArrange  , varr_item)
-        self.Bind(wx.EVT_MENU, self.OnDebug     , debug_item)
-        self.Bind(wx.EVT_MENU, self.OnEsc       , unsel_item)
-        self.Bind(wx.EVT_MENU, self.OnCtrlF     , search_item)
-        self.Bind(wx.EVT_MENU, self.OnCtrlG     , next_item)
-        self.Bind(wx.EVT_MENU, self.OnCtrlShftG , prev_item)
-        self.Bind(wx.EVT_MENU, self.OnCtrlRet   , nwcdr_item)
-        self.Bind(wx.EVT_MENU, self.OnAltRet    , nwhdr_item)
-        self.Bind(wx.EVT_MENU, self.OnCtrlShftTab , ctrlshfttab_item)        
-        self.Bind(wx.EVT_MENU, self.OnCtrlShftRet , nwcdb_item)
-        self.Bind(wx.EVT_MENU, self.OnAltShftRet  , nwhdb_item)        
+        self.Bind(wx.EVT_MENU, self.OnQuit      , quit_it)
+        self.Bind(wx.EVT_MENU, self.OnCopy      , copy_it)
+        self.Bind(wx.EVT_MENU, self.OnDelete    , delt_it)
+        self.Bind(wx.EVT_MENU, self.OnSave      , save_it)
+        self.Bind(wx.EVT_MENU, self.OnOpen      , open_it)
+        self.Bind(wx.EVT_MENU, self.OnCtrlTab   , ctrltab_it)
+        self.Bind(wx.EVT_MENU, self.OnHArrange  , harr_it)
+        self.Bind(wx.EVT_MENU, self.OnVArrange  , varr_it)
+        self.Bind(wx.EVT_MENU, self.OnDebug     , debug_it)
+        self.Bind(wx.EVT_MENU, self.OnEsc       , unsel_it)
+        self.Bind(wx.EVT_MENU, self.OnCtrlF     , search_it)
+        self.Bind(wx.EVT_MENU, self.OnCtrlG     , next_it)
+        self.Bind(wx.EVT_MENU, self.OnCtrlShftG , prev_it)
+        self.Bind(wx.EVT_MENU, self.OnCtrlRet   , contr_it)
+        self.Bind(wx.EVT_MENU, self.OnAltRet    , headr_it)
+        self.Bind(wx.EVT_MENU, self.OnImage     , img_it)
+        self.Bind(wx.EVT_MENU, self.OnCtrlShftTab , ctrlshfttab_it)        
+        self.Bind(wx.EVT_MENU, self.OnCtrlShftRet , contb_it)
+        self.Bind(wx.EVT_MENU, self.OnAltShftRet  , headb_it)
 
         # shortcuts
-        self.accels.append(wx.AcceleratorEntry(wx.ACCEL_NORMAL, 27, unsel_item.GetId())) # ESC
-        self.accels.append(wx.AcceleratorEntry(wx.ACCEL_NORMAL, 127, delt_item.GetId())) # DEL
+        self.accels.append(wx.AcceleratorEntry(wx.ACCEL_NORMAL, 27, unsel_it.GetId())) # ESC
+        self.accels.append(wx.AcceleratorEntry(wx.ACCEL_NORMAL, 127, delt_it.GetId())) # DEL
         
-        self.accels.append(wx.AcceleratorEntry(wx.ACCEL_CTRL, ord("D"),      debug_item.GetId()))
-        self.accels.append(wx.AcceleratorEntry(wx.ACCEL_CTRL, ord("F"),      search_item.GetId()))
-        self.accels.append(wx.AcceleratorEntry(wx.ACCEL_CTRL, ord("G"),      next_item.GetId()))
-        self.accels.append(wx.AcceleratorEntry(wx.ACCEL_CTRL, wx.WXK_TAB,    ctrltab_item.GetId()))                
-        self.accels.append(wx.AcceleratorEntry(wx.ACCEL_CTRL, wx.WXK_RETURN, nwcdr_item.GetId()))
-        self.accels.append(wx.AcceleratorEntry(wx.ACCEL_ALT, wx.WXK_RETURN, nwhdr_item.GetId()))
-        self.accels.append(wx.AcceleratorEntry(wx.ACCEL_SHIFT|wx.ACCEL_CTRL , ord("G"), prev_item.GetId()))
-        self.accels.append(wx.AcceleratorEntry(wx.ACCEL_SHIFT|wx.ACCEL_CTRL , wx.WXK_RETURN, nwcdb_item.GetId()))
-        self.accels.append(wx.AcceleratorEntry(wx.ACCEL_SHIFT|wx.ACCEL_CTRL , wx.WXK_TAB,    ctrlshfttab_item.GetId()))
-        self.accels.append(wx.AcceleratorEntry(wx.ACCEL_SHIFT|wx.ACCEL_ALT  , wx.WXK_RETURN, nwhdb_item.GetId()))
+        self.accels.append(wx.AcceleratorEntry(wx.ACCEL_CTRL, ord("D"),      debug_it.GetId()))
+        self.accels.append(wx.AcceleratorEntry(wx.ACCEL_CTRL, ord("F"),      search_it.GetId()))
+        self.accels.append(wx.AcceleratorEntry(wx.ACCEL_CTRL, ord("G"),      next_it.GetId()))
+        self.accels.append(wx.AcceleratorEntry(wx.ACCEL_CTRL, wx.WXK_TAB,    ctrltab_it.GetId()))                
+        self.accels.append(wx.AcceleratorEntry(wx.ACCEL_CTRL, wx.WXK_RETURN, contr_it.GetId()))
+        self.accels.append(wx.AcceleratorEntry(wx.ACCEL_ALT, wx.WXK_RETURN, headr_it.GetId()))
+        self.accels.append(wx.AcceleratorEntry(wx.ACCEL_SHIFT|wx.ACCEL_CTRL , ord("G"), prev_it.GetId()))
+        self.accels.append(wx.AcceleratorEntry(wx.ACCEL_SHIFT|wx.ACCEL_CTRL , wx.WXK_RETURN, contb_it.GetId()))
+        self.accels.append(wx.AcceleratorEntry(wx.ACCEL_SHIFT|wx.ACCEL_CTRL , wx.WXK_TAB,    ctrlshfttab_it.GetId()))
+        self.accels.append(wx.AcceleratorEntry(wx.ACCEL_SHIFT|wx.ACCEL_ALT  , wx.WXK_RETURN, headb_it.GetId()))
 
         # finish up        
         bar.Append(file_menu, "&File")
         bar.Append(edit_menu, "&Edit")
+        bar.Append(insert_menu, "&Insert")
         bar.Append(layout_menu, "&Layout")        
         bar.Append(debug_menu, "&Debug")
         self.SetMenuBar(bar)
@@ -309,9 +315,7 @@ class MyFrame(wx.Frame):
         self.StatusBar.SetStatusText(s)
 
     def OnDebug(self, ev):
-        card = self.board.GetCards()[0]
-        if card.IsCollapsed(): card.UnCollapse()
-        else: card.Collapse()
+        print self.FindFocus()
 
     def Save(self, out_file, d):
         """Save the data in the dict d in the file out_file."""
@@ -324,15 +328,19 @@ class MyFrame(wx.Frame):
         with open(path, 'r') as f: carddict = pickle.load(f)
         for id, values in carddict.iteritems():
             if values["class"] == "Content":
-                board.NewCard(pos     = values["pos"],
-                              label   = values["label"],
-                              title   = str(values["title"]),
-                              kind    = values["kind"],
-                              content = values["content"])
+                board.NewContent(pos     = values["pos"],
+                                 label   = values["label"],
+                                 title   = str(values["title"]),
+                                 kind    = values["kind"],
+                                 content = values["content"])
             elif values["class"] == "Header":
                 board.NewHeader(pos   = values["pos"],
                                 label = values["label"],
                                 txt   = values["header"])
+            elif values["class"] == "Image":
+                board.NewImage(pos   = values["pos"],
+                               label = values["label"],
+                               path  = values["path"])
 
     def AddAccelerator(self, entry):
         """entry should be a AcceleratorEntry()."""
@@ -359,6 +367,7 @@ class MyFrame(wx.Frame):
     def OnEsc(self, ev):
         """Unselect all cards."""
         self.GetCurrentBoard().UnselectAll()
+        self.board.SetFocusIgnoringChildren()
 
     def OnCopy(self, ev):
         """Copy selected cards."""
@@ -376,12 +385,10 @@ class MyFrame(wx.Frame):
         """Zoom in and out."""
         scale = ev.GetString()[:-1] # all strings have the % sign at the end
         scale = float(scale) / 100
-        print scale
         self.GetCurrentBoard().SetScale(scale)
 
     def OnCtrlF(self, ev):
         """Show/hide the search control."""
-        print "ctrl f"
         shwn = self.search_ctrl.IsShown()
         
         if not shwn:
@@ -395,7 +402,6 @@ class MyFrame(wx.Frame):
 
     def OnCtrlG(self, ev):
         """Go to next search find."""
-        print "ctrl g"
         if self.searching != None:
             i = self.searching + 1
             if i >= len(self.search_find): i = 0
@@ -407,7 +413,6 @@ class MyFrame(wx.Frame):
 
     def OnCtrlShftG(self, ev):
         """Go to previous search find."""
-        print "ctrl shft g"
         if self.searching != None:
             i = self.searching - 1
             if i < 0: i = len(self.search_find) - 1
@@ -415,30 +420,14 @@ class MyFrame(wx.Frame):
             self.search_find[i].SetSelection(0, 3)
             self.searching = i
 
-    def OnToolBarDelete(self, ev):
-        print "toolbar delete"
-
-    def OnToolBarCopy(self, ev):
-        print "toolbar copy"
-    
     def OnCtrlTab(self, ev):
         """Selects next card."""
-        card = self.FindFocus().GetParent()
-        self.GetCurrentBoard().GetNextCard(card).SetFocus()
+        self.GetCurrentBoard().GetNextCard(self.FindFocus()).SetFocus()
 
     def OnCtrlShftTab(self, ev):
         """Selects previous card."""
-        card = self.FindFocus().GetParent()
-        self.GetCurrentBoard().GetPrevCard(card).SetFocus()
+        self.GetCurrentBoard().GetPrevCard(self.FindFocus()).SetFocus()
 
-    def OnBitmapShow(self, ev):
-        """Called when the bitmap is shown:enalbe scribbling mode."""
-        if ev.IsShown():
-            print "bitmap show"
-
-    def OnBitmapLeftDown(self, ev):
-        print "bitmap click"
-    
     def OnCtrlRet(self, ev):
         """Add a new content card to the board, to the right of the current card."""
         self.PlaceNewCard("Content", False)
@@ -454,6 +443,9 @@ class MyFrame(wx.Frame):
     def OnAltShftRet(self, ev):
         """Add a new header to the board, to the right of the current card."""
         self.PlaceNewCard("Header", True)
+
+    def OnImage(self, ev):
+        self.PlaceNewCard("Image", False)
 
     def OnSave(self, ev):
         """Save file."""

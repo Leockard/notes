@@ -40,40 +40,15 @@ class Page(AutoSize):
 
     ### Behavior functions
 
-    def ResizeChildren(self):
-        print "resizechildren at scale: " + str(self.scale)
-        self.resizing = True
-        ch = self.GetChildren()
-        print "children: " + str(len(ch))            
-        for c in ch:
-            print "child: " + str(c)
-            c.Hide()
-            pos = c.GetPosition()
-            c.SetPosition((pos.x * self.scale, pos.y * self.scale))
-            sz = c.GetSize()
-            c.SetSize((sz.width * self.scale, sz.height * self.scale))
-            c.Show()
-            
-        self.resizing = False
-
 
     ### Behavior functions
 
     def SetupCanvas(self):
         """Setsup the canvas background. Call before showing the Canvas."""
-        print "setup canvas"
-        # set real size
-        # rect = self.board.GetRect()
-        # self.canvas.SetSize((rect.width, rect.height))
-        self.canvas.SetSize(self.board.GetSize())
-        self.canvas.UpdateContentSize(self.board.GetSize())
+        rect = self.board.GetRect()                
+        self.canvas.SetSize((rect.width, rect.height))
 
-        # set virtual size
-        sz = self.board.content_sz
-        self.canvas.SetVirtualSize(sz)
-
-        # draw all of the board (virtual size) in the canvas
-        bmp = wx.EmptyBitmap(sz.width, sz.height)
+        bmp = wx.EmptyBitmap(rect.width, rect.height)
         dc = wx.MemoryDC()
         dc.SelectObject(bmp)
         
@@ -189,7 +164,6 @@ class Page(AutoSize):
     def OnZoom(self, ev):
         scale = float(ev.GetString()[:-1]) / 100
         self.scale = scale
-        print "Page.OnZoom: " + str(scale)
         self.Refresh()
 
     def OnView(self, ev):

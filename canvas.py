@@ -34,14 +34,12 @@ class Canvas(AutoSize):
         self.Bind(wx.EVT_SIZE, self.OnSize)
         self.Bind(wx.EVT_IDLE, self.OnIdle)
         self.Bind(wx.EVT_PAINT, self.OnPaint)
-        self.Bind(wx.EVT_SHOW, self.OnShow) # or hide
-        # self.Bind(wx.EVT_ERASE_BACKGROUND, self.OnEraseBackground)
+        self.Bind(wx.EVT_SHOW, self.OnShow)
 
 
     ### Behavior functions
     def DrawLines(self, dc):
         """Redraws all the lines that have been drawn already."""
-        # print "DrawLines"
         dc.BeginDrawing()
         for colour, thickness, line in self.lines:
             pen = wx.Pen(colour, thickness, wx.SOLID)
@@ -59,21 +57,17 @@ class Canvas(AutoSize):
     
     def InitBuffer(self):
         """Initialize the bitmap used for buffering the display."""
-        print "Canvas.InitBuffer"
         size = self.GetClientSize()
         # size = self.content_size
-        # print "making new buffer"
         buf = wx.EmptyBitmap(max(1, size.width), max(1, size.height))
         dc = wx.BufferedDC(None, buf)
         
         if hasattr(self, "buffer"):
-            # print "copying what we had before"
             dc.DrawBitmap(self.buffer, 0, 0)
                 
         dc.SetBackground(wx.Brush(self.GetBackgroundColour()))
         dc.Clear()
         self.DrawLines(dc)
-        print "setting reinitbuffer to False from InitBuffer"
         self.reInitBuffer = False
         self.buffer = buf
 
@@ -85,13 +79,13 @@ class Canvas(AutoSize):
             self.DrawLines(wx.BufferedDC(None, self.buffer))
     
     def OnLeftDown(self, ev):
-        """called when the left mouse button is pressed"""
+        """Called when the left mouse button is pressed"""
         self.curLine = []
         self.pos = ev.GetPosition()
         self.CaptureMouse()
 
     def OnLeftUp(self, ev):
-        """called when the left mouse button is released"""
+        """Called when the left mouse button is released"""
         if self.HasCapture():
             self.lines.append((self.colour, self.thickness, self.curLine))
             self.curLine = []
@@ -116,17 +110,8 @@ class Canvas(AutoSize):
             dc.EndDrawing()
 
     def OnSize(self, ev):
-        # print "OnSize" + str(ev.GetSize())
         new_sz = ev.GetSize()
         self.SetSize(new_sz)
-        # if new_sz.x > self.content_size.x:
-        #     self.content_size.x = new_sz.x
-        #     print "setting reInitBuffer to True from OnSize"
-        #     self.reInitBuffer = True            
-        # if new_sz.y > self.content_size.y:
-        #     self.content_size.y = new_sz.y
-        #     print "setting reInitBuffer to True from OnSize"
-        #     self.reInitBuffer = True
 
     def OnIdle(self, ev):
         """
@@ -136,8 +121,6 @@ class Canvas(AutoSize):
         it is happening.
         """
         if self.reInitBuffer:
-            # print "OnIdle: reInitBuffer = True"
-            print "calling InitBuffer from OnIdle"
             self.InitBuffer()
             self.Refresh(False)
 
@@ -145,18 +128,5 @@ class Canvas(AutoSize):
         """Called when the window is exposed."""
         # Create a buffered paint DC.  It will create the real wx.PaintDC and then blit
         # the bitmap to it when dc is deleted.
-        # print "OnPaint"
         dc = wx.BufferedPaintDC(self, self.buffer)
-
-    def OnEraseBackground(self, evt):
-        # http://www.blog.pythonlibrary.org/2010/03/18/wxpython-putting-a-background-image-on-a-panel/
-        # print "OnErase"
-        dc = evt.GetDC()
-    
-        if not dc:
-            dc = wx.ClientDC(self)
-            rect = self.GetUpdateRegion().GetBox()
-            dc.SetClippingRect(rect)
-        dc.Clear()
-        # print "onerase"
 

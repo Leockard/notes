@@ -55,7 +55,6 @@ def Associate(card):
 ### Callbacks
 
 def OnShow(ev):
-    print "CardBar.OnShow()"
     global ASSOC_CARD
     global BAR
     top = ASSOC_CARD.GetRect().top
@@ -67,14 +66,13 @@ def OnShow(ev):
 
 def OnCollapse(ev):
     global ASSOC_CARD
-    print "collapse"
+    pass
 
 def OnMaximize(ev):
     global ASSOC_CARD    
-    print "maximize"
+    pass
 
 def OnClose(ev):
-    print "close: "
     global ASSOC_CARD
     del ASSOC_CARD
     ASSOC_CARD = None
