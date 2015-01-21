@@ -367,7 +367,7 @@ class MyFrame(wx.Frame):
     def OnEsc(self, ev):
         """Unselect all cards."""
         self.GetCurrentBoard().UnselectAll()
-        self.board.SetFocus()
+        self.board.SetFocusIgnoringChildren()
 
     def OnCopy(self, ev):
         """Copy selected cards."""
