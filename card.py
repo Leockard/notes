@@ -157,6 +157,9 @@ class Content(Card):
         
     ### Behavior functions
 
+    # def Highlight(self, start, end):
+    #     self.SetStyle((start, end), rt.RichTextAttr(wx.TextAttr(None, wx.RED)))
+
     def Collapse(self):
         if not self.IsCollapsed():
             self.content.Hide()
@@ -198,9 +201,10 @@ class Content(Card):
         kindbut = wx.Button(self, label = "kind", size=Content.KIND_BTN_SZ, style=wx.BORDER_NONE)
         kindbut.SetOwnFont(wx.Font(8, wx.FONTFAMILY_DEFAULT, wx.FONTSTYLE_ITALIC, wx.FONTWEIGHT_NORMAL, False))
         
-        content = rt.RichTextCtrl(self, size = (10, 10), style=wx.TE_MULTILINE|wx.TE_NO_VSCROLL)
-        content.ShowScrollbars(horz=wx.SHOW_SB_NEVER, vert=wx.SHOW_SB_NEVER)
-        content.SetHint("Write here...")
+        # content = rt.RichTextCtrl(self, size = (10, 10), style=wx.TE_MULTILINE|wx.TE_NO_VSCROLL)
+        content = wx.TextCtrl(self, size=(10, 10), style=wx.TE_RICH|wx.TE_MULTILINE|wx.TE_NO_VSCROLL)
+        # content.ShowScrollbars(horz=wx.SHOW_SB_NEVER, vert=wx.SHOW_SB_NEVER)
+        # content.SetHint("Write here...")
         
         # boxes
         hbox1 = wx.BoxSizer(wx.HORIZONTAL)
