@@ -440,26 +440,26 @@ class MyFrame(wx.Frame):
 
     def OnCtrlRet(self, ev):
         """Add a new content card to the board, to the right of the current card."""
-        self.GetCurrentBoard().PlaceNewCard("Content", False)
+        self.GetCurrentBoard().PlaceNewCard("Content", below=False)
         self.Log("Placed new Content card.")
 
     def OnCtrlShftRet(self, ev):
         """Add a new content card to the board, below of the current one."""
-        self.GetCurrentBoard().PlaceNewCard("Content", True)
+        self.GetCurrentBoard().PlaceNewCard("Content", below=True)
         self.Log("Placed new Content card.")
 
     def OnAltRet(self, ev):
         """Add a new header to the board, to the right of the current card."""
-        self.GetCurrentBoard().PlaceNewCard("Header", False)
+        self.GetCurrentBoard().PlaceNewCard("Header", below=False)
         self.Log("Placed new Header.")
         
     def OnAltShftRet(self, ev):
         """Add a new header to the board, to the right of the current card."""
-        self.GetCurrentBoard().PlaceNewCard("Header", True)
+        self.GetCurrentBoard().PlaceNewCard("Header", below=True)
         self.Log("Placed new Header.")
 
     def OnImage(self, ev):
-        self.GetCurrentBoard().PlaceNewCard("Image", False)
+        self.GetCurrentBoard().PlaceNewCard("Image", below=False)
         self.Log("Placed new Image.")
 
     def OnNew(self, ev):

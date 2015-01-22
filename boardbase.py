@@ -104,38 +104,41 @@ class BoardBase(AutoSize):
         cards.sort(key = lambda x: x.label)
         return cards[-1]
 
-    def PlaceNewCard(self, subclass, below = False):
+    def PlaceNewCard(self, subclass, pos=wx.DefaultPosition, below=False):
         """
         Places a new Card on the board.
         class should be the string with the name of the Card subclass to create.
         below=False creates the new Card to the right of the currently selected
         Card in the board, if any. below=True creates it below.
         """
-        pos = (0, 0)
-        
-        # if there are no cards, place this one on the top left corner
-        if len(self.GetCards()) < 1:
-            pos = (self.CARD_PADDING, self.CARD_PADDING)
-
-        # if there's a selection, place it next to it
-        elif self.GetFocusedCard():
-            rect = self.GetFocusedCard().GetRect()
-            if below:
-                top = rect.bottom + self.CARD_PADDING
-                left = rect.left
-            else:
-                top = rect.top
-                left = rect.right + self.CARD_PADDING
-            pos = (left, top)
-        
-        else: # otherwise, move it to the right of the last one
-            rects = [c.GetRect() for c in self.GetCards()]
-            rights = [r.right for r in rects]
-            top = min([r.top for r in rects])
-            left = max(rights) + self.CARD_PADDING
-            pos = (left, top)
-
-        new = self.NewCard(subclass, pos=pos)
+        if pos == wx.DefaultPosition:
+            pos = (0, 0)
+            
+            # if there are no cards, place this one on the top left corner
+            if len(self.GetCards()) < 1:
+                pos = (self.CARD_PADDING, self.CARD_PADDING)
+    
+            # if there's a selection, place it next to it
+            elif self.GetFocusedCard():
+                rect = self.GetFocusedCard().GetRect()
+                if below:
+                    top = rect.bottom + self.CARD_PADDING
+                    left = rect.left
+                else:
+                    top = rect.top
+                    left = rect.right + self.CARD_PADDING
+                pos = (left, top)
+            
+            else: # otherwise, move it to the right of the last one
+                rects = [c.GetRect() for c in self.GetCards()]
+                rights = [r.right for r in rects]
+                top = min([r.top for r in rects])
+                left = max(rights) + self.CARD_PADDING
+                pos = (left, top)
+    
+            new = self.NewCard(subclass, pos=pos)
+        else:
+            new = self.NewCard(subclass, pos=pos)
             
         self.SelectCard(new, True)
         new.SetFocus()
