@@ -45,16 +45,20 @@ class Page(AutoSize):
 
     def SetupCanvas(self):
         """Setsup the canvas background. Call before showing the Canvas."""
-        rect = self.board.GetRect()                
+        rect = self.board.GetRect()
         self.canvas.SetSize((rect.width, rect.height))
+        
+        sz = self.board.content_sz
+        self.canvas.SetVirtualSize(sz)
 
-        bmp = wx.EmptyBitmap(rect.width, rect.height)
+        # print sz.x, sz.y
+        bmp = wx.EmptyBitmap(sz.x, sz.y)
         dc = wx.MemoryDC()
         dc.SelectObject(bmp)
         
         # off = self.board.GetClientAreaOrigin()
         dc.Blit(0, 0,                         # pos
-                sz.width, sz.height,          # size
+                sz.x, sz.y,                   # size
                 wx.ClientDC(self.board),      # src
                 0, 0)                         # offset
         dc.SelectObject(wx.NullBitmap)
@@ -129,26 +133,25 @@ class Page(AutoSize):
 
     def InitCanvas(self, id=wx.ID_ANY, size=wx.DefaultSize):
         # make new
-        ctrl = Canvas(self, size=size)
+        cv = Canvas(self, size=size)
         
         # UI setup
         vbox = self.GetSizer()
         if not vbox: vbox = wx.BoxSizer(wx.VERTICAL)
         box = wx.BoxSizer(wx.HORIZONTAL)
-        box.Add(ctrl, proportion=1, flag=wx.ALL|wx.EXPAND, border=1)
+        box.Add(cv,   proportion=1, flag=wx.ALL|wx.EXPAND, border=1)
         vbox.Add(box, proportion=1, flag=wx.ALL|wx.EXPAND, border=1)
 
         # Set members
-        self.canvas = ctrl
+        self.canvas = cv
         self.canvas.Hide()
 
 
     ### Callbacks
 
     def OnSize(self, ev):
-        self.board.UpdateContentSize(ev.GetSize())
-        self.canvas.UpdateContentSize(ev.GetSize())
-        print self.canvas.content_sz
+        # self.board.UpdateContentSize(ev.GetSize())
+        # self.canvas.UpdateContentSize(ev.GetSize())
         # important to skip the event for Sizers to work correctly
         ev.Skip()
 

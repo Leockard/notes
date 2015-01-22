@@ -28,16 +28,19 @@ class AutoSize(wx.ScrolledWindow):
         
         if sz.x > virt_sz.x:
             flag = True
+            print "changing content_sz"
             self.content_sz = wx.Size(sz.x, self.content_sz.y)
         if sz.y > virt_sz.y:
             flag = True
+            print "changing content_sz"
             self.content_sz = wx.Size(self.content_sz.x, sz.y)
             
         if flag:
+            print "AutoSize.UpdateContentSize: ", self.content_sz
             self.SetVirtualSize(self.content_sz)
 
     def AutoSizeOnSize(self, ev):
-        print "AutoSize.OnSize"
+        # print "AutoSize.OnSize"
         self.UpdateContentSize(ev.GetSize())
 
     def FitToChildren(self):
