@@ -183,6 +183,8 @@ class Page(wx.Panel):
             bottom = (rect.bottom / self.scale) * new_scale
             c.SetRect(wx.Rect(left, top, right - left, bottom - top))
         self.scale = new_scale
+        self.board.scale = new_scale
+        self.canvas.scale = new_scale
 
     def OnView(self, ev):
         s = ev.GetString()
