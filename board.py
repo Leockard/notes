@@ -16,7 +16,7 @@ class Board(wx.Panel):
     CARD_PADDING = BoardBase.CARD_PADDING
 
     def __init__(self, parent, id = wx.ID_ANY, pos = (0, 0), size = (20, 20)):
-        super(Board, self).__init__(parent, size = size)
+        super(Board, self).__init__(parent, size=size)
 
         hbox = wx.BoxSizer(wx.HORIZONTAL)
         self.SetSizer(hbox)

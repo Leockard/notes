@@ -98,7 +98,7 @@ class EditText(wx.Panel):
         self.SetSizer(box)
 
         self.text.Bind(wx.EVT_LEFT_DOWN, self.ShowEntry)
-        self.text.Bind(wx.EVT_KEY_DOWN, self.OnKeyDown)
+        self.text.Bind(wx.EVT_CHAR, self.OnChar)
         self.entry.Bind(wx.EVT_LEFT_DOWN, self.ShowText)
         self.entry.Bind(wx.EVT_TEXT_ENTER, self.ShowText)
         self.entry.Bind(wx.EVT_KILL_FOCUS, self.ShowText)
@@ -153,12 +153,12 @@ class EditText(wx.Panel):
     
     ### Callbacks
 
-    def OnKeyDown(self, ev):
+    def OnChar(self, ev):
         code = ev.GetKeyCode()
-        if code == 9:
-            ev.Skip()
         if code == 13 or code == 32 or code in range(65, 91) or code in range(97, 123):
-            self.ShowEntry(None) # ShowEntry doesn't really use its event
+            self.ShowEntry(None) # ShowEntry doesn't really use its argument
+        else:
+            ev.Skip()
 
     def OnFocus(self, ev):
         print "receiving focus"
