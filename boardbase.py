@@ -237,14 +237,13 @@ class BoardBase(AutoSize):
         
     def GetFocusedCard(self):
         """Returns the card currently in focus, or None."""
-        if self.selected_cards:
-            obj = self.FindFocus()
-            if isinstance(obj, Card):
-                return obj
-            elif isinstance(obj.GetParent(), EditText):
-                return obj.GetGrandParent()
-            else:
-                return obj.GetParent()
+        obj = self.FindFocus()
+        if isinstance(obj, Card):
+            return obj
+        elif isinstance(obj.GetParent(), EditText):
+            return obj.GetGrandParent()
+        elif isinstance(obj.GetParent(), Card):
+            return obj.GetParent()
         else:
             return None
 
@@ -280,7 +279,6 @@ class BoardBase(AutoSize):
             xsc /= self.SCROLL_STEP
 
         if scroll:
-            print "scrolling: ", xsc, ysc
             # if one of the argumets is wx.DefaultCoord,
             # we will not scroll in that direction
             self.Scroll(xsc, ysc)
