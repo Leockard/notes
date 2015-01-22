@@ -60,8 +60,8 @@ class Card(wx.Panel):
 class Header(Card):
     DEFAULT_SZ = (150, 32)
     
-    def __init__(self, parent, label, id=wx.ID_ANY, pos=wx.DefaultPosition, header = "header..."):
-        super(Header, self).__init__(parent, label, id=id, pos=pos, size=Header.DEFAULT_SZ,
+    def __init__(self, parent, label, id=wx.ID_ANY, pos=wx.DefaultPosition, header = "header...", size=DEFAULT_SZ):
+        super(Header, self).__init__(parent, label, id=id, pos=pos, size=size,
                                      style = wx.BORDER_RAISED|wx.TAB_TRAVERSAL)
         self.InitUI()
         # self.header.SetValue(header)
@@ -303,7 +303,7 @@ class KindSelectMenu(wx.Menu):
 class Image(Card):
     DEFAULT_SZ = (50, 50)
     
-    def __init__(self, parent, label, path=None, id=wx.ID_ANY, pos=wx.DefaultPosition, size=wx.DefaultSize):
+    def __init__(self, parent, label, path=None, id=wx.ID_ANY, pos=wx.DefaultPosition, size=DEFAULT_SZ):
         super(Image, self).__init__(parent, label, id=id, pos=pos, size=size, style=wx.BORDER_RAISED)
         self.btn = None
         self.InitUI(path)
