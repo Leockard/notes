@@ -140,10 +140,24 @@ class BoardBase(AutoSize):
         self.SelectCard(new, True)
         new.SetFocus()
 
-    def NewCard(self, subclass, pos, label=-1, title="", kind=Content.DEFAULT_LBL, content="", txt="", path=""):
+    # def NewCard(self, subclass, pos, label=-1, title="", kind=Content.DEFAULT_LBL, content="", txt="", path=""):
+    def NewCard(self, subclass, pos, label=-1, **kwargs):
         if label == -1: label = len(self.cards)
 
         if subclass == "Content":
+            if "title" in kwargs.keys():
+                title = kwargs["title"]
+            else:
+                title = Content.DEFAULT_TITLE
+            if "kind" in kwargs.keys():
+                kind = kwargs["kind"]
+            else:
+                kind = Content.DEFAULT_LBL
+            if "content" in kwargs.keys():
+                content = kwargs["content"]
+            else:
+                content = Content.DEFAULT_CONTENT
+                
             new = Content(self, label, pos=pos, title=title, kind=kind, content=content,
                           size=[i*self.scale for i in Content.DEFAULT_SZ])
 
@@ -153,10 +167,14 @@ class BoardBase(AutoSize):
             new.Bind(wx.EVT_LEAVE_WINDOW, self.OnMouseLeaveCard)
             
         elif subclass == "Header":
+            if "txt" in kwargs.keys(): txt = kwargs["txt"]
+            else: txt = Header.DEFAULT_TITLE
             new = Header(self, label, pos=pos, header=txt, size=[i*self.scale for i in Header.DEFAULT_SZ])
             new.Bind(wx.EVT_LEFT_DOWN, self.OnCardLeftDown)
             
         elif subclass == "Image":
+            if "path" in kwargs.keys(): path = kwargs["path"]
+            else: path = Image.DEFAULT_PATH
             new = Image(self, label, pos=pos, path=path, size=[i*self.scale for i in Image.DEFAULT_SZ])
         
         new.SetFocus()

@@ -59,6 +59,7 @@ class Card(wx.Panel):
 
 class Header(Card):
     DEFAULT_SZ = (150, 32)
+    DEFAULT_TITLE = ""
     
     def __init__(self, parent, label, id=wx.ID_ANY, pos=wx.DefaultPosition, header = "header...", size=DEFAULT_SZ):
         super(Header, self).__init__(parent, label, id=id, pos=pos, size=size,
@@ -109,8 +110,12 @@ class Content(Card):
     BIG_SZ       = (350, 250)
     KIND_BTN_SZ  = (33, 23)
 
-    # labels
-    DEFAULT_LBL    = "kind"
+    # default control contents
+    DEFAULT_TITLE   = ""
+    DEFAULT_CONTENT = ""
+    DEFAULT_LBL     = "kind"
+    
+    # kind labels
     CONCEPT_LBL    = "C"
     ASSUMPTION_LBL = "A"
     RESEARCH_LBL   = "R"
@@ -284,6 +289,7 @@ class KindSelectMenu(wx.Menu):
 
 class Image(Card):
     DEFAULT_SZ = (50, 50)
+    DEFAULT_PATH = ""
     
     def __init__(self, parent, label, path=None, id=wx.ID_ANY, pos=wx.DefaultPosition, size=DEFAULT_SZ):
         super(Image, self).__init__(parent, label, id=id, pos=pos, size=size, style=wx.BORDER_RAISED)
