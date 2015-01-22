@@ -126,7 +126,18 @@ class Canvas(AutoSize):
 
     def OnPaint(self, ev):
         """Called when the window is exposed."""
-        # Create a buffered paint DC.  It will create the real wx.PaintDC and then blit
-        # the bitmap to it when dc is deleted.
-        dc = wx.BufferedPaintDC(self, self.buffer)
+        print "Canvas.OnPaint"
+        dc = wx.PaintDC(self)
+        src = wx.MemoryDC()
+        src.SelectObject(self.buffer)
+
+        sz = self.GetVirtualSize()
+        pos = self.GetViewStart()
+        sc = self.GetScrollPixelsPerUnit()
+        print sz, pos
+        dc.Blit(0, 0,
+                sz.x, sz.y,
+                src,
+                pos.x * sc[0], pos.y * sc[1])
+        src.SelectObject(wx.NullBitmap)
 
