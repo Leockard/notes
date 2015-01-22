@@ -283,7 +283,7 @@ class MyFrame(wx.Frame):
         self.StatusBar.SetStatusText(s)
 
     def OnDebug(self, ev):
-        print self.FindFocus()
+        print self.board.NewCard("foo", pos=(0, 0), bar=123)
 
     def Save(self, out_file, d):
         """Save the data in the dict d in the file out_file."""
@@ -295,20 +295,19 @@ class MyFrame(wx.Frame):
         board = self.GetCurrentBoard()
         with open(path, 'r') as f: carddict = pickle.load(f)
         for id, values in carddict.iteritems():
+            pos = values["pos"]
+            label = values["label"]
             if values["class"] == "Content":
-                board.NewContent(pos     = values["pos"],
-                                 label   = values["label"],
-                                 title   = str(values["title"]),
-                                 kind    = values["kind"],
-                                 content = values["content"])
+                board.NewCard(values["class"], pos=pos, label=label,
+                              title   = str(values["title"]),
+                              kind    = values["kind"],
+                              content = values["content"])
             elif values["class"] == "Header":
-                board.NewHeader(pos   = values["pos"],
-                                label = values["label"],
-                                txt   = values["header"])
+                board.NewCard(values["class"], pos=pos, label=label,
+                              txt   = values["header"])
             elif values["class"] == "Image":
-                board.NewImage(pos   = values["pos"],
-                               label = values["label"],
-                               path  = values["path"])
+                board.NewCard(values["class"], pos=pos, label=label,
+                              path  = values["path"])
 
     def AddAccelerator(self, entry):
         """entry should be a AcceleratorEntry()."""
