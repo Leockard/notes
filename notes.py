@@ -348,6 +348,8 @@ class MyFrame(wx.Frame):
         if self.GetCurrentBoard().selected_cards:
             self.Log("Delete " + str(len(self.GetCurrentBoard().selected_cards)) + " Cards.")
             self.GetCurrentBoard().DeleteSelected()
+        else:
+            ev.Skip()
 
     def OnCtrlF(self, ev):
         """Show/hide the search control."""
