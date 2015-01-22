@@ -18,7 +18,6 @@ class AutoSize(wx.ScrolledWindow):
         self.Bind(wx.EVT_SIZE, self.AutoSizeOnSize)
         self.SetScrollRate(self.SCROLL_STEP, self.SCROLL_STEP)
         self.content_sz = wx.Size(size[0], size[1])
-        self.SetVirtualSize(size)
 
     def UpdateContentSize(self, sz):
         """
@@ -63,7 +62,7 @@ class AutoSize(wx.ScrolledWindow):
         if bottom > sz.y: sz = wx.Size(sz.x, bottom)
         self.content_sz = sz
         print "new sz: ", self.content_sz
-        self.SetVirtualSize(self.content_sz)
+        self.SetVirtualSize(self.content_sz + (1000, 1000))
 
 
 
