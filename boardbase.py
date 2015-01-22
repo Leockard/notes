@@ -135,55 +135,10 @@ class BoardBase(AutoSize):
             left = max(rights) + self.CARD_PADDING
             pos = (left, top)
 
-        # if   subclass == "Content": new = self.NewContent(pos)
-        # elif subclass == "Header":  new = self.NewHeader(pos)
-        # elif subclass == "Image":   new = self.NewImage(pos)
         new = self.NewCard(subclass, pos=pos)
             
         self.SelectCard(new, True)
         new.SetFocus()
-
-    def NewContent(self, pos, label=-1, title="", kind="kind", content=""):
-        if label == -1: label = len(self.cards)
-        
-        newcard = Content(self, label, pos=pos,
-                          title=title, kind=kind, content=content,
-                          size=[i*self.scale for i in Content.DEFAULT_SZ])
-
-        # bindings        
-        newcard.Bind(wx.EVT_LEFT_DOWN, self.OnCardLeftDown)
-        newcard.Bind(wx.EVT_ENTER_WINDOW, self.OnMouseOverCard)
-        newcard.Bind(wx.EVT_LEAVE_WINDOW, self.OnMouseLeaveCard)
-
-        newcard.SetFocus()
-        self.cards.append(newcard)        
-        self.SelectCard(newcard, True)
-        self.FitToChildren()
-        return newcard
-
-    def NewHeader(self, pos, label=-1, txt=""):
-        if label == -1: label = len(self.cards)
-        newhead = Header(self, label, pos=pos, header=txt,
-                         size=[i*self.scale for i in Header.DEFAULT_SZ])
-
-        # bindings        
-        newhead.Bind(wx.EVT_LEFT_DOWN, self.OnCardLeftDown)
-        
-        newhead.SetFocus()
-        self.cards.append(newhead)
-        self.FitToChildren()
-        return newhead
-
-    def NewImage(self, pos, label=-1, path=None):
-        if label == -1: label = len(self.cards)
-            
-        newimg = Image(self, label, pos=pos, path=path,
-                       size=[i*self.scale for i in Image.DEFAULT_SZ])
-        
-        newimg.SetFocus()
-        self.cards.append(newimg)
-        self.FitToChildren()
-        return newimg
 
     def NewCard(self, subclass, pos, label=-1, title="", kind=Content.DEFAULT_LBL, content="", txt="", path=""):
         if label == -1: label = len(self.cards)
@@ -249,9 +204,9 @@ class BoardBase(AutoSize):
         for c in sel:
             pos = c.GetPosition() + (self.CARD_PADDING, self.CARD_PADDING)
             if isinstance(c, Content):
-                new.append(self.NewContent(pos, -1, c.GetTitle(), c.GetKind(), c.GetContent()))
+                new.append(self.NewCard("Content", pos=pos, title=c.GetTitle(), kind=c.GetKind(), content=c.GetContent()))
             if isinstance(c, Header):
-                new.append(self.NewHeader(pos, -1, c.GetHeader()))
+                new.append(self.NewCard("Header", pos=pos, txt=c.GetHeader()))
 
         self.UnselectAll()
         for c in new: self.SelectCard(c, False)
