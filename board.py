@@ -18,12 +18,15 @@ class Board(wx.Panel):
     def __init__(self, parent, id = wx.ID_ANY, pos = (0, 0), size = (20, 20)):
         super(Board, self).__init__(parent, size=size)
 
+        self.menu_position = (0, 0)
+
         hbox = wx.BoxSizer(wx.HORIZONTAL)
         self.SetSizer(hbox)
 
         # UI steup
         # self.InitBar()
         self.InitBoard(pos=pos, size=size)
+        self.InitMenu()
 
         # Bindings
         self.board.Bind(wx.EVT_RIGHT_DOWN, self.OnRightDown)
@@ -43,46 +46,38 @@ class Board(wx.Panel):
         # set members
         self.board = board
 
-    ### Callbacks
-
-    def OnRightDown(self, ev):
-        self.PopupMenu(BoardMenu(self.GetParent()), ev.GetPosition())
-
+    def InitMenu(self):
+        menu = wx.Menu()
         
-
-######################
-# Auxiliary classes
-######################            
-
-class BoardMenu(wx.Menu):
-    def __init__(self, parent):
-        super(BoardMenu, self).__init__()
-
         # insert actions
-        img_it = wx.MenuItem(self, wx.ID_ANY, "Insert Image")
+        img_it = wx.MenuItem(menu, wx.ID_ANY, "Insert Image")
         self.Bind(wx.EVT_MENU, self.OnInsertImg, img_it)
         
         # window actions
-        min_it = wx.MenuItem(self, wx.ID_ANY, "Minimize")
+        min_it = wx.MenuItem(menu, wx.ID_ANY, "Minimize")
         self.Bind(wx.EVT_MENU, self.OnMinimize, min_it)
         
-        close_it = wx.MenuItem(self, wx.ID_ANY, "Close")
+        close_it = wx.MenuItem(menu, wx.ID_ANY, "Close")
         self.Bind(wx.EVT_MENU, self.OnClose, close_it)
 
-        self.AppendItem(img_it)
-        self.AppendSeparator()
-        self.AppendItem(min_it)
-        self.AppendItem(close_it)        
+        menu.AppendItem(img_it)
+        menu.AppendSeparator()
+        menu.AppendItem(min_it)
+        menu.AppendItem(close_it)        
 
-
-
+        self.menu = menu
+        
     ### Callbacks
 
+    def OnRightDown(self, ev):
+        self.menu_position = ev.GetPosition()
+        self.PopupMenu(self.menu, ev.GetPosition())
+
     def OnInsertImg(self, ev):
-        print "insert image"
+        self.board.PlaceNewCard("Image", pos=self.menu_position)
 
     def OnMinimize(self, ev):
-        self.GetParent().Iconize()
+        pass
 
     def OnClose(self, ev):
-        self.GetParent().Close()
+        print "close"
