@@ -144,46 +144,72 @@ class BoardBase(AutoSize):
 
     def NewContent(self, pos, label=-1, title="", kind="kind", content=""):
         if label == -1: label = len(self.cards)
-        # newcard = Content(self, label, pos=pos, title=title, kind=kind, content=content)
+        
         newcard = Content(self, label, pos=pos,
                           title=title, kind=kind, content=content,
                           size=[i*self.scale for i in Content.DEFAULT_SZ])
-        newcard.SetFocus()
-        self.cards.append(newcard)        
-        self.SelectCard(newcard, True)
 
         # bindings        
         newcard.Bind(wx.EVT_LEFT_DOWN, self.OnCardLeftDown)
         newcard.Bind(wx.EVT_ENTER_WINDOW, self.OnMouseOverCard)
         newcard.Bind(wx.EVT_LEAVE_WINDOW, self.OnMouseLeaveCard)
 
-        # content size        
+        newcard.SetFocus()
+        self.cards.append(newcard)        
+        self.SelectCard(newcard, True)
         self.FitToChildren()
-        
         return newcard
 
     def NewHeader(self, pos, label=-1, txt=""):
         if label == -1: label = len(self.cards)
         newhead = Header(self, label, pos=pos, header=txt,
                          size=[i*self.scale for i in Header.DEFAULT_SZ])
-        newhead.SetFocus()
-        self.cards.append(newhead)        
 
         # bindings        
         newhead.Bind(wx.EVT_LEFT_DOWN, self.OnCardLeftDown)
         
+        newhead.SetFocus()
+        self.cards.append(newhead)
         self.FitToChildren()
         return newhead
 
     def NewImage(self, pos, label=-1, path=None):
         if label == -1: label = len(self.cards)
+            
         newimg = Image(self, label, pos=pos, path=path,
                        size=[i*self.scale for i in Image.DEFAULT_SZ])
+        
         newimg.SetFocus()
         self.cards.append(newimg)
-
         self.FitToChildren()
         return newimg
+
+    def NewCard(self, subclass, label=-1, *args, **kwargs):
+        if label == -1: label = len(self.cards)
+
+        if subclass == "Content":
+            new = Content(self, label, pos=kwargs["pos"],
+                          title=kwargs["title"], kind=kwargs["kind"], content=kwargs["content"],
+                          size=[i*self.scale for i in Content.DEFAULT_SZ])
+
+            # bindings        
+            new.Bind(wx.EVT_LEFT_DOWN, self.OnCardLeftDown)
+            new.Bind(wx.EVT_ENTER_WINDOW, self.OnMouseOverCard)
+            new.Bind(wx.EVT_LEAVE_WINDOW, self.OnMouseLeaveCard)
+            
+        elif subclass == "Header":
+            new = Header(self, label, pos=kwargs["pos"], header=kwargs["txt"],
+                         size=[i*self.scale for i in Header.DEFAULT_SZ])
+            new.Bind(wx.EVT_LEFT_DOWN, self.OnCardLeftDown)
+            
+        elif subclass == "Image":
+            new = Image(self, label, pos=kwargs["pos"], path=kwargs["path"],
+                        size=[i*self.scale for i in Image.DEFAULT_SZ])
+        
+        new.SetFocus()
+        self.cards.append(new)
+        self.FitToChildren()
+        return new
 
     def GetSelection(self):
         return self.selected_cards
@@ -407,7 +433,9 @@ class BoardBase(AutoSize):
         self.ReleaseMouse()
 
     def OnLeftDClick(self, ev):
-        self.NewContent(ev.GetPosition())
+        self.NewCard("Content", pos=ev.GetPosition(),
+                      kind=Content.DEFAULT_LBL,
+                      title="", content="")
 
     def OnMouseOverCard(self, ev):
         card = ev.GetEventObject()
