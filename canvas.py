@@ -14,11 +14,9 @@ from utilities import AutoSize
 ######################
 
 class Canvas(AutoSize):
-# class Canvas(wx.Panel):
     def __init__(self, parent, id=wx.ID_ANY, size=wx.DefaultSize):
         super(Canvas, self).__init__(parent, id=id, size=size, style=wx.NO_FULL_REPAINT_ON_RESIZE|wx.BORDER_NONE)
     
-        # self.SetBackgroundColour("WHITE")
         self.thickness = 1
         self.colour = "BLACK"
         self.pen = wx.Pen(self.colour, self.thickness, wx.SOLID)
@@ -38,6 +36,7 @@ class Canvas(AutoSize):
 
 
     ### Behavior functions
+    
     def DrawLines(self, dc):
         """Redraws all the lines that have been drawn already."""
         dc.BeginDrawing()
@@ -58,7 +57,6 @@ class Canvas(AutoSize):
     def InitBuffer(self):
         """Initialize the bitmap used for buffering the display."""
         size = self.GetClientSize()
-        # size = self.content_size
         buf = wx.EmptyBitmap(max(1, size.width), max(1, size.height))
         dc = wx.BufferedDC(None, buf)
         
