@@ -24,7 +24,7 @@ class BoardBase(AutoSize):
         self.selected_cards = []
         self.moving_cards_pos = []
         self.drag_select = False
-        self.cur_scale = 1.0
+        self.scale = 1.0
 
         # Bindings
         self.Bind(wx.EVT_LEFT_DOWN, self.OnLeftDown)
@@ -104,9 +104,50 @@ class BoardBase(AutoSize):
         cards.sort(key = lambda x: x.label)
         return cards[-1]
 
+    def PlaceNewCard(self, subclass, below = False):
+        """
+        Places a new Card on the board.
+        class should be the string with the name of the Card subclass to create.
+        below=False creates the new Card to the right of the currently selected
+        Card in the board, if any. below=True creates it below.
+        """
+        pos = (0, 0)
+        
+        # if there are no cards, place this one on the top left corner
+        if len(self.GetCards()) < 1:
+            pos = (self.CARD_PADDING, self.CARD_PADDING)
+
+        # if there's a selection, place it next to it
+        elif self.GetFocusedCard():
+            rect = self.GetFocusedCard().GetRect()
+            if below:
+                top = rect.bottom + self.CARD_PADDING
+                left = rect.left
+            else:
+                top = rect.top
+                left = rect.right + self.CARD_PADDING
+            pos = (left, top)
+        
+        else: # otherwise, move it to the right of the last one
+            rects = [c.GetRect() for c in self.GetCards()]
+            rights = [r.right for r in rects]
+            top = min([r.top for r in rects])
+            left = max(rights) + Page.CARD_PADDING
+            pos = (left, top)
+
+        if   subclass == "Content": new = self.NewContent(pos)
+        elif subclass == "Header":  new = self.NewHeader(pos)
+        elif subclass == "Image":   new = self.NewImage(pos)
+            
+        self.SelectCard(new, True)
+        new.SetFocus()
+
     def NewContent(self, pos, label=-1, title="", kind="kind", content=""):
         if label == -1: label = len(self.cards)
-        newcard = Content(self, label, pos=pos, title=title, kind=kind, content=content)
+        # newcard = Content(self, label, pos=pos, title=title, kind=kind, content=content)
+        newcard = Content(self, label, pos=pos,
+                          title=title, kind=kind, content=content,
+                          size=[i*self.scale for i in Content.DEFAULT_SZ])
         newcard.SetFocus()
         self.cards.append(newcard)        
         self.SelectCard(newcard, True)
@@ -122,7 +163,8 @@ class BoardBase(AutoSize):
 
     def NewHeader(self, pos, label=-1, txt=""):
         if label == -1: label = len(self.cards)
-        newhead = Header(self, label, pos=pos, header=txt)
+        newhead = Header(self, label, pos=pos, header=txt,
+                         size=[i*self.scale for i in Header.DEFAULT_SZ])
         newhead.SetFocus()
         self.cards.append(newhead)        
 
@@ -134,7 +176,8 @@ class BoardBase(AutoSize):
 
     def NewImage(self, pos, label=-1, path=None):
         if label == -1: label = len(self.cards)
-        newimg = Image(self, label, pos=pos, path=path)
+        newimg = Image(self, label, pos=pos, path=path,
+                       size=[i*self.scale for i in Image.DEFAULT_SZ])
         newimg.SetFocus()
         self.cards.append(newimg)
 
@@ -363,8 +406,7 @@ class BoardBase(AutoSize):
         self.ReleaseMouse()
 
     def OnLeftDClick(self, ev):
-        pos = self.CalculateNewCardPosition(ev.GetPosition())
-        self.NewContent(pos)
+        self.NewContent(ev.GetPosition())
 
     def OnMouseOverCard(self, ev):
         card = ev.GetEventObject()
@@ -401,27 +443,6 @@ class BoardBase(AutoSize):
         rect = wx.Rect(pos[0], pos[1], w, h)
         rect = rect.Inflate(2 * thick, 2 * thick)
         self.PaintRect(rect, thick=thick, style=wx.TRANSPARENT, refresh=refresh)
-
-    def CalculateNewCardPosition(self, newpos, below = False):
-        """
-        Returns the position for a new card, having received a double-click at pos.
-        If argument below if False (by default), place the new card to the right of the
-        current card. If it is True, place it below.
-        """
-        pos = newpos
-        rect = wx.Rect(newpos.x, newpos.y, Content.DEFAULT_SZ[0], Content.DEFAULT_SZ[1])
-        rects = [c.GetRect() for c in self.cards]
-
-        if below:
-            bottoms = [r.bottom for r in rects if rect.Intersects(r)]
-            if len(bottoms) > 0:
-                pos.y = max(bottoms) + self.CARD_PADDING
-        else:
-            rights = [r.right for r in rects if rect.Intersects(r)]
-            if len(rights) > 0:
-                pos.x = max(rights) + self.CARD_PADDING
-                
-        return pos
     
     def Dump(self):
         """Returns a dict with all the info in the current cards."""
