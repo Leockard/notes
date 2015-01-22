@@ -72,7 +72,6 @@ class MyFrame(wx.Frame):
         if finds:
             # highlight results
             for c, i in finds:
-                print c, i
                 c.SetStyle(i, i + len(s), wx.TextAttr(None, wx.YELLOW))
 
             # setup variables for ctrl + G cycling
@@ -414,7 +413,7 @@ class MyFrame(wx.Frame):
             if i >= len(self.search_find): i = 0
 
             # strong on current
-            self.board.ScrollToCard(self.search_find[i][0])
+            self.board.ScrollToCard(self.search_find[i][0].GetParent())
             pos = self.search_find[i][1]
             self.search_find[i][0].SetStyle(pos, pos + len(s), wx.TextAttr(None, wx.RED))
             self.searching = i

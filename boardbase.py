@@ -140,7 +140,6 @@ class BoardBase(AutoSize):
         self.SelectCard(new, True)
         new.SetFocus()
 
-    # def NewCard(self, subclass, pos, label=-1, title="", kind=Content.DEFAULT_LBL, content="", txt="", path=""):
     def NewCard(self, subclass, pos, label=-1, **kwargs):
         if label == -1: label = len(self.cards)
 
@@ -248,6 +247,43 @@ class BoardBase(AutoSize):
                 return obj.GetParent()
         else:
             return None
+
+    def ScrollToCard(self, card):
+        """If the card is in view, don't do anything. Otherwise, scroll it into view."""
+        view = self.GetViewStart()
+        sz = self.GetSize()
+        view_rect = wx.Rect(view.x, view.y, sz.width, sz.height)
+        card_rect = card.GetRect()
+
+        scroll = False
+        ysc = wx.DefaultCoord
+        xsc = wx.DefaultCoord
+        # remember y coordinate grows downward
+        # we're assuming the card size is smaller than the view size
+        # in both width and height
+        if card_rect.top <= view_rect.top:
+            scroll = True
+            ysc = - view_rect.top + card_rect.top - self.CARD_PADDING
+            ysc /= self.SCROLL_STEP
+        elif card_rect.bottom >= view_rect.bottom:
+            scroll = True
+            ysc = card_rect.bottom - view_rect.top + self.CARD_PADDING
+            ysc /= self.SCROLL_STEP
+            
+        if card_rect.left <= view_rect.left:
+            scroll = True
+            xsc = view_rect.left - card_rect.left + self.CARD_PADDING
+            xsc /= self.SCROLL_STEP
+        elif card_rect.right >= view_rect.right:
+            scroll = True
+            xsc = card_rect.right - view_rect.right + self.CARD_PADDING
+            xsc /= self.SCROLL_STEP
+
+        if scroll:
+            print "scrolling: ", xsc, ysc
+            # if one of the argumets is wx.DefaultCoord,
+            # we will not scroll in that direction
+            self.Scroll(xsc, ysc)
 
     def HArrangeSelectedCards(self):
         """
