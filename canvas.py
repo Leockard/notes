@@ -14,10 +14,12 @@ from utilities import AutoSize
 ######################
 
 class Canvas(AutoSize):
-    def __init__(self, parent, id=wx.ID_ANY, size=wx.DefaultSize):
+    DEFAULT_THICKNESS = 8
+    
+    def __init__(self, parent, id=wx.ID_ANY, size=wx.DefaultSize, thick=DEFAULT_THICKNESS):
         super(Canvas, self).__init__(parent, id=id, size=size, style=wx.NO_FULL_REPAINT_ON_RESIZE|wx.BORDER_NONE)
     
-        self.thickness = 1
+        self.thickness = thick
         self.colour = "BLACK"
         self.pen = wx.Pen(self.colour, self.thickness, wx.SOLID)
         self.lines = []
