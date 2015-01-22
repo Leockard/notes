@@ -290,7 +290,7 @@ class MyFrame(wx.Frame):
 
         # set members
         self.notebook = nb
-        self.board = pg.board
+        # self.board = pg.board
 
     def CreateBitmap(self):
         """Take a picture of the current card board."""
@@ -311,7 +311,10 @@ class MyFrame(wx.Frame):
         self.StatusBar.SetStatusText(s)
 
     def OnDebug(self, ev):
-        print self.board.GetCards()[0].content.SetStyle((0, 4), rt.RichTextAttr(wx.TextAttr(None, wx.RED)))
+        for c in self.GetCurrentBoard().GetCards():
+            pos = c.GetPosition()
+            c.SetPosition((pos.x * 2, pos.y * 2))
+        self.GetCurrentBoard().FitToChildren()
 
     def Save(self, out_file, d):
         """Save the data in the dict d in the file out_file."""
@@ -368,7 +371,7 @@ class MyFrame(wx.Frame):
     def OnEsc(self, ev):
         """Unselect all cards."""
         self.GetCurrentBoard().UnselectAll()
-        self.board.SetFocusIgnoringChildren()
+        self.GetCurrentBoard().SetFocusIgnoringChildren()
 
     def OnCopy(self, ev):
         """Copy selected cards."""
@@ -394,7 +397,7 @@ class MyFrame(wx.Frame):
             self.search_ctrl.SetFocus()
         else:
             self.search_ctrl.Hide()
-            self.board.SetFocus()
+            self.GetCurrentBoard().SetFocus()
             self.CancelSearch(None)
             self.searching = None
 
@@ -413,7 +416,7 @@ class MyFrame(wx.Frame):
             if i >= len(self.search_find): i = 0
 
             # strong on current
-            self.board.ScrollToCard(self.search_find[i][0].GetParent())
+            self.GetCurrentBoard().ScrollToCard(self.search_find[i][0].GetParent())
             pos = self.search_find[i][1]
             self.search_find[i][0].SetStyle(pos, pos + len(s), wx.TextAttr(None, wx.RED))
             self.searching = i
@@ -437,26 +440,26 @@ class MyFrame(wx.Frame):
 
     def OnCtrlRet(self, ev):
         """Add a new content card to the board, to the right of the current card."""
-        self.board.PlaceNewCard("Content", False)
+        self.GetCurrentBoard().PlaceNewCard("Content", False)
         self.Log("Placed new Content card.")
 
     def OnCtrlShftRet(self, ev):
         """Add a new content card to the board, below of the current one."""
-        self.board.PlaceNewCard("Content", True)
+        self.GetCurrentBoard().PlaceNewCard("Content", True)
         self.Log("Placed new Content card.")
 
     def OnAltRet(self, ev):
         """Add a new header to the board, to the right of the current card."""
-        self.board.PlaceNewCard("Header", False)
+        self.GetCurrentBoard().PlaceNewCard("Header", False)
         self.Log("Placed new Header.")
         
     def OnAltShftRet(self, ev):
         """Add a new header to the board, to the right of the current card."""
-        self.board.PlaceNewCard("Header", True)
+        self.GetCurrentBoard().PlaceNewCard("Header", True)
         self.Log("Placed new Header.")
 
     def OnImage(self, ev):
-        self.board.PlaceNewCard("Image", False)
+        self.GetCurrentBoard().PlaceNewCard("Image", False)
         self.Log("Placed new Image.")
 
     def OnNew(self, ev):
@@ -488,9 +491,9 @@ class MyFrame(wx.Frame):
 
         # self.InitUI()                     # setup new UI elements
         pg = Page(self.notebook)
-        self.notebook.AddPage(pg, fd.GetPath())
-        index = self.notebook.GetSelection()
-        self.notebook.SetSelection(index + 1)
+        self.notebook.AddPage(pg, fd.GetPath(), select=True)
+        # index = self.notebook.GetSelection()
+        # self.notebook.SetSelection(index + 1)
 
         self.GetCurrentBoard().Hide()     # hide while we load/paint all the info
         self.Load(fd.GetPath())           # load and paint all cards
