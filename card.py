@@ -113,13 +113,19 @@ class Content(Card):
     # default control contents
     DEFAULT_TITLE   = ""
     DEFAULT_CONTENT = ""
-    DEFAULT_LBL     = "kind"
     
     # kind labels
+    DEFAULT_LBL     = "kind"    
     CONCEPT_LBL    = "C"
     ASSUMPTION_LBL = "A"
     RESEARCH_LBL   = "R"
     FACT_LBL       = "F"
+    DEFAULT_LBL_LONG    = "kind"
+    CONCEPT_LBL_LONG    = "Concept"
+    ASSUMPTION_LBL_LONG = "Assumption"
+    RESEARCH_LBL_LONG   = "Research"
+    FACT_LBL_LONG       = "Fact"
+    LONG_LABELS = {CONCEPT_LBL: CONCEPT_LBL_LONG, ASSUMPTION_LBL: ASSUMPTION_LBL_LONG, RESEARCH_LBL: RESEARCH_LBL_LONG, FACT_LBL: FACT_LBL_LONG, DEFAULT_LBL: DEFAULT_LBL_LONG}
 
     # colours
     # DEFAULT_CL    = (220, 218, 213, 255)
@@ -170,8 +176,9 @@ class Content(Card):
     def GetContent(self):
         return self.content.GetValue()
     
-    def GetKind(self):
-        return self.kindbut.GetLabel()
+    def GetKind(self, long=False):
+        if long: return self.LONG_LABELS[self.kindbut.GetLabel()]
+        else:    return self.kindbut.GetLabel()
 
     def SetKind(self, kind):
         if kind == "kind": self.kindbut.SetLabel("kind")

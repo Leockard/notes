@@ -60,7 +60,7 @@ class BoardBase(AutoSize):
 
     def GetContentsByKind(self, kind):
         """Returns a list of all Content cards of the kind. kind should be a Content.X_LBL constant."""
-        return [c for c in self.GetContents() if c.GetKind() == kind]
+        return [c for c in self.GetContents() if c.GetKind() == kind or c.GetKind(long=True) == kind]
 
     def GetNextCard(self, ctrl, cycle=True):
         """Returns the card with label consecutive to that of the argument, or None.

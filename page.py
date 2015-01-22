@@ -20,11 +20,7 @@ class Page(wx.Panel):
     PIXELS_PER_SCROLL = 20
 
     VIEW_CH_DEF = "View"
-    VIEW_CH_C = "Concepts"
-    VIEW_CH_A = "Assumptions"
-    VIEW_CH_R = "Research"
-    VIEW_CH_F = "Facts"
-    VIEW_CHOICES = (VIEW_CH_DEF, VIEW_CH_C, VIEW_CH_A, VIEW_CH_R, VIEW_CH_F)
+    VIEW_CHOICES = ("All", Content.CONCEPT_LBL_LONG, Content.ASSUMPTION_LBL_LONG, Content.RESEARCH_LBL_LONG, Content.FACT_LBL_LONG)
 
     def __init__(self, parent, id=wx.ID_ANY, pos=wx.DefaultPosition, size = wx.DefaultSize):
         super(Page, self).__init__(parent, id=id, pos=pos, size=size)
@@ -189,11 +185,10 @@ class Page(wx.Panel):
 
     def OnView(self, ev):
         s = ev.GetString()
-        if   s == Page.VIEW_CH_C: show = self.board.GetContentsByKind(Content.CONCEPT_LBL)
-        elif s == Page.VIEW_CH_A: show = self.board.GetContentsByKind(Content.ASSUMPTION_LBL)
-        elif s == Page.VIEW_CH_R: show = self.board.GetContentsByKind(Content.RESEARCH_LBL)
-        elif s == Page.VIEW_CH_F: show = self.board.GetContentsByKind(Content.FACT_LBL)
-        else: show = self.board.GetCards()
+        if s == "All":
+            show = self.board.GetCards()
+        else:
+            show = self.board.GetContentsByKind(s)
             
         show = list(set(show) | set(self.board.GetHeaders()))
         hide = list(set(self.board.GetCards()) - set(show))
