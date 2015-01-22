@@ -54,7 +54,7 @@ class Page(wx.Panel):
         
         # off = self.board.GetClientAreaOrigin()
         dc.Blit(0, 0,                         # pos
-                sz.width, sz.height,          # size
+                rect.width, rect.height,          # size
                 wx.ClientDC(self.board),      # src
                 0, 0)                         # offset
         dc.SelectObject(wx.NullBitmap)
