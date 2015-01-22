@@ -117,23 +117,21 @@ class Content(Card):
     FACT_LBL       = "F"
 
     # colours
-    DEFAULT_CL    = (220, 218, 213, 255)
-    # thanks paletton.com!    
-    # border colours    
-    CONCEPT_CL    = (149, 246, 214, 255)
-    ASSUMPTION_CL = (255, 188, 154, 255)
-    RESEARCH_CL   = (255, 232, 154, 255)
-    FACT_CL       = (169, 163, 247, 255)
-    # content background colours
-    CONCEPT_BG_CL    = (242, 254, 250, 255) 
-    ASSUMPTION_BG_CL = (255, 247, 243, 255)
-    RESEARCH_BG_CL   = (255, 252, 243, 255) 
-    FACT_BG_CL       = (245, 244, 254, 255)
+    # DEFAULT_CL    = (220, 218, 213, 255)
+
+    # thanks paletton.com!        
+    COLOURS = {}
+    COLOURS[DEFAULT_LBL]    = {"border": (220, 218, 213, 255), "bg": (255, 255, 255, 255)}
+    COLOURS[CONCEPT_LBL]    = {"border": (149, 246, 214, 255), "bg": (242, 254, 250, 255)}
+    COLOURS[ASSUMPTION_LBL] = {"border": (255, 188, 154, 255), "bg": (255, 247, 243, 255)}
+    COLOURS[RESEARCH_LBL]   = {"border": (255, 232, 154, 255), "bg": (255, 252, 243, 255)}
+    COLOURS[FACT_LBL]       = {"border": (169, 163, 247, 255), "bg": (245, 244, 254, 255)}
+
     # content text colours
-    CONCEPT_CNT_CL    = (24, 243, 171, 255)
-    ASSUMPTION_CNT_CL = (255, 102, 25, 255)
-    RESEARCH_CNT_CL   = (255, 202, 25, 255)
-    FACT_CNT_CL       = (68, 54, 244, 255)
+    # CONCEPT_CNT_CL    = (24, 243, 171, 255)
+    # ASSUMPTION_CNT_CL = (255, 102, 25, 255)
+    # RESEARCH_CNT_CL   = (255, 202, 25, 255)
+    # FACT_CNT_CL       = (68, 54, 244, 255)
     
 
     def __init__(self, parent, label, id=wx.ID_ANY, pos=wx.DefaultPosition, size=DEFAULT_SZ, title="", kind=DEFAULT_LBL, content=""):
@@ -224,29 +222,10 @@ class Content(Card):
                 "content": self.GetContent()}
 
     def SetColours(self, kind):
-        if   kind == Content.CONCEPT_LBL:
-             self.SetBackgroundColour(Content.CONCEPT_CL)
-             self.content.SetBackgroundColour(Content.CONCEPT_BG_CL)
-             self.title.SetBackgroundColour(Content.CONCEPT_CL)
-             self.title.SetEntryColour(Content.CONCEPT_BG_CL)
-        elif kind == Content.ASSUMPTION_LBL:
-             self.SetBackgroundColour(Content.ASSUMPTION_CL)
-             self.content.SetBackgroundColour(Content.ASSUMPTION_BG_CL)
-             self.title.SetBackgroundColour(Content.ASSUMPTION_CL)
-             self.title.SetEntryColour(Content.ASSUMPTION_BG_CL)
-        elif kind == Content.RESEARCH_LBL:
-             self.SetBackgroundColour(Content.RESEARCH_CL)
-             self.content.SetBackgroundColour(Content.RESEARCH_BG_CL)
-             self.title.SetBackgroundColour(Content.RESEARCH_CL)
-             self.title.SetEntryColour(Content.RESEARCH_BG_CL)
-        elif kind == Content.FACT_LBL:
-             self.SetBackgroundColour(Content.FACT_CL)
-             self.content.SetBackgroundColour(Content.FACT_BG_CL)
-             self.title.SetBackgroundColour(Content.FACT_CL)
-             self.title.SetEntryColour(Content.FACT_BG_CL)
-        else:
-             self.SetBackgroundColour(Content.DEFAULT_CL)
-             self.title.SetBackgroundColour(Content.DEFAULT_CL)
+        self.SetBackgroundColour(self.COLOURS[kind]["border"])
+        self.title.SetBackgroundColour(self.COLOURS[kind]["border"])
+        self.content.SetBackgroundColour(self.COLOURS[kind]["bg"])
+        self.title.SetEntryColour(self.COLOURS[kind]["bg"])
 
 
     ### Callbacks
