@@ -17,7 +17,6 @@ from canvas import Canvas
 ######################
 
 class MyFrame(wx.Frame):
-
     def __init__(self, parent):
         super(MyFrame, self).__init__(parent, -1, "Board", size = (800, 600),
                                       style=wx.DEFAULT_FRAME_STYLE | wx.NO_FULL_REPAINT_ON_RESIZE)
@@ -43,37 +42,6 @@ class MyFrame(wx.Frame):
         pg = self.notebook.GetCurrentPage()
         if pg: return pg.board
         else: return None
-
-    def PlaceNewCard(self, subclass, below = False):
-        """
-        Places a new Card in the board.
-        class should be the string with the name of the Card subclass to create.
-        below=False creates the new Card to the right of the currently selected
-        Card in the board, if any. below=True creates it below.
-        """
-        pos = (0, 0)
-        board = self.GetCurrentBoard()
-        
-        # if there are no cards, place this one on the top left corner
-        if len(board.GetCards()) < 1:
-            pos = (Page.CARD_PADDING, Page.CARD_PADDING)
-
-        elif board.GetFocusedCard():
-            pos = board.CalculateNewCardPosition(board.GetFocusedCard().GetPosition(), below)
-        
-        else: # otherwise, move it to the right of the last one
-            rects = [c.GetRect() for c in board.GetCards()]
-            rights = [r.right for r in rects]
-            top = min([r.top for r in rects])
-            left = max(rights) + Page.CARD_PADDING
-            pos = (left, top)
-
-        if   subclass == "Content": new = board.NewContent(pos)
-        elif subclass == "Header":  new = board.NewHeader(pos)
-        elif subclass == "Image":   new = board.NewImage(pos)
-        board.SelectCard(new, True)
-        new.SetFocus()
-        self.Log("New " + subclass + " card created.")
 
     def Search(self, ev):
         """
@@ -424,22 +392,27 @@ class MyFrame(wx.Frame):
 
     def OnCtrlRet(self, ev):
         """Add a new content card to the board, to the right of the current card."""
-        self.PlaceNewCard("Content", False)
+        self.board.PlaceNewCard("Content", False)
+        self.Log("Placed new Content card.")
 
     def OnCtrlShftRet(self, ev):
         """Add a new content card to the board, below of the current one."""
-        self.PlaceNewCard("Content", True)
+        self.board.PlaceNewCard("Content", True)
+        self.Log("Placed new Content card.")
 
     def OnAltRet(self, ev):
         """Add a new header to the board, to the right of the current card."""
-        self.PlaceNewCard("Header", False)
+        self.board.PlaceNewCard("Header", False)
+        self.Log("Placed new Header.")
         
     def OnAltShftRet(self, ev):
         """Add a new header to the board, to the right of the current card."""
-        self.PlaceNewCard("Header", True)
+        self.board.PlaceNewCard("Header", True)
+        self.Log("Placed new Header.")
 
     def OnImage(self, ev):
-        self.PlaceNewCard("Image", False)
+        self.board.PlaceNewCard("Image", False)
+        self.Log("Placed new Image.")
 
     def OnSave(self, ev):
         """Save file."""
