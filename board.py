@@ -58,17 +58,29 @@ class BoardMenu(wx.Menu):
     def __init__(self, parent):
         super(BoardMenu, self).__init__()
 
-        min_item = wx.MenuItem(self, wx.NewId(), "Minimize")
-        self.AppendItem(min_item)
-        close_item = wx.MenuItem(self, wx.NewId(), "Close")
-        self.AppendItem(close_item)
+        # insert actions
+        img_it = wx.MenuItem(self, wx.ID_ANY, "Insert Image")
+        self.Bind(wx.EVT_MENU, self.OnInsertImg, img_it)
+        
+        # window actions
+        min_it = wx.MenuItem(self, wx.ID_ANY, "Minimize")
+        self.Bind(wx.EVT_MENU, self.OnMinimize, min_it)
+        
+        close_it = wx.MenuItem(self, wx.ID_ANY, "Close")
+        self.Bind(wx.EVT_MENU, self.OnClose, close_it)
 
-        self.Bind(wx.EVT_MENU, self.OnMinimize, min_item)
-        self.Bind(wx.EVT_MENU, self.OnClose, close_item)
+        self.AppendItem(img_it)
+        self.AppendSeparator()
+        self.AppendItem(min_it)
+        self.AppendItem(close_it)        
+
 
 
     ### Callbacks
-    
+
+    def OnInsertImg(self, ev):
+        print "insert image"
+
     def OnMinimize(self, ev):
         self.GetParent().Iconize()
 
