@@ -208,14 +208,29 @@ class MyFrame(wx.Frame):
 
     def InitToolBar(self):
         toolbar = self.CreateToolBar(style=wx.TB_VERTICAL)
+
+        # notebook and tab tools
+        new_it = toolbar.AddLabelTool(wx.ID_NEW, "New",
+                                      wx.ArtProvider.GetBitmap(wx.ART_NEW),
+                                      kind=wx.ITEM_NORMAL)
+        self.Bind(wx.EVT_TOOL, self.OnNew, new_it)
+        opn_it = toolbar.AddLabelTool(wx.ID_OPEN, "Open",
+                                      wx.ArtProvider.GetBitmap(wx.ART_FOLDER_OPEN),
+                                      kind=wx.ITEM_NORMAL)
+        self.Bind(wx.EVT_TOOL, self.OnOpen, opn_it)
+        sav_it = toolbar.AddLabelTool(wx.ID_SAVE, "Save",
+                                      wx.ArtProvider.GetBitmap(wx.ART_FILE_SAVE),
+                                      kind=wx.ITEM_NORMAL)
+        self.Bind(wx.EVT_TOOL, self.OnSave, sav_it)
+        toolbar.AddSeparator()
+
+        # card and board tools
         del_it = toolbar.AddLabelTool(wx.ID_ANY, "Delete",
                                       wx.ArtProvider.GetBitmap(wx.ART_DELETE),
                                       kind=wx.ITEM_NORMAL)
-        cpy_it = toolbar.AddLabelTool(wx.ID_ANY, "Copy",
+        cpy_it = toolbar.AddLabelTool(wx.ID_COPY, "Copy",
                                       wx.ArtProvider.GetBitmap(wx.ART_COPY),
                                       kind=wx.ITEM_NORMAL)
-
-        # bindings
         self.Bind(wx.EVT_TOOL, self.OnDelete, del_it)
         self.Bind(wx.EVT_TOOL, self.OnCopy, cpy_it)
 
@@ -233,7 +248,6 @@ class MyFrame(wx.Frame):
         # make new UI
         vbox = wx.BoxSizer(wx.VERTICAL)
         self.SetSizer(vbox)
-        # self.InitNotebook(sz)                                            
 
         # execute only the first time; order matters
         if not self.ui_ready:
@@ -260,6 +274,9 @@ class MyFrame(wx.Frame):
         nb_box.Add(nb, proportion=1, flag=wx.ALL|wx.EXPAND, border=1)
         vbox.Add(nb_box, proportion=1, flag=wx.ALL|wx.EXPAND, border=1)
 
+        # bindings
+        nb.Bind(wx.EVT_NOTEBOOK_PAGE_CHANGED, self.OnPageChange)
+
         # set members
         self.notebook = nb
         self.board = pg.board
@@ -283,7 +300,7 @@ class MyFrame(wx.Frame):
         self.StatusBar.SetStatusText(s)
 
     def OnDebug(self, ev):
-        print self.board.GetCards()[0].Collapse()
+        print self.FindFocus()
 
     def Save(self, out_file, d):
         """Save the data in the dict d in the file out_file."""
@@ -323,6 +340,11 @@ class MyFrame(wx.Frame):
                 
         
     ### Callbacks
+
+    def OnPageChange(self, ev):
+        pass
+        # self.SetFocus(ev.GetSelection())
+        # self.notebook.SetFocus()
 
     def OnHArrange(self, ev):
         self.GetCurrentBoard().HArrangeSelectedCards()
@@ -415,6 +437,9 @@ class MyFrame(wx.Frame):
     def OnImage(self, ev):
         self.board.PlaceNewCard("Image", False)
         self.Log("Placed new Image.")
+
+    def OnNew(self, ev):
+        self.notebook.AddPage(Page(self.notebook), "Unittled Notes 2", select=True)
 
     def OnSave(self, ev):
         """Save file."""
