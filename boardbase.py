@@ -132,7 +132,7 @@ class BoardBase(AutoSize):
             rects = [c.GetRect() for c in self.GetCards()]
             rights = [r.right for r in rects]
             top = min([r.top for r in rects])
-            left = max(rights) + Page.CARD_PADDING
+            left = max(rights) + self.CARD_PADDING
             pos = (left, top)
 
         if   subclass == "Content": new = self.NewContent(pos)
@@ -159,6 +159,7 @@ class BoardBase(AutoSize):
 
         # content size        
         self.FitToChildren()
+        
         return newcard
 
     def NewHeader(self, pos, label=-1, txt=""):

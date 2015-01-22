@@ -2,6 +2,7 @@
 # some auxiliary classes for notes.py
 
 import wx
+import inspect
 
 
 ######################
@@ -34,6 +35,7 @@ class AutoSize(wx.ScrolledWindow):
             self.content_sz = wx.Size(self.content_sz.x, sz.y)
             
         if flag:
+            print "calling vritual size with: ", self.content_sz
             self.SetVirtualSize(self.content_sz)
 
     def AutoSizeOnSize(self, ev):
@@ -44,6 +46,7 @@ class AutoSize(wx.ScrolledWindow):
         Call to set the virtual (content) size to fit the children. If there are
         no children, keeps the virtual size as it is (does not shrink).
         """
+        print "fit to children"
         children = self.GetChildren()
         if len(children) == 0: return
         
@@ -53,9 +56,12 @@ class AutoSize(wx.ScrolledWindow):
         right  = max(rects, key=lambda r: r.right).right
         bottom = max(rects, key=lambda r: r.bottom).bottom
         sz = self.content_sz
+        print "ri, bo: ", right, bottom
+        print "cur sz: ", sz
         if right  > sz.x: sz = wx.Size(right, sz.y)
         if bottom > sz.y: sz = wx.Size(sz.x, bottom)
         self.content_sz = sz
+        print "new sz: ", self.content_sz
         self.SetVirtualSize(self.content_sz)
 
         

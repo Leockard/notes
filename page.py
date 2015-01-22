@@ -147,8 +147,9 @@ class Page(wx.Panel):
     ### Callbacks
 
     def OnSize(self, ev):
-        self.board.UpdateContentSize(ev.GetSize())
-        self.canvas.UpdateContentSize(ev.GetSize())
+        # they both already have theirs called from AutoSize!
+        # self.board.UpdateContentSize(ev.GetSize())
+        # self.canvas.UpdateContentSize(ev.GetSize())
         # important to skip the event for Sizers to work correctly
         ev.Skip()
 
