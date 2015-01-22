@@ -251,10 +251,12 @@ class Content(Card):
     ### Callbacks
 
     def OnKeyDown(self, ev):
-        ### skip TAB, so that we don't input \t and tab traversal still works
+        # skip TAB, so that we don't input \t and tab traversal still works
         if ev.GetKeyCode() != 9:
             ev.ResumePropagation(True)
             ev.Skip()
+        else:
+            self.Navigate(wx.MouseState().ShiftDown())
 
     def OnKindPressed(self, ev):
         ctrl = ev.GetEventObject()
