@@ -224,7 +224,8 @@ class Content(Card):
                 "pos": (pos.x, pos.y),
                 "kind": self.GetKind(),
                 "title": self.GetTitle(),
-                "content": self.GetContent()}
+                "content": self.GetContent(),
+                "collapsed": self.IsCollapsed()}
 
     def SetColours(self, kind):
         self.SetBackgroundColour(self.COLOURS[kind]["border"])
