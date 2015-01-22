@@ -135,9 +135,10 @@ class BoardBase(AutoSize):
             left = max(rights) + self.CARD_PADDING
             pos = (left, top)
 
-        if   subclass == "Content": new = self.NewContent(pos)
-        elif subclass == "Header":  new = self.NewHeader(pos)
-        elif subclass == "Image":   new = self.NewImage(pos)
+        # if   subclass == "Content": new = self.NewContent(pos)
+        # elif subclass == "Header":  new = self.NewHeader(pos)
+        # elif subclass == "Image":   new = self.NewImage(pos)
+        new = self.NewCard(subclass, pos=pos)
             
         self.SelectCard(new, True)
         new.SetFocus()
@@ -184,12 +185,11 @@ class BoardBase(AutoSize):
         self.FitToChildren()
         return newimg
 
-    def NewCard(self, subclass, label=-1, *args, **kwargs):
+    def NewCard(self, subclass, pos, label=-1, title="", kind=Content.DEFAULT_LBL, content="", txt="", path=""):
         if label == -1: label = len(self.cards)
 
         if subclass == "Content":
-            new = Content(self, label, pos=kwargs["pos"],
-                          title=kwargs["title"], kind=kwargs["kind"], content=kwargs["content"],
+            new = Content(self, label, pos=pos, title=title, kind=kind, content=content,
                           size=[i*self.scale for i in Content.DEFAULT_SZ])
 
             # bindings        
@@ -198,13 +198,11 @@ class BoardBase(AutoSize):
             new.Bind(wx.EVT_LEAVE_WINDOW, self.OnMouseLeaveCard)
             
         elif subclass == "Header":
-            new = Header(self, label, pos=kwargs["pos"], header=kwargs["txt"],
-                         size=[i*self.scale for i in Header.DEFAULT_SZ])
+            new = Header(self, label, pos=pos, header=txt, size=[i*self.scale for i in Header.DEFAULT_SZ])
             new.Bind(wx.EVT_LEFT_DOWN, self.OnCardLeftDown)
             
         elif subclass == "Image":
-            new = Image(self, label, pos=kwargs["pos"], path=kwargs["path"],
-                        size=[i*self.scale for i in Image.DEFAULT_SZ])
+            new = Image(self, label, pos=pos, path=path, size=[i*self.scale for i in Image.DEFAULT_SZ])
         
         new.SetFocus()
         self.cards.append(new)
