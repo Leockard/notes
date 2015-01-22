@@ -5,6 +5,7 @@
 
 import wx
 from utilities import AutoSize
+from utilities import isnumber
 from board import *
 from canvas import Canvas
 
@@ -14,8 +15,7 @@ from canvas import Canvas
 # Page class
 ######################
 
-# class Page(wx.Panel):
-class Page(AutoSize):
+class Page(wx.Panel):
     CARD_PADDING = Board.CARD_PADDING
     PIXELS_PER_SCROLL = 20
 
@@ -91,14 +91,15 @@ class Page(AutoSize):
             self.toggle = wx.Button(self, label = "Toggle")
             self.toggle.Bind(wx.EVT_BUTTON, self.OnToggle)
 
-            # self.view = wx.Choice(self, choices=["Normal", "Research"])
             self.view = wx.Choice(self, choices=Page.VIEW_CHOICES)
             self.view.SetSelection(0)
             self.view.Bind(wx.EVT_CHOICE, self.OnView)
                         
-            self.zoom = wx.Choice(self, choices=["100%", "50%", "150%", "200%"])
-            self.zoom.SetSelection(0)
-            self.zoom.Bind(wx.EVT_CHOICE, self.OnZoom)
+            chs = ["50%", "100%", "150%", "200%"]
+            self.zoom = wx.ComboBox(self, value=chs[1], choices=chs, style=wx.TE_PROCESS_ENTER)
+            self.zoom.SetSelection(1)
+            self.zoom.Bind(wx.EVT_COMBOBOX, self.OnZoomCombo)
+            self.zoom.Bind(wx.EVT_TEXT_ENTER, self.OnZoomEnter)
             
         hbox = wx.BoxSizer(wx.HORIZONTAL)
         hbox.Add(self.toggle, proportion=0, flag=wx.LEFT|wx.EXPAND, border=1)
@@ -148,7 +149,6 @@ class Page(AutoSize):
     def OnSize(self, ev):
         self.board.UpdateContentSize(ev.GetSize())
         self.canvas.UpdateContentSize(ev.GetSize())
-        print self.canvas.content_sz
         # important to skip the event for Sizers to work correctly
         ev.Skip()
 
@@ -160,11 +160,29 @@ class Page(AutoSize):
         else:
             self.board.Show()
             self.canvas.Hide()
+
+    def OnZoomCombo(self, ev):
+        """Called when an item in the zoom combo box is selected."""
+        self.Zoom(float(ev.GetString()[:-1])/100)
+
+    def OnZoomEnter(self, ev):
+        s = ev.GetString()
+        if isnumber(s):
+            self.Zoom(float(s)/100)
+        elif isnumber(s[:-1]) and s[-1] == "%":
+            self.Zoom(float(s[:-1])/100)
         
-    def OnZoom(self, ev):
-        scale = float(ev.GetString()[:-1]) / 100
-        self.scale = scale
-        self.Refresh()
+    def Zoom(self, new_scale):
+        for c in self.board.GetCards():
+            rect = c.GetRect()
+            # revert to original coordinates
+            # and then calculate the actual new one
+            left = (rect.left / self.scale) * new_scale
+            right = (rect.right / self.scale) * new_scale
+            top = (rect.top / self.scale) * new_scale
+            bottom = (rect.bottom / self.scale) * new_scale
+            c.SetRect(wx.Rect(left, top, right - left, bottom - top))
+        self.scale = new_scale
 
     def OnView(self, ev):
         s = ev.GetString()

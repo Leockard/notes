@@ -37,7 +37,6 @@ class AutoSize(wx.ScrolledWindow):
             self.SetVirtualSize(self.content_sz)
 
     def AutoSizeOnSize(self, ev):
-        print "AutoSize.OnSize"
         self.UpdateContentSize(ev.GetSize())
 
     def FitToChildren(self):
@@ -75,3 +74,10 @@ def MakeEncirclingRect(p1, p2):
     w = abs(p1[0] - p2[0])
     h = abs(p1[1] - p2[1])
     return wx.Rect(l, t, w, h)
+
+def isnumber(s):
+    try:
+        float(s)
+        return True
+    except ValueError:
+        return False
