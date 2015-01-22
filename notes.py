@@ -10,6 +10,7 @@ from page import Page
 from board import Content
 from board import Header
 from canvas import Canvas
+import wx.richtext as rt
 
 
 ######################
@@ -24,6 +25,7 @@ class MyFrame(wx.Frame):
         self.accels = [] # will hold keyboard shortcuts aka accelerators
         self.SetTitle("Notes")
         self.cur_file = ""
+        self.search_find = []
         self.searching = None      # contains the current search index
                                    # when not searching, set to None
         self.ui_ready = False
@@ -53,29 +55,39 @@ class MyFrame(wx.Frame):
         txt_ctrls = []
         for c in self.GetCurrentBoard().GetCards():
             if isinstance(c, Content):
-                txt_ctrls.append((c.GetTitle(),   c.title))
-                txt_ctrls.append((c.GetContent(), c.content))
+                # txt_ctrls.append((c.GetTitle().lower(),   c.title))
+                txt_ctrls.append((c.GetContent().lower(), c.content))
             if isinstance(c, Header):
-                txt_ctrls.append((c.GetHeader(),  c.header))
+                pass
+                # txt_ctrls.append((c.GetHeader().lower(),  c.header))
 
         # search for the string
-        s = self.search_ctrl.GetValue()        
+        s = self.search_ctrl.GetValue().lower()
         finds = []
         for txt, ctrl in txt_ctrls:
-            if txt.find(s) > -1: finds.append(ctrl)
+            pos = txt.find(s)
+            if pos > -1: finds.append((ctrl, pos))
 
         # focus on the first find
         if finds:
-            # finds[0].SetFocus()
-            # finds[0].SetSelection(0, 3)
-            # self.search_ctrl.SetFocus()
+            # highlight results
+            for c, i in finds:
+                print c, i
+                c.SetStyle(i, i + len(s), wx.TextAttr(None, wx.YELLOW))
+
+            # setup variables for ctrl + G cycling
             self.search_find = finds
             # save the current index in search_find
             # when done searching, set to None
-            self.searching = 0         
+            self.searching = 0
 
     def CancelSearch(self, ev):
-        self.searching = None
+        if self.search_find:
+            for c, i in self.search_find:
+                s = self.search_ctrl.GetValue()
+                c.SetStyle(i, i + len(s), c.GetDefaultStyle())
+            self.search_find = []
+            self.searching = None
 
                     
     ### Auxiliary functions
@@ -300,7 +312,7 @@ class MyFrame(wx.Frame):
         self.StatusBar.SetStatusText(s)
 
     def OnDebug(self, ev):
-        print self.FindFocus()
+        print self.board.GetCards()[0].content.SetStyle((0, 4), rt.RichTextAttr(wx.TextAttr(None, wx.RED)))
 
     def Save(self, out_file, d):
         """Save the data in the dict d in the file out_file."""
@@ -384,17 +396,27 @@ class MyFrame(wx.Frame):
         else:
             self.search_ctrl.Hide()
             self.board.SetFocus()
+            self.CancelSearch(None)
             self.searching = None
 
     def OnCtrlG(self, ev):
         """Go to next search find."""
         if self.searching != None:
-            i = self.searching + 1
+            i = self.searching
+            pos = self.search_find[i][1]
+            s = self.search_ctrl.GetValue()
+            
+            # erase strong highlight on previous
+            self.search_find[i][0].SetStyle(pos, pos + len(s), wx.TextAttr(None, wx.YELLOW))
+            
+            # advance and wrap
+            i += 1
             if i >= len(self.search_find): i = 0
-            self.search_find[i].SetFocus()
-            self.search_find[i].SetSelection(0, 3)
-            pos = self.search_find[i].GetPosition()
-            self.GetCurrentBoard().Scroll(-1, pos.y / Page.PIXELS_PER_SCROLL)
+
+            # strong on current
+            self.board.ScrollToCard(self.search_find[i][0])
+            pos = self.search_find[i][1]
+            self.search_find[i][0].SetStyle(pos, pos + len(s), wx.TextAttr(None, wx.RED))
             self.searching = i
 
     def OnCtrlShftG(self, ev):
