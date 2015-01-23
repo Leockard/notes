@@ -494,11 +494,8 @@ class MyFrame(wx.Frame):
                            wx.FD_OPEN | wx.FD_FILE_MUST_EXIST)
         if fd.ShowModal() == wx.ID_CANCEL: return # user changed her mind
 
-        # self.InitUI()                     # setup new UI elements
         pg = Page(self.notebook)
         self.notebook.AddPage(pg, fd.GetPath(), select=True)
-        # index = self.notebook.GetSelection()
-        # self.notebook.SetSelection(index + 1)
 
         self.GetCurrentBoard().Hide()     # hide while we load/paint all the info
         self.Load(fd.GetPath())           # load and paint all cards
