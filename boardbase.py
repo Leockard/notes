@@ -164,7 +164,6 @@ class BoardBase(AutoSize):
                           size=[i*self.scale for i in Content.DEFAULT_SZ])
 
             # bindings        
-            new.Bind(wx.EVT_LEFT_DOWN, self.OnCardLeftDown)
             new.Bind(wx.EVT_ENTER_WINDOW, self.OnMouseOverCard)
             new.Bind(wx.EVT_LEAVE_WINDOW, self.OnMouseLeaveCard)
             
@@ -172,14 +171,14 @@ class BoardBase(AutoSize):
             if "txt" in kwargs.keys(): txt = kwargs["txt"]
             else: txt = Header.DEFAULT_TITLE
             new = Header(self, label, pos=pos, header=txt, size=[i*self.scale for i in Header.DEFAULT_SZ])
-            new.Bind(wx.EVT_LEFT_DOWN, self.OnCardLeftDown)
             
         elif subclass == "Image":
             if "path" in kwargs.keys(): path = kwargs["path"]
             else: path = Image.DEFAULT_PATH
             new = Image(self, label, pos=pos, path=path, size=[i*self.scale for i in Image.DEFAULT_SZ])
-            new.Bind(wx.EVT_LEFT_DOWN, self.OnCardLeftDown)
-        
+
+        new.Bind(wx.EVT_LEFT_DOWN, self.OnCardLeftDown)
+        new.Bind(Card.EVT_CARD_DELETE, self.OnCardEvent)
         new.SetFocus()
         self.cards.append(new)
         self.FitToChildren()
@@ -339,6 +338,10 @@ class BoardBase(AutoSize):
     def __del__(self):
         # don't forget to stop all timers!
         pass
+
+    def OnCardEvent(self, ev):
+        self.SelectCard(ev.card, new_sel=True)
+        self.DeleteSelected()
 
     def OnChildFocus(self, ev):
         pass # important to avoid automatic scrolling to focused child

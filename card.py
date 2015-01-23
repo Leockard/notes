@@ -4,8 +4,10 @@
 import wx
 import os
 import wx.richtext as rt
+import wx.lib.newevent as ne
 import cardbar as CardBar
 from utilities import EditText
+
 
 
 ######################
@@ -15,7 +17,7 @@ from utilities import EditText
 class Card(wx.Panel):
     BORDER_WIDTH = 2
     BORDER_THICK = 5
-    # bar = CardBar.GetBar()
+    CardEvent, EVT_CARD_DELETE = ne.NewCommandEvent()
     bar = None
     
     def __init__(self, parent, label, id=wx.ID_ANY, pos=wx.DefaultPosition, size=wx.DefaultSize, style=0):
@@ -31,7 +33,7 @@ class Card(wx.Panel):
 
     def __del__(self):
         pass
-    
+
     def GetLabel(self):
         return self.label
 
@@ -41,7 +43,14 @@ class Card(wx.Panel):
         
     def HideBar(self):
         self.bar.Hide()
-        
+
+    def BarDelete(self):
+        """Called by CardBar when the close button is pressed."""
+        # simply raise a CardEvent. BoardBase should know what to do
+        event = self.CardEvent(id=wx.ID_ANY, card=self)
+        self.GetEventHandler().ProcessEvent(event)        
+    
+                
     ### Auxiliary functions
         
     def InitUI(self):
@@ -51,6 +60,10 @@ class Card(wx.Panel):
     def Dump(self):
         """Override me!"""
 
+
+class CardEvent(wx.Event):
+    def __init__(self):
+        print "creating new card event"
 
     
 ######################
@@ -162,7 +175,7 @@ class Content(Card):
             self.content.Hide()
             self.SetSize(self.COLLAPSED_SZ)
 
-    def UnCollapse(self):
+    def Uncollapse(self):
         if self.IsCollapsed():
             self.content.Show()
             self.SetSize(self.DEFAULT_SZ)
@@ -190,18 +203,13 @@ class Content(Card):
     
     def InitUI(self):
         # controls
-        # title = wx.TextCtrl(self, style = wx.TE_RICH)
         title = EditText(self)
-        # title.SetFont(wx.Font(12, wx.SWISS, wx.ITALIC, wx.BOLD))
         title.SetHint("Title...")
         
         kindbut = wx.Button(self, label = "kind", size=Content.KIND_BTN_SZ, style=wx.BORDER_NONE)
         kindbut.SetOwnFont(wx.Font(8, wx.FONTFAMILY_DEFAULT, wx.FONTSTYLE_ITALIC, wx.FONTWEIGHT_NORMAL, False))
         
-        # content = rt.RichTextCtrl(self, size = (10, 10), style=wx.TE_MULTILINE|wx.TE_NO_VSCROLL)
         content = wx.TextCtrl(self, size=(10, 10), style=wx.TE_RICH|wx.TE_MULTILINE|wx.TE_NO_VSCROLL)
-        # content.ShowScrollbars(horz=wx.SHOW_SB_NEVER, vert=wx.SHOW_SB_NEVER)
-        # content.SetHint("Write here...")
         
         # boxes
         hbox1 = wx.BoxSizer(wx.HORIZONTAL)
@@ -321,7 +329,7 @@ class Image(Card):
             self.btn = None
 
         self.path = path
-        self.GetSizer().Add(img, proportion=1, flag=wx.ALL|wx.EXPAND, border=Card.BORDER_WIDTH * 2)
+        self.GetSizer().Add(img, proportion=1, flag=wx.ALL|wx.EXPAND, border=self.BORDER_THICK)
         self.Fit()
 
     ### Auxiliary functions
@@ -332,7 +340,7 @@ class Image(Card):
 
         if not path:
             btn = wx.BitmapButton(self, bitmap=wx.ArtProvider.GetBitmap(wx.ART_MISSING_IMAGE), size=self.DEFAULT_SZ)
-            vbox.Add(btn, proportion=1, flag=wx.ALL|wx.EXPAND, border=Card.BORDER_WIDTH)
+            vbox.Add(btn, proportion=1, flag=wx.ALL|wx.EXPAND, border=self.BORDER_THICK)
             self.btn = btn
             btn.Bind(wx.EVT_BUTTON, self.OnButton)
         else:

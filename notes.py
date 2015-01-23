@@ -315,7 +315,7 @@ class MyFrame(wx.Frame):
         #     pos = c.GetPosition()
         #     c.SetPosition((pos.x - 30, pos.y))
         # self.GetCurrentBoard().FitToChildren()
-        print self.FindFocus()
+        self.GetCurrentBoard().GetCards()[0].RaiseEvent()
 
     def Save(self, out_file, d):
         """Save the data in the dict d in the file out_file."""
