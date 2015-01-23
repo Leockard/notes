@@ -59,10 +59,7 @@ class Board(wx.Panel):
         img_it = wx.MenuItem(menu, wx.ID_ANY, "Insert Image")
         self.Bind(wx.EVT_MENU, self.OnInsertImg, img_it)
         
-        # window actions
-        min_it = wx.MenuItem(menu, wx.ID_ANY, "Minimize")
-        self.Bind(wx.EVT_MENU, self.OnMinimize, min_it)
-        
+        # tab actions
         close_it = wx.MenuItem(menu, wx.ID_ANY, "Close")
         self.Bind(wx.EVT_MENU, self.OnClose, close_it)
 
@@ -70,7 +67,6 @@ class Board(wx.Panel):
         menu.AppendItem(head_it)
         menu.AppendItem(img_it)
         menu.AppendSeparator()
-        menu.AppendItem(min_it)
         menu.AppendItem(close_it)        
 
         self.menu = menu
@@ -90,8 +86,6 @@ class Board(wx.Panel):
     def OnInsertImg(self, ev):
         self.board.PlaceNewCard("Image", pos=self.menu_position)
 
-    def OnMinimize(self, ev):
-        pass
-
     def OnClose(self, ev):
-        print "close"
+        # should close tab
+        pass
