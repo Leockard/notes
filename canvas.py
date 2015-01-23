@@ -10,34 +10,31 @@ from utilities import AutoSize
 
 
 ######################
-# Canvas Class
+# CanvasBase Class
 ######################
 
-class Canvas(AutoSize):
-# class Canvas(wx.Panel):
-    def __init__(self, parent, id=wx.ID_ANY, size=wx.DefaultSize):
-        super(Canvas, self).__init__(parent, id=id, size=size, style=wx.NO_FULL_REPAINT_ON_RESIZE|wx.BORDER_NONE)
-    
-        # self.SetBackgroundColour("WHITE")
+class CanvasBase(wx.StaticBitmap):
+    def __init__(self, parent, bitmap=wx.NullBitmap):
+        super(CanvasBase, self).__init__(parent, bitmap=bitmap, style=wx.NO_FULL_REPAINT_ON_RESIZE|wx.BORDER_NONE)
         self.thickness = 1
         self.colour = "BLACK"
         self.pen = wx.Pen(self.colour, self.thickness, wx.SOLID)
         self.lines = []
         self.pos = wx.Point(0,0)
         self.buffer = wx.EmptyBitmap(1, 1)
+        self.offset = wx.Point(0, 0)
         
         self.InitBuffer()
 
         self.Bind(wx.EVT_LEFT_DOWN, self.OnLeftDown)
         self.Bind(wx.EVT_LEFT_UP, self.OnLeftUp)
         self.Bind(wx.EVT_MOTION, self.OnMotion)
-        self.Bind(wx.EVT_SIZE, self.OnSize)
         self.Bind(wx.EVT_IDLE, self.OnIdle)
         self.Bind(wx.EVT_PAINT, self.OnPaint)
-        self.Bind(wx.EVT_SHOW, self.OnShow)
 
-
+        
     ### Behavior functions
+    
     def DrawLines(self, dc):
         """Redraws all the lines that have been drawn already."""
         dc.BeginDrawing()
@@ -48,11 +45,7 @@ class Canvas(AutoSize):
                 dc.DrawLine(*coords)
         dc.EndDrawing()
 
-    def SetBackground(self, bg):
-        dest = wx.ClientDC(self)
-        dest.DrawBitmap(bg, 0, 0)
-
-                
+        
     ### Auxiliary functions
     
     def InitBuffer(self):
@@ -71,47 +64,33 @@ class Canvas(AutoSize):
         self.reInitBuffer = False
         self.buffer = buf
 
-
+        
     ### Callbacks
-
-    def OnShow(self, ev):
-        if ev.IsShown():
-            self.DrawLines(wx.BufferedDC(None, self.buffer))
     
     def OnLeftDown(self, ev):
         """Called when the left mouse button is pressed"""
         self.curLine = []
         self.pos = ev.GetPosition()
-        self.CaptureMouse()
 
     def OnLeftUp(self, ev):
         """Called when the left mouse button is released"""
-        if self.HasCapture():
-            self.lines.append((self.colour, self.thickness, self.curLine))
-            self.curLine = []
-            self.ReleaseMouse()
+        self.lines.append((self.colour, self.thickness, self.curLine))
+        self.curLine = []
             
     def OnMotion(self, ev):
-        """
-        Called when the mouse is in motion.  If the left button is
-        dragging then draw a line from the last event position to the
-        current one.  Save the coordinates for redraws.
-        """
         if ev.Dragging() and ev.LeftIsDown():
             # all drawings over dc will not be saved in self.buffer...
-            dc = wx.BufferedDC(wx.ClientDC(self), self.buffer)
+            dc = wx.BufferedDC(wx.ClientDC(self), self.GetBitmap())
             dc.BeginDrawing()
             dc.SetPen(self.pen)
             pos = ev.GetPosition()
-            coords = (self.pos.x, self.pos.y, pos.x, pos.y)
+            coords = (self.pos.x + self.offset.x, self.pos.y + self.offset.y,
+                      pos.x + self.offset.x, pos.y + self.offset.y)
             self.curLine.append(coords)
             dc.DrawLine(*coords)
             self.pos = pos
             dc.EndDrawing()
-
-    def OnSize(self, ev):
-        new_sz = ev.GetSize()
-        self.SetSize(new_sz)
+            self.SetBitmap(dc.GetAsBitmap())
 
     def OnIdle(self, ev):
         """
@@ -130,3 +109,35 @@ class Canvas(AutoSize):
         # the bitmap to it when dc is deleted.
         dc = wx.BufferedPaintDC(self, self.buffer)
 
+    def SetOffset(self, pt):
+        self.offset = pt
+
+    def GetOffset(self):
+        return self.offset
+
+
+        
+######################
+# CanvasBase Class
+######################
+
+class Canvas(AutoSize):
+    def __init__(self, parent):
+        super(Canvas, self).__init__(parent)
+        bmp = wx.Bitmap("screenshot7.png")
+        ctrl = CanvasBase(self, bitmap=bmp)
+
+        box = wx.BoxSizer(wx.VERTICAL)
+        box.Add(ctrl, proportion=1, flag=wx.EXPAND)
+
+        self.FitToChildren()
+
+        self.ctrl = ctrl
+        self.Bind(wx.EVT_SCROLLWIN, self.OnScroll)
+
+    def OnScroll(self, ev):
+        pos = ev.GetPosition() * self.SCROLL_STEP
+        if ev.GetOrientation() == wx.VERTICAL:
+            self.ctrl.SetOffset(wx.Point(0, pos))
+        elif ev.GetOrientation() == wx.HORIZONTAL:
+            self.ctrl.SetOffset(wx.Point(pos, 0))                

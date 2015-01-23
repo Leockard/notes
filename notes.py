@@ -315,7 +315,12 @@ class MyFrame(wx.Frame):
         self.StatusBar.SetStatusText(s)
 
     def OnDebug(self, ev):
-        print self.FindFocus()
+        pg = self.notebook.GetCurrentPage()
+        for c in pg.GetSizer().GetChildren():
+            for h in c.GetSizer().GetChildren():
+                if h.IsWindow():
+                    print h.GetWindow()
+                    print h.GetRect()
 
     def Save(self, out_file, d):
         """Save the data in the dict d in the file out_file."""
