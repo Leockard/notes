@@ -311,10 +311,8 @@ class MyFrame(wx.Frame):
         self.StatusBar.SetStatusText(s)
 
     def OnDebug(self, ev):
-        # pg = self.notebook.GetCurrentPage()
-        print self.GetCurrentBoard().GetCards()[0].title.first_cl
-        print self.GetCurrentBoard().GetCards()[0].title.second_cl
-
+        pg = self.notebook.GetCurrentPage()
+        
     def Save(self, out_file, d):
         """Save the data in the dict d in the file out_file."""
         with open(out_file, 'w') as out:
@@ -335,7 +333,8 @@ class MyFrame(wx.Frame):
                 if values["collapsed"]: new.Collapse()
             elif values["class"] == "Header":
                 board.NewCard(values["class"], pos=pos, label=label,
-                              txt   = values["header"])
+                              size = (values["width"], values["height"]),
+                              txt = values["header"])
             elif values["class"] == "Image":
                 board.NewCard(values["class"], pos=pos, label=label,
                               path  = values["path"])

@@ -168,9 +168,20 @@ class BoardBase(AutoSize):
             new.Bind(wx.EVT_LEAVE_WINDOW, self.OnMouseLeaveCard)
             
         elif subclass == "Header":
-            if "txt" in kwargs.keys(): txt = kwargs["txt"]
-            else: txt = Header.DEFAULT_TITLE
-            new = Header(self, label, pos=pos, header=txt, size=[i*self.scale for i in Header.DEFAULT_SZ])
+            if "txt" in kwargs.keys():
+                txt = kwargs["txt"]
+            else:
+                txt = Header.DEFAULT_TITLE
+            if "size" in kwargs.keys():
+                w = kwargs["size"][0]
+                h = kwargs["size"][1]
+            else:
+                w = Header.DEFAULT_SZ[0]
+                h = Header.DEFAULT_SZ[1]
+
+            print "creating new header with sz: ", (w, h)
+            new = Header(self, label, pos=pos, header=txt,
+                         size=[i*self.scale for i in (w, h)])
             
         elif subclass == "Image":
             if "path" in kwargs.keys(): path = kwargs["path"]

@@ -71,6 +71,7 @@ class CardEvent(wx.Event):
 ######################
 
 class Header(Card):
+    MIN_WIDTH = 150
     DEFAULT_SZ = (150, 32)
     DEFAULT_TITLE = ""
     
@@ -79,6 +80,7 @@ class Header(Card):
                                      style = wx.BORDER_RAISED|wx.TAB_TRAVERSAL)
         self.InitUI()
         self.header.SetValue(header)
+        self.len = len(self.GetHeader())
 
 
     ### Behavior Functions
@@ -90,13 +92,11 @@ class Header(Card):
         # Controls
         txt = EditText(self)
         txt.SetHint("Header...")
+        txt.Bind(wx.EVT_KEY_UP, self.OnKeyUp)
         
         # Boxes
-        hbox1 = wx.BoxSizer(wx.HORIZONTAL)
-        hbox1.Add(txt, proportion=1, flag=wx.LEFT|wx.EXPAND, border=Card.BORDER_WIDTH)
-
         vbox = wx.BoxSizer(wx.VERTICAL)                
-        vbox.Add(txt, proportion=0, flag=wx.LEFT|wx.EXPAND, border=Card.BORDER_WIDTH)
+        vbox.Add(txt, proportion=0, flag=wx.ALL|wx.EXPAND, border=Card.BORDER_WIDTH)
         
         self.header = txt
         self.SetSizer(vbox)
@@ -104,8 +104,44 @@ class Header(Card):
 
     def Dump(self):
         """Returns a dict with all the information contained."""
-        return {"class": "Header", "label": self.label,
-                "pos": self.GetPosition(), "header": self.GetHeader()}
+        sz = self.GetSize()
+        print "dumping sz"
+        return {"class": "Header",
+                "label": self.label,
+                "pos": self.GetPosition(),
+                "width": sz.width,
+                "height": sz.height,
+                "header": self.GetHeader()}
+
+    
+    ### Callbacks
+
+    def OnKeyUp(self, ev):
+        # calculate the sizes to compare
+        new_len = len(self.GetHeader())
+
+        sw, sh = self.GetSize()
+        
+        dc = wx.WindowDC(self)
+        dc.SetFont(self.header.GetFont())
+        tw, th = dc.GetTextExtent(self.GetHeader())
+        print "new text size: ", (tw, th)
+
+        # if we're too short: elongate
+        if new_len > self.len and tw + 20 > sw:
+            print "we're too short"
+            self.SetSize((tw + 25, sh))
+
+        # if we're too long: shorten
+        # but not more than the minimum size!
+        if new_len < self.len and sw > self.MIN_WIDTH and tw - 20 < sw:
+            print "we're too long: ", sw
+            self.SetSize((tw - 25, sh))
+
+        self.len = new_len
+        
+        # important!
+        ev.Skip()
 
             
 
