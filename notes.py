@@ -50,6 +50,15 @@ class MyFrame(wx.Frame):
         Search the current text in the search bar in all of the Cards' texts.
         Cycle through finds with ctrl + G.
         """
+        # search string in lower case
+        s = self.search_ctrl.GetValue().lower()
+                
+        # if we were already searching, clear up the previous highlighting
+        if self.search_find:
+            # unhighlight results
+            for c, i in self.search_find:
+                c.SetStyle(i, i + len(s), c.GetDefaultStyle())
+
         # gather all values in which to search
         # including the control they appear in
         txt_ctrls = []
@@ -61,8 +70,7 @@ class MyFrame(wx.Frame):
                 pass
                 # txt_ctrls.append((c.GetHeader().lower(),  c.header))
 
-        # search for the string
-        s = self.search_ctrl.GetValue().lower()
+        # do the actual searching
         finds = []
         for txt, ctrl in txt_ctrls:
             pos = txt.find(s)
