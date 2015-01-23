@@ -168,12 +168,16 @@ class MyFrame(wx.Frame):
 
         # edit menu
         edit_menu = wx.Menu()
+        sela_it        = wx.MenuItem(edit_menu, wx.ID_ANY, "Select All")
+        seln_it        = wx.MenuItem(edit_menu, wx.ID_ANY, "Select None")
         copy_it        = wx.MenuItem(edit_menu, wx.ID_COPY, "Copy")
         delt_it        = wx.MenuItem(edit_menu, wx.ID_DELETE, "Delete")
         ctrltab_it     = wx.MenuItem(edit_menu, wx.ID_ANY, "Next Card")
         ctrlshfttab_it = wx.MenuItem(edit_menu, wx.ID_ANY, "Previous Card")
         unsel_it       = wx.MenuItem(edit_menu, wx.ID_ANY, "Unselect All")
 
+        edit_menu.AppendItem(sela_it)
+        edit_menu.AppendItem(seln_it)
         edit_menu.AppendItem(copy_it)
         edit_menu.AppendItem(delt_it)
         edit_menu.AppendItem(ctrltab_it)
@@ -214,22 +218,24 @@ class MyFrame(wx.Frame):
         search_menu.AppendItem(search_it)
 
         # bindings
-        self.Bind(wx.EVT_MENU, self.OnQuit      , quit_it)
-        self.Bind(wx.EVT_MENU, self.OnCopy      , copy_it)
-        self.Bind(wx.EVT_MENU, self.OnDelete    , delt_it)
-        self.Bind(wx.EVT_MENU, self.OnSave      , save_it)
-        self.Bind(wx.EVT_MENU, self.OnOpen      , open_it)
-        self.Bind(wx.EVT_MENU, self.OnCtrlTab   , ctrltab_it)
-        self.Bind(wx.EVT_MENU, self.OnHArrange  , harr_it)
-        self.Bind(wx.EVT_MENU, self.OnVArrange  , varr_it)
-        self.Bind(wx.EVT_MENU, self.OnDebug     , debug_it)
-        self.Bind(wx.EVT_MENU, self.OnEsc       , unsel_it)
-        self.Bind(wx.EVT_MENU, self.OnCtrlF     , search_it)
-        self.Bind(wx.EVT_MENU, self.OnCtrlG     , next_it)
-        self.Bind(wx.EVT_MENU, self.OnCtrlShftG , prev_it)
-        self.Bind(wx.EVT_MENU, self.OnCtrlRet   , contr_it)
-        self.Bind(wx.EVT_MENU, self.OnAltRet    , headr_it)
-        self.Bind(wx.EVT_MENU, self.OnImage     , img_it)
+        self.Bind(wx.EVT_MENU, self.OnQuit       , quit_it)
+        self.Bind(wx.EVT_MENU, self.OnCopy       , copy_it)
+        self.Bind(wx.EVT_MENU, self.OnSelectAll  , sela_it)
+        self.Bind(wx.EVT_MENU, self.OnEsc        , seln_it)
+        self.Bind(wx.EVT_MENU, self.OnDelete     , delt_it)
+        self.Bind(wx.EVT_MENU, self.OnSave       , save_it)
+        self.Bind(wx.EVT_MENU, self.OnOpen       , open_it)
+        self.Bind(wx.EVT_MENU, self.OnCtrlTab    , ctrltab_it)
+        self.Bind(wx.EVT_MENU, self.OnHArrange   , harr_it)
+        self.Bind(wx.EVT_MENU, self.OnVArrange   , varr_it)
+        self.Bind(wx.EVT_MENU, self.OnDebug      , debug_it)
+        self.Bind(wx.EVT_MENU, self.OnEsc        , unsel_it)
+        self.Bind(wx.EVT_MENU, self.OnCtrlF      , search_it)
+        self.Bind(wx.EVT_MENU, self.OnCtrlG      , next_it)
+        self.Bind(wx.EVT_MENU, self.OnCtrlShftG  , prev_it)
+        self.Bind(wx.EVT_MENU, self.OnCtrlRet    , contr_it)
+        self.Bind(wx.EVT_MENU, self.OnAltRet     , headr_it)
+        self.Bind(wx.EVT_MENU, self.OnImage      , img_it)
         self.Bind(wx.EVT_MENU, self.OnCtrlShftTab , ctrlshfttab_it)        
         self.Bind(wx.EVT_MENU, self.OnCtrlShftRet , contb_it)
         self.Bind(wx.EVT_MENU, self.OnAltShftRet  , headb_it)
@@ -414,10 +420,14 @@ class MyFrame(wx.Frame):
         
     ### Callbacks
 
+    def OnSelectAll(self, ev):
+        board = self.GetCurrentBoard()
+        board.UnselectAll()
+        for c in board.GetCards():
+            board.SelectCard(c)
+
     def OnPageChange(self, ev):
         pass
-        # self.SetFocus(ev.GetSelection())
-        # self.notebook.SetFocus()
 
     def OnHArrange(self, ev):
         self.GetCurrentBoard().HArrangeSelectedCards()
