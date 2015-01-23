@@ -313,7 +313,7 @@ class MyFrame(wx.Frame):
     def OnDebug(self, ev):
         for c in self.GetCurrentBoard().GetCards():
             pos = c.GetPosition()
-            c.SetPosition((pos.x * 2, pos.y * 2))
+            c.SetPosition((pos.x - 30, pos.y))
         self.GetCurrentBoard().FitToChildren()
 
     def Save(self, out_file, d):

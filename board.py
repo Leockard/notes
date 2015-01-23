@@ -50,6 +50,12 @@ class Board(wx.Panel):
         menu = wx.Menu()
         
         # insert actions
+        cont_it = wx.MenuItem(menu, wx.ID_ANY, "Insert Content")
+        self.Bind(wx.EVT_MENU, self.OnInsertContent, cont_it)
+
+        head_it = wx.MenuItem(menu, wx.ID_ANY, "Insert Header")
+        self.Bind(wx.EVT_MENU, self.OnInsertHeader, head_it)
+        
         img_it = wx.MenuItem(menu, wx.ID_ANY, "Insert Image")
         self.Bind(wx.EVT_MENU, self.OnInsertImg, img_it)
         
@@ -60,6 +66,8 @@ class Board(wx.Panel):
         close_it = wx.MenuItem(menu, wx.ID_ANY, "Close")
         self.Bind(wx.EVT_MENU, self.OnClose, close_it)
 
+        menu.AppendItem(cont_it)
+        menu.AppendItem(head_it)
         menu.AppendItem(img_it)
         menu.AppendSeparator()
         menu.AppendItem(min_it)
@@ -72,6 +80,12 @@ class Board(wx.Panel):
     def OnRightDown(self, ev):
         self.menu_position = ev.GetPosition()
         self.PopupMenu(self.menu, ev.GetPosition())
+
+    def OnInsertContent(self, ev):
+        self.board.PlaceNewCard("Content", pos=self.menu_position)
+
+    def OnInsertHeader(self, ev):
+        self.board.PlaceNewCard("Header", pos=self.menu_position)
 
     def OnInsertImg(self, ev):
         self.board.PlaceNewCard("Image", pos=self.menu_position)
