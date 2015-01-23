@@ -188,6 +188,7 @@ class BoardBase(AutoSize):
 
         new.Bind(wx.EVT_LEFT_DOWN, self.OnCardLeftDown)
         new.Bind(Card.EVT_CARD_DELETE, self.OnCardEvent)
+        
         new.SetFocus()
         self.cards.append(new)
         self.FitToChildren()
@@ -380,7 +381,10 @@ class BoardBase(AutoSize):
     def OnCardLeftDown(self, ev):
         """Called when a child card has been clicked."""
         card = ev.GetEventObject()
+
+        # bring to front and set focus
         card.SetFocusIgnoringChildren()
+        card.Raise()
         
         # selection
         if not wx.GetMouseState().ControlDown():    # no control: simple click
