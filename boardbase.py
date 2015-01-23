@@ -139,8 +139,8 @@ class BoardBase(AutoSize):
             new = self.NewCard(subclass, pos=pos)
         else:
             new = self.NewCard(subclass, pos=pos)
-            
-        self.SelectCard(new, True)
+
+        self.UnselectAll()
         new.SetFocus()
 
     def NewCard(self, subclass, pos, label=-1, **kwargs):
