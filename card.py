@@ -92,7 +92,6 @@ class Header(Card):
         # Controls
         # txt = wx.TextCtrl(self, wx.ID_ANY, style = wx.TE_RICH)
         txt = EditText(self, wx.ID_ANY)
-        txt.SetHint("Header")
         
         # Boxes
         hbox1 = wx.BoxSizer(wx.HORIZONTAL)
@@ -245,9 +244,9 @@ class Content(Card):
 
     def SetColours(self, kind):
         self.SetBackgroundColour(self.COLOURS[kind]["border"])
-        self.title.SetBackgroundColour(self.COLOURS[kind]["border"])
+        self.title.SetFirstColour(self.COLOURS[kind]["border"])
+        self.title.SetSecondColour(self.COLOURS[kind]["bg"])
         self.content.SetBackgroundColour(self.COLOURS[kind]["bg"])
-        self.title.SetEntryColour(self.COLOURS[kind]["bg"])
 
 
     ### Callbacks

@@ -311,11 +311,9 @@ class MyFrame(wx.Frame):
         self.StatusBar.SetStatusText(s)
 
     def OnDebug(self, ev):
-        # for c in self.GetCurrentBoard().GetCards():
-        #     pos = c.GetPosition()
-        #     c.SetPosition((pos.x - 30, pos.y))
-        # self.GetCurrentBoard().FitToChildren()
-        print self.GetCurrentBoard().CanSetTransparent()
+        # pg = self.notebook.GetCurrentPage()
+        print self.GetCurrentBoard().GetCards()[0].title.first_cl
+        print self.GetCurrentBoard().GetCards()[0].title.second_cl
 
     def Save(self, out_file, d):
         """Save the data in the dict d in the file out_file."""
