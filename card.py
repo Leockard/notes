@@ -157,9 +157,6 @@ class Content(Card):
         
     ### Behavior functions
 
-    # def Highlight(self, start, end):
-    #     self.SetStyle((start, end), rt.RichTextAttr(wx.TextAttr(None, wx.RED)))
-
     def Collapse(self):
         if not self.IsCollapsed():
             self.content.Hide()

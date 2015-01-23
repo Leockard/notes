@@ -311,10 +311,11 @@ class MyFrame(wx.Frame):
         self.StatusBar.SetStatusText(s)
 
     def OnDebug(self, ev):
-        for c in self.GetCurrentBoard().GetCards():
-            pos = c.GetPosition()
-            c.SetPosition((pos.x - 30, pos.y))
-        self.GetCurrentBoard().FitToChildren()
+        # for c in self.GetCurrentBoard().GetCards():
+        #     pos = c.GetPosition()
+        #     c.SetPosition((pos.x - 30, pos.y))
+        # self.GetCurrentBoard().FitToChildren()
+        print self.FindFocus()
 
     def Save(self, out_file, d):
         """Save the data in the dict d in the file out_file."""
@@ -467,6 +468,9 @@ class MyFrame(wx.Frame):
 
     def OnSave(self, ev):
         """Save file."""
+        # return focus after saving
+        focus = self.FindFocus()
+
         # if there's a current file, save it
         if self.cur_file != "":
             self.Save(self.cur_file, self.GetCurrentBoard().Dump())
@@ -480,6 +484,7 @@ class MyFrame(wx.Frame):
             self.Save(fd.GetPath(), self.GetCurrentBoard().Dump())
             self.cur_file = fd.GetPath()
 
+        focus.SetFocus()
         self.Log("Saved file" + self.cur_file)
 
     def OnOpen(self, ev):
