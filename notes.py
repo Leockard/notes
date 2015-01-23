@@ -243,7 +243,8 @@ class MyFrame(wx.Frame):
         # shortcuts
         self.accels.append(wx.AcceleratorEntry(wx.ACCEL_NORMAL, 27, unsel_it.GetId())) # ESC
         self.accels.append(wx.AcceleratorEntry(wx.ACCEL_NORMAL, 127, delt_it.GetId())) # DEL
-        
+
+        self.accels.append(wx.AcceleratorEntry(wx.ACCEL_CTRL, ord("A"),      sela_it.GetId()))
         self.accels.append(wx.AcceleratorEntry(wx.ACCEL_CTRL, ord("D"),      debug_it.GetId()))
         self.accels.append(wx.AcceleratorEntry(wx.ACCEL_CTRL, ord("F"),      search_it.GetId()))
         self.accels.append(wx.AcceleratorEntry(wx.ACCEL_CTRL, ord("G"),      next_it.GetId()))
