@@ -121,8 +121,8 @@ class EditText(wx.TextCtrl):
     def OnLeftDown(self, ev):
         if self.GetBackgroundColour() == self.first_cl:
             self.ShowSecondColour()
-        else:
-            ev.Skip()
+        # important
+        ev.Skip()
 
     def OnSetFocus(self, ev):
         self.ShowSecondColour()
