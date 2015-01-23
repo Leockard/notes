@@ -41,7 +41,13 @@ class Page(wx.Panel):
 
     def SetupCanvas(self):
         """Setsup the canvas background. Call before showing the Canvas."""
+        # set sizes
+        self.canvas.SetSize(self.board.GetSize())
         sz = self.board.content_sz
+        self.canvas.SetVirtualSize(sz)
+        self.canvas.content_sz = sz
+
+        # get the current board as a bitmap
         bmp = wx.EmptyBitmap(sz.x, sz.y)
         dc = wx.MemoryDC()
         dc.SelectObject(bmp)
@@ -51,7 +57,8 @@ class Page(wx.Panel):
                 0, 0)                         # offset
         bmp = dc.GetAsBitmap()
         dc.SelectObject(wx.NullBitmap)
-        
+
+        # pass the bitmap to canvas        
         self.canvas.SetBackground(bmp)
                 
     ### Auxiliary functions

@@ -126,7 +126,7 @@ class CanvasBase(wx.StaticBitmap):
                 pos.x * sc[0], pos.y * sc[1])
         src.SelectObject(wx.NullBitmap)
 
-
+        
         
 ######################
 # CanvasBase Class
@@ -140,12 +140,13 @@ class Canvas(AutoSize):
         ctrl = CanvasBase(self, bitmap=wx.NullBitmap)
 
         box = wx.BoxSizer(wx.VERTICAL)
-        # self.SetSizer(box)
+        self.SetSizer(box)
         box.Add(ctrl, proportion=1, flag=wx.EXPAND)
         
         self.FitToChildren()
         self.ctrl = ctrl
         self.Bind(wx.EVT_SHOW, self.OnShow)
+        self.Bind(wx.EVT_SIZE, self.OnSize)
         self.Bind(wx.EVT_SCROLLWIN, self.OnScroll)
 
         
@@ -157,6 +158,7 @@ class Canvas(AutoSize):
 
     def SetBackground(self, bmp):
         """Call to show the part that will be seen."""
+        self.SetBuffer(bmp)
         self.ctrl.SetBuffer(bmp)
         self.ctrl.SetBitmap(bmp)
         self.ctrl.SetSize(bmp.GetSize())
@@ -165,15 +167,20 @@ class Canvas(AutoSize):
 
     ### Callbacks
 
+    def OnSize(self, ev):
+        print "event:  ", ev.GetSize()
+        print "canvas: ", self.GetSize()
+        print "buffer: ", self.ctrl.buffer.GetSize()
+
     def OnShow(self, ev):
         pass
         
     def OnScroll(self, ev):
         pos = ev.GetPosition() * self.SCROLL_STEP
         if ev.GetOrientation() == wx.VERTICAL:
-            # self.ctrl.SetOffset(wx.Point(0, pos))
+            self.ctrl.SetOffset(wx.Point(0, pos))
             pt = wx.Point(0, pos)
         elif ev.GetOrientation() == wx.HORIZONTAL:
-            # self.ctrl.SetOffset(wx.Point(pos, 0))
+            self.ctrl.SetOffset(wx.Point(pos, 0))
             pt = wx.Point(pos, 0)
             
