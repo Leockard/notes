@@ -332,7 +332,7 @@ class Image(Card):
 
         if not path:
             btn = wx.BitmapButton(self, bitmap=wx.ArtProvider.GetBitmap(wx.ART_MISSING_IMAGE), size=self.DEFAULT_SZ)
-            vbox.Add(btn, proportion=1, flag=wx.ALL|wx.EXPAND, border=Card.BORDER_WIDTH)            
+            vbox.Add(btn, proportion=1, flag=wx.ALL|wx.EXPAND, border=Card.BORDER_WIDTH)
             self.btn = btn
             btn.Bind(wx.EVT_BUTTON, self.OnButton)
         else:

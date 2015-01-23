@@ -178,6 +178,7 @@ class BoardBase(AutoSize):
             if "path" in kwargs.keys(): path = kwargs["path"]
             else: path = Image.DEFAULT_PATH
             new = Image(self, label, pos=pos, path=path, size=[i*self.scale for i in Image.DEFAULT_SZ])
+            new.Bind(wx.EVT_LEFT_DOWN, self.OnCardLeftDown)
         
         new.SetFocus()
         self.cards.append(new)
