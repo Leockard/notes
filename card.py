@@ -136,7 +136,7 @@ class Header(Card):
         # but not more than the minimum size!
         if new_len < self.len and sw > self.MIN_WIDTH and tw - 20 < sw:
             print "we're too long: ", sw
-            self.SetSize((tw - 25, sh))
+            self.SetSize((tw + 10, sh))
 
         self.len = new_len
         
