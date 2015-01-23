@@ -41,30 +41,18 @@ class Page(wx.Panel):
 
     def SetupCanvas(self):
         """Setsup the canvas background. Call before showing the Canvas."""
-        rect = self.board.GetRect()
-        self.canvas.SetSize((rect.width, rect.height))
-        
         sz = self.board.content_sz
-        self.canvas.SetVirtualSize(sz)
-
-        # print sz.x, sz.y
         bmp = wx.EmptyBitmap(sz.x, sz.y)
         dc = wx.MemoryDC()
         dc.SelectObject(bmp)
-        
-        # off = self.board.GetClientAreaOrigin()
         dc.Blit(0, 0,                         # pos
-                rect.width, rect.height,          # size
+                sz.x, sz.y,                   # size
                 wx.ClientDC(self.board),      # src
                 0, 0)                         # offset
+        bmp = dc.GetAsBitmap()
         dc.SelectObject(wx.NullBitmap)
-
-        # let the canvas handle its own scrollbars
-        self.canvas.FitToChildren()
-
-        self.canvas.buffer = bmp
-        self.canvas.Refresh()
-
+        
+        self.canvas.SetBackground(bmp)
                 
     ### Auxiliary functions
 
@@ -147,10 +135,7 @@ class Page(wx.Panel):
     ### Callbacks
 
     def OnSize(self, ev):
-<<<<<<< HEAD
         # they both already have theirs called from AutoSize!
-=======
->>>>>>> canvas_scroll
         # self.board.UpdateContentSize(ev.GetSize())
         # self.canvas.UpdateContentSize(ev.GetSize())
         # important to skip the event for Sizers to work correctly

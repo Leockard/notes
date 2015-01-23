@@ -34,7 +34,16 @@ class CanvasBase(wx.StaticBitmap):
 
         
     ### Behavior functions
+
+    def SetBuffer(self, bmp):
+        self.buffer = bmp
     
+    def SetOffset(self, pt):
+        self.offset = pt
+
+    def GetOffset(self):
+        return self.offset
+
     def DrawLines(self, dc):
         """Redraws all the lines that have been drawn already."""
         dc.BeginDrawing()
@@ -119,12 +128,6 @@ class CanvasBase(wx.StaticBitmap):
                 pos.x * sc[0], pos.y * sc[1])
         src.SelectObject(wx.NullBitmap)
 
-    def SetOffset(self, pt):
-        self.offset = pt
-
-    def GetOffset(self):
-        return self.offset
-
 
         
 ######################
@@ -132,22 +135,52 @@ class CanvasBase(wx.StaticBitmap):
 ######################
 
 class Canvas(AutoSize):
-    def __init__(self, parent):
+    def __init__(self, parent, size=wx.DefaultSize, pos=wx.DefaultPosition):
         super(Canvas, self).__init__(parent)
-        bmp = wx.Bitmap("screenshot7.png")
-        ctrl = CanvasBase(self, bitmap=bmp)
+        self.buffer = None
+        
+        ctrl = CanvasBase(self, bitmap=wx.NullBitmap)
 
         box = wx.BoxSizer(wx.VERTICAL)
+        # self.SetSizer(box)
         box.Add(ctrl, proportion=1, flag=wx.EXPAND)
-
+        
         self.FitToChildren()
-
         self.ctrl = ctrl
+        self.Bind(wx.EVT_SHOW, self.OnShow)
         self.Bind(wx.EVT_SCROLLWIN, self.OnScroll)
 
+        
+    ### Behavior functions
+
+    def SetBuffer(self, bmp):
+        """Call to set the whole of the content."""
+        self.buffer = bmp
+
+    def SetBackground(self, bmp):
+        """Call to show the part that will be seen."""
+        print "setting bmp of size: ", bmp.GetSize()
+        self.ctrl.SetBuffer(bmp)
+        self.ctrl.SetBitmap(bmp)
+        self.ctrl.SetSize(bmp.GetSize())
+        # self.SetSize(bmp.GetSize())
+
+
+    ### Callbacks
+
+    def OnShow(self, ev):
+        print "show"
+        print self.GetSize()
+        print self.GetViewStart()
+        
     def OnScroll(self, ev):
+        print "scroll"
         pos = ev.GetPosition() * self.SCROLL_STEP
         if ev.GetOrientation() == wx.VERTICAL:
-            self.ctrl.SetOffset(wx.Point(0, pos))
+            # self.ctrl.SetOffset(wx.Point(0, pos))
+            pt = wx.Point(0, pos)
         elif ev.GetOrientation() == wx.HORIZONTAL:
-            self.ctrl.SetOffset(wx.Point(pos, 0))                
+            # self.ctrl.SetOffset(wx.Point(pos, 0))
+            pt = wx.Point(pos, 0)
+        print pt
+            
