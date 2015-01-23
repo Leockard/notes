@@ -11,7 +11,7 @@ import wx.lib.stattext as st
 ######################
 
 class AutoSize(wx.ScrolledWindow):
-    SCROLL_STEP = 20
+    SCROLL_STEP = 10
     
     def __init__(self, parent, id=wx.ID_ANY, pos=wx.DefaultPosition, size=wx.DefaultSize, style=0):
         super(AutoSize, self).__init__(parent, id=id, pos=pos, size=size, style=style)
@@ -29,15 +29,15 @@ class AutoSize(wx.ScrolledWindow):
         
         if sz.x > virt_sz.x:
             flag = True
-            print "changing content_sz"
+            # print "changing content_sz"
             self.content_sz = wx.Size(sz.x, self.content_sz.y)
         if sz.y > virt_sz.y:
             flag = True
-            print "changing content_sz"
+            # print "changing content_sz"
             self.content_sz = wx.Size(self.content_sz.x, sz.y)
             
         if flag:
-            print "calling vritual size with: ", self.content_sz
+            # print "calling vritual size with: ", self.content_sz
             self.SetVirtualSize(self.content_sz)
 
     def AutoSizeOnSize(self, ev):
@@ -48,7 +48,7 @@ class AutoSize(wx.ScrolledWindow):
         Call to set the virtual (content) size to fit the children. If there are
         no children, keeps the virtual size as it is (does not shrink).
         """
-        print "fit to children"
+        # print "fit to children"
         children = self.GetChildren()
         if len(children) == 0: return
         
@@ -58,8 +58,8 @@ class AutoSize(wx.ScrolledWindow):
         right  = max(rects, key=lambda r: r.right).right
         bottom = max(rects, key=lambda r: r.bottom).bottom
         sz = self.content_sz
-        print "ri, bo: ", right, bottom
-        print "cur sz: ", sz
+        # print "ri, bo: ", right, bottom
+        # print "cur sz: ", sz
         if right  > sz.x: sz = wx.Size(right, sz.y)
         if bottom > sz.y: sz = wx.Size(sz.x, bottom)
         self.content_sz = sz

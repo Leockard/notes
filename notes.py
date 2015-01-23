@@ -311,7 +311,7 @@ class MyFrame(wx.Frame):
         self.StatusBar.SetStatusText(s)
 
     def OnDebug(self, ev):
-        pg = self.notebook.GetCurrentPage()
+        print "debug"
         
     def Save(self, out_file, d):
         """Save the data in the dict d in the file out_file."""
@@ -403,20 +403,31 @@ class MyFrame(wx.Frame):
         """Go to next search find."""
         if self.searching != None:
             i = self.searching
-            pos = self.search_find[i][1]
             s = self.search_ctrl.GetValue()
             
-            # erase strong highlight on previous
-            self.search_find[i][0].SetStyle(pos, pos + len(s), wx.TextAttr(None, wx.YELLOW))
-            
+            # erase strong highlight on previous search find
+            # even if this is the first one, nothing bad will happen
+            # we'd just painting yellow again over the last one
+            ctrl = self.search_find[i-1][0]            
+            pos = self.search_find[i-1][1]
+            ctrl.SetStyle(pos, pos + len(s), wx.TextAttr(None, wx.YELLOW))
+
+            # strong hightlight on current search find
+            ctrl = self.search_find[i][0]
+            pos = self.search_find[i][1]
+            ctrl.SetStyle(pos, pos + len(s), wx.TextAttr(None, wx.RED))
+
+            print ctrl.GetValue()
+
+            # make sure the find is visible            
+            card = ctrl.GetParent()            
+            self.GetCurrentBoard().ScrollToCard(card)
+            if isinstance(card, Content) and card.IsCollapsed():
+                card.Uncollapse()
+
             # advance and wrap
             i += 1
             if i >= len(self.search_find): i = 0
-
-            # strong on current
-            self.GetCurrentBoard().ScrollToCard(self.search_find[i][0].GetParent())
-            pos = self.search_find[i][1]
-            self.search_find[i][0].SetStyle(pos, pos + len(s), wx.TextAttr(None, wx.RED))
             self.searching = i
 
     def OnCtrlShftG(self, ev):

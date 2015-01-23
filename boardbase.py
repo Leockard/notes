@@ -14,7 +14,6 @@ from card import *
 class BoardBase(AutoSize):
     MOVING_RECT_THICKNESS = 1
     BACKGROUND_CL = "#CCCCCC"
-    PIXELS_PER_SCROLL = 20
     CARD_PADDING = 15
 
     def __init__(self, parent, id=wx.ID_ANY, pos=(0,0), size=wx.DefaultSize):
@@ -263,38 +262,64 @@ class BoardBase(AutoSize):
 
     def ScrollToCard(self, card):
         """If the card is in view, don't do anything. Otherwise, scroll it into view."""
-        view = self.GetViewStart()
-        sz = self.GetSize()
-        view_rect = wx.Rect(view.x, view.y, sz.width, sz.height)
-        card_rect = card.GetRect()
+        rect = card.GetRect()
+        pt = rect.GetBottomRight()
+        pt = self.CalcUnscrolledPosition(pt)
+        self.ScrollToPoint(pt)
 
+        # call rect again since we may have scrolled the window
+        rect = card.GetRect()
+        pt = rect.GetTopLeft()        
+        pt = self.CalcUnscrolledPosition(pt)
+        self.ScrollToPoint(pt)
+
+    def ScrollToPoint(self, pt):
+        """
+        If the point is in view, don't do anything. Otherwise, scroll it into view.
+        The point must be in absolute (content size) coordinates.
+        """
+
+        print "scrolling to pt: ", pt
+        
+        step = self.SCROLL_STEP
+
+        # get the current rect in view, in pixels
+        # coordinates relative to underlying content size
+        view = [k * step for k in self.GetViewStart()]
+        sz = self.GetClientSize()
+        rect = wx.Rect(view[0], view[1], sz.width, sz.height)
+
+        # point we're scrolling to (already in pixels)
+        # relative to content size
+
+        # nothing to do
+        if rect.Contains(pt):
+            return
+
+        # scroll the point into view
         scroll = False
+        pad = self.CARD_PADDING
+
+        # if one of the argumets is wx.DefaultCoord,
+        # we will not scroll in that direction
         ysc = wx.DefaultCoord
         xsc = wx.DefaultCoord
+        
         # remember y coordinate grows downward
-        # we're assuming the card size is smaller than the view size
-        # in both width and height
-        if card_rect.top <= view_rect.top:
+        if pt.x >= rect.right or pt.x <= rect.left:
             scroll = True
-            ysc = - view_rect.top + card_rect.top - self.CARD_PADDING
-            ysc /= self.SCROLL_STEP
-        elif card_rect.bottom >= view_rect.bottom:
+            xsc = pt.x - pad      # where we want to go
+            xsc /= step           # in scroll units
+        if pt.y <= rect.top or pt.y >= rect.bottom:
             scroll = True
-            ysc = card_rect.bottom - view_rect.top + self.CARD_PADDING
-            ysc /= self.SCROLL_STEP
-            
-        if card_rect.left <= view_rect.left:
-            scroll = True
-            xsc = view_rect.left - card_rect.left + self.CARD_PADDING
-            xsc /= self.SCROLL_STEP
-        elif card_rect.right >= view_rect.right:
-            scroll = True
-            xsc = card_rect.right - view_rect.right + self.CARD_PADDING
-            xsc /= self.SCROLL_STEP
+            ysc = pt.y - pad      # where we want to go
+            ysc /= step           # in scroll units
 
         if scroll:
-            # if one of the argumets is wx.DefaultCoord,
-            # we will not scroll in that direction
+            # will scroll as much as it's possible
+            # i.e., pt will not necessarily be in the top left corner after scrolling
+            # but it will surely be inside the view
+            print "scrolling: ", (xsc, ysc)
             self.Scroll(xsc, ysc)
 
     def HArrangeSelectedCards(self):

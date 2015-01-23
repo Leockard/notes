@@ -105,7 +105,6 @@ class Header(Card):
     def Dump(self):
         """Returns a dict with all the information contained."""
         sz = self.GetSize()
-        print "dumping sz"
         return {"class": "Header",
                 "label": self.label,
                 "pos": self.GetPosition(),
