@@ -113,7 +113,6 @@ class CanvasBase(wx.StaticBitmap):
 
     def OnPaint(self, ev):
         """Called when the window is exposed."""
-        print "Canvas.OnPaint"
         dc = wx.PaintDC(self)
         src = wx.MemoryDC()
         src.SelectObject(self.buffer)
@@ -121,7 +120,6 @@ class CanvasBase(wx.StaticBitmap):
         sz = self.GetVirtualSize()
         pos = self.GetViewStart()
         sc = self.GetScrollPixelsPerUnit()
-        print sz, pos
         dc.Blit(0, 0,
                 sz.x, sz.y,
                 src,
@@ -159,7 +157,6 @@ class Canvas(AutoSize):
 
     def SetBackground(self, bmp):
         """Call to show the part that will be seen."""
-        print "setting bmp of size: ", bmp.GetSize()
         self.ctrl.SetBuffer(bmp)
         self.ctrl.SetBitmap(bmp)
         self.ctrl.SetSize(bmp.GetSize())
@@ -169,12 +166,9 @@ class Canvas(AutoSize):
     ### Callbacks
 
     def OnShow(self, ev):
-        print "show"
-        print self.GetSize()
-        print self.GetViewStart()
+        pass
         
     def OnScroll(self, ev):
-        print "scroll"
         pos = ev.GetPosition() * self.SCROLL_STEP
         if ev.GetOrientation() == wx.VERTICAL:
             # self.ctrl.SetOffset(wx.Point(0, pos))
@@ -182,5 +176,4 @@ class Canvas(AutoSize):
         elif ev.GetOrientation() == wx.HORIZONTAL:
             # self.ctrl.SetOffset(wx.Point(pos, 0))
             pt = wx.Point(pos, 0)
-        print pt
             

@@ -63,7 +63,7 @@ class Card(wx.Panel):
 
 class CardEvent(wx.Event):
     def __init__(self):
-        print "creating new card event"
+        pass
 
     
 ######################
@@ -124,17 +124,17 @@ class Header(Card):
         dc = wx.WindowDC(self)
         dc.SetFont(self.header.GetFont())
         tw, th = dc.GetTextExtent(self.GetHeader())
-        print "new text size: ", (tw, th)
+        # print "new text size: ", (tw, th)
 
         # if we're too short: elongate
         if new_len > self.len and tw + 20 > sw:
-            print "we're too short"
+            # print "we're too short"
             self.SetSize((tw + 25, sh))
 
         # if we're too long: shorten
         # but not more than the minimum size!
         if new_len < self.len and sw > self.MIN_WIDTH and tw - 20 < sw:
-            print "we're too long: ", sw
+            # print "we're too long: ", sw
             self.SetSize((tw + 10, sh))
 
         self.len = new_len

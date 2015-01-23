@@ -178,7 +178,6 @@ class BoardBase(AutoSize):
                 w = Header.DEFAULT_SZ[0]
                 h = Header.DEFAULT_SZ[1]
 
-            print "creating new header with sz: ", (w, h)
             new = Header(self, label, pos=pos, header=txt,
                          size=[i*self.scale for i in (w, h)])
             
