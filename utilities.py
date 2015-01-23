@@ -73,44 +73,61 @@ class EditText(wx.TextCtrl):
     DEFAULT_FONT = (12, wx.SWISS, wx.ITALIC, wx.BOLD)
     DEFAULT_2_CL = (255, 255, 255, 255)
     
-    def __init__(self, parent, id = wx.ID_ANY, label="", pos=wx.DefaultPosition, size=DEFAULT_SZ, style=wx.BORDER_NONE|wx.TAB_TRAVERSAL):
-        super(EditText, self).__init__(parent, id=id, pos=pos, size=size, style=style)
+    def __init__(self, parent, id = wx.ID_ANY, label="",
+                 pos=wx.DefaultPosition, size=DEFAULT_SZ,
+                 style=wx.BORDER_NONE|wx.TAB_TRAVERSAL):
+        super(EditText, self).__init__(parent, id=id, pos=pos, size=size,
+                                       style=style|wx.TE_PROCESS_ENTER)
 
+        # colours
         self.first_cl = parent.GetBackgroundColour()
         self.second_cl = self.DEFAULT_2_CL
         self.SetBackgroundColour(self.first_cl)
 
+        # style
+        self.SetFont(wx.Font(*self.DEFAULT_FONT))
+        
+        # bindings
         self.Bind(wx.EVT_LEFT_DOWN, self.OnLeftDown)
         self.Bind(wx.EVT_SET_FOCUS, self.OnSetFocus)
         self.Bind(wx.EVT_KILL_FOCUS, self.OnKillFocus)
+        self.Bind(wx.EVT_TEXT_ENTER, self.ToggleColours)
 
+    
+    ### Behavior functions
+
+    def ToggleColours(self, ev):
+        if self.GetBackgroundColour() == self.first_cl:
+            self.ShowSecondColour()
+        else:
+            self.ShowFirstColour()
+    
     def ShowFirstColour(self):
-        print "show first"
         self.SetBackgroundColour(self.first_cl)
 
     def ShowSecondColour(self):
-        print "show second"
         self.SetBackgroundColour(self.second_cl)
 
     def SetSecondColour(self, cl):
-        print "set second"
         self.second_cl = cl
 
     def SetFirstColour(self, cl):
-        print "set bg cl"
         self.first_cl = cl
         self.SetBackgroundColour(self.first_cl)
 
+
+    ### Callbacks
+    
     def OnLeftDown(self, ev):
-        print "left down"
-        self.ShowSecondColour()
+        if self.GetBackgroundColour() == self.first_cl:
+            self.ShowSecondColour()
+        else:
+            ev.Skip()
 
     def OnSetFocus(self, ev):
-        print "set focus"
         self.ShowSecondColour()
 
     def OnKillFocus(self, ev):
-        print "kill focus"
         self.ShowFirstColour()
         
         

@@ -74,24 +74,22 @@ class Header(Card):
     DEFAULT_SZ = (150, 32)
     DEFAULT_TITLE = ""
     
-    def __init__(self, parent, label, id=wx.ID_ANY, pos=wx.DefaultPosition, header = "header...", size=DEFAULT_SZ):
+    def __init__(self, parent, label, id=wx.ID_ANY, pos=wx.DefaultPosition, header = "Header...", size=DEFAULT_SZ):
         super(Header, self).__init__(parent, label, id=id, pos=pos, size=size,
                                      style = wx.BORDER_RAISED|wx.TAB_TRAVERSAL)
         self.InitUI()
-        # self.header.SetValue(header)
-        self.header.SetLabel(header)
-        
+        self.header.SetValue(header)
 
 
     ### Behavior Functions
     def GetHeader(self):
-        return self.header.GetLabel()
+        return self.header.GetValue()
 
     ### Auxiliary functions
     def InitUI(self):
         # Controls
-        # txt = wx.TextCtrl(self, wx.ID_ANY, style = wx.TE_RICH)
-        txt = EditText(self, wx.ID_ANY)
+        txt = EditText(self)
+        txt.SetHint("Header...")
         
         # Boxes
         hbox1 = wx.BoxSizer(wx.HORIZONTAL)
@@ -163,7 +161,7 @@ class Content(Card):
 
         self.InitUI()
         self.SetKind(kind)
-        if title: self.title.SetLabel(title)
+        if title: self.title.SetValue(title)
         if content: self.content.SetValue(content)
 
         
@@ -183,7 +181,7 @@ class Content(Card):
         return not self.content.IsShown()
 
     def GetTitle(self):
-        return self.title.GetLabel()
+        return self.title.GetValue()
 
     def GetContent(self):
         return self.content.GetValue()
