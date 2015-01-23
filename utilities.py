@@ -63,7 +63,6 @@ class AutoSize(wx.ScrolledWindow):
         if right  > sz.x: sz = wx.Size(right, sz.y)
         if bottom > sz.y: sz = wx.Size(sz.x, bottom)
         self.content_sz = sz
-        print "new sz: ", self.content_sz
         self.SetVirtualSize(self.content_sz + (1000, 1000))
 
 

@@ -76,6 +76,7 @@ class MyFrame(wx.Frame):
 
             # setup variables for ctrl + G cycling
             self.search_find = finds
+            self.search_skip = False
             # save the current index in search_find
             # when done searching, set to None
             self.searching = 0
@@ -87,6 +88,58 @@ class MyFrame(wx.Frame):
                 c.SetStyle(i, i + len(s), c.GetDefaultStyle())
             self.search_find = []
             self.searching = None
+
+        self.search_ctrl.Hide()
+
+    def PrevSearchResult(self):
+        if self.searching != None:
+            # used when changing direction in searching
+            i = self.searching
+            self.JumpSearchResults(i, i-1)
+            
+            # advance and wrap
+            i -= 1
+            if i < 0: i = len(self.search_find) - 1
+            self.searching = i
+
+    def NextSearchResult(self):
+        """Add a strong highlight and scroll to the next search result."""
+        if self.searching != None:
+            # used when changing direction in searching
+            i = self.searching
+            self.JumpSearchResults(i-1, i)
+            
+            # advance and wrap
+            i += 1            
+            if i >= len(self.search_find): i = 0
+            self.searching = i
+
+    def JumpSearchResults(self, old, new):
+        """
+        Unhighlights the old search result and highlights the new one.
+        old and new must be valid indices in the internal search results list.
+        This is just a convenience function for Prev- and NextSearchResult.
+        Use those ones instead.
+        """
+        s = self.search_ctrl.GetValue()
+        
+        # erase strong highlight on previous search find
+        # even if this is the first one, nothing bad will happen
+        # we'd just painting yellow again over the last one
+        ctrl = self.search_find[old][0]
+        pos = self.search_find[old][1]
+        ctrl.SetStyle(pos, pos + len(s), wx.TextAttr(None, wx.YELLOW))
+
+        # strong hightlight on current search find
+        ctrl = self.search_find[new][0]
+        pos = self.search_find[new][1]
+        ctrl.SetStyle(pos, pos + len(s), wx.TextAttr(None, wx.RED))
+
+        # make sure the find is visible            
+        card = ctrl.GetParent()            
+        self.GetCurrentBoard().ScrollToCard(card)
+        if isinstance(card, Content) and card.IsCollapsed():
+            card.Uncollapse()
 
                     
     ### Auxiliary functions
@@ -201,9 +254,10 @@ class MyFrame(wx.Frame):
         if not self.ui_ready:
             # make new
             ctrl = wx.SearchCtrl(self, style=wx.TE_PROCESS_ENTER)
-            ctrl.Bind(wx.EVT_SEARCHCTRL_SEARCH_BTN, self.Search)
+            # ctrl.Bind(wx.EVT_SEARCHCTRL_SEARCH_BTN, self.Search)
+            ctrl.Bind(wx.EVT_TEXT, self.Search)
             ctrl.Bind(wx.EVT_SEARCHCTRL_CANCEL_BTN, self.CancelSearch)
-            ctrl.Bind(wx.EVT_TEXT_ENTER, self.Search)
+            ctrl.Bind(wx.EVT_TEXT_ENTER, self.OnSearchEnter)
         else:
             # or get the old one
             ctrl = self.search_ctrl
@@ -399,45 +453,17 @@ class MyFrame(wx.Frame):
             self.CancelSearch(None)
             self.searching = None
 
+    def OnSearchEnter(self, ev):
+        """Go to next search find."""
+        self.NextSearchResult()
+
     def OnCtrlG(self, ev):
         """Go to next search find."""
-        if self.searching != None:
-            i = self.searching
-            s = self.search_ctrl.GetValue()
-            
-            # erase strong highlight on previous search find
-            # even if this is the first one, nothing bad will happen
-            # we'd just painting yellow again over the last one
-            ctrl = self.search_find[i-1][0]            
-            pos = self.search_find[i-1][1]
-            ctrl.SetStyle(pos, pos + len(s), wx.TextAttr(None, wx.YELLOW))
-
-            # strong hightlight on current search find
-            ctrl = self.search_find[i][0]
-            pos = self.search_find[i][1]
-            ctrl.SetStyle(pos, pos + len(s), wx.TextAttr(None, wx.RED))
-
-            print ctrl.GetValue()
-
-            # make sure the find is visible            
-            card = ctrl.GetParent()            
-            self.GetCurrentBoard().ScrollToCard(card)
-            if isinstance(card, Content) and card.IsCollapsed():
-                card.Uncollapse()
-
-            # advance and wrap
-            i += 1
-            if i >= len(self.search_find): i = 0
-            self.searching = i
+        self.NextSearchResult()
 
     def OnCtrlShftG(self, ev):
         """Go to previous search find."""
-        if self.searching != None:
-            i = self.searching - 1
-            if i < 0: i = len(self.search_find) - 1
-            self.search_find[i].SetFocus()
-            self.search_find[i].SetSelection(0, 3)
-            self.searching = i
+        self.PrevSearchResult()
 
     def OnCtrlTab(self, ev):
         """Selects next card."""

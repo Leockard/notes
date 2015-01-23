@@ -278,9 +278,6 @@ class BoardBase(AutoSize):
         If the point is in view, don't do anything. Otherwise, scroll it into view.
         The point must be in absolute (content size) coordinates.
         """
-
-        print "scrolling to pt: ", pt
-        
         step = self.SCROLL_STEP
 
         # get the current rect in view, in pixels
@@ -319,7 +316,6 @@ class BoardBase(AutoSize):
             # will scroll as much as it's possible
             # i.e., pt will not necessarily be in the top left corner after scrolling
             # but it will surely be inside the view
-            print "scrolling: ", (xsc, ysc)
             self.Scroll(xsc, ysc)
 
     def HArrangeSelectedCards(self):
