@@ -64,11 +64,10 @@ class MyFrame(wx.Frame):
         txt_ctrls = []
         for c in self.GetCurrentBoard().GetCards():
             if isinstance(c, Content):
-                # txt_ctrls.append((c.GetTitle().lower(),   c.title))
+                txt_ctrls.append((c.GetTitle().lower(),   c.title))
                 txt_ctrls.append((c.GetContent().lower(), c.content))
             if isinstance(c, Header):
-                pass
-                # txt_ctrls.append((c.GetHeader().lower(),  c.header))
+                txt_ctrls.append((c.GetHeader().lower(),  c.header))
 
         # do the actual searching
         finds = []
