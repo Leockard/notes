@@ -20,7 +20,7 @@ import wx.richtext as rt
 class MyFrame(wx.Frame):
     def __init__(self, parent):
         super(MyFrame, self).__init__(parent, -1, "Board", size = (800, 600),
-                                      style=wx.DEFAULT_FRAME_STYLE | wx.NO_FULL_REPAINT_ON_RESIZE)
+                                      style=wx.DEFAULT_FRAME_STYLE|wx.NO_FULL_REPAINT_ON_RESIZE)
 
         self.accels = [] # will hold keyboard shortcuts aka accelerators
         self.SetTitle("Notes")
@@ -370,13 +370,12 @@ class MyFrame(wx.Frame):
 
         # make starting page
         pg = Page(nb, size = size)
-        # pg.board.SetBackgroundColour(Page.BACKGROUND_CL)
         nb.AddPage(pg, "Unittled Notes")
 
         # UI setup
         vbox = self.GetSizer()
         nb_box = wx.BoxSizer(wx.HORIZONTAL)
-        nb_box.Add(nb, proportion=1, flag=wx.ALL|wx.EXPAND, border=1)
+        nb_box.Add(nb, proportion=1,   flag=wx.ALL|wx.EXPAND, border=1)
         vbox.Add(nb_box, proportion=1, flag=wx.ALL|wx.EXPAND, border=1)
 
         # bindings
@@ -384,7 +383,6 @@ class MyFrame(wx.Frame):
 
         # set members
         self.notebook = nb
-        # self.board = pg.board
 
     def CreateBitmap(self):
         """Take a picture of the current card board."""
