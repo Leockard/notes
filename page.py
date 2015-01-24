@@ -138,8 +138,6 @@ class Page(wx.Panel):
 
         # # UI setup
         vbox = self.GetSizer()
-        if not vbox:
-            vbox = wx.BoxSizer(wx.VERTICAL)
         vbox.Add(bd, proportion=1, flag=wx.ALL|wx.EXPAND, border=1)
         
         # set members
@@ -152,10 +150,9 @@ class Page(wx.Panel):
         
         # UI setup
         vbox = self.GetSizer()
-        if not vbox:
-            vbox = wx.BoxSizer(wx.VERTICAL)
 
-        # we don't add it yet, since the board will be visible first
+        # we don't add it yet:
+        # only board will be visible first
         # also see, OnToggling
         # vbox.Add(box, proportion=1, flag=wx.ALL|wx.EXPAND, border=1)
 

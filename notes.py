@@ -375,7 +375,6 @@ class MyFrame(wx.Frame):
 
         # UI setup
         vbox = self.GetSizer()
-        if not vbox: vbox = wx.BoxSizer(wx.VERTICAL)
         nb_box = wx.BoxSizer(wx.HORIZONTAL)
         nb_box.Add(nb, proportion=1, flag=wx.ALL|wx.EXPAND, border=1)
         vbox.Add(nb_box, proportion=1, flag=wx.ALL|wx.EXPAND, border=1)
