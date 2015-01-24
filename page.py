@@ -25,10 +25,13 @@ class Page(wx.Panel):
     def __init__(self, parent, id=wx.ID_ANY, pos=wx.DefaultPosition, size = wx.DefaultSize):
         super(Page, self).__init__(parent, id=id, pos=pos, size=size)
 
+        # members
         self.resizing = False
         self.scale = 1.0
         self.content_size = wx.Size(size[0], size[1])
-        self.ui_ready = False
+
+        # GUI
+        self.ui_ready = False        
         self.InitUI()
 
         self.Bind(wx.EVT_SIZE, self.OnSize)
@@ -36,31 +39,42 @@ class Page(wx.Panel):
 
     ### Behavior functions
 
+    def GetBoardBmp(self):
+        # get the current board as a bitmap
+        sz = self.board.content_sz
+
+        if sz.width > -1 and sz.height > -1:
+            bmp = wx.EmptyBitmap(sz.x, sz.y)
+            dc = wx.MemoryDC()
+            
+            dc.SelectObject(bmp)
+            dc.Blit(0, 0,                         # pos
+                    sz.x, sz.y,                   # size
+                    wx.ClientDC(self.board),      # src
+                    0, 0)                         # offset
+            bmp = dc.GetAsBitmap()
+            dc.SelectObject(wx.NullBitmap)
+
+            return bmp
+        
+        else:
+            return None
+
     def SetupCanvas(self):
-        """Setsup the canvas background. Call before showing the Canvas."""
+        """Setup the canvas background. Call before showing the Canvas."""
+        print "SetupCanvas"
         # set sizes
         self.canvas.SetSize(self.board.GetSize())
         sz = self.board.content_sz
         self.canvas.SetVirtualSize(sz)
         self.canvas.content_sz = sz
 
-        # get the current board as a bitmap
-        bmp = wx.EmptyBitmap(sz.x, sz.y)
-        dc = wx.MemoryDC()
-        dc.SelectObject(bmp)
-        dc.Blit(0, 0,                         # pos
-                sz.x, sz.y,                   # size
-                wx.ClientDC(self.board),      # src
-                0, 0)                         # offset
-        bmp = dc.GetAsBitmap()
-        dc.SelectObject(wx.NullBitmap)
-
         # pass the bitmap to canvas        
-        self.canvas.SetBackground(bmp)
+        self.canvas.SetBackground(self.GetBoardBmp())
 
-                
+                        
     ### Auxiliary functions
-
+    
     def Dump(self):
         di = self.board.Dump()
         for id, card in di.iteritems():
@@ -71,9 +85,10 @@ class Page(wx.Panel):
             if "height" in card.keys():
                 card["height"] = int(card["height"] / self.scale)
         return di
-
+    
     def InitUI(self):
         sz = (20, 20)
+        
         # cleanup the previous UI, if any
         if self.ui_ready:
             sz = self.board.GetSize()
@@ -104,7 +119,8 @@ class Page(wx.Panel):
             self.zoom.SetSelection(1)
             self.zoom.Bind(wx.EVT_COMBOBOX, self.OnZoomCombo)
             self.zoom.Bind(wx.EVT_TEXT_ENTER, self.OnZoomEnter)
-            
+
+        # boxing
         hbox = wx.BoxSizer(wx.HORIZONTAL)
         hbox.Add(self.toggle, proportion=0, flag=wx.LEFT|wx.EXPAND, border=1)
         hbox.Add(self.view,   proportion=0, flag=wx.LEFT|wx.EXPAND, border=1)
@@ -123,10 +139,9 @@ class Page(wx.Panel):
 
         # # UI setup
         vbox = self.GetSizer()
-        if not vbox: vbox = wx.BoxSizer(wx.VERTICAL)
-        box = wx.BoxSizer(wx.HORIZONTAL)
-        box.Add(bd,   proportion=1, flag=wx.ALL|wx.EXPAND, border=1)
-        vbox.Add(box, proportion=1, flag=wx.ALL|wx.EXPAND, border=1)
+        if not vbox:
+            vbox = wx.BoxSizer(wx.VERTICAL)
+        vbox.Add(bd, proportion=1, flag=wx.ALL|wx.EXPAND, border=1)
         
         # set members
         self.board = bd.board
@@ -138,10 +153,12 @@ class Page(wx.Panel):
         
         # UI setup
         vbox = self.GetSizer()
-        if not vbox: vbox = wx.BoxSizer(wx.VERTICAL)
-        box = wx.BoxSizer(wx.HORIZONTAL)
-        box.Add(cv,   proportion=1, flag=wx.ALL|wx.EXPAND, border=1)
-        vbox.Add(box, proportion=1, flag=wx.ALL|wx.EXPAND, border=1)
+        if not vbox:
+            vbox = wx.BoxSizer(wx.VERTICAL)
+
+        # we don't add it yet, since the board will be visible first
+        # also see, OnToggling
+        # vbox.Add(box, proportion=1, flag=wx.ALL|wx.EXPAND, border=1)
 
         # Set members
         self.canvas = cv
@@ -151,20 +168,29 @@ class Page(wx.Panel):
     ### Callbacks
 
     def OnSize(self, ev):
-        # they both already have theirs called from AutoSize!
-        # self.board.UpdateContentSize(ev.GetSize())
-        # self.canvas.UpdateContentSize(ev.GetSize())
         # important to skip the event for Sizers to work correctly
         ev.Skip()
 
     def OnToggle(self, ev):
+        # EXTREMELY important!
+        # remember that self.board is a BoardBase
+        # but we added the parent Board object to our Sizer
+        bd = self.board.GetParent()
+
+        # now do the actual toggling replacing bd with self.canvas
         if self.board.IsShown():
             self.SetupCanvas()
             self.board.Hide()
             self.canvas.Show()
+            
+            val = self.GetSizer().Replace(bd, self.canvas)
         else:
             self.board.Show()
             self.canvas.Hide()
+            val = self.GetSizer().Replace(self.canvas, bd)
+
+        # never forget to Layout after Sizer operations            
+        self.Layout()
 
     def OnZoomCombo(self, ev):
         """Called when an item in the zoom combo box is selected."""
@@ -176,7 +202,7 @@ class Page(wx.Panel):
             self.Zoom(float(s)/100)
         elif isnumber(s[:-1]) and s[-1] == "%":
             self.Zoom(float(s[:-1])/100)
-        
+
     def Zoom(self, new_scale):
         """Zoom is actually a change of scale of all relevant coordinates."""
         # save the scroll position and go to origin
@@ -204,7 +230,7 @@ class Page(wx.Panel):
 
         self.board.scale = new_scale
         self.canvas.scale = new_scale
-        self.scale = new_scale
+        self.scale = new_scale            
 
     def OnView(self, ev):
         s = ev.GetString()
