@@ -17,7 +17,8 @@ from utilities import EditText
 class Card(wx.Panel):
     BORDER_WIDTH = 2
     BORDER_THICK = 5
-    CardEvent, EVT_CARD_DELETE = ne.NewCommandEvent()
+    DeleteEvent, EVT_CARD_DELETE = ne.NewCommandEvent()
+    CollapseEvent, EVT_CARD_COLLAPSE = ne.NewCommandEvent()
     bar = None
     
     def __init__(self, parent, label, id=wx.ID_ANY, pos=wx.DefaultPosition, size=wx.DefaultSize, style=0):
@@ -45,12 +46,13 @@ class Card(wx.Panel):
         self.bar.Hide()
 
     def BarDelete(self):
-        """Called by CardBar when the close button is pressed."""
+        """Called by CardBar when the close button is pressed. Raises EVT_CARD_DELETE."""
         # simply raise a CardEvent. BoardBase should know what to do
-        event = self.CardEvent(id=wx.ID_ANY, card=self)
-        self.GetEventHandler().ProcessEvent(event)        
-    
-                
+        event = self.DeleteEvent(id=wx.ID_ANY)
+        event.SetEventObject(self)
+        self.GetEventHandler().ProcessEvent(event)
+
+                        
     ### Auxiliary functions
         
     def InitUI(self):
@@ -207,10 +209,18 @@ class Content(Card):
             self.content.Hide()
             self.SetSize(self.COLLAPSED_SZ)
 
+            event = self.CollapseEvent(id=wx.ID_ANY, card=self, size=self.COLLAPSED_SZ, collapsed=True)
+            event.SetEventObject(self)
+            self.GetEventHandler().ProcessEvent(event)
+
     def Uncollapse(self):
         if self.IsCollapsed():
             self.content.Show()
             self.SetSize(self.DEFAULT_SZ)
+            
+            event = self.CollapseEvent(id=wx.ID_ANY, card=self, size=self.COLLAPSED_SZ, collapsed=False)
+            event.SetEventObject(self)
+            self.GetEventHandler().ProcessEvent(event)
 
     def IsCollapsed(self):
         return not self.content.IsShown()

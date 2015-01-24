@@ -187,12 +187,23 @@ class BoardBase(AutoSize):
             new = Image(self, label, pos=pos, path=path, size=[i*self.scale for i in Image.DEFAULT_SZ])
 
         new.Bind(wx.EVT_LEFT_DOWN, self.OnCardLeftDown)
-        new.Bind(Card.EVT_CARD_DELETE, self.OnCardEvent)
+        new.Bind(Card.EVT_CARD_DELETE, self.OnCardDelete)
+        new.Bind(Card.EVT_CARD_COLLAPSE, self.OnCardCollapse)
         
         new.SetFocus()
         self.cards.append(new)
         self.FitToChildren()
         return new
+
+    def MoveCard(self, card, dx, dy):
+        """Move card by (dx, dy)."""
+        pos = card.GetPosition()
+        card.Move((pos.x + dx, pos.y + dy))
+
+    def MoveSelected(self, dx, dy):
+        """Move all selected cards by dx, dy."""
+        for c in self.GetSelection():
+            self.MoveCard(c, dx, dy)
 
     def GetSelection(self):
         return self.selected_cards
@@ -371,8 +382,12 @@ class BoardBase(AutoSize):
         # don't forget to stop all timers!
         pass
 
-    def OnCardEvent(self, ev):
-        self.SelectCard(ev.card, new_sel=True)
+    def OnCardCollapse(self, ev):
+        card = ev.GetEventObject()
+        card.SetSize([i*self.scale for i in card.GetSize()])
+        
+    def OnCardDelete(self, ev):
+        self.SelectCard(ev.GetEventObject(), new_sel=True)
         self.DeleteSelected()
 
     def OnChildFocus(self, ev):
@@ -530,7 +545,6 @@ class BoardBase(AutoSize):
         self.Scroll(0, 0)
         
         for c in self.cards:
-            pos = c.GetPosition()
             carddict[c.GetId()] = c.Dump()
             
         # and return to the original view
