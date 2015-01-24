@@ -26,6 +26,7 @@ class MyFrame(wx.Frame):
         self.SetTitle("Notes")
         self.cur_file = ""
         self.search_find = []
+        self.search_str = ""
         self.searching = None      # contains the current search index
                                    # when not searching, set to None
         self.ui_ready = False
@@ -53,11 +54,11 @@ class MyFrame(wx.Frame):
         # search string in lower case
         s = self.search_ctrl.GetValue().lower()
                 
-        # if we were already searching, clear up the previous highlighting
+        # if we were already searching, clear up  highlighting
         if self.search_find:
-            # unhighlight results
+            # unhighlight previous results
             for c, i in self.search_find:
-                c.SetStyle(i, i + len(s), c.GetDefaultStyle())
+                c.SetStyle(i, i + len(self.search_str), c.GetDefaultStyle())
 
         # gather all values in which to search
         # including the control they appear in
@@ -84,6 +85,7 @@ class MyFrame(wx.Frame):
             # setup variables for ctrl + G cycling
             self.search_find = finds
             self.search_skip = False
+            self.search_str = s
             # save the current index in search_find
             # when done searching, set to None
             self.searching = 0
