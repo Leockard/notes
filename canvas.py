@@ -15,7 +15,7 @@ from utilities import AutoSize
 
 class CanvasBase(wx.StaticBitmap):
     def __init__(self, parent, bitmap=wx.NullBitmap):
-        super(CanvasBase, self).__init__(parent, bitmap=bitmap, style=wx.NO_FULL_REPAINT_ON_RESIZE|wx.BORDER_NONE)
+        super(CanvasBase, self).__init__(parent, bitmap=bitmap, style=wx.BORDER_NONE)
         self.thickness = 1
         self.colour = "BLACK"
         self.pen = wx.Pen(self.colour, self.thickness, wx.SOLID)
@@ -31,12 +31,10 @@ class CanvasBase(wx.StaticBitmap):
         self.Bind(wx.EVT_MOTION, self.OnMotion)
         self.Bind(wx.EVT_IDLE, self.OnIdle)
         self.Bind(wx.EVT_PAINT, self.OnPaint)
+        self.Bind(wx.EVT_SHOW, self.OnShow)
 
         
     ### Behavior functions
-
-    def SetBuffer(self, bmp):
-        self.buffer = bmp
     
     def SetOffset(self, pt):
         self.offset = pt
@@ -74,7 +72,7 @@ class CanvasBase(wx.StaticBitmap):
 
         
     ### Callbacks
-    
+
     def OnLeftDown(self, ev):
         """Called when the left mouse button is pressed"""
         self.curLine = []
@@ -111,6 +109,12 @@ class CanvasBase(wx.StaticBitmap):
             self.InitBuffer()
             self.Refresh(False)
 
+    def OnShow(self, ev):
+        """Called when the window is shown."""
+        if hasattr(self, "buffer"):
+            dc = wx.BufferedDC(None, self.buffer)
+            self.DrawLines(dc)
+
     def OnPaint(self, ev):
         """Called when the window is exposed."""
         dc = wx.PaintDC(self)
@@ -129,51 +133,38 @@ class CanvasBase(wx.StaticBitmap):
         
         
 ######################
-# CanvasBase Class
+# Canvas Class
 ######################
 
 class Canvas(AutoSize):
     def __init__(self, parent, size=wx.DefaultSize, pos=wx.DefaultPosition):
         super(Canvas, self).__init__(parent)
-        self.buffer = None
-        
+
+        # controls        
         ctrl = CanvasBase(self, bitmap=wx.NullBitmap)
 
+        # boxes
         box = wx.BoxSizer(wx.VERTICAL)
         self.SetSizer(box)
-        box.Add(ctrl, proportion=1, flag=wx.EXPAND)
-        
-        self.FitToChildren()
-        self.ctrl = ctrl
-        self.Bind(wx.EVT_SHOW, self.OnShow)
-        self.Bind(wx.EVT_SIZE, self.OnSize)
+        box.Add(ctrl, proportion=1)
+
+        # bindings
         self.Bind(wx.EVT_SCROLLWIN, self.OnScroll)
 
-        
-    ### Behavior functions
+        # finish up        
+        self.ctrl = ctrl
 
-    def SetBuffer(self, bmp):
-        """Call to set the whole of the content."""
-        self.buffer = bmp
+                
+    ### Behavior functions
 
     def SetBackground(self, bmp):
         """Call to show the part that will be seen."""
-        self.SetBuffer(bmp)
-        self.ctrl.SetBuffer(bmp)
-        self.ctrl.SetBitmap(bmp)
-        self.ctrl.SetSize(bmp.GetSize())
-        # self.SetSize(bmp.GetSize())
+        if bmp:
+            self.ctrl.SetBitmap(bmp)
+            self.FitToChildren()
 
 
     ### Callbacks
-
-    def OnSize(self, ev):
-        print "event:  ", ev.GetSize()
-        print "canvas: ", self.GetSize()
-        print "buffer: ", self.ctrl.buffer.GetSize()
-
-    def OnShow(self, ev):
-        pass
         
     def OnScroll(self, ev):
         pos = ev.GetPosition() * self.SCROLL_STEP
@@ -183,4 +174,3 @@ class Canvas(AutoSize):
         elif ev.GetOrientation() == wx.HORIZONTAL:
             self.ctrl.SetOffset(wx.Point(pos, 0))
             pt = wx.Point(pos, 0)
-            
