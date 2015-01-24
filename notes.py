@@ -18,9 +18,10 @@ import wx.richtext as rt
 ######################
 
 class MyFrame(wx.Frame):
-    def __init__(self, parent):
-        super(MyFrame, self).__init__(parent, -1, "Board", size = (800, 600),
-                                      style=wx.DEFAULT_FRAME_STYLE|wx.NO_FULL_REPAINT_ON_RESIZE)
+    DEFAULT_SZ = (800, 600)
+
+    def __init__(self, parent, title="Board", size=DEFAULT_SZ, style=wx.DEFAULT_FRAME_STYLE|wx.NO_FULL_REPAINT_ON_RESIZE):
+        super(MyFrame, self).__init__(parent, title=title, size=size, style=style)
 
         self.accels = [] # will hold keyboard shortcuts aka accelerators
         self.SetTitle("Notes")
@@ -36,6 +37,9 @@ class MyFrame(wx.Frame):
         # keyboard shortcuts
         # accels is populated in InitUI()
         self.SetAcceleratorTable(wx.AcceleratorTable(self.accels))
+
+        # Done.
+        self.Show()
 
 
     ### Behavior Functions
@@ -601,5 +605,4 @@ class MyFrame(wx.Frame):
 if __name__ == "__main__":
     app = wx.App()
     frame = MyFrame(None)
-    frame.Show(True)
     app.MainLoop()
