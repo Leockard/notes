@@ -187,7 +187,8 @@ class BoardBase(AutoSize):
             new = Image(self, label, pos=pos, path=path, size=[i*self.scale for i in Image.DEFAULT_SZ])
 
         new.Bind(wx.EVT_LEFT_DOWN, self.OnCardLeftDown)
-        new.Bind(Card.EVT_CARD_DELETE, self.OnCardEvent)
+        new.Bind(Card.EVT_CARD_DELETE, self.OnCardDelete)
+        new.Bind(Card.EVT_CARD_COLLAPSE, self.OnCardCollapse)
         
         new.SetFocus()
         self.cards.append(new)
@@ -381,8 +382,12 @@ class BoardBase(AutoSize):
         # don't forget to stop all timers!
         pass
 
-    def OnCardEvent(self, ev):
-        self.SelectCard(ev.card, new_sel=True)
+    def OnCardCollapse(self, ev):
+        card = ev.GetEventObject()
+        card.SetSize([i*self.scale for i in card.GetSize()])
+        
+    def OnCardDelete(self, ev):
+        self.SelectCard(ev.GetEventObject(), new_sel=True)
         self.DeleteSelected()
 
     def OnChildFocus(self, ev):
