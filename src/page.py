@@ -135,6 +135,7 @@ class Page(wx.Panel):
     def InitBoard(self, id=wx.ID_ANY, size=wx.DefaultSize):
         # make new
         bd = Board(self, size=size)
+        # bd = CardView(self, size=size)
 
         # # UI setup
         vbox = self.GetSizer()
