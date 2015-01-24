@@ -7,9 +7,10 @@ import wx
 import os
 import pickle
 from page import Page
-from board import Content
-from board import Header
-from canvas import Canvas
+from card import *
+from canvas import *
+from board import *
+from view import *
 import wx.richtext as rt
 
 
@@ -184,7 +185,9 @@ class MyFrame(wx.Frame):
 
         ## edit menu
         edit_menu = wx.Menu()
+        esc_it         = wx.MenuItem(edit_menu, wx.ID_ANY, "DO NOT ADD ME")   # ghost item
         sela_it        = wx.MenuItem(edit_menu, wx.ID_ANY, "Select All")
+        selc_it        = wx.MenuItem(edit_menu, wx.ID_ANY, "Select Current")
         seln_it        = wx.MenuItem(edit_menu, wx.ID_ANY, "Select None")
         copy_it        = wx.MenuItem(edit_menu, wx.ID_COPY, "Copy")
         delt_it        = wx.MenuItem(edit_menu, wx.ID_DELETE, "Delete")
@@ -197,6 +200,7 @@ class MyFrame(wx.Frame):
         moved_it = wx.MenuItem(edit_menu, wx.ID_ANY, "Move Down")
 
         edit_menu.AppendItem(sela_it)
+        edit_menu.AppendItem(selc_it)
         edit_menu.AppendItem(seln_it)
         edit_menu.AppendItem(copy_it)
         edit_menu.AppendItem(delt_it)
@@ -220,13 +224,17 @@ class MyFrame(wx.Frame):
         layout_menu = wx.Menu()                
         harr_it = wx.MenuItem(layout_menu, wx.ID_ANY, "Arrange &Horizontally")
         varr_it = wx.MenuItem(layout_menu, wx.ID_ANY, "Arrange &Vertically")
+        
         layout_menu.AppendItem(harr_it)
         layout_menu.AppendItem(varr_it)
 
         ## view menu
-        view_menu = wx.Menu()                
+        view_menu = wx.Menu()
+        viewc_it = wx.MenuItem(view_menu, wx.ID_ANY, "Inspect card")
         zoomi_it = wx.MenuItem(view_menu, wx.ID_ANY, "Zoom in")
         zoomo_it = wx.MenuItem(view_menu, wx.ID_ANY, "Zoom out")
+        
+        view_menu.AppendItem(viewc_it)
         view_menu.AppendItem(zoomi_it)
         view_menu.AppendItem(zoomo_it)
 
@@ -247,12 +255,16 @@ class MyFrame(wx.Frame):
         self.Bind(wx.EVT_MENU, self.OnQuit       , quit_it)
         self.Bind(wx.EVT_MENU, self.OnCopy       , copy_it)
         self.Bind(wx.EVT_MENU, self.OnDelete     , delt_it)
+        self.Bind(wx.EVT_MENU, self.OnEsc        , esc_it)
         
-        self.Bind(wx.EVT_MENU, self.OnSelectAll  , sela_it)
-        self.Bind(wx.EVT_MENU, self.OnEsc        , seln_it)
+        self.Bind(wx.EVT_MENU, self.OnSelectAll     , sela_it)
+        self.Bind(wx.EVT_MENU, self.OnSelectCurrent , selc_it)
+        self.Bind(wx.EVT_MENU, self.OnSelectNone    , seln_it)
 
         self.Bind(wx.EVT_MENU, self.OnSave       , save_it)
         self.Bind(wx.EVT_MENU, self.OnOpen       , open_it)
+
+        self.Bind(wx.EVT_MENU, self.OnInspectCard , viewc_it)
 
         self.Bind(wx.EVT_MENU, self.OnCtrlF      , search_it)
         self.Bind(wx.EVT_MENU, self.OnCtrlG      , next_it)
@@ -275,7 +287,7 @@ class MyFrame(wx.Frame):
         self.Bind(wx.EVT_MENU, self.OnMoveDown  , moved_it)
 
         ## shortcuts
-        self.accels.append(wx.AcceleratorEntry(wx.ACCEL_NORMAL, 27,  seln_it.GetId())) # ESC
+        self.accels.append(wx.AcceleratorEntry(wx.ACCEL_NORMAL, 27,  esc_it.GetId())) # ESC
         self.accels.append(wx.AcceleratorEntry(wx.ACCEL_NORMAL, 127, delt_it.GetId())) # DEL
 
         self.accels.append(wx.AcceleratorEntry(wx.ACCEL_SHIFT, wx.WXK_LEFT,  movel_it.GetId()))
@@ -283,6 +295,7 @@ class MyFrame(wx.Frame):
         self.accels.append(wx.AcceleratorEntry(wx.ACCEL_SHIFT, wx.WXK_UP,    moveu_it.GetId()))
         self.accels.append(wx.AcceleratorEntry(wx.ACCEL_SHIFT, wx.WXK_DOWN,  moved_it.GetId()))
 
+        self.accels.append(wx.AcceleratorEntry(wx.ACCEL_CTRL, ord("I"),      viewc_it.GetId()))
         self.accels.append(wx.AcceleratorEntry(wx.ACCEL_CTRL, ord("A"),      sela_it.GetId()))
         self.accels.append(wx.AcceleratorEntry(wx.ACCEL_CTRL, ord("D"),      debug_it.GetId()))
         self.accels.append(wx.AcceleratorEntry(wx.ACCEL_CTRL, ord("F"),      search_it.GetId()))
@@ -418,6 +431,7 @@ class MyFrame(wx.Frame):
 
     def OnDebug(self, ev):
         print "debug"
+        print self.GetCurrentBoard().GetSelection()
         
     def Save(self, out_file, d):
         """Save the data in the dict d in the file out_file."""
@@ -475,11 +489,58 @@ class MyFrame(wx.Frame):
         board = self.GetCurrentBoard()
         board.MoveSelected(0, board.SCROLL_STEP)
 
+    def OnInspectCard(self, ev):
+        pg = self.notebook.GetCurrentPage()
+        cont = pg.GetCurrentContent()
+
+        # toggle between Board and Inspect modes        
+        if cont == Board:
+            sel = pg.board.GetSelection()
+            if len(sel) == 1:
+                pg.InspectCard(sel[0])
+        elif cont == CardView:
+            pg.SaveFromInspect()
+            pg.ShowBoard()
+
     def OnSelectAll(self, ev):
         board = self.GetCurrentBoard()
         board.UnselectAll()
         for c in board.GetCards():
             board.SelectCard(c)
+
+    def OnSelectCurrent(self, ev):
+        ctrl = self.FindFocus()
+        parent = ctrl.GetParent()
+        if isinstance(parent, Card):
+            self.GetCurrentBoard().SelectCard(parent, new_sel=True)
+            parent.SetFocusIgnoringChildren()
+
+    def OnSelectNone(self, ev):
+        """Unselect all cards."""
+        self.GetCurrentBoard().UnselectAll()
+        self.GetCurrentBoard().SetFocusIgnoringChildren()
+
+    def OnEsc(self, ev):
+        """If inside a card, select it. If selecting a card, select None."""
+        bd = self.GetCurrentBoard()
+        ctrl = self.FindFocus()
+        parent = ctrl.GetParent()
+        
+        if isinstance(parent, Card):
+            # inside a card!
+            if not parent in bd.GetSelection():
+                # inside a non-selected card: select card
+                bd.SelectCard(parent, new_sel=True)
+            else:
+                # inside selected card: select none
+                bd.UnselectAll()
+                bd.SetFocusIgnoringChildren()
+        else:
+            # not inside a card, but are we selecting any?
+            if bd.GetSelection():
+                # if so, select none
+                bd.UnselectAll()
+                bd.SetFocusIgnoringChildren()
 
     def OnPageChange(self, ev):
         pass
@@ -491,11 +552,6 @@ class MyFrame(wx.Frame):
     def OnVArrange(self, ev):
         self.GetCurrentBoard().VArrangeSelectedCards()
         self.Log("Vertical arrange.")
-
-    def OnEsc(self, ev):
-        """Unselect all cards."""
-        self.GetCurrentBoard().UnselectAll()
-        self.GetCurrentBoard().SetFocusIgnoringChildren()
 
     def OnCopy(self, ev):
         """Copy selected cards."""

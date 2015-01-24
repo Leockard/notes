@@ -42,6 +42,10 @@ class Page(wx.Panel):
 
     ### Behavior functions
 
+    def GetCurrentContent(self):
+        """Returns the class of content currently showing in conten_sizer."""
+        return self.content_sizer.GetChildren()[0].GetWindow().__class__
+
     def ShowContent(self, ctrl):
         """Shows the ctrl inside content_sizer."""
         # remove all children and add only ctrl in the content area
@@ -51,12 +55,26 @@ class Page(wx.Panel):
         
         for c in self.contents: c.Hide()
         ctrl.Show()
+        ctrl.SetFocusIgnoringChildren()
         self.Layout()
 
     def InspectCard(self, card):
+        self.inspecting = card
+        self.inspect.SetLabel("Save and return")
+        
         self.ShowContent(self.view_card)
         self.view_card.SetCard(card)
         self.view_card.card.SetFocus()
+
+    def SaveFromInspect(self):
+        card = self.view_card.GetCard()
+        ins = self.inspecting
+        ins.SetTitle(card.GetTitle())
+        ins.SetContent(card.GetContent())
+        ins.SetKind(card.GetKind())
+
+        self.inspecting = None
+        self.inspect.SetLabel("Inspect")
 
     def ShowBoard(self):
         # remember that self.board is a BoardBase
@@ -217,20 +235,10 @@ class Page(wx.Panel):
             sel = self.board.GetSelection()
             if len(sel) == 1:
                 self.InspectCard(sel[0])
-                self.inspecting = sel[0]
-                self.inspect.SetLabel("Save and return")
-                
         elif self.view_card.IsShown():
             # save modifications
-            card = self.view_card.GetCard()
-            ins = self.inspecting
-            ins.SetTitle(card.GetTitle())
-            ins.SetContent(card.GetContent())
-            ins.SetKind(card.GetKind())
-
-            self.inspecting = None
+            self.SaveFromInspect()
             self.ShowBoard()
-            self.inspect.SetLabel("Inspect")
 
     def OnToggle(self, ev):
         # EXTREMELY important!
