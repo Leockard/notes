@@ -190,7 +190,6 @@ class MyFrame(wx.Frame):
         delt_it        = wx.MenuItem(edit_menu, wx.ID_DELETE, "Delete")
         ctrltab_it     = wx.MenuItem(edit_menu, wx.ID_ANY, "Next Card")
         ctrlshfttab_it = wx.MenuItem(edit_menu, wx.ID_ANY, "Previous Card")
-        unsel_it       = wx.MenuItem(edit_menu, wx.ID_ANY, "Unselect All")
         # ghost items
         movel_it = wx.MenuItem(edit_menu, wx.ID_ANY, "Move Left")
         mover_it = wx.MenuItem(edit_menu, wx.ID_ANY, "Move Right")
@@ -224,6 +223,13 @@ class MyFrame(wx.Frame):
         layout_menu.AppendItem(harr_it)
         layout_menu.AppendItem(varr_it)
 
+        ## view menu
+        view_menu = wx.Menu()                
+        zoomi_it = wx.MenuItem(view_menu, wx.ID_ANY, "Zoom in")
+        zoomo_it = wx.MenuItem(view_menu, wx.ID_ANY, "Zoom out")
+        view_menu.AppendItem(zoomi_it)
+        view_menu.AppendItem(zoomo_it)
+
         ## debug menu
         debug_menu = wx.Menu()                
         debug_it = wx.MenuItem(debug_menu, wx.ID_ANY, "&Debug")
@@ -240,18 +246,17 @@ class MyFrame(wx.Frame):
         ## bindings
         self.Bind(wx.EVT_MENU, self.OnQuit       , quit_it)
         self.Bind(wx.EVT_MENU, self.OnCopy       , copy_it)
+        self.Bind(wx.EVT_MENU, self.OnDelete     , delt_it)
+        
         self.Bind(wx.EVT_MENU, self.OnSelectAll  , sela_it)
         self.Bind(wx.EVT_MENU, self.OnEsc        , seln_it)
-        self.Bind(wx.EVT_MENU, self.OnDelete     , delt_it)
+
         self.Bind(wx.EVT_MENU, self.OnSave       , save_it)
         self.Bind(wx.EVT_MENU, self.OnOpen       , open_it)
-        self.Bind(wx.EVT_MENU, self.OnCtrlTab    , ctrltab_it)
-        self.Bind(wx.EVT_MENU, self.OnHArrange   , harr_it)
-        self.Bind(wx.EVT_MENU, self.OnVArrange   , varr_it)
-        self.Bind(wx.EVT_MENU, self.OnDebug      , debug_it)
-        self.Bind(wx.EVT_MENU, self.OnEsc        , unsel_it)
+
         self.Bind(wx.EVT_MENU, self.OnCtrlF      , search_it)
         self.Bind(wx.EVT_MENU, self.OnCtrlG      , next_it)
+        self.Bind(wx.EVT_MENU, self.OnCtrlTab    , ctrltab_it)        
         self.Bind(wx.EVT_MENU, self.OnCtrlShftG  , prev_it)
         self.Bind(wx.EVT_MENU, self.OnCtrlRet    , contr_it)
         self.Bind(wx.EVT_MENU, self.OnAltRet     , headr_it)
@@ -259,6 +264,10 @@ class MyFrame(wx.Frame):
         self.Bind(wx.EVT_MENU, self.OnCtrlShftTab , ctrlshfttab_it)        
         self.Bind(wx.EVT_MENU, self.OnCtrlShftRet , contb_it)
         self.Bind(wx.EVT_MENU, self.OnAltShftRet  , headb_it)
+
+        self.Bind(wx.EVT_MENU, self.OnHArrange   , harr_it)
+        self.Bind(wx.EVT_MENU, self.OnVArrange   , varr_it)
+        self.Bind(wx.EVT_MENU, self.OnDebug      , debug_it)
         
         self.Bind(wx.EVT_MENU, self.OnMoveLeft  , movel_it)
         self.Bind(wx.EVT_MENU, self.OnMoveRight , mover_it)
@@ -266,7 +275,7 @@ class MyFrame(wx.Frame):
         self.Bind(wx.EVT_MENU, self.OnMoveDown  , moved_it)
 
         ## shortcuts
-        self.accels.append(wx.AcceleratorEntry(wx.ACCEL_NORMAL, 27, unsel_it.GetId())) # ESC
+        self.accels.append(wx.AcceleratorEntry(wx.ACCEL_NORMAL, 27,  seln_it.GetId())) # ESC
         self.accels.append(wx.AcceleratorEntry(wx.ACCEL_NORMAL, 127, delt_it.GetId())) # DEL
 
         self.accels.append(wx.AcceleratorEntry(wx.ACCEL_SHIFT, wx.WXK_LEFT,  movel_it.GetId()))
@@ -291,7 +300,8 @@ class MyFrame(wx.Frame):
         bar.Append(file_menu, "&File")
         bar.Append(edit_menu, "&Edit")
         bar.Append(insert_menu, "&Insert")
-        bar.Append(layout_menu, "&Layout")        
+        bar.Append(layout_menu, "&Layout")
+        bar.Append(view_menu, "&View")
         bar.Append(debug_menu, "&Debug")
         self.SetMenuBar(bar)
 
