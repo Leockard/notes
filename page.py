@@ -162,18 +162,33 @@ class Page(wx.Panel):
             self.Zoom(float(s[:-1])/100)
         
     def Zoom(self, new_scale):
+        """Zoom is actually a change of scale of all relevant coordinates."""
+        # save the scroll position and go to origin
+        # so that all the cards' coordinates are absolute
+        scroll_pos = self.board.GetViewStart()
+        self.board.Scroll(0, 0)
+
+        # scale cards
         for c in self.board.GetCards():
             rect = c.GetRect()
             # revert to original coordinates
             # and then calculate the actual new one
-            left = (rect.left / self.scale) * new_scale
-            right = (rect.right / self.scale) * new_scale
-            top = (rect.top / self.scale) * new_scale
-            bottom = (rect.bottom / self.scale) * new_scale
-            c.SetRect(wx.Rect(left, top, right - left, bottom - top))
-        self.scale = new_scale
+            left   = int((float(rect.left) / self.scale)   * new_scale)
+            right  = int((float(rect.right) / self.scale)  * new_scale)
+            top    = int((float(rect.top) / self.scale)    * new_scale)
+            bottom = int((float(rect.bottom) / self.scale) * new_scale)
+            c.SetRect(wx.Rect(left, top, right - left + 1, bottom - top + 1))
+
+        # scale content size
+        self.board.content_sz  = wx.Size(*[i / self.scale * new_scale for i in self.board.content_sz])
+        self.board.SetVirtualSize(self.board.content_sz)
+
+        # return to previous scroll position
+        self.board.Scroll(*scroll_pos)
+
         self.board.scale = new_scale
         self.canvas.scale = new_scale
+        self.scale = new_scale
 
     def OnView(self, ev):
         s = ev.GetString()

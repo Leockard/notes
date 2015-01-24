@@ -154,7 +154,7 @@ class MyFrame(wx.Frame):
     def InitMenuBar(self):
         bar = wx.MenuBar()
 
-        # file menu
+        ## file menu
         file_menu = wx.Menu()                
         open_it = wx.MenuItem(file_menu, wx.ID_OPEN, "&Open")
         save_it = wx.MenuItem(file_menu, wx.ID_SAVE, "&Save")
@@ -166,7 +166,7 @@ class MyFrame(wx.Frame):
         file_menu.AppendSeparator()
         file_menu.AppendItem(quit_it)
 
-        # edit menu
+        ## edit menu
         edit_menu = wx.Menu()
         sela_it        = wx.MenuItem(edit_menu, wx.ID_ANY, "Select All")
         seln_it        = wx.MenuItem(edit_menu, wx.ID_ANY, "Select None")
@@ -175,6 +175,11 @@ class MyFrame(wx.Frame):
         ctrltab_it     = wx.MenuItem(edit_menu, wx.ID_ANY, "Next Card")
         ctrlshfttab_it = wx.MenuItem(edit_menu, wx.ID_ANY, "Previous Card")
         unsel_it       = wx.MenuItem(edit_menu, wx.ID_ANY, "Unselect All")
+        # ghost items
+        movel_it = wx.MenuItem(edit_menu, wx.ID_ANY, "Move Left")
+        mover_it = wx.MenuItem(edit_menu, wx.ID_ANY, "Move Right")
+        moveu_it = wx.MenuItem(edit_menu, wx.ID_ANY, "Move Up")
+        moved_it = wx.MenuItem(edit_menu, wx.ID_ANY, "Move Down")
 
         edit_menu.AppendItem(sela_it)
         edit_menu.AppendItem(seln_it)
@@ -182,7 +187,7 @@ class MyFrame(wx.Frame):
         edit_menu.AppendItem(delt_it)
         edit_menu.AppendItem(ctrltab_it)
 
-        # insert menu
+        ## insert menu
         insert_menu = wx.Menu()
         contr_it = wx.MenuItem(insert_menu, wx.ID_ANY, "New Card: Right")
         contb_it = wx.MenuItem(insert_menu, wx.ID_ANY, "New Card: Below")
@@ -196,28 +201,27 @@ class MyFrame(wx.Frame):
         insert_menu.AppendItem(headb_it)        
         insert_menu.AppendItem(img_it)
         
-        # layout menu
+        ## layout menu
         layout_menu = wx.Menu()                
         harr_it = wx.MenuItem(layout_menu, wx.ID_ANY, "Arrange &Horizontally")
         varr_it = wx.MenuItem(layout_menu, wx.ID_ANY, "Arrange &Vertically")
         layout_menu.AppendItem(harr_it)
         layout_menu.AppendItem(varr_it)
 
-        # debug menu
+        ## debug menu
         debug_menu = wx.Menu()                
         debug_it = wx.MenuItem(debug_menu, wx.ID_ANY, "&Debug")
         debug_menu.AppendItem(debug_it)
 
-        # search menu
-        # this is an invisible search menu, used only to have a MenuItem
-        # to append to the AcceleratorTable
+        ## search menu
+        # ghost menu
         search_menu = wx.Menu()
         search_it = wx.MenuItem(search_menu, wx.ID_ANY, "Search")
         next_it   = wx.MenuItem(search_menu, wx.ID_ANY, "Next")
         prev_it   = wx.MenuItem(search_menu, wx.ID_ANY, "Previous")
         search_menu.AppendItem(search_it)
 
-        # bindings
+        ## bindings
         self.Bind(wx.EVT_MENU, self.OnQuit       , quit_it)
         self.Bind(wx.EVT_MENU, self.OnCopy       , copy_it)
         self.Bind(wx.EVT_MENU, self.OnSelectAll  , sela_it)
@@ -239,15 +243,26 @@ class MyFrame(wx.Frame):
         self.Bind(wx.EVT_MENU, self.OnCtrlShftTab , ctrlshfttab_it)        
         self.Bind(wx.EVT_MENU, self.OnCtrlShftRet , contb_it)
         self.Bind(wx.EVT_MENU, self.OnAltShftRet  , headb_it)
+        
+        self.Bind(wx.EVT_MENU, self.OnMoveLeft  , movel_it)
+        self.Bind(wx.EVT_MENU, self.OnMoveRight , mover_it)
+        self.Bind(wx.EVT_MENU, self.OnMoveUp    , moveu_it)
+        self.Bind(wx.EVT_MENU, self.OnMoveDown  , moved_it)
 
-        # shortcuts
+        ## shortcuts
         self.accels.append(wx.AcceleratorEntry(wx.ACCEL_NORMAL, 27, unsel_it.GetId())) # ESC
         self.accels.append(wx.AcceleratorEntry(wx.ACCEL_NORMAL, 127, delt_it.GetId())) # DEL
+
+        self.accels.append(wx.AcceleratorEntry(wx.ACCEL_SHIFT, wx.WXK_LEFT,  movel_it.GetId()))
+        self.accels.append(wx.AcceleratorEntry(wx.ACCEL_SHIFT, wx.WXK_RIGHT, mover_it.GetId()))
+        self.accels.append(wx.AcceleratorEntry(wx.ACCEL_SHIFT, wx.WXK_UP,    moveu_it.GetId()))
+        self.accels.append(wx.AcceleratorEntry(wx.ACCEL_SHIFT, wx.WXK_DOWN,  moved_it.GetId()))
 
         self.accels.append(wx.AcceleratorEntry(wx.ACCEL_CTRL, ord("A"),      sela_it.GetId()))
         self.accels.append(wx.AcceleratorEntry(wx.ACCEL_CTRL, ord("D"),      debug_it.GetId()))
         self.accels.append(wx.AcceleratorEntry(wx.ACCEL_CTRL, ord("F"),      search_it.GetId()))
         self.accels.append(wx.AcceleratorEntry(wx.ACCEL_CTRL, ord("G"),      next_it.GetId()))
+        
         self.accels.append(wx.AcceleratorEntry(wx.ACCEL_CTRL, wx.WXK_TAB,    ctrltab_it.GetId()))                
         self.accels.append(wx.AcceleratorEntry(wx.ACCEL_CTRL, wx.WXK_RETURN, contr_it.GetId()))
         self.accels.append(wx.AcceleratorEntry(wx.ACCEL_ALT, wx.WXK_RETURN, headr_it.GetId()))
@@ -380,6 +395,7 @@ class MyFrame(wx.Frame):
 
     def OnDebug(self, ev):
         print "debug"
+        print self.GetCurrentBoard().GetCards()[0].GetRect()
         
     def Save(self, out_file, d):
         """Save the data in the dict d in the file out_file."""
@@ -420,6 +436,22 @@ class MyFrame(wx.Frame):
                 
         
     ### Callbacks
+
+    def OnMoveLeft(self, ev):
+        board = self.GetCurrentBoard()
+        board.MoveSelected(-board.SCROLL_STEP, 0)
+
+    def OnMoveRight(self, ev):
+        board = self.GetCurrentBoard()
+        board.MoveSelected(board.SCROLL_STEP, 0)
+
+    def OnMoveUp(self, ev):
+        board = self.GetCurrentBoard()
+        board.MoveSelected(0, -board.SCROLL_STEP)
+
+    def OnMoveDown(self, ev):
+        board = self.GetCurrentBoard()
+        board.MoveSelected(0, board.SCROLL_STEP)
 
     def OnSelectAll(self, ev):
         board = self.GetCurrentBoard()

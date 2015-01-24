@@ -194,6 +194,16 @@ class BoardBase(AutoSize):
         self.FitToChildren()
         return new
 
+    def MoveCard(self, card, dx, dy):
+        """Move card by (dx, dy)."""
+        pos = card.GetPosition()
+        card.Move((pos.x + dx, pos.y + dy))
+
+    def MoveSelected(self, dx, dy):
+        """Move all selected cards by dx, dy."""
+        for c in self.GetSelection():
+            self.MoveCard(c, dx, dy)
+
     def GetSelection(self):
         return self.selected_cards
 
