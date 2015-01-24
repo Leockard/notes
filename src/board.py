@@ -32,13 +32,9 @@ class Board(wx.Panel):
     ### Auxiliary functions
 
     def InitBoard(self, pos, size):
-        hbox = self.GetSizer()
-        if not hbox: hbox = wx.BoxSizer(wx.HORIZONTAL)
-            
+        box = self.GetSizer()
         board = BoardBase(self, pos=pos, size=size)
-        vbox = wx.BoxSizer(wx.VERTICAL)
-        vbox.Add(board, proportion=1, flag=wx.ALL|wx.EXPAND, border=1)
-        hbox.Add(vbox,  proportion=1, flag=wx.ALL|wx.EXPAND, border=1)
+        box.Add(board, proportion=1, flag=wx.ALL|wx.EXPAND, border=1)
         
         # set members
         self.board = board
