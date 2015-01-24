@@ -1,5 +1,3 @@
-#!/usr/bin/python
-
 # board.py
 # note taking class for notes.py
 

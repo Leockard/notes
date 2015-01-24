@@ -228,8 +228,14 @@ class Content(Card):
     def GetTitle(self):
         return self.title.GetValue()
 
+    def SetTitle(self, title):
+        self.title.SetValue(title)
+
     def GetContent(self):
         return self.content.GetValue()
+
+    def SetContent(self, value):
+        self.content.SetValue(value)
     
     def GetKind(self, long=False):
         if long: return self.LONG_LABELS[self.kindbut.GetLabel()]

@@ -418,7 +418,6 @@ class MyFrame(wx.Frame):
 
     def OnDebug(self, ev):
         print "debug"
-        print self.GetCurrentBoard().GetCards()[0].GetRect()
         
     def Save(self, out_file, d):
         """Save the data in the dict d in the file out_file."""

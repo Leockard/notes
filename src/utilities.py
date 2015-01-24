@@ -133,6 +133,18 @@ class EditText(wx.TextCtrl):
 # Auxiliary functions
 ######################
 
+def DumpSizerChildren(sizer, depth=1):
+    """Recursively prints all children."""
+    print ("    " * (depth - 1)) + "Sizer: ", sizer
+    
+    for c in sizer.GetChildren():
+        if c.IsWindow():
+            print "    " * depth, c.GetWindow()
+        elif c.IsSizer():
+            DumpSizerChildren(c.GetSizer(), depth + 1)
+        else:
+            print "wtf"
+
 def MakeEncirclingRect(p1, p2):
     """
     Returns the wx.Rect with two opposite vertices at p1, p2.
@@ -150,3 +162,4 @@ def isnumber(s):
         return True
     except ValueError:
         return False
+

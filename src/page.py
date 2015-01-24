@@ -5,8 +5,9 @@
 
 import wx
 from utilities import AutoSize
-from utilities import isnumber
+from utilities import *
 from board import *
+from view import *
 from canvas import Canvas
 
 
@@ -18,6 +19,7 @@ from canvas import Canvas
 class Page(wx.Panel):
     CARD_PADDING = Board.CARD_PADDING
     PIXELS_PER_SCROLL = 20
+    DEFAULT_SZ = (20, 20)
 
     VIEW_CH_DEF = "View"
     VIEW_CHOICES = ("All", Content.CONCEPT_LBL_LONG, Content.ASSUMPTION_LBL_LONG, Content.RESEARCH_LBL_LONG, Content.FACT_LBL_LONG)
@@ -26,7 +28,8 @@ class Page(wx.Panel):
         super(Page, self).__init__(parent, id=id, pos=pos, size=size)
 
         # members
-        self.resizing = False
+        self.contents = []
+        self.inspecting = None
         self.scale = 1.0
         self.content_size = wx.Size(size[0], size[1])
 
@@ -38,6 +41,30 @@ class Page(wx.Panel):
 
 
     ### Behavior functions
+
+    def ShowContent(self, ctrl):
+        """Shows the ctrl inside content_sizer."""
+        # remove all children and add only ctrl in the content area
+        # ctrl should be a member of self.contents
+        self.content_sizer.Clear()
+        self.content_sizer.Add(ctrl, proportion=1, flag=wx.EXPAND, border=1)
+        
+        for c in self.contents: c.Hide()
+        ctrl.Show()
+        self.Layout()
+
+    def InspectCard(self, card):
+        self.ShowContent(self.view_card)
+        self.view_card.SetCard(card)
+        self.view_card.card.SetFocus()
+
+    def ShowBoard(self):
+        # remember that self.board is a BoardBase
+        # but we added the parent Board object to our Sizer
+        self.ShowContent(self.board.GetParent())
+
+    def ShowCanvas(self):
+        self.ShowContent(self.canvas)
 
     def GetBoardBmp(self):
         # get the current board as a bitmap
@@ -84,82 +111,98 @@ class Page(wx.Panel):
             if "height" in card.keys():
                 card["height"] = int(card["height"] / self.scale)
         return di
+
+    def CleanUpUI(self):
+        """Resets all control member values. Returns previous Board size."""
+        sz = self.board.GetParent().GetSize()
+        self.board.Hide() # important!
+        self.board = None
+        self.board_box = None
+        self.bmp_ctrl = None
+        self.bmp_box = None
+        self.SetSizer(None)
+
+        return sz
     
     def InitUI(self):
-        sz = (20, 20)
-        
         # cleanup the previous UI, if any
         if self.ui_ready:
-            sz = self.board.GetSize()
-            self.board.Hide() # important!
-            self.board = None
-            self.board_box = None
-            self.bmp_ctrl = None
-            self.bmp_box = None
-            self.SetSizer(None)
+            sz = self.CleanUpUI()
+        else:
+            sz = self.DEFAULT_SZ
 
         # make new UI
-        vbox = wx.BoxSizer(wx.VERTICAL)
-        self.SetSizer(vbox)
+        self.InitSizers()
         self.InitBoard(sz)
         self.InitCanvas()
-
+        self.InitView()
         # execute only the first time
-        if not self.ui_ready:
-            self.toggle = wx.Button(self, label = "Toggle")
-            self.toggle.Bind(wx.EVT_BUTTON, self.OnToggle)
+        if not self.ui_ready: self.InitButtonBar()
 
-            self.view = wx.Choice(self, choices=Page.VIEW_CHOICES)
-            self.view.SetSelection(0)
-            self.view.Bind(wx.EVT_CHOICE, self.OnView)
-                        
-            chs = ["50%", "100%", "150%", "200%"]
-            self.zoom = wx.ComboBox(self, value=chs[1], choices=chs, style=wx.TE_PROCESS_ENTER)
-            self.zoom.SetSelection(1)
-            self.zoom.Bind(wx.EVT_COMBOBOX, self.OnZoomCombo)
-            self.zoom.Bind(wx.EVT_TEXT_ENTER, self.OnZoomEnter)
+        # content sizer takes all available space for content
+        # always use the individual ShowXXX() controls
+        self.ShowBoard()
 
-        # boxing
-        hbox = wx.BoxSizer(wx.HORIZONTAL)
-        hbox.Add(self.toggle, proportion=0, flag=wx.LEFT|wx.EXPAND, border=1)
-        hbox.Add(self.view,   proportion=0, flag=wx.LEFT|wx.EXPAND, border=1)
-
-        zbox = wx.BoxSizer(wx.VERTICAL) # must be vertical so that ALIGN_RIGHT works
-        zbox.Add(self.zoom, proportion=1, flag=wx.ALIGN_RIGHT, border=1)
-        hbox.Add(zbox,      proportion=1, flag=wx.ALIGN_RIGHT|wx.EXPAND, border=1)
-        
-        vbox.Add(hbox, proportion=0, flag=wx.LEFT|wx.EXPAND, border=1)
-
+        self.Layout()
         self.ui_ready = True
 
-    def InitBoard(self, id=wx.ID_ANY, size=wx.DefaultSize):
-        # make new
+    def InitSizers(self):
+        # main sizer
+        vbox = wx.BoxSizer(wx.VERTICAL)
+        self.SetSizer(vbox)
+
+        # content sizer takes all available space for content
+        # always use the individual ShowXXX() controls
+        box = wx.BoxSizer(wx.HORIZONTAL)
+        vbox.Add(box, proportion=1, flag=wx.ALL|wx.EXPAND, border=1)
+        self.content_sizer = box
+
+    def InitBoard(self, size=wx.DefaultSize):
         bd = Board(self, size=size)
-        # bd = CardView(self, size=size)
-
-        # # UI setup
-        vbox = self.GetSizer()
-        vbox.Add(bd, proportion=1, flag=wx.ALL|wx.EXPAND, border=1)
-        
-        # set members
         self.board = bd.board
-        self.board.Show()        
+        bd.Hide()
+        self.contents.append(bd)
 
-    def InitCanvas(self, id=wx.ID_ANY, size=wx.DefaultSize):
-        # make new
+    def InitCanvas(self, size=wx.DefaultSize):
         cv = Canvas(self, size=size)
-        
-        # UI setup
-        vbox = self.GetSizer()
-
-        # we don't add it yet:
-        # only board will be visible first
-        # also see, OnToggling
-        # vbox.Add(box, proportion=1, flag=wx.ALL|wx.EXPAND, border=1)
-
-        # Set members
         self.canvas = cv
         self.canvas.Hide()
+        self.contents.append(cv)
+
+    def InitView(self, size=wx.DefaultSize):
+        vw = CardView(self, size=size)
+        self.view_card = vw
+        self.view_card.Hide()
+        self.contents.append(vw)
+
+    def InitButtonBar(self):
+        # controls
+        self.inspect = wx.Button(self, label = "Inspect")
+        self.inspect.Bind(wx.EVT_BUTTON, self.OnInspect)
+
+        self.toggle = wx.Button(self, label = "Toggle")
+        self.toggle.Bind(wx.EVT_BUTTON, self.OnToggle)
+
+        self.view = wx.Choice(self, choices=Page.VIEW_CHOICES)
+        self.view.SetSelection(0)
+        self.view.Bind(wx.EVT_CHOICE, self.OnView)
+                    
+        chs = ["50%", "100%", "150%", "200%"]
+        self.zoom = wx.ComboBox(self, value=chs[1], choices=chs, style=wx.TE_PROCESS_ENTER)
+        self.zoom.SetSelection(1)
+        self.zoom.Bind(wx.EVT_COMBOBOX, self.OnZoomCombo)
+        self.zoom.Bind(wx.EVT_TEXT_ENTER, self.OnZoomEnter)
+        zbox = wx.BoxSizer(wx.VERTICAL) # must be vertical so that ALIGN_RIGHT works
+        zbox.Add(self.zoom, proportion=1, flag=wx.ALIGN_RIGHT, border=1)        
+
+        # boxing
+        box = wx.BoxSizer(wx.HORIZONTAL)
+        box.Add(self.inspect, proportion=0, flag=wx.LEFT|wx.EXPAND, border=1)
+        box.Add(self.toggle,  proportion=0, flag=wx.LEFT|wx.EXPAND, border=1)
+        box.Add(self.view,    proportion=0, flag=wx.LEFT|wx.EXPAND, border=1)
+        box.Add(zbox,      proportion=1, flag=wx.ALIGN_RIGHT|wx.EXPAND, border=1)        
+
+        self.GetSizer().Add(box, proportion=0, flag=wx.LEFT|wx.EXPAND, border=1)
 
 
     ### Callbacks
@@ -168,23 +211,40 @@ class Page(wx.Panel):
         # important to skip the event for Sizers to work correctly
         ev.Skip()
 
+    def OnInspect(self, ev):
+        if self.board.GetParent().IsShown():
+            # inspect selected card
+            sel = self.board.GetSelection()
+            if len(sel) == 1:
+                self.InspectCard(sel[0])
+                self.inspecting = sel[0]
+                self.inspect.SetLabel("Save and return")
+                
+        elif self.view_card.IsShown():
+            # save modifications
+            card = self.view_card.GetCard()
+            ins = self.inspecting
+            ins.SetTitle(card.GetTitle())
+            ins.SetContent(card.GetContent())
+            ins.SetKind(card.GetKind())
+
+            self.inspecting = None
+            self.ShowBoard()
+            self.inspect.SetLabel("Inspect")
+
     def OnToggle(self, ev):
         # EXTREMELY important!
         # remember that self.board is a BoardBase
         # but we added the parent Board object to our Sizer
         bd = self.board.GetParent()
+        cv = self.canvas
 
         # now do the actual toggling replacing bd with self.canvas
-        if self.board.IsShown():
+        if bd.IsShown():
             self.SetupCanvas()
-            self.board.Hide()
-            self.canvas.Show()
-            
-            val = self.GetSizer().Replace(bd, self.canvas)
+            self.ShowCanvas()
         else:
-            self.board.Show()
-            self.canvas.Hide()
-            val = self.GetSizer().Replace(self.canvas, bd)
+            self.ShowBoard()
 
         # never forget to Layout after Sizer operations            
         self.Layout()
