@@ -62,7 +62,6 @@ class Page(wx.Panel):
 
     def SetupCanvas(self):
         """Setup the canvas background. Call before showing the Canvas."""
-        print "SetupCanvas"
         # set sizes
         self.canvas.SetSize(self.board.GetSize())
         sz = self.board.content_sz

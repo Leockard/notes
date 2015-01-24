@@ -25,9 +25,6 @@ class AutoSize(wx.ScrolledWindow):
         If sz contains a dimension that is bigger than the
         current virtual size, change the virtual size.
         """
-        print "UpdateContentSize: ", inspect.stack()[1][3]
-        print sz
-
         flag = False
         virt_sz = self.content_sz
         
@@ -39,11 +36,11 @@ class AutoSize(wx.ScrolledWindow):
             self.content_sz = wx.Size(self.content_sz.x, sz.y)
             
         if flag:
-            print "calling vritual size with: ", self.content_sz
             self.SetVirtualSize(self.content_sz)
 
     def AutoSizeOnSize(self, ev):
         self.UpdateContentSize(ev.GetSize())
+        ev.Skip()
 
     def FitToChildren(self):
         """
@@ -56,7 +53,6 @@ class AutoSize(wx.ScrolledWindow):
         # calculate the extension of children
         # don't look at left or top: we don't want to extend beyond negative coordinates
         rects = [c.GetRect() for c in self.GetChildren()]
-        print rects
         right  = max(rects, key=lambda r: r.right).right
         bottom = max(rects, key=lambda r: r.bottom).bottom
 
