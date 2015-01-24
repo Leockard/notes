@@ -92,11 +92,21 @@ class MyFrame(wx.Frame):
 
     def CancelSearch(self, ev):
         if self.search_find:
+            # erase all highlight
             for c, i in self.search_find:
                 s = self.search_ctrl.GetValue()
                 c.SetStyle(i, i + len(s), c.GetDefaultStyle())
+
+            # set focus on last result
+            ctrl = self.search_find[self.searching - 1][0]
+            pos = self.search_find[self.searching - 1][1]
+            ctrl.SetFocus()
+            ctrl.SetSelection(pos, pos + len(self.search_str))
+
+            # clear up variables
             self.search_find = []
             self.searching = None
+            self.search_str = ""            
 
         self.search_ctrl.Hide()
 
@@ -493,17 +503,13 @@ class MyFrame(wx.Frame):
 
     def OnCtrlF(self, ev):
         """Show/hide the search control."""
-        shwn = self.search_ctrl.IsShown()
-        
-        if not shwn:
+        if not self.search_ctrl.IsShown():
             self.InitSearchBar()
             self.search_ctrl.Show()
             self.search_ctrl.SetFocus()
         else:
-            self.search_ctrl.Hide()
-            self.GetCurrentBoard().SetFocus()
+            # make sure to call CancelSearch to clear up all variables
             self.CancelSearch(None)
-            self.searching = None
 
     def OnSearchEnter(self, ev):
         """Go to next search find."""
@@ -559,7 +565,7 @@ class MyFrame(wx.Frame):
 
         # if there's a current file, save it
         if self.cur_file != "":
-            self.Save(self.cur_file, self.GetCurrentBoard().Dump())
+            self.Save(self.cur_file, self.notebook.GetCurrentPage().Dump())
             
         else: # else, ask for a file name
             fd = wx.FileDialog(self, "Save", os.getcwd(), "", "P files (*.p)|*.p",
@@ -567,7 +573,7 @@ class MyFrame(wx.Frame):
             if fd.ShowModal() == wx.ID_CANCEL: return # user changed her mind
 
             # let Save() worry about serializing
-            self.Save(fd.GetPath(), self.GetCurrentBoard().Dump())
+            self.Save(fd.GetPath(), self.notebook.GetCurrentPage().Dump())
             self.cur_file = fd.GetPath()
 
         focus.SetFocus()

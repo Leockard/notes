@@ -36,9 +36,6 @@ class Page(wx.Panel):
 
     ### Behavior functions
 
-
-    ### Behavior functions
-
     def SetupCanvas(self):
         """Setsup the canvas background. Call before showing the Canvas."""
         sz = self.board.content_sz
@@ -53,8 +50,20 @@ class Page(wx.Panel):
         dc.SelectObject(wx.NullBitmap)
         
         self.canvas.SetBackground(bmp)
+
                 
     ### Auxiliary functions
+
+    def Dump(self):
+        di = self.board.Dump()
+        for id, card in di.iteritems():
+            if "pos" in card.keys():
+                card["pos"] = tuple([int(k / self.scale) for k in card["pos"]])
+            if "width" in card.keys():
+                card["width"] = int(card["width"] / self.scale)
+            if "height" in card.keys():
+                card["height"] = int(card["height"] / self.scale)
+        return di
 
     def InitUI(self):
         sz = (20, 20)

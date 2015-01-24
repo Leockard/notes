@@ -545,7 +545,6 @@ class BoardBase(AutoSize):
         self.Scroll(0, 0)
         
         for c in self.cards:
-            pos = c.GetPosition()
             carddict[c.GetId()] = c.Dump()
             
         # and return to the original view
