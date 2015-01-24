@@ -6,6 +6,7 @@ import inspect
 import wx.lib.stattext as st
 
 
+
 ######################
 # Auxiliary classes
 ######################
@@ -24,20 +25,21 @@ class AutoSize(wx.ScrolledWindow):
         If sz contains a dimension that is bigger than the
         current virtual size, change the virtual size.
         """
+        print "UpdateContentSize: ", inspect.stack()[1][3]
+        print sz
+
         flag = False
         virt_sz = self.content_sz
         
         if sz.x > virt_sz.x:
             flag = True
-            # print "changing content_sz"
             self.content_sz = wx.Size(sz.x, self.content_sz.y)
         if sz.y > virt_sz.y:
             flag = True
-            # print "changing content_sz"
             self.content_sz = wx.Size(self.content_sz.x, sz.y)
             
         if flag:
-            # print "calling vritual size with: ", self.content_sz
+            print "calling vritual size with: ", self.content_sz
             self.SetVirtualSize(self.content_sz)
 
     def AutoSizeOnSize(self, ev):
@@ -46,24 +48,24 @@ class AutoSize(wx.ScrolledWindow):
     def FitToChildren(self):
         """
         Call to set the virtual (content) size to fit the children. If there are
-        no children, keeps the virtual size as it is (does not shrink).
+        no children, keeps the virtual size as it is.
         """
-        # print "fit to children"
         children = self.GetChildren()
         if len(children) == 0: return
-        
+
+        # calculate the extension of children
+        # don't look at left or top: we don't want to extend beyond negative coordinates
         rects = [c.GetRect() for c in self.GetChildren()]
-        # left   = min(rects, key=lambda r: r.left)       # don't add windows in negative positions
-        # top    = min(rects, key=lambda r: r.top)        # don't add windows in negative positions
+        print rects
         right  = max(rects, key=lambda r: r.right).right
         bottom = max(rects, key=lambda r: r.bottom).bottom
+
+        # compare and update        
         sz = self.content_sz
-        # print "ri, bo: ", right, bottom
-        # print "cur sz: ", sz
         if right  > sz.x: sz = wx.Size(right, sz.y)
         if bottom > sz.y: sz = wx.Size(sz.x, bottom)
         self.content_sz = sz
-        self.SetVirtualSize(self.content_sz + (1000, 1000))
+        self.SetVirtualSize(self.content_sz)
 
 
                 
