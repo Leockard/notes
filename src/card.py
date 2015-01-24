@@ -24,10 +24,12 @@ class Card(wx.Panel):
     def __init__(self, parent, label, id=wx.ID_ANY, pos=wx.DefaultPosition, size=wx.DefaultSize, style=0):
         """Base class for every window that will be placed on Board. Override SetupUI()."""
         super(Card, self).__init__(parent, id, pos, size, style)
+
+        self.label = label        
+
+        # create CardBar        
         if Card.bar == None:
             Card.bar = CardBar.Create(self.GetParent())
-
-        self.label = label
 
 
     ### Behavior functions
@@ -62,10 +64,6 @@ class Card(wx.Panel):
     def Dump(self):
         """Override me!"""
 
-
-class CardEvent(wx.Event):
-    def __init__(self):
-        pass
 
     
 ######################
@@ -274,7 +272,7 @@ class Content(Card):
         
         # bindings
         kindbut.Bind(wx.EVT_BUTTON, self.OnKindPressed)
-        content.Bind(wx.EVT_KEY_DOWN, self.OnKeyDown)
+        content.Bind(wx.EVT_KEY_DOWN, self.OnContentKeyDown)
 
         self.kindbut = kindbut
         self.title = title
@@ -300,7 +298,7 @@ class Content(Card):
 
     ### Callbacks
 
-    def OnKeyDown(self, ev):
+    def OnContentKeyDown(self, ev):
         # skip TAB, so that we don't input \t and tab traversal still works
         if ev.GetKeyCode() != 9:
             ev.ResumePropagation(True)

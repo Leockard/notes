@@ -42,7 +42,6 @@ class CardView(wx.Panel):
         
         box.Layout()
         self.card = card
-        self.original = new_card
 
 
     ### Auxiliary functions
