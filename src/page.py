@@ -64,7 +64,8 @@ class Page(wx.Panel):
         
         self.ShowContent(self.view_card)
         self.view_card.SetCard(card)
-        self.view_card.card.content.SetFocus()
+        # SetCard copies its argument, so we have to use Get now
+        self.view_card.GetCard().content.SetFocus()
 
     def SaveFromInspect(self):
         """
@@ -83,7 +84,6 @@ class Page(wx.Panel):
             ins.SetKind(card.GetKind())
             ins.SetCaretPos(*card.GetCaretPos())
 
-            self.board.UnselectAll()
             self.inspecting = None
             self.inspect.SetLabel("Inspect")
 

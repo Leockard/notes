@@ -450,7 +450,7 @@ class MyFrame(wx.Frame):
 
     def OnDebug(self, ev):
         print "debug"
-        print self.GetCurrentBoard().GetCards()[0].GetCaretPos()
+        print len(self.GetCurrentBoard().GetSelection())
         
     def Save(self, out_file, d):
         """Save the data in the dict d in the file out_file."""
@@ -546,15 +546,20 @@ class MyFrame(wx.Frame):
         self.GetCurrentBoard().SetFocusIgnoringChildren()
 
     def OnEsc(self, ev):
-        """If inside a card, select it. If selecting a card, select None. if searching, cancel search."""
+        """When in board: if inside a card, select it. If selecting a card, select None.
+        When searching: cancel search. When in CardView: don't do anything."""
         if self.FindFocus() == self.search_ctrl:
             self.CancelSearch()
+            return
+
+        if self.notebook.GetCurrentPage().GetCurrentContent() == CardView:
             return
 
         bd = self.GetCurrentBoard()
         ctrl = self.FindFocus()
         parent = ctrl.GetParent()
-        
+
+        print parent
         if isinstance(parent, Card):
             # inside a card!
             if not parent in bd.GetSelection():

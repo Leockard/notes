@@ -2,7 +2,7 @@
 
 # canvas.py
 # drawing area class for notes.py
-# most code copied from wxPython demo code app doodle.py:
+# some code copied from wxPython demo code app doodle.py:
 # http://www.wxpython.org/download.php
 
 import wx
