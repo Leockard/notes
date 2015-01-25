@@ -75,9 +75,8 @@ class EditText(wx.TextCtrl):
     
     def __init__(self, parent, id = wx.ID_ANY, label="",
                  pos=wx.DefaultPosition, size=DEFAULT_SZ,
-                 style=wx.BORDER_NONE|wx.TAB_TRAVERSAL):
-        super(EditText, self).__init__(parent, id=id, pos=pos, size=size,
-                                       style=style|wx.TE_PROCESS_ENTER)
+                 style=wx.BORDER_NONE|wx.TAB_TRAVERSAL|wx.TE_RICH|wx.TE_PROCESS_ENTER):
+        super(EditText, self).__init__(parent, id=id, pos=pos, size=size, style=style)
 
         # colours
         self.first_cl = parent.GetBackgroundColour()

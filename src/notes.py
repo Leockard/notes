@@ -58,6 +58,16 @@ class MyFrame(wx.Frame):
         """
         # search string in lower case
         s = self.search_ctrl.GetValue().lower()
+        
+        # base case: not search string
+        # the user may just have erased everything
+        # reset variables and quit
+        if not s:
+            self.search_ctrl.SetBackgroundColour(wx.WHITE)
+            self.search_find = []
+            self.search_str = ""
+            self.searching = None
+            return
                 
         # if we were already searching, clear up  highlighting
         if self.search_find:
@@ -81,19 +91,22 @@ class MyFrame(wx.Frame):
             pos = txt.find(s)
             if pos > -1: finds.append((ctrl, pos))
 
-        # focus on the first find
+        # if success: highlight and setup vars for cycling
         if finds:
-            # highlight results
+            self.search_ctrl.SetBackgroundColour(wx.YELLOW)
             for c, i in finds:
-                c.SetStyle(i, i + len(s), wx.TextAttr(None, wx.YELLOW))
+                c.SetStyle(i, i + len(s), wx.TextAttr(wx.NullColour, wx.YELLOW))
 
-            # setup variables for ctrl + G cycling
             self.search_find = finds
-            self.search_skip = False
             self.search_str = s
-            # save the current index in search_find
-            # when done searching, set to None
-            self.searching = 0
+            self.searching = 0        # when done, set to None
+
+        # if not found: make sure variables are setup correctly too
+        else:
+            self.search_ctrl.SetBackgroundColour(wx.RED)
+            self.search_find = []
+            self.search_str = ""
+            self.searching = None
 
     def CancelSearch(self, ev):
         if self.search_find:
@@ -431,7 +444,6 @@ class MyFrame(wx.Frame):
 
     def OnDebug(self, ev):
         print "debug"
-        print self.GetCurrentBoard().content_sz
         
     def Save(self, out_file, d):
         """Save the data in the dict d in the file out_file."""
@@ -523,7 +535,11 @@ class MyFrame(wx.Frame):
         self.GetCurrentBoard().SetFocusIgnoringChildren()
 
     def OnEsc(self, ev):
-        """If inside a card, select it. If selecting a card, select None."""
+        """If inside a card, select it. If selecting a card, select None. if searching, cancel search."""
+        if self.FindFocus() == self.search_ctrl:
+            self.CancelSearch(None)
+            return
+
         bd = self.GetCurrentBoard()
         ctrl = self.FindFocus()
         parent = ctrl.GetParent()
@@ -650,7 +666,8 @@ class MyFrame(wx.Frame):
     def OnOpen(self, ev):
         """Open file."""
         # ask for a file name
-        fd = wx.FileDialog(self, "Open", os.getcwd(), "", "P files (*.p)|*.p|All files|*.*",
+        fd = wx.FileDialog(self, "Open", "/home/leo/research/reading_notes/Kandel - Principles of Neural Science",
+                           "", "P files (*.p)|*.p|All files|*.*",
                            wx.FD_OPEN | wx.FD_FILE_MUST_EXIST)
         if fd.ShowModal() == wx.ID_CANCEL: return # user changed her mind
 
