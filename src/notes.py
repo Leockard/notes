@@ -559,7 +559,6 @@ class MyFrame(wx.Frame):
         ctrl = self.FindFocus()
         parent = ctrl.GetParent()
 
-        print parent
         if isinstance(parent, Card):
             # inside a card!
             if not parent in bd.GetSelection():
