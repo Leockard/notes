@@ -202,6 +202,21 @@ class Content(Card):
         
     ### Behavior functions
 
+    def ScrollToChar(self, pos):
+        print "scroll to char"
+        ctrl = self.content
+        if pos > -1 and pos < len(ctrl.GetValue()):
+            sz = ctrl.GetSize()
+            x, y = ctrl.PositionToCoords(pos)
+
+            while y < 0:
+                ctrl.ScrollLines(-1)
+                x, y = ctrl.PositionToCoords(pos)
+            # the offset should account for font height                
+            while y >= sz.height - 18:
+                ctrl.ScrollLines(1)
+                x, y = ctrl.PositionToCoords(pos)
+
     def Collapse(self):
         if not self.IsCollapsed():
             self.content.Hide()

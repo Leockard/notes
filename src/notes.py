@@ -167,7 +167,7 @@ class MyFrame(wx.Frame):
         pos = self.search_find[old][1]
         ctrl.SetStyle(pos, pos + len(s), wx.TextAttr(None, wx.YELLOW))
 
-        # strong hightlight on current search find
+        # selection and strong hightlight on current search find
         ctrl = self.search_find[new][0]
         pos = self.search_find[new][1]
         ctrl.SetStyle(pos, pos + len(s), wx.TextAttr(None, wx.RED))
@@ -175,10 +175,12 @@ class MyFrame(wx.Frame):
         # make sure the find is visible            
         card = ctrl.GetParent()            
         self.GetCurrentBoard().ScrollToCard(card)
-        if isinstance(card, Content) and card.IsCollapsed():
-            card.Uncollapse()
+        if isinstance(card, Content):
+            if card.IsCollapsed():
+                card.Uncollapse()
+            card.ScrollToChar(pos)
 
-                    
+                                
     ### Auxiliary functions
 
     def InitMenuBar(self):
