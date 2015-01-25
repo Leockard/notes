@@ -22,6 +22,7 @@ class BoardBase(AutoSize):
         super(BoardBase, self).__init__(parent, id=id, pos=pos, size=size, style=wx.BORDER_NONE)
         
         self.cards = []
+        self.groups = []
         self.selected_cards = []
         self.moving_cards_pos = []
         self.drag_select = False
@@ -272,6 +273,13 @@ class BoardBase(AutoSize):
             return obj.GetParent()
         else:
             return None
+
+    def NewGroup(self, members=[]):
+        self.groups.append(CardGroup(label=len(self.groups)), members)
+
+    def GroupSelected(self):
+        sel = self.GetSelection()
+        if sel: self.NewGroup(sel)
 
     def ScrollToCard(self, card):
         """If the card is in view, don't do anything. Otherwise, scroll it into view."""

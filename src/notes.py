@@ -204,26 +204,19 @@ class MyFrame(wx.Frame):
 
         ## edit menu
         edit_menu = wx.Menu()
-        esc_it         = wx.MenuItem(edit_menu, wx.ID_ANY, "DO NOT ADD ME")   # ghost item
-        sela_it        = wx.MenuItem(edit_menu, wx.ID_ANY, "Select All")
-        selc_it        = wx.MenuItem(edit_menu, wx.ID_ANY, "Select Current")
-        seln_it        = wx.MenuItem(edit_menu, wx.ID_ANY, "Select None")
         copy_it        = wx.MenuItem(edit_menu, wx.ID_COPY, "Copy")
         delt_it        = wx.MenuItem(edit_menu, wx.ID_DELETE, "Delete")
-        ctrltab_it     = wx.MenuItem(edit_menu, wx.ID_ANY, "Next Card")
-        ctrlshfttab_it = wx.MenuItem(edit_menu, wx.ID_ANY, "Previous Card")
         # ghost items
+        esc_it         = wx.MenuItem(edit_menu, wx.ID_ANY, "DO NOT ADD ME")
+        ctrltab_it     = wx.MenuItem(edit_menu, wx.ID_ANY, "Next Card")    
+        ctrlshfttab_it = wx.MenuItem(edit_menu, wx.ID_ANY, "Previous Card")
         movel_it = wx.MenuItem(edit_menu, wx.ID_ANY, "Move Left")
         mover_it = wx.MenuItem(edit_menu, wx.ID_ANY, "Move Right")
         moveu_it = wx.MenuItem(edit_menu, wx.ID_ANY, "Move Up")
         moved_it = wx.MenuItem(edit_menu, wx.ID_ANY, "Move Down")
 
-        edit_menu.AppendItem(sela_it)
-        edit_menu.AppendItem(selc_it)
-        edit_menu.AppendItem(seln_it)
         edit_menu.AppendItem(copy_it)
         edit_menu.AppendItem(delt_it)
-        edit_menu.AppendItem(ctrltab_it)
 
         ## insert menu
         insert_menu = wx.Menu()
@@ -239,13 +232,19 @@ class MyFrame(wx.Frame):
         insert_menu.AppendItem(headb_it)        
         insert_menu.AppendItem(img_it)
         
-        ## layout menu
-        layout_menu = wx.Menu()                
-        harr_it = wx.MenuItem(layout_menu, wx.ID_ANY, "Arrange &Horizontally")
-        varr_it = wx.MenuItem(layout_menu, wx.ID_ANY, "Arrange &Vertically")
+        ## selection menu
+        selection_menu = wx.Menu()
+        sela_it = wx.MenuItem(selection_menu, wx.ID_ANY, "Select All")
+        selc_it = wx.MenuItem(selection_menu, wx.ID_ANY, "Select Current")
+        seln_it = wx.MenuItem(selection_menu, wx.ID_ANY, "Select None")
+        harr_it = wx.MenuItem(selection_menu, wx.ID_ANY, "Arrange &Horizontally")
+        varr_it = wx.MenuItem(selection_menu, wx.ID_ANY, "Arrange &Vertically")
         
-        layout_menu.AppendItem(harr_it)
-        layout_menu.AppendItem(varr_it)
+        selection_menu.AppendItem(sela_it)
+        selection_menu.AppendItem(selc_it)
+        selection_menu.AppendItem(seln_it)
+        selection_menu.AppendItem(harr_it)
+        selection_menu.AppendItem(varr_it)
 
         ## view menu
         view_menu = wx.Menu()
@@ -314,11 +313,11 @@ class MyFrame(wx.Frame):
         self.accels.append(wx.AcceleratorEntry(wx.ACCEL_ALT, wx.WXK_UP,    moveu_it.GetId()))
         self.accels.append(wx.AcceleratorEntry(wx.ACCEL_ALT, wx.WXK_DOWN,  moved_it.GetId()))
 
-        self.accels.append(wx.AcceleratorEntry(wx.ACCEL_CTRL, ord("I"),      viewc_it.GetId()))
-        self.accels.append(wx.AcceleratorEntry(wx.ACCEL_CTRL, ord("A"),      sela_it.GetId()))
-        self.accels.append(wx.AcceleratorEntry(wx.ACCEL_CTRL, ord("D"),      debug_it.GetId()))
-        self.accels.append(wx.AcceleratorEntry(wx.ACCEL_CTRL, ord("F"),      search_it.GetId()))
-        self.accels.append(wx.AcceleratorEntry(wx.ACCEL_CTRL, ord("G"),      next_it.GetId()))
+        self.accels.append(wx.AcceleratorEntry(wx.ACCEL_CTRL, ord("I"), viewc_it.GetId()))
+        self.accels.append(wx.AcceleratorEntry(wx.ACCEL_CTRL, ord("A"), sela_it.GetId()))
+        self.accels.append(wx.AcceleratorEntry(wx.ACCEL_CTRL, ord("D"), debug_it.GetId()))
+        self.accels.append(wx.AcceleratorEntry(wx.ACCEL_CTRL, ord("F"), search_it.GetId()))
+        self.accels.append(wx.AcceleratorEntry(wx.ACCEL_CTRL, ord("G"), next_it.GetId()))
         
         self.accels.append(wx.AcceleratorEntry(wx.ACCEL_CTRL, wx.WXK_TAB,    ctrltab_it.GetId()))                
         self.accels.append(wx.AcceleratorEntry(wx.ACCEL_CTRL, wx.WXK_RETURN, contr_it.GetId()))
@@ -332,7 +331,7 @@ class MyFrame(wx.Frame):
         bar.Append(file_menu, "&File")
         bar.Append(edit_menu, "&Edit")
         bar.Append(insert_menu, "&Insert")
-        bar.Append(layout_menu, "&Layout")
+        bar.Append(selection_menu, "&Selection")
         bar.Append(view_menu, "&View")
         bar.Append(debug_menu, "&Debug")
         self.SetMenuBar(bar)
@@ -450,7 +449,7 @@ class MyFrame(wx.Frame):
 
     def OnDebug(self, ev):
         print "debug"
-        print len(self.GetCurrentBoard().GetSelection())
+        print len(self.GetCurrentBoard().groups)
         
     def Save(self, out_file, d):
         """Save the data in the dict d in the file out_file."""
@@ -579,12 +578,10 @@ class MyFrame(wx.Frame):
         pass
 
     def OnHArrange(self, ev):
-        # self.GetCurrentBoard().HArrangeSelectedCards()
         self.GetCurrentBoard().ArrangeSelection(Board.HORIZONTAL)
         self.Log("Horizontal arrange.")
 
     def OnVArrange(self, ev):
-        # self.GetCurrentBoard().VArrangeSelectedCards()
         self.GetCurrentBoard().ArrangeSelection(Board.VERTICAL)
         self.Log("Vertical arrange.")
 

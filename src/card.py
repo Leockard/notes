@@ -457,3 +457,27 @@ class Image(Card):
                            wx.FD_OPEN | wx.FD_FILE_MUST_EXIST)
         if fd.ShowModal() == wx.ID_CANCEL: return # user changed her mind
         self.SetImage(fd.GetPath())
+
+
+        
+######################
+# Class CardGroup
+######################
+
+class CardGroup():
+    def __init__(self, label=-1, members=[]):
+        # save references to cards
+        self.members = members
+        self.label = label
+
+    def GetLabel(self):
+        return self.label
+
+    def Add(self, card):
+        self.members.append(card)
+
+    def Remove(self, card):
+        self.members.remove(card)
+
+    def Dump(self):
+        return [c.label for c in self.members]
