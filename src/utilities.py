@@ -73,10 +73,10 @@ class EditText(wx.TextCtrl):
     DEFAULT_FONT = (12, wx.SWISS, wx.ITALIC, wx.BOLD)
     DEFAULT_2_CL = (255, 255, 255, 255)
     
-    def __init__(self, parent, id = wx.ID_ANY, label="",
+    def __init__(self, parent, id = wx.ID_ANY, value="",
                  pos=wx.DefaultPosition, size=DEFAULT_SZ,
                  style=wx.BORDER_NONE|wx.TAB_TRAVERSAL|wx.TE_RICH|wx.TE_PROCESS_ENTER):
-        super(EditText, self).__init__(parent, id=id, pos=pos, size=size, style=style)
+        super(EditText, self).__init__(parent, id=id, pos=pos, size=size, style=style, value=value)
 
         # colours
         self.first_cl = parent.GetBackgroundColour()
