@@ -12,6 +12,8 @@ from card import *
 
 class Board(wx.Panel):
     CARD_PADDING = BoardBase.CARD_PADDING
+    HORIZONTAL = BoardBase.HORIZONTAL
+    VERTICAL   = BoardBase.VERTICAL
 
     def __init__(self, parent, id = wx.ID_ANY, pos = (0, 0), size = (20, 20)):
         super(Board, self).__init__(parent, size=size)
@@ -63,6 +65,7 @@ class Board(wx.Panel):
         menu.AppendItem(close_it)        
 
         self.menu = menu
+
         
     ### Callbacks
 

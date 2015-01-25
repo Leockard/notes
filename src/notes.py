@@ -572,11 +572,13 @@ class MyFrame(wx.Frame):
         pass
 
     def OnHArrange(self, ev):
-        self.GetCurrentBoard().HArrangeSelectedCards()
+        # self.GetCurrentBoard().HArrangeSelectedCards()
+        self.GetCurrentBoard().ArrangeSelection(Board.HORIZONTAL)
         self.Log("Horizontal arrange.")
 
     def OnVArrange(self, ev):
-        self.GetCurrentBoard().VArrangeSelectedCards()
+        # self.GetCurrentBoard().VArrangeSelectedCards()
+        self.GetCurrentBoard().ArrangeSelection(Board.VERTICAL)
         self.Log("Vertical arrange.")
 
     def OnCopy(self, ev):
@@ -587,8 +589,10 @@ class MyFrame(wx.Frame):
 
     def OnDelete(self, ev):
         """Delete selected cards."""
-        if self.GetCurrentBoard().selected_cards:
-            self.Log("Delete " + str(len(self.GetCurrentBoard().selected_cards)) + " Cards.")
+        pg = self.notebook.GetCurrentPage()
+        length = len(pg.board.GetSelection())
+        if pg.GetCurrentContent() == Board and length > 0:
+            self.Log("Delete " + str(length) + " Cards.")
             self.GetCurrentBoard().DeleteSelected()
         else:
             ev.Skip()

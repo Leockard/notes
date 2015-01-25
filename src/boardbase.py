@@ -15,6 +15,8 @@ class BoardBase(AutoSize):
     MOVING_RECT_THICKNESS = 1
     BACKGROUND_CL = "#CCCCCC"
     CARD_PADDING = 15
+    HORIZONTAL = 1
+    VERTICAL   = 2
 
     def __init__(self, parent, id=wx.ID_ANY, pos=(0,0), size=wx.DefaultSize):
         super(BoardBase, self).__init__(parent, id=id, pos=pos, size=size, style=wx.BORDER_NONE)
@@ -328,6 +330,13 @@ class BoardBase(AutoSize):
             # i.e., pt will not necessarily be in the top left corner after scrolling
             # but it will surely be inside the view
             self.Scroll(xsc, ysc)
+
+    def ArrangeSelection(self, orient):
+        """Use BoardBase.HORIZONTAL or BoardBase.VERTICAL."""
+        if   orient == BoardBase.HORIZONTAL:
+            self.HArrangeSelectedCards()
+        elif orient == BoardBase.VERTICAL:
+            self.VArrangeSelectedCards()
 
     def HArrangeSelectedCards(self):
         """

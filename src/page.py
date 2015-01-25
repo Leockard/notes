@@ -67,14 +67,22 @@ class Page(wx.Panel):
         self.view_card.card.content.SetFocus()
 
     def SaveFromInspect(self):
-        card = self.view_card.GetCard()
-        ins = self.inspecting
-        ins.SetTitle(card.GetTitle())
-        ins.SetContent(card.GetContent())
-        ins.SetKind(card.GetKind())
+        """
+        If inspecting a card, return to Board view and copy the
+        inspected card's state to the original. This includes
+        caret position within the card, which effectively
+        unselects the original card.
+        """
+        if self.GetCurrentContent() == CardView:
+            card = self.view_card.GetCard()
+            ins = self.inspecting
+            ins.SetTitle(card.GetTitle())
+            ins.SetContent(card.GetContent())
+            ins.SetKind(card.GetKind())
 
-        self.inspecting = None
-        self.inspect.SetLabel("Inspect")
+            self.board.UnselectAll()
+            self.inspecting = None
+            self.inspect.SetLabel("Inspect")
 
     def ShowBoard(self):
         # remember that self.board is a BoardBase
