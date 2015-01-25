@@ -108,7 +108,11 @@ class MyFrame(wx.Frame):
             self.search_str = ""
             self.searching = None
 
-    def CancelSearch(self, ev):
+    def OnCancelSearch(self, ev):
+        """Called when the cancel button in the search control is pressed."""
+        self.CancelSearch()
+
+    def CancelSearch(self):
         if self.search_find:
             # erase all highlight
             for c, i in self.search_find:
@@ -339,7 +343,7 @@ class MyFrame(wx.Frame):
             ctrl = wx.SearchCtrl(self, style=wx.TE_PROCESS_ENTER)
             # ctrl.Bind(wx.EVT_SEARCHCTRL_SEARCH_BTN, self.Search)
             ctrl.Bind(wx.EVT_TEXT, self.Search)
-            ctrl.Bind(wx.EVT_SEARCHCTRL_CANCEL_BTN, self.CancelSearch)
+            ctrl.Bind(wx.EVT_SEARCHCTRL_CANCEL_BTN, self.OnCancelSearch)
             ctrl.Bind(wx.EVT_TEXT_ENTER, self.OnSearchEnter)
         else:
             # or get the old one
@@ -545,7 +549,7 @@ class MyFrame(wx.Frame):
     def OnEsc(self, ev):
         """If inside a card, select it. If selecting a card, select None. if searching, cancel search."""
         if self.FindFocus() == self.search_ctrl:
-            self.CancelSearch(None)
+            self.CancelSearch()
             return
 
         bd = self.GetCurrentBoard()
@@ -605,7 +609,7 @@ class MyFrame(wx.Frame):
             self.search_ctrl.SetFocus()
         else:
             # make sure to call CancelSearch to clear up all variables
-            self.CancelSearch(None)
+            self.CancelSearch()
 
     def OnSearchEnter(self, ev):
         """Go to next search find."""
