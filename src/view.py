@@ -13,6 +13,9 @@ from boardbase import BoardBase
 class CardView(wx.Panel):
     CARD_PADDING = BoardBase.CARD_PADDING
     BACKGROUND_CL = "#CCCCCC"
+    
+    TITLE_FONT   = (18, wx.SWISS, wx.ITALIC, wx.BOLD)
+    CONTENT_FONT = (14, wx.FONTFAMILY_DEFAULT, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL)
 
     def __init__(self, parent, card=None, pos=wx.DefaultPosition, size=wx.DefaultSize):
         super(CardView, self).__init__(parent, size=size)
@@ -34,6 +37,8 @@ class CardView(wx.Panel):
         # copy the card, since we don't want to add
         # the same window (card) in two different sizers!
         card = Content(self, -1, title=new_card.GetTitle(), kind=new_card.GetKind(), content=new_card.GetContent())
+        card.title.SetFont(wx.Font(*self.TITLE_FONT))
+        card.content.SetFont(wx.Font(*self.CONTENT_FONT))
 
         # erase pewvious cards and set new one
         box = self.GetSizer()

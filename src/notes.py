@@ -42,7 +42,7 @@ class MyFrame(wx.Frame):
         # Done.
         self.Show()
 
-
+        
     ### Behavior Functions
 
     def GetCurrentBoard(self):
@@ -431,7 +431,7 @@ class MyFrame(wx.Frame):
 
     def OnDebug(self, ev):
         print "debug"
-        print self.GetCurrentBoard().GetSelection()
+        print self.GetCurrentBoard().content_sz
         
     def Save(self, out_file, d):
         """Save the data in the dict d in the file out_file."""
@@ -498,9 +498,11 @@ class MyFrame(wx.Frame):
             sel = pg.board.GetSelection()
             if len(sel) == 1:
                 pg.InspectCard(sel[0])
+                self.Log("Inspecting \"" + sel[0].GetTitle() + "\".")
         elif cont == CardView:
             pg.SaveFromInspect()
             pg.ShowBoard()
+            self.Log("Done inspecting.")
 
     def OnSelectAll(self, ev):
         board = self.GetCurrentBoard()
