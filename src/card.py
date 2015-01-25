@@ -203,7 +203,6 @@ class Content(Card):
     ### Behavior functions
 
     def ScrollToChar(self, pos):
-        print "scroll to char"
         ctrl = self.content
         if pos > -1 and pos < len(ctrl.GetValue()):
             sz = ctrl.GetSize()
