@@ -83,13 +83,16 @@ class Page(wx.Panel):
 
     def ShowCanvas(self):
         self.ShowContent(self.canvas)
+        view = self.board.GetViewStart()
+        self.canvas.Scroll(view)
 
     def GetBoardBmp(self):
         # get the current board as a bitmap
         sz = self.board.content_sz
+        bmp = None
 
         if sz.width > -1 and sz.height > -1:
-            bmp = wx.EmptyBitmap(sz.x, sz.y)
+            bmp = wx.EmptyBitmap(sz.width, sz.height)
             dc = wx.MemoryDC()
             
             dc.SelectObject(bmp)
@@ -100,10 +103,7 @@ class Page(wx.Panel):
             bmp = dc.GetAsBitmap()
             dc.SelectObject(wx.NullBitmap)
 
-            return bmp
-        
-        else:
-            return None
+        return bmp
 
     def SetupCanvas(self):
         """Setup the canvas background. Call before showing the Canvas."""

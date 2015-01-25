@@ -29,9 +29,6 @@ class CanvasBase(wx.StaticBitmap):
         self.Bind(wx.EVT_LEFT_DOWN, self.OnLeftDown)
         self.Bind(wx.EVT_LEFT_UP, self.OnLeftUp)
         self.Bind(wx.EVT_MOTION, self.OnMotion)
-        self.Bind(wx.EVT_IDLE, self.OnIdle)
-        self.Bind(wx.EVT_PAINT, self.OnPaint)
-        self.Bind(wx.EVT_SHOW, self.OnShow)
 
         
     ### Behavior functions
@@ -42,32 +39,36 @@ class CanvasBase(wx.StaticBitmap):
     def GetOffset(self):
         return self.offset
 
-    def DrawLines(self, dc):
+    def DrawLines(self):
         """Redraws all the lines that have been drawn already."""
+        print "CanvasBase.DrawLines: ", len(self.lines)
+        dc = wx.MemoryDC(self.GetBitmap())
         dc.BeginDrawing()
+        
         for colour, thickness, line in self.lines:
             pen = wx.Pen(colour, thickness, wx.SOLID)
             dc.SetPen(pen)
             for coords in line:
                 dc.DrawLine(*coords)
+        
         dc.EndDrawing()
+        self.SetBitmap(dc.GetAsBitmap())
 
         
     ### Auxiliary functions
     
     def InitBuffer(self):
         """Initialize the bitmap used for buffering the display."""
+        print "CanvasBase.InitBuffer"
         size = self.GetClientSize()
         buf = wx.EmptyBitmap(max(1, size.width), max(1, size.height))
         dc = wx.BufferedDC(None, buf)
-        
-        if hasattr(self, "buffer"):
-            dc.DrawBitmap(self.buffer, 0, 0)
-                
+
+        # clear everything by painting over with bg colour        
         dc.SetBackground(wx.Brush(self.GetBackgroundColour()))
         dc.Clear()
-        self.DrawLines(dc)
-        self.reInitBuffer = False
+
+        self.DrawLines()
         self.buffer = buf
 
         
@@ -75,60 +76,34 @@ class CanvasBase(wx.StaticBitmap):
 
     def OnLeftDown(self, ev):
         """Called when the left mouse button is pressed"""
+        print "CanvasBase.LeftDown"
         self.curLine = []
         self.pos = ev.GetPosition()
 
     def OnLeftUp(self, ev):
         """Called when the left mouse button is released"""
+        "CanvasBase.LeftUp"
         self.lines.append((self.colour, self.thickness, self.curLine))
         self.curLine = []
             
     def OnMotion(self, ev):
         if ev.Dragging() and ev.LeftIsDown():
-            # all drawings over dc will not be saved in self.buffer...
+            print "CanvasBase.Motion"
+            # BufferedDC will paint first over self.GetBitmap()
+            # and then copy everything to ClientDC(self)
             dc = wx.BufferedDC(wx.ClientDC(self), self.GetBitmap())
             dc.BeginDrawing()
+            
             dc.SetPen(self.pen)
-            pos = ev.GetPosition()
+            new_pos = ev.GetPosition()
             coords = (self.pos.x + self.offset.x, self.pos.y + self.offset.y,
-                      pos.x + self.offset.x, pos.y + self.offset.y)
+                      new_pos.x  + self.offset.x,  new_pos.y + self.offset.y)
             self.curLine.append(coords)
             dc.DrawLine(*coords)
-            self.pos = pos
+            self.pos = new_pos
+            
             dc.EndDrawing()
             self.SetBitmap(dc.GetAsBitmap())
-
-    def OnIdle(self, ev):
-        """
-        If the size was changed then resize the bitmap used for double
-        buffering to match the window size.  We do it in Idle time so
-        there is only one refresh after resizing is done, not lots while
-        it is happening.
-        """
-        if self.reInitBuffer:
-            self.InitBuffer()
-            self.Refresh(False)
-
-    def OnShow(self, ev):
-        """Called when the window is shown."""
-        if hasattr(self, "buffer"):
-            dc = wx.BufferedDC(None, self.buffer)
-            self.DrawLines(dc)
-
-    def OnPaint(self, ev):
-        """Called when the window is exposed."""
-        dc = wx.PaintDC(self)
-        src = wx.MemoryDC()
-        src.SelectObject(self.buffer)
-
-        sz = self.GetVirtualSize()
-        pos = self.GetViewStart()
-        sc = self.GetScrollPixelsPerUnit()
-        dc.Blit(0, 0,
-                sz.x, sz.y,
-                src,
-                pos.x * sc[0], pos.y * sc[1])
-        src.SelectObject(wx.NullBitmap)
 
         
         
@@ -150,6 +125,7 @@ class Canvas(AutoSize):
 
         # bindings
         self.Bind(wx.EVT_SCROLLWIN, self.OnScroll)
+        self.Bind(wx.EVT_SHOW, self.OnShow)
 
         # finish up        
         self.ctrl = ctrl
@@ -159,13 +135,20 @@ class Canvas(AutoSize):
 
     def SetBackground(self, bmp):
         """Call to show the part that will be seen."""
+        print "Canvas.SetBackground"
         if bmp:
+            print "setting bmp of size: ", bmp.GetSize()
             self.ctrl.SetBitmap(bmp)
             self.FitToChildren()
 
 
     ### Callbacks
-        
+
+    def OnShow(self, ev):
+        print "Canvas.OnShow"        
+        if ev.IsShown():
+            self.ctrl.DrawLines()
+
     def OnScroll(self, ev):
         pos = ev.GetPosition() * self.SCROLL_STEP
         if ev.GetOrientation() == wx.VERTICAL:
