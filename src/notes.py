@@ -305,10 +305,10 @@ class MyFrame(wx.Frame):
         self.accels.append(wx.AcceleratorEntry(wx.ACCEL_NORMAL, 27,  esc_it.GetId())) # ESC
         self.accels.append(wx.AcceleratorEntry(wx.ACCEL_NORMAL, 127, delt_it.GetId())) # DEL
 
-        self.accels.append(wx.AcceleratorEntry(wx.ACCEL_SHIFT, wx.WXK_LEFT,  movel_it.GetId()))
-        self.accels.append(wx.AcceleratorEntry(wx.ACCEL_SHIFT, wx.WXK_RIGHT, mover_it.GetId()))
-        self.accels.append(wx.AcceleratorEntry(wx.ACCEL_SHIFT, wx.WXK_UP,    moveu_it.GetId()))
-        self.accels.append(wx.AcceleratorEntry(wx.ACCEL_SHIFT, wx.WXK_DOWN,  moved_it.GetId()))
+        self.accels.append(wx.AcceleratorEntry(wx.ACCEL_ALT, wx.WXK_LEFT,  movel_it.GetId()))
+        self.accels.append(wx.AcceleratorEntry(wx.ACCEL_ALT, wx.WXK_RIGHT, mover_it.GetId()))
+        self.accels.append(wx.AcceleratorEntry(wx.ACCEL_ALT, wx.WXK_UP,    moveu_it.GetId()))
+        self.accels.append(wx.AcceleratorEntry(wx.ACCEL_ALT, wx.WXK_DOWN,  moved_it.GetId()))
 
         self.accels.append(wx.AcceleratorEntry(wx.ACCEL_CTRL, ord("I"),      viewc_it.GetId()))
         self.accels.append(wx.AcceleratorEntry(wx.ACCEL_CTRL, ord("A"),      sela_it.GetId()))
@@ -489,19 +489,23 @@ class MyFrame(wx.Frame):
 
     def OnMoveLeft(self, ev):
         board = self.GetCurrentBoard()
-        board.MoveSelected(-board.SCROLL_STEP, 0)
+        delta = board.SCROLL_STEP
+        board.MoveSelected(-delta, 0)
 
     def OnMoveRight(self, ev):
         board = self.GetCurrentBoard()
-        board.MoveSelected(board.SCROLL_STEP, 0)
+        delta = board.SCROLL_STEP
+        board.MoveSelected(delta, 0)
 
     def OnMoveUp(self, ev):
         board = self.GetCurrentBoard()
-        board.MoveSelected(0, -board.SCROLL_STEP)
+        delta = board.SCROLL_STEP
+        board.MoveSelected(0, -delta)
 
     def OnMoveDown(self, ev):
         board = self.GetCurrentBoard()
-        board.MoveSelected(0, board.SCROLL_STEP)
+        delta = board.SCROLL_STEP
+        board.MoveSelected(0, delta)
 
     def OnInspectCard(self, ev):
         pg = self.notebook.GetCurrentPage()
