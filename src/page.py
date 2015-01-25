@@ -76,9 +76,12 @@ class Page(wx.Panel):
         if self.GetCurrentContent() == CardView:
             card = self.view_card.GetCard()
             ins = self.inspecting
+
+            # copy state
             ins.SetTitle(card.GetTitle())
             ins.SetContent(card.GetContent())
             ins.SetKind(card.GetKind())
+            ins.SetCaretPos(*card.GetCaretPos())
 
             self.board.UnselectAll()
             self.inspecting = None

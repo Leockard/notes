@@ -41,7 +41,6 @@ class CanvasBase(wx.StaticBitmap):
 
     def DrawLines(self):
         """Redraws all the lines that have been drawn already."""
-        print "CanvasBase.DrawLines: ", len(self.lines)
         dc = wx.MemoryDC(self.GetBitmap())
         dc.BeginDrawing()
         
@@ -59,7 +58,6 @@ class CanvasBase(wx.StaticBitmap):
     
     def InitBuffer(self):
         """Initialize the bitmap used for buffering the display."""
-        print "CanvasBase.InitBuffer"
         size = self.GetClientSize()
         buf = wx.EmptyBitmap(max(1, size.width), max(1, size.height))
         dc = wx.BufferedDC(None, buf)
@@ -76,7 +74,6 @@ class CanvasBase(wx.StaticBitmap):
 
     def OnLeftDown(self, ev):
         """Called when the left mouse button is pressed"""
-        print "CanvasBase.LeftDown"
         self.curLine = []
         self.pos = ev.GetPosition()
 
@@ -88,7 +85,6 @@ class CanvasBase(wx.StaticBitmap):
             
     def OnMotion(self, ev):
         if ev.Dragging() and ev.LeftIsDown():
-            print "CanvasBase.Motion"
             # BufferedDC will paint first over self.GetBitmap()
             # and then copy everything to ClientDC(self)
             dc = wx.BufferedDC(wx.ClientDC(self), self.GetBitmap())
@@ -135,9 +131,7 @@ class Canvas(AutoSize):
 
     def SetBackground(self, bmp):
         """Call to show the part that will be seen."""
-        print "Canvas.SetBackground"
         if bmp:
-            print "setting bmp of size: ", bmp.GetSize()
             self.ctrl.SetBitmap(bmp)
             self.FitToChildren()
 
@@ -145,7 +139,6 @@ class Canvas(AutoSize):
     ### Callbacks
 
     def OnShow(self, ev):
-        print "Canvas.OnShow"        
         if ev.IsShown():
             self.ctrl.DrawLines()
 

@@ -202,6 +202,42 @@ class Content(Card):
         
     ### Behavior functions
 
+    def GetCaretPos(self):
+        """
+        Returns a tuple (ctrl, pos) where ctrl may be "title" or "content",
+        and pos is the position of the caret within that control. If other
+        controls are focused or the card's contents are not focused at all,
+        returns (None, -1).
+        """
+        ctrl = self.FindFocus()
+        pos = None
+        
+        if ctrl == self.title:
+            pos = ctrl.GetInsertionPoint()
+            ctrl = "title"
+        elif ctrl == self.content:
+            pos = ctrl.GetInsertionPoint()
+            ctrl = "content"
+        else:
+            pos = -1
+            ctrl = None
+
+        return (ctrl, pos)
+
+    def SetCaretPos(self, ctrl, pos):
+        """
+        Accepts a tuple (ctrl, pos) where ctrl may be "title" or "content",
+        and pos is the desired position of the caret within that control.
+        """
+        if ctrl == "title":
+            ctrl = self.title
+            ctrl.SetFocus()
+            ctrl.SetInsertionPoint(pos)
+        elif ctrl == "content":
+            ctrl = self.content
+            ctrl.SetFocus()
+            ctrl.SetInsertionPoint(pos)
+
     def ScrollToChar(self, pos):
         ctrl = self.content
         if pos > -1 and pos < len(ctrl.GetValue()):
