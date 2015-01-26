@@ -74,7 +74,7 @@ class Page(wx.Panel):
         caret position within the card, which effectively
         unselects the original card.
         """
-        if self.GetCurrentContent() == CardView:
+        if self.GetCurrentContent() == CardInspect:
             card = self.view_card.GetCard()
             ins = self.inspecting
 
@@ -164,7 +164,7 @@ class Page(wx.Panel):
         self.InitSizers()
         self.InitBoard(sz)
         self.InitCanvas()
-        self.InitView()
+        self.InitInspect()
         # execute only the first time
         if not self.ui_ready: self.InitButtonBar()
 
@@ -198,8 +198,8 @@ class Page(wx.Panel):
         self.canvas.Hide()
         self.contents.append(cv)
 
-    def InitView(self, size=wx.DefaultSize):
-        vw = CardView(self, size=size)
+    def InitInspect(self, size=wx.DefaultSize):
+        vw = CardInspect(self, size=size)
         self.view_card = vw
         self.view_card.Hide()
         self.contents.append(vw)

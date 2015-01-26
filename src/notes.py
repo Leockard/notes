@@ -258,11 +258,11 @@ class MyFrame(wx.Frame):
 
         ## view menu
         view_menu = wx.Menu()
-        viewc_it = wx.MenuItem(view_menu, wx.ID_ANY, "Inspect card")
+        inspc_it = wx.MenuItem(view_menu, wx.ID_ANY, "Inspect card")
         zoomi_it = wx.MenuItem(view_menu, wx.ID_ANY, "Zoom in")
         zoomo_it = wx.MenuItem(view_menu, wx.ID_ANY, "Zoom out")
         
-        view_menu.AppendItem(viewc_it)
+        view_menu.AppendItem(inspc_it)
         view_menu.AppendItem(zoomi_it)
         view_menu.AppendItem(zoomo_it)
 
@@ -290,7 +290,7 @@ class MyFrame(wx.Frame):
         self.Bind(wx.EVT_MENU, self.OnSave       , save_it)
         self.Bind(wx.EVT_MENU, self.OnOpen       , open_it)
 
-        self.Bind(wx.EVT_MENU, self.OnInspectCard , viewc_it)
+        self.Bind(wx.EVT_MENU, self.OnInspectCard , inspc_it)
 
         self.Bind(wx.EVT_MENU, self.OnCtrlF      , search_it)
         # self.Bind(wx.EVT_MENU, self.OnCtrlG      , next_it)
@@ -320,7 +320,7 @@ class MyFrame(wx.Frame):
         self.accels.append(wx.AcceleratorEntry(wx.ACCEL_ALT, wx.WXK_UP,    moveu_it.GetId()))
         self.accels.append(wx.AcceleratorEntry(wx.ACCEL_ALT, wx.WXK_DOWN,  moved_it.GetId()))
 
-        self.accels.append(wx.AcceleratorEntry(wx.ACCEL_CTRL, ord("I"), viewc_it.GetId()))
+        self.accels.append(wx.AcceleratorEntry(wx.ACCEL_CTRL, ord("I"), inspc_it.GetId()))
         self.accels.append(wx.AcceleratorEntry(wx.ACCEL_CTRL, ord("A"), sela_it.GetId()))
         self.accels.append(wx.AcceleratorEntry(wx.ACCEL_CTRL, ord("D"), debug_it.GetId()))
         self.accels.append(wx.AcceleratorEntry(wx.ACCEL_CTRL, ord("F"), search_it.GetId()))
@@ -534,7 +534,7 @@ class MyFrame(wx.Frame):
             if len(sel) == 1:
                 pg.InspectCard(sel[0])
                 self.Log("Inspecting \"" + sel[0].GetTitle() + "\".")
-        elif cont == CardView:
+        elif cont == CardInspect:
             pg.SaveFromInspect()
             pg.ShowBoard()
             self.Log("Done inspecting.")
@@ -559,12 +559,12 @@ class MyFrame(wx.Frame):
 
     def OnEsc(self, ev):
         """When in board: if inside a card, select it. If selecting a card, select None.
-        When searching: cancel search. When in CardView: don't do anything."""
+        When searching: cancel search. When in CardInspect: don't do anything."""
         if self.FindFocus() == self.search_ctrl:
             self.CancelSearch()
             return
 
-        if self.notebook.GetCurrentPage().GetCurrentContent() == CardView:
+        if self.notebook.GetCurrentPage().GetCurrentContent() == CardInspect:
             return
 
         bd = self.GetCurrentBoard()

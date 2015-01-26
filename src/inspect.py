@@ -1,5 +1,5 @@
-# board.py
-# CardView class: for editing a single card
+# inspect.py
+# CardInspect class: for editing a single card
 
 import wx
 from card import *
@@ -7,10 +7,10 @@ from boardbase import BoardBase
 
 
 ######################
-# CardView Class
+# CardInspect Class
 ######################        
 
-class CardView(wx.Panel):
+class CardInspect(wx.Panel):
     CARD_PADDING = BoardBase.CARD_PADDING
     BACKGROUND_CL = "#CCCCCC"
     
@@ -18,7 +18,7 @@ class CardView(wx.Panel):
     CONTENT_FONT = (14, wx.FONTFAMILY_DEFAULT, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL)
 
     def __init__(self, parent, card=None, pos=wx.DefaultPosition, size=wx.DefaultSize):
-        super(CardView, self).__init__(parent, size=size)
+        super(CardInspect, self).__init__(parent, size=size)
 
         self.SetBackgroundColour(self.BACKGROUND_CL)
 
