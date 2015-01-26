@@ -475,7 +475,7 @@ class MyFrame(wx.Frame):
     def OnDebug(self, ev):
         print "debug"
         for g in self.GetCurrentBoard().GetGroups():
-            print g.GetLabel(), g
+            print {g.GetLabel(): g.Dump()}
         
     def Save(self, out_file, d):
         """Save the data in the dict d in the file out_file."""
@@ -484,24 +484,8 @@ class MyFrame(wx.Frame):
 
     def Load(self, path):
         carddict = {}
-        board = self.GetCurrentBoard()
-        with open(path, 'r') as f: carddict = pickle.load(f)
-        for id, values in carddict.iteritems():
-            pos = values["pos"]
-            label = values["label"]
-            if values["class"] == "Content":
-                new = board.NewCard(values["class"], pos=pos, label=label,
-                              title   = str(values["title"]),
-                              kind    = values["kind"],
-                              content = values["content"])
-                if values["collapsed"]: new.Collapse()
-            elif values["class"] == "Header":
-                board.NewCard(values["class"], pos=pos, label=label,
-                              size = (values["width"], values["height"]),
-                              txt = values["header"])
-            elif values["class"] == "Image":
-                board.NewCard(values["class"], pos=pos, label=label,
-                              path  = values["path"])
+        with open(path, 'r') as f: d = pickle.load(f)
+        self.GetCurrentBoard().LoadData(d)
 
     def AddAccelerator(self, entry):
         """entry should be a AcceleratorEntry()."""

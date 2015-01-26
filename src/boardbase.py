@@ -555,7 +555,7 @@ class BoardBase(AutoSize):
         rect = rect.Inflate(2 * thick, 2 * thick)
         self.PaintRect(rect, thick=thick, style=wx.TRANSPARENT, refresh=refresh)
     
-    def Dump(self):
+    def DumpCards(self):
         """Returns a dict with all the info in the current cards."""
         carddict = {}
 
@@ -573,4 +573,43 @@ class BoardBase(AutoSize):
 
         return carddict
 
+    def DumpGroups(self):
+        d = {}
+        for g in self.groups: d[g.GetLabel()] = g.Dump()
+        return d
+
+    def Dump(self):
+        """Returns a dict with all the info contained in this Board."""
+        return {"cards": self.DumpCards(), "groups": self.DumpGroups()}
+
+    def LoadData(self, d):
+        """Argument should be a dict returned by Dump."""
+        if "cards" in d.keys():
+            # note we are not loading the id
+            # instead, as identifier, we use label
+            for id, values in d["cards"].iteritems():
+                pos = values["pos"]
+                label = values["label"]
+                if values["class"] == "Content":
+                    new = self.NewCard(values["class"], pos=pos, label=label,
+                                  title   = str(values["title"]),
+                                  kind    = values["kind"],
+                                  content = values["content"])
+                    if values["collapsed"]: new.Collapse()
+                elif values["class"] == "Header":
+                    self.NewCard(values["class"], pos=pos, label=label,
+                                  size = (values["width"], values["height"]),
+                                  txt = values["header"])
+                elif values["class"] == "Image":
+                    self.NewCard(values["class"], pos=pos, label=label,
+                                  path  = values["path"])
+                    
+        if "groups" in d.keys():
+            # here again we use the label as identifier
+            # but this time the label is the key in the dictionary
+            for label, members in d["groups"].iteritems():
+                cards = [self.GetCard(l) for l in members]
+                self.NewGroup(cards)
+
+                
     ### Callbacks

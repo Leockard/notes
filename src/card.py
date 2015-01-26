@@ -466,8 +466,8 @@ class Image(Card):
 
 class CardGroup():
     def __init__(self, label=-1, members=[]):
-        # save references to cards
-        self.members = members
+        # save references to cards, not to the list
+        self.members = members[:]
         self.label = label
 
     def GetLabel(self):
