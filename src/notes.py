@@ -128,7 +128,15 @@ class MyFrame(wx.Frame):
             # clear up variables
             self.search_find = []
             self.searching = None
-            self.search_str = ""            
+            self.search_str = ""
+        else:
+            # return the focus to the last selected card or to the board
+            bd = self.GetCurrentBoard()
+            sel = bd.GetSelection()
+            if sel:
+                sel[-1].SetFocus()
+            else:
+                bd.SetFocusIgnoringChildren()
 
         self.search_ctrl.Hide()
 
@@ -207,7 +215,6 @@ class MyFrame(wx.Frame):
         copy_it        = wx.MenuItem(edit_menu, wx.ID_COPY, "Copy")
         delt_it        = wx.MenuItem(edit_menu, wx.ID_DELETE, "Delete")
         # ghost items
-        esc_it         = wx.MenuItem(edit_menu, wx.ID_ANY, "DO NOT ADD ME")
         ctrltab_it     = wx.MenuItem(edit_menu, wx.ID_ANY, "Next Card")    
         ctrlshfttab_it = wx.MenuItem(edit_menu, wx.ID_ANY, "Previous Card")
         movel_it = wx.MenuItem(edit_menu, wx.ID_ANY, "Move Left")
@@ -239,12 +246,15 @@ class MyFrame(wx.Frame):
         seln_it = wx.MenuItem(selection_menu, wx.ID_ANY, "Select None")
         harr_it = wx.MenuItem(selection_menu, wx.ID_ANY, "Arrange &Horizontally")
         varr_it = wx.MenuItem(selection_menu, wx.ID_ANY, "Arrange &Vertically")
+        group_it = wx.MenuItem(selection_menu, wx.ID_ANY, "Group selection")
         
         selection_menu.AppendItem(sela_it)
         selection_menu.AppendItem(selc_it)
         selection_menu.AppendItem(seln_it)
         selection_menu.AppendItem(harr_it)
         selection_menu.AppendItem(varr_it)
+        selection_menu.AppendSeparator()
+        selection_menu.AppendItem(group_it)
 
         ## view menu
         view_menu = wx.Menu()
@@ -261,23 +271,21 @@ class MyFrame(wx.Frame):
         debug_it = wx.MenuItem(debug_menu, wx.ID_ANY, "&Debug")
         debug_menu.AppendItem(debug_it)
 
-        ## search menu
-        # ghost menu
+        ## search menu (ghost)
         search_menu = wx.Menu()
         search_it = wx.MenuItem(search_menu, wx.ID_ANY, "Search")
         next_it   = wx.MenuItem(search_menu, wx.ID_ANY, "Next")
         prev_it   = wx.MenuItem(search_menu, wx.ID_ANY, "Previous")
-        search_menu.AppendItem(search_it)
 
         ## bindings
         self.Bind(wx.EVT_MENU, self.OnQuit       , quit_it)
         self.Bind(wx.EVT_MENU, self.OnCopy       , copy_it)
         self.Bind(wx.EVT_MENU, self.OnDelete     , delt_it)
-        self.Bind(wx.EVT_MENU, self.OnEsc        , esc_it)
         
         self.Bind(wx.EVT_MENU, self.OnSelectAll     , sela_it)
         self.Bind(wx.EVT_MENU, self.OnSelectCurrent , selc_it)
         self.Bind(wx.EVT_MENU, self.OnSelectNone    , seln_it)
+        self.Bind(wx.EVT_MENU, self.OnGroupSelection, group_it)
 
         self.Bind(wx.EVT_MENU, self.OnSave       , save_it)
         self.Bind(wx.EVT_MENU, self.OnOpen       , open_it)
@@ -285,7 +293,7 @@ class MyFrame(wx.Frame):
         self.Bind(wx.EVT_MENU, self.OnInspectCard , viewc_it)
 
         self.Bind(wx.EVT_MENU, self.OnCtrlF      , search_it)
-        self.Bind(wx.EVT_MENU, self.OnCtrlG      , next_it)
+        # self.Bind(wx.EVT_MENU, self.OnCtrlG      , next_it)
         self.Bind(wx.EVT_MENU, self.OnCtrlTab    , ctrltab_it)        
         self.Bind(wx.EVT_MENU, self.OnCtrlShftG  , prev_it)
         self.Bind(wx.EVT_MENU, self.OnCtrlRet    , contr_it)
@@ -305,7 +313,6 @@ class MyFrame(wx.Frame):
         self.Bind(wx.EVT_MENU, self.OnMoveDown  , moved_it)
 
         ## shortcuts
-        self.accels.append(wx.AcceleratorEntry(wx.ACCEL_NORMAL, 27,  esc_it.GetId())) # ESC
         self.accels.append(wx.AcceleratorEntry(wx.ACCEL_NORMAL, 127, delt_it.GetId())) # DEL
 
         self.accels.append(wx.AcceleratorEntry(wx.ACCEL_ALT, wx.WXK_LEFT,  movel_it.GetId()))
@@ -317,11 +324,10 @@ class MyFrame(wx.Frame):
         self.accels.append(wx.AcceleratorEntry(wx.ACCEL_CTRL, ord("A"), sela_it.GetId()))
         self.accels.append(wx.AcceleratorEntry(wx.ACCEL_CTRL, ord("D"), debug_it.GetId()))
         self.accels.append(wx.AcceleratorEntry(wx.ACCEL_CTRL, ord("F"), search_it.GetId()))
-        self.accels.append(wx.AcceleratorEntry(wx.ACCEL_CTRL, ord("G"), next_it.GetId()))
         
-        self.accels.append(wx.AcceleratorEntry(wx.ACCEL_CTRL, wx.WXK_TAB,    ctrltab_it.GetId()))                
-        self.accels.append(wx.AcceleratorEntry(wx.ACCEL_CTRL, wx.WXK_RETURN, contr_it.GetId()))
-        self.accels.append(wx.AcceleratorEntry(wx.ACCEL_ALT, wx.WXK_RETURN, headr_it.GetId()))
+        self.accels.append(wx.AcceleratorEntry(wx.ACCEL_CTRL, wx.WXK_TAB    , ctrltab_it.GetId()))                
+        self.accels.append(wx.AcceleratorEntry(wx.ACCEL_CTRL, wx.WXK_RETURN , contr_it.GetId()))
+        self.accels.append(wx.AcceleratorEntry(wx.ACCEL_ALT, wx.WXK_RETURN  , headr_it.GetId()))
         self.accels.append(wx.AcceleratorEntry(wx.ACCEL_SHIFT|wx.ACCEL_CTRL , ord("G"), prev_it.GetId()))
         self.accels.append(wx.AcceleratorEntry(wx.ACCEL_SHIFT|wx.ACCEL_CTRL , wx.WXK_RETURN, contb_it.GetId()))
         self.accels.append(wx.AcceleratorEntry(wx.ACCEL_SHIFT|wx.ACCEL_CTRL , wx.WXK_TAB,    ctrlshfttab_it.GetId()))
@@ -335,6 +341,25 @@ class MyFrame(wx.Frame):
         bar.Append(view_menu, "&View")
         bar.Append(debug_menu, "&Debug")
         self.SetMenuBar(bar)
+
+        ## especial items
+        # These are ghost items created for the purpose of associating
+        # an accelerator to them. The accelerator is a multifunctional
+        # one. For example, we couldn't set ctrl + g as the callback and
+        # accelerator for next_it (next search result) because we also
+        # want to use ctrl + g for grouping. So we bind ctrl + G to a
+        # ghost item whose only task is to decide what action to take.
+        esp_menu = wx.Menu()
+        
+        ctrlg = wx.MenuItem(esp_menu, wx.ID_ANY, "ctrlg")
+        esc   = wx.MenuItem(esp_menu, wx.ID_ANY, "esc")        
+        esp_menu.AppendItem(ctrlg)        
+        esp_menu.AppendItem(esc)
+        
+        self.Bind(wx.EVT_MENU, self.OnCtrlG, ctrlg)
+        self.Bind(wx.EVT_MENU, self.OnEsc,   esc)
+        self.accels.append(wx.AcceleratorEntry(wx.ACCEL_CTRL, ord("G"), ctrlg.GetId()))
+        self.accels.append(wx.AcceleratorEntry(wx.ACCEL_NORMAL, 27, esc.GetId()))
 
     def InitSearchBar(self):
         if not self.ui_ready:
@@ -449,7 +474,8 @@ class MyFrame(wx.Frame):
 
     def OnDebug(self, ev):
         print "debug"
-        print len(self.GetCurrentBoard().groups)
+        for g in self.GetCurrentBoard().GetGroups():
+            print g.GetLabel(), g
         
     def Save(self, out_file, d):
         """Save the data in the dict d in the file out_file."""
@@ -490,6 +516,9 @@ class MyFrame(wx.Frame):
                 
         
     ### Callbacks
+
+    def OnGroupSelection(self, ev):
+        self.GetCurrentBoard().GroupSelected()
 
     def OnMoveLeft(self, ev):
         board = self.GetCurrentBoard()
@@ -603,6 +632,7 @@ class MyFrame(wx.Frame):
 
     def OnCtrlF(self, ev):
         """Show/hide the search control."""
+        print "ctrlf"
         if not self.search_ctrl.IsShown():
             self.InitSearchBar()
             self.search_ctrl.Show()
@@ -616,8 +646,14 @@ class MyFrame(wx.Frame):
         self.NextSearchResult()
 
     def OnCtrlG(self, ev):
-        """Go to next search find."""
-        self.NextSearchResult()
+        """Special accel: if searching, Go to next search find. If not, group selection."""
+        bd = self.GetCurrentBoard()
+        if self.search_ctrl.IsShown():
+            self.NextSearchResult()
+        elif bd.GetSelection():
+            sel = bd.GetSelection()
+            bd.GroupSelected()
+            self.Log("Grouped " + str(len(sel)) + " cards.")
 
     def OnCtrlShftG(self, ev):
         """Go to previous search find."""

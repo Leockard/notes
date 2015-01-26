@@ -274,8 +274,11 @@ class BoardBase(AutoSize):
         else:
             return None
 
-    def NewGroup(self, members=[]):
-        self.groups.append(CardGroup(label=len(self.groups)), members)
+    def GetGroups(self):
+        return self.groups
+
+    def NewGroup(self, cards=[]):
+        self.groups.append(CardGroup(label=len(self.groups), members=cards))
 
     def GroupSelected(self):
         sel = self.GetSelection()
