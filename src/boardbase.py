@@ -109,40 +109,44 @@ class BoardBase(AutoSize):
         cards.sort(key = lambda x: x.label)
         return cards[-1]
 
+    def GetPadding(self):
+        """Returns the correct padding width. Scales along with cards when zoom changes."""
+        return self.CARD_PADDING * self.scale
+
     def PlaceNewCard(self, subclass, pos=wx.DefaultPosition, below=False):
         """
         Places a new Card on the board.
-        class should be the string with the name of the Card subclass to create.
+        subclass should be the string with the name of the Card subclass to create.
         below=False creates the new Card to the right of the currently selected
         Card in the board, if any. below=True creates it below.
         """
         if pos == wx.DefaultPosition:
             pos = (0, 0)
+            pad = self.GetPadding()
             
             # if there are no cards, place this one on the top left corner
             if len(self.GetCards()) < 1:
-                pos = (self.CARD_PADDING, self.CARD_PADDING)
+                pos = (pad, pad)
     
             # if there's a selection, place it next to it
             elif self.GetFocusedCard():
                 rect = self.GetFocusedCard().GetRect()
                 if below:
-                    top = rect.bottom + self.CARD_PADDING
+                    top = rect.bottom + pad
                     left = rect.left
                 else:
                     top = rect.top
-                    left = rect.right + self.CARD_PADDING
+                    left = rect.right + pad
                 pos = (left, top)
             
             else: # otherwise, move it to the right of the last one
                 rects = [c.GetRect() for c in self.GetCards()]
                 rights = [r.right for r in rects]
                 top = min([r.top for r in rects])
-                left = max(rights) + self.CARD_PADDING
+                left = max(rights) + pad
                 pos = (left, top)
     
         new = self.NewCard(subclass, pos=pos)
-
         self.UnselectAll()
         new.SetFocus()
 
@@ -252,7 +256,8 @@ class BoardBase(AutoSize):
         new = []
 
         for c in sel:
-            pos = c.GetPosition() + (self.CARD_PADDING, self.CARD_PADDING)
+            pad = self.GetPadding()
+            pos = c.GetPosition() + (pad, pad)
             if isinstance(c, Content):
                 new.append(self.NewCard("Content", pos=pos, title=c.GetTitle(), kind=c.GetKind(), content=c.GetContent()))
             if isinstance(c, Header):
@@ -318,7 +323,7 @@ class BoardBase(AutoSize):
 
         # scroll the point into view
         scroll = False
-        pad = self.CARD_PADDING
+        pad = self.GetPadding()
 
         # if one of the argumets is wx.DefaultCoord,
         # we will not scroll in that direction
@@ -367,7 +372,7 @@ class BoardBase(AutoSize):
 
         for c in arrange:
             c.SetPosition(wx.Point(left, top))
-            left = c.GetRect().right + self.CARD_PADDING
+            left = c.GetRect().right + self.GetPadding()
 
         self.FitToChildren()
 
@@ -390,7 +395,7 @@ class BoardBase(AutoSize):
 
         for c in arrange:
             c.SetPosition(wx.Point(left, top))
-            top = c.GetRect().bottom + self.CARD_PADDING
+            top = c.GetRect().bottom + self.GetPadding()
 
         self.FitToChildren()
 
