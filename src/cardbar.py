@@ -66,11 +66,11 @@ def OnShow(ev):
 
 def OnCollapse(ev):
     global ASSOC_CARD
-    ASSOC_CARD.Collapse()
+    ASSOC_CARD.ToggleCollapse()
 
 def OnMaximize(ev):
     global ASSOC_CARD
-    ASSOC_CARD.Uncollapse()
+    ASSOC_CARD.RequestInspect()
 
 def OnClose(ev):
     global ASSOC_CARD

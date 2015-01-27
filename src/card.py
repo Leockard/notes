@@ -17,9 +17,12 @@ from utilities import EditText
 class Card(wx.Panel):
     BORDER_WIDTH = 2
     BORDER_THICK = 5
+
+    bar = None
+    
     DeleteEvent, EVT_CARD_DELETE = ne.NewCommandEvent()
     CollapseEvent, EVT_CARD_COLLAPSE = ne.NewCommandEvent()
-    bar = None
+    InspectEvent, EVT_CARD_REQUEST_INSPECT = ne.NewEvent()
     
     def __init__(self, parent, label, id=wx.ID_ANY, pos=wx.DefaultPosition, size=wx.DefaultSize, style=0):
         """Base class for every window that will be placed on Board. Override SetupUI()."""
@@ -270,8 +273,23 @@ class Content(Card):
             event.SetEventObject(self)
             self.GetEventHandler().ProcessEvent(event)
 
+    def ToggleCollapse(self):
+        if self.IsCollapsed():
+            self.Uncollapse()
+        else:
+            self.Collapse()
+
     def IsCollapsed(self):
         return not self.content.IsShown()
+
+    def RequestInspect(self):
+        """
+        Call to raise an event signaling that this card wants to be inspected.
+        Interested classes should listen to Card.EVT_CARD_REQUEST_INSPECT.
+        """
+        event = self.InspectEvent(id=wx.ID_ANY)
+        event.SetEventObject(self)
+        self.GetEventHandler().ProcessEvent(event)
 
     def GetTitle(self):
         return self.title.GetValue()

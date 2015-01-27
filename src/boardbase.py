@@ -196,6 +196,7 @@ class BoardBase(AutoSize):
         new.Bind(wx.EVT_CHILD_FOCUS, self.OnCardChildFocus)
         new.Bind(Card.EVT_CARD_DELETE, self.OnCardDelete)
         new.Bind(Card.EVT_CARD_COLLAPSE, self.OnCardCollapse)
+        new.Bind(Card.EVT_CARD_REQUEST_INSPECT, self.OnCardRequest)
 
         # raise the "new card" event
         event = self.NewCardEvent(id=wx.ID_ANY)
@@ -415,6 +416,16 @@ class BoardBase(AutoSize):
         self.SelectCard(card, new_sel=True)
         self.cards.remove(card)
         self.UnselectCard(card)
+
+    def OnCardRequest(self, ev):
+        """
+        Raises the event again, with the same card as event object. The difference
+        is that now a Page() can Bind() to EVT_CARD_REQUEST_INSPECT events coming from
+        this board, instead of having to bind to every individual card.
+        """
+        event = Card.InspectEvent(id=wx.ID_ANY)
+        event.SetEventObject(ev.GetEventObject())
+        self.GetEventHandler().ProcessEvent(event)
 
     def OnChildFocus(self, ev):
         pass # important to avoid automatic scrolling to focused child

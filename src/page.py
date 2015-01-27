@@ -214,6 +214,8 @@ class Page(wx.Panel):
         bd.Hide()
         self.contents.append(bd)
 
+        bd.board.Bind(Card.EVT_CARD_REQUEST_INSPECT, self.OnRequestInspect)
+
         # init also the inspection view
         ins = BoardInspect(self, self.board)
         ins.Hide()
@@ -262,6 +264,11 @@ class Page(wx.Panel):
 
 
     ### Callbacks
+
+    def OnRequestInspect(self, ev):
+        card = ev.GetEventObject()
+        self.board.SelectCard(card, True)
+        self.InspectCard(card)
 
     def OnSize(self, ev):
         # important to skip the event for Sizers to work correctly
