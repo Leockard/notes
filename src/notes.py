@@ -259,10 +259,12 @@ class MyFrame(wx.Frame):
         ## view menu
         view_menu = wx.Menu()
         inspc_it = wx.MenuItem(view_menu, wx.ID_ANY, "Inspect card")
+        tgmap_it = wx.MenuItem(view_menu, wx.ID_ANY, "Show map")
         zoomi_it = wx.MenuItem(view_menu, wx.ID_ANY, "Zoom in")
         zoomo_it = wx.MenuItem(view_menu, wx.ID_ANY, "Zoom out")
         
         view_menu.AppendItem(inspc_it)
+        view_menu.AppendItem(tgmap_it)
         view_menu.AppendItem(zoomi_it)
         view_menu.AppendItem(zoomo_it)
 
@@ -290,7 +292,8 @@ class MyFrame(wx.Frame):
         self.Bind(wx.EVT_MENU, self.OnSave       , save_it)
         self.Bind(wx.EVT_MENU, self.OnOpen       , open_it)
 
-        self.Bind(wx.EVT_MENU, self.OnInspectCard , inspc_it)
+        self.Bind(wx.EVT_MENU, self.OnInspectCard   , inspc_it)
+        self.Bind(wx.EVT_MENU, self.OnToggleMinimap , tgmap_it)
 
         self.Bind(wx.EVT_MENU, self.OnCtrlF      , search_it)
         # self.Bind(wx.EVT_MENU, self.OnCtrlG      , next_it)
@@ -321,6 +324,7 @@ class MyFrame(wx.Frame):
         self.accels.append(wx.AcceleratorEntry(wx.ACCEL_ALT, wx.WXK_DOWN,  moved_it.GetId()))
 
         self.accels.append(wx.AcceleratorEntry(wx.ACCEL_CTRL, ord("I"), inspc_it.GetId()))
+        self.accels.append(wx.AcceleratorEntry(wx.ACCEL_CTRL, ord("M"), tgmap_it.GetId()))
         self.accels.append(wx.AcceleratorEntry(wx.ACCEL_CTRL, ord("A"), sela_it.GetId()))
         self.accels.append(wx.AcceleratorEntry(wx.ACCEL_CTRL, ord("D"), debug_it.GetId()))
         self.accels.append(wx.AcceleratorEntry(wx.ACCEL_CTRL, ord("F"), search_it.GetId()))
@@ -474,7 +478,7 @@ class MyFrame(wx.Frame):
 
     def OnDebug(self, ev):
         print "debug"
-        ins = BoardInspect(self, self.GetCurrentBoard())
+        print self.FindFocus()
         
     def Save(self, out_file, d):
         """Save the data in the dict d in the file out_file."""
@@ -522,6 +526,9 @@ class MyFrame(wx.Frame):
         board = self.GetCurrentBoard()
         delta = board.SCROLL_STEP
         board.MoveSelected(0, delta)
+
+    def OnToggleMinimap(self, ev):
+        self.notebook.GetCurrentPage().ToggleMinimap()
 
     def OnInspectCard(self, ev):
         pg = self.notebook.GetCurrentPage()

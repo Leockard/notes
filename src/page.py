@@ -97,6 +97,19 @@ class Page(wx.Panel):
         view = self.board.GetViewStart()
         self.canvas.Scroll(view)
 
+    def ShowMinimap(self):
+        """Show the minimap. Note that the minimap is not considered a "content"."""
+        self.minimap.Show()
+
+    def HideMinimap(self):
+        """Hide the minimap. Note that the minimap is not considered a "content"."""
+        self.minimap.Hide()
+
+    def ToggleMinimap(self):
+        mp = self.minimap
+        if mp.IsShown(): mp.Hide()
+        else:            mp.Show()
+
     def GetBoardBmp(self):
         # get the current board as a bitmap
         sz = self.board.content_sz
@@ -187,10 +200,16 @@ class Page(wx.Panel):
         self.content_sizer = box
 
     def InitBoard(self, size=wx.DefaultSize):
+        # init board
         bd = Board(self, size=size)
         self.board = bd.board
         bd.Hide()
         self.contents.append(bd)
+
+        # init also the inspection view
+        ins = BoardInspect(self, self.board)
+        ins.Hide()
+        self.minimap = ins
 
     def InitCanvas(self, size=wx.DefaultSize):
         cv = Canvas(self, size=size)
