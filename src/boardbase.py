@@ -141,9 +141,7 @@ class BoardBase(AutoSize):
                 left = max(rights) + self.CARD_PADDING
                 pos = (left, top)
     
-            new = self.NewCard(subclass, pos=pos)
-        else:
-            new = self.NewCard(subclass, pos=pos)
+        new = self.NewCard(subclass, pos=pos)
 
         self.UnselectAll()
         new.SetFocus()

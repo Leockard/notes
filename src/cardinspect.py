@@ -4,19 +4,20 @@
 import wx
 from card import *
 from boardbase import BoardBase
+from utilities import *
 
 
 ######################
 # BoardInspect Class
 ######################
 
-class BoardInspect(wx.Window):
-    DEFAULT_FACTOR = 5
+class BoardInspect(AutoSize):
+    DEFAULT_FACTOR  = 5
     BACKGROUND_CL   = (255, 255, 255, 255)
     DEFAULT_MINI_CL = (220, 218, 213, 255)
     
     def __init__(self, parent, board=None, pos=wx.DefaultPosition, size=wx.DefaultSize):
-        super(BoardInspect, self).__init__(parent, pos=(200, 200), size=(400, 250))
+        super(BoardInspect, self).__init__(parent, pos=pos, size=size)
         
         self.factor = BoardInspect.DEFAULT_FACTOR
         self.cards = {}
@@ -31,12 +32,25 @@ class BoardInspect(wx.Window):
         self.cards = {}
 
     def SetBoard(self, board):
-        # clean up and add everything
+        # clean up and add every card already present
         self.Clear()
         for c in board.GetCards():
             self.AddCard(c)
-            
+
+        # set sizes
+        sz = [i / self.factor for i in board.GetSize()]
+        self.SetSize(sz)
+        self.UpdateContentSize(board.content_sz)
+
+        # set scroll
+        step = board.GetScrollPixelsPerUnit()
+        self.SetScrollRate(step[0] / self.factor, step[1] / self.factor)
+
+        # listen to events
         board.Bind(BoardBase.EVT_NEW_CARD, self.OnNewCard)
+        board.Bind(wx.EVT_SIZE, self.OnBoardSize)
+        board.Bind(wx.EVT_SCROLLWIN, self.OnBoardScroll)
+        
         self.board = board
     
     def AddCard(self, card):
@@ -67,6 +81,14 @@ class BoardInspect(wx.Window):
 
 
     ### Callbacks
+
+    def OnBoardScroll(self, ev):
+        view = ev.GetEventObject().GetViewStart()
+        self.Scroll(view.x / self.factor, view.y / self.factor)
+
+    def OnBoardSize(self, ev):
+        board = ev.GetEventObject()
+        self.SetSize([i / self.factor for i in board.GetSize()])
 
     def OnNewCard(self, ev):
         self.AddCard(ev.GetEventObject())
@@ -133,7 +155,7 @@ class CardInspect(wx.Panel):
 
 
     ### Auxiliary functions
-
+    
 
 
 ######################
