@@ -2,7 +2,6 @@
 # some auxiliary classes for notes.py
 
 import wx
-import inspect
 import wx.lib.stattext as st
 
 
