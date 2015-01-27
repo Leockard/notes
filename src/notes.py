@@ -10,7 +10,7 @@ from page import Page
 from card import *
 from canvas import *
 from board import *
-from view import *
+from cardinspect import *
 import wx.richtext as rt
 
 
@@ -474,8 +474,7 @@ class MyFrame(wx.Frame):
 
     def OnDebug(self, ev):
         print "debug"
-        for g in self.GetCurrentBoard().GetGroups():
-            print {g.GetLabel(): g.Dump()}
+        ins = BoardInspect(self, self.GetCurrentBoard())
         
     def Save(self, out_file, d):
         """Save the data in the dict d in the file out_file."""
@@ -607,16 +606,15 @@ class MyFrame(wx.Frame):
     def OnDelete(self, ev):
         """Delete selected cards."""
         pg = self.notebook.GetCurrentPage()
-        length = len(pg.board.GetSelection())
-        if pg.GetCurrentContent() == Board and length > 0:
-            self.Log("Delete " + str(length) + " Cards.")
-            self.GetCurrentBoard().DeleteSelected()
+        sel = pg.board.GetSelection()
+        if pg.GetCurrentContent() == Board and len(sel) > 0:
+            self.Log("Delete " + str(len(sel)) + " Cards.")
+            for c in sel: c.Delete()
         else:
             ev.Skip()
 
     def OnCtrlF(self, ev):
         """Show/hide the search control."""
-        print "ctrlf"
         if not self.search_ctrl.IsShown():
             self.InitSearchBar()
             self.search_ctrl.Show()
