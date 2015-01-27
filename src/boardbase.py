@@ -4,6 +4,7 @@
 import wx
 from utilities import AutoSize
 from utilities import MakeEncirclingRect
+import wx.lib.newevent as ne
 from card import *
 
 
@@ -17,6 +18,8 @@ class BoardBase(AutoSize):
     CARD_PADDING = 15
     HORIZONTAL = 1
     VERTICAL   = 2
+
+    NewCardEvent, EVT_NEW_CARD = ne.NewEvent()
 
     def __init__(self, parent, id=wx.ID_ANY, pos=(0,0), size=wx.DefaultSize):
         super(BoardBase, self).__init__(parent, id=id, pos=pos, size=size, style=wx.BORDER_NONE)
@@ -146,21 +149,19 @@ class BoardBase(AutoSize):
         new.SetFocus()
 
     def NewCard(self, subclass, pos, label=-1, **kwargs):
+        # never use labels, always let Board set its own
+        # or use -1 (default) if it doesn't matter
+        # for ex, if it's a temporary object
         if label == -1: label = len(self.cards)
 
+        # unpack values and set bindings based on subclass
         if subclass == "Content":
-            if "title" in kwargs.keys():
-                title = kwargs["title"]
-            else:
-                title = Content.DEFAULT_TITLE
-            if "kind" in kwargs.keys():
-                kind = kwargs["kind"]
-            else:
-                kind = Content.DEFAULT_LBL
-            if "content" in kwargs.keys():
-                content = kwargs["content"]
-            else:
-                content = Content.DEFAULT_CONTENT
+            if "title" in kwargs.keys(): title = kwargs["title"]
+            else: title = Content.DEFAULT_TITLE
+            if "kind" in kwargs.keys(): kind = kwargs["kind"]
+            else: kind = Content.DEFAULT_LBL
+            if "content" in kwargs.keys(): content = kwargs["content"]
+            else: content = Content.DEFAULT_CONTENT
                 
             new = Content(self, label, pos=pos, title=title, kind=kind, content=content,
                           size=[i*self.scale for i in Content.DEFAULT_SZ])
@@ -170,10 +171,8 @@ class BoardBase(AutoSize):
             new.Bind(wx.EVT_LEAVE_WINDOW, self.OnMouseLeaveCard)
             
         elif subclass == "Header":
-            if "txt" in kwargs.keys():
-                txt = kwargs["txt"]
-            else:
-                txt = Header.DEFAULT_TITLE
+            if "txt" in kwargs.keys(): txt = kwargs["txt"]
+            else: txt = Header.DEFAULT_TITLE
             if "size" in kwargs.keys():
                 w = kwargs["size"][0]
                 h = kwargs["size"][1]
@@ -187,12 +186,21 @@ class BoardBase(AutoSize):
         elif subclass == "Image":
             if "path" in kwargs.keys(): path = kwargs["path"]
             else: path = Image.DEFAULT_PATH
+                
             new = Image(self, label, pos=pos, path=path, size=[i*self.scale for i in Image.DEFAULT_SZ])
 
+        # set bindings for every card
         new.Bind(wx.EVT_LEFT_DOWN, self.OnCardLeftDown)
+        new.Bind(wx.EVT_CHILD_FOCUS, self.OnCardChildFocus)
         new.Bind(Card.EVT_CARD_DELETE, self.OnCardDelete)
         new.Bind(Card.EVT_CARD_COLLAPSE, self.OnCardCollapse)
-        
+
+        # raise the "new card" event
+        event = self.NewCardEvent(id=wx.ID_ANY)
+        event.SetEventObject(new)
+        self.GetEventHandler().ProcessEvent(event)
+
+        # finish up
         new.SetFocus()
         self.cards.append(new)
         self.FitToChildren()
@@ -255,13 +263,6 @@ class BoardBase(AutoSize):
         self.UnselectAll()
         for c in new: self.SelectCard(c, False)
 
-    def DeleteSelected(self):
-        sel = self.selected_cards
-        for c in sel:
-            c.Hide()
-            self.cards.remove(c)
-        self.UnselectAll()
-        
     def GetFocusedCard(self):
         """Returns the card currently in focus, or None."""
         obj = self.FindFocus()
@@ -407,8 +408,10 @@ class BoardBase(AutoSize):
         card.SetSize([i*self.scale for i in card.GetSize()])
         
     def OnCardDelete(self, ev):
-        self.SelectCard(ev.GetEventObject(), new_sel=True)
-        self.DeleteSelected()
+        card = ev.GetEventObject()
+        self.SelectCard(card, new_sel=True)
+        self.cards.remove(card)
+        self.UnselectCard(card)
 
     def OnChildFocus(self, ev):
         pass # important to avoid automatic scrolling to focused child
@@ -441,7 +444,11 @@ class BoardBase(AutoSize):
         for c in self.selected_cards:
             # (card, card position with respect to the original click, current position)
             self.moving_cards_pos.append((c, c.GetPosition() - pos, c.GetPosition()))
-                    
+
+    def OnCardChildFocus(self, ev):
+        """If a child o card is focused, unselect all (including parent)."""
+        ev.Skip()
+
     def OnMovingCard(self, ev):
         if ev.Dragging() and self.moving_cards_pos:
             # draw a rectangle while moving
