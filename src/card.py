@@ -47,9 +47,10 @@ class Card(wx.Panel):
     def HideBar(self):
         self.bar.Hide()
 
-    def BarDelete(self):
+    def Delete(self):
         """Called by CardBar when the close button is pressed. Raises EVT_CARD_DELETE."""
         # simply raise a CardEvent. BoardBase should know what to do
+        self.Hide()        
         event = self.DeleteEvent(id=wx.ID_ANY)
         event.SetEventObject(self)
         self.GetEventHandler().ProcessEvent(event)
@@ -172,10 +173,7 @@ class Content(Card):
     FACT_LBL_LONG       = "Fact"
     LONG_LABELS = {CONCEPT_LBL: CONCEPT_LBL_LONG, ASSUMPTION_LBL: ASSUMPTION_LBL_LONG, RESEARCH_LBL: RESEARCH_LBL_LONG, FACT_LBL: FACT_LBL_LONG, DEFAULT_LBL: DEFAULT_LBL_LONG}
 
-    # colours
-    # DEFAULT_CL    = (220, 218, 213, 255)
-
-    # thanks paletton.com!        
+    # colours; thanks paletton.com!        
     COLOURS = {}
     COLOURS[DEFAULT_LBL]    = {"border": (220, 218, 213, 255), "bg": (255, 255, 255, 255)}
     COLOURS[CONCEPT_LBL]    = {"border": (149, 246, 214, 255), "bg": (242, 254, 250, 255)}
@@ -188,7 +186,9 @@ class Content(Card):
     # ASSUMPTION_CNT_CL = (255, 102, 25, 255)
     # RESEARCH_CNT_CL   = (255, 202, 25, 255)
     # FACT_CNT_CL       = (68, 54, 244, 255)
-    
+
+    # Content events
+    KindEvent, EVT_CONT_KIND = ne.NewCommandEvent()
 
     def __init__(self, parent, label, id=wx.ID_ANY, pos=wx.DefaultPosition, size=DEFAULT_SZ, title="", kind=DEFAULT_LBL, content=""):
         super(Content, self).__init__(parent, label, id=id, pos=pos, size=size,
@@ -293,6 +293,10 @@ class Content(Card):
         if kind == "kind": self.kindbut.SetLabel("kind")
         else:              self.kindbut.SetLabel(kind[0])
         self.SetColours(kind)
+
+        event = self.KindEvent(id=wx.ID_ANY)
+        event.SetEventObject(self)
+        self.GetEventHandler().ProcessEvent(event)
 
     
     ### Auxiliary functions

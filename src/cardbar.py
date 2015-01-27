@@ -74,4 +74,4 @@ def OnMaximize(ev):
 
 def OnClose(ev):
     global ASSOC_CARD
-    ASSOC_CARD.BarDelete()
+    ASSOC_CARD.Delete()
