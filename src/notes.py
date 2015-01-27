@@ -215,8 +215,6 @@ class MyFrame(wx.Frame):
         copy_it        = wx.MenuItem(edit_menu, wx.ID_COPY, "Copy")
         delt_it        = wx.MenuItem(edit_menu, wx.ID_DELETE, "Delete")
         # ghost items
-        ctrltab_it     = wx.MenuItem(edit_menu, wx.ID_ANY, "Next Card")    
-        ctrlshfttab_it = wx.MenuItem(edit_menu, wx.ID_ANY, "Previous Card")
         movel_it = wx.MenuItem(edit_menu, wx.ID_ANY, "Move Left")
         mover_it = wx.MenuItem(edit_menu, wx.ID_ANY, "Move Right")
         moveu_it = wx.MenuItem(edit_menu, wx.ID_ANY, "Move Up")
@@ -247,7 +245,12 @@ class MyFrame(wx.Frame):
         harr_it = wx.MenuItem(selection_menu, wx.ID_ANY, "Arrange &Horizontally")
         varr_it = wx.MenuItem(selection_menu, wx.ID_ANY, "Arrange &Vertically")
         group_it = wx.MenuItem(selection_menu, wx.ID_ANY, "Group selection")
-        
+        # arrow key selecction: gost items
+        selr_it = wx.MenuItem(selection_menu, wx.ID_ANY, "Select Right")
+        sell_it = wx.MenuItem(selection_menu, wx.ID_ANY, "Select Left")
+        selu_it = wx.MenuItem(selection_menu, wx.ID_ANY, "Select Up")
+        seld_it = wx.MenuItem(selection_menu, wx.ID_ANY, "Select Down")
+                
         selection_menu.AppendItem(sela_it)
         selection_menu.AppendItem(selc_it)
         selection_menu.AppendItem(seln_it)
@@ -296,13 +299,11 @@ class MyFrame(wx.Frame):
         self.Bind(wx.EVT_MENU, self.OnToggleMinimap , tgmap_it)
 
         self.Bind(wx.EVT_MENU, self.OnCtrlF      , search_it)
-        # self.Bind(wx.EVT_MENU, self.OnCtrlG      , next_it)
-        self.Bind(wx.EVT_MENU, self.OnCtrlTab    , ctrltab_it)        
+        # self.Bind(wx.EVT_MENU, self.OnCtrlG      , next_it)   # special! see below
         self.Bind(wx.EVT_MENU, self.OnCtrlShftG  , prev_it)
         self.Bind(wx.EVT_MENU, self.OnCtrlRet    , contr_it)
         self.Bind(wx.EVT_MENU, self.OnAltRet     , headr_it)
         self.Bind(wx.EVT_MENU, self.OnImage      , img_it)
-        self.Bind(wx.EVT_MENU, self.OnCtrlShftTab , ctrlshfttab_it)        
         self.Bind(wx.EVT_MENU, self.OnCtrlShftRet , contb_it)
         self.Bind(wx.EVT_MENU, self.OnAltShftRet  , headb_it)
 
@@ -315,6 +316,11 @@ class MyFrame(wx.Frame):
         self.Bind(wx.EVT_MENU, self.OnMoveUp    , moveu_it)
         self.Bind(wx.EVT_MENU, self.OnMoveDown  , moved_it)
 
+        self.Bind(wx.EVT_MENU, self.OnSelectionLeft  , sell_it)
+        self.Bind(wx.EVT_MENU, self.OnSelectionRight , selr_it)
+        self.Bind(wx.EVT_MENU, self.OnSelectionUp    , selu_it)
+        self.Bind(wx.EVT_MENU, self.OnSelectionDown  , seld_it)
+
         ## shortcuts
         self.accels.append(wx.AcceleratorEntry(wx.ACCEL_NORMAL, 127, delt_it.GetId())) # DEL
 
@@ -323,18 +329,21 @@ class MyFrame(wx.Frame):
         self.accels.append(wx.AcceleratorEntry(wx.ACCEL_ALT, wx.WXK_UP,    moveu_it.GetId()))
         self.accels.append(wx.AcceleratorEntry(wx.ACCEL_ALT, wx.WXK_DOWN,  moved_it.GetId()))
 
+        self.accels.append(wx.AcceleratorEntry(wx.ACCEL_NORMAL, wx.WXK_LEFT,  sell_it.GetId()))
+        self.accels.append(wx.AcceleratorEntry(wx.ACCEL_NORMAL, wx.WXK_RIGHT, selr_it.GetId()))
+        self.accels.append(wx.AcceleratorEntry(wx.ACCEL_NORMAL, wx.WXK_UP,    selu_it.GetId()))
+        self.accels.append(wx.AcceleratorEntry(wx.ACCEL_NORMAL, wx.WXK_DOWN,  seld_it.GetId()))
+
         self.accels.append(wx.AcceleratorEntry(wx.ACCEL_CTRL, ord("I"), inspc_it.GetId()))
         self.accels.append(wx.AcceleratorEntry(wx.ACCEL_CTRL, ord("M"), tgmap_it.GetId()))
         self.accels.append(wx.AcceleratorEntry(wx.ACCEL_CTRL, ord("A"), sela_it.GetId()))
         self.accels.append(wx.AcceleratorEntry(wx.ACCEL_CTRL, ord("D"), debug_it.GetId()))
         self.accels.append(wx.AcceleratorEntry(wx.ACCEL_CTRL, ord("F"), search_it.GetId()))
         
-        self.accels.append(wx.AcceleratorEntry(wx.ACCEL_CTRL, wx.WXK_TAB    , ctrltab_it.GetId()))                
         self.accels.append(wx.AcceleratorEntry(wx.ACCEL_CTRL, wx.WXK_RETURN , contr_it.GetId()))
         self.accels.append(wx.AcceleratorEntry(wx.ACCEL_ALT, wx.WXK_RETURN  , headr_it.GetId()))
         self.accels.append(wx.AcceleratorEntry(wx.ACCEL_SHIFT|wx.ACCEL_CTRL , ord("G"), prev_it.GetId()))
         self.accels.append(wx.AcceleratorEntry(wx.ACCEL_SHIFT|wx.ACCEL_CTRL , wx.WXK_RETURN, contb_it.GetId()))
-        self.accels.append(wx.AcceleratorEntry(wx.ACCEL_SHIFT|wx.ACCEL_CTRL , wx.WXK_TAB,    ctrlshfttab_it.GetId()))
         self.accels.append(wx.AcceleratorEntry(wx.ACCEL_SHIFT|wx.ACCEL_ALT  , wx.WXK_RETURN, headb_it.GetId()))
 
         # finish up        
@@ -508,6 +517,56 @@ class MyFrame(wx.Frame):
     def OnGroupSelection(self, ev):
         self.GetCurrentBoard().GroupSelected()
 
+    def OnSelectionLeft(self, ev):
+        bd = self.GetCurrentBoard()
+        sel = bd.GetSelection()
+        if len(sel) == 1:
+            nxt = [c for c in bd.GetCards() if c.GetRect().right < sel[0].GetRect().right]
+            print nxt
+            if nxt:
+                nxt.sort(key=lambda x: abs(x.GetRect().top - sel[0].GetRect().top))
+                nxt.sort(key=lambda x: x.GetRect().right)
+                bd.SelectCard(nxt[-1], True)
+        else:
+            ev.Skip()
+    
+    def OnSelectionRight(self, ev):
+        bd = self.GetCurrentBoard()
+        sel = bd.GetSelection()
+        if len(sel) == 1:
+            nxt = [c for c in bd.GetCards() if c.GetRect().left > sel[0].GetRect().left]
+            if nxt:
+                # sort by top so that the left-most cards in the next sort
+                # are ordered by top first. This will set the first element
+                # of nxt to be the next card to the right but on the same row
+                nxt.sort(key=lambda x: abs(x.GetRect().top - sel[0].GetRect().top))
+                nxt.sort(key=lambda x: x.GetRect().left)
+                bd.SelectCard(nxt[0], True)
+        else:
+            ev.Skip()
+
+    def OnSelectionUp(self, ev):
+        bd = self.GetCurrentBoard()
+        sel = bd.GetSelection()
+        if len(sel) == 1:
+            nxt = [c for c in bd.GetCards() if c.GetRect().bottom < sel[0].GetRect().bottom]
+            if nxt:
+                nxt.sort(key=lambda x: x.GetRect().bottom)
+                bd.SelectCard(nxt[0], True)
+        else:
+            ev.Skip()
+
+    def OnSelectionDown(self, ev):
+        bd = self.GetCurrentBoard()
+        sel = bd.GetSelection()
+        if len(sel) == 1:
+            nxt = [c for c in bd.GetCards() if c.GetRect().top < sel[0].GetRect().top]
+            if nxt:
+                nxt.sort(key=lambda x: x.GetRect().top)
+                bd.SelectCard(nxt[-1], True)
+        else:
+            ev.Skip()
+
     def OnMoveLeft(self, ev):
         board = self.GetCurrentBoard()
         delta = board.SCROLL_STEP
@@ -661,14 +720,6 @@ class MyFrame(wx.Frame):
     def OnCtrlShftG(self, ev):
         """Go to previous search find."""
         self.PrevSearchResult()
-
-    def OnCtrlTab(self, ev):
-        """Selects next card."""
-        self.GetCurrentBoard().GetNextCard(self.FindFocus()).SetFocus()
-
-    def OnCtrlShftTab(self, ev):
-        """Selects previous card."""
-        self.GetCurrentBoard().GetPrevCard(self.FindFocus()).SetFocus()
 
     def OnCtrlRet(self, ev):
         """Add a new content card to the board, to the right of the current card."""

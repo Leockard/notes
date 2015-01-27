@@ -95,6 +95,8 @@ class BoardInspect(AutoSize):
 
     def OnDeleteCard(self, ev):
         self.RemoveCard(ev.GetEventObject())
+        # dont' consume it! BoardBase also needs it
+        ev.Skip()
 
     def OnContentKind(self, ev):
         card = ev.GetEventObject()

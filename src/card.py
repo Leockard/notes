@@ -53,10 +53,11 @@ class Card(wx.Panel):
     def Delete(self):
         """Called by CardBar when the close button is pressed. Raises EVT_CARD_DELETE."""
         # simply raise a CardEvent. BoardBase should know what to do
-        self.Hide()        
         event = self.DeleteEvent(id=wx.ID_ANY)
         event.SetEventObject(self)
         self.GetEventHandler().ProcessEvent(event)
+        self.Hide()
+        self.Destroy()
 
                         
     ### Auxiliary functions
