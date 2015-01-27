@@ -257,7 +257,7 @@ class Content(Card):
             self.content.Hide()
             self.SetSize(self.COLLAPSED_SZ)
 
-            event = self.CollapseEvent(id=wx.ID_ANY, card=self, size=self.COLLAPSED_SZ, collapsed=True)
+            event = self.CollapseEvent(id=wx.ID_ANY, collapsed=True)
             event.SetEventObject(self)
             self.GetEventHandler().ProcessEvent(event)
 
@@ -266,7 +266,7 @@ class Content(Card):
             self.content.Show()
             self.SetSize(self.DEFAULT_SZ)
             
-            event = self.CollapseEvent(id=wx.ID_ANY, card=self, size=self.COLLAPSED_SZ, collapsed=False)
+            event = self.CollapseEvent(id=wx.ID_ANY, collapsed=False)
             event.SetEventObject(self)
             self.GetEventHandler().ProcessEvent(event)
 
