@@ -2,8 +2,7 @@
 # base board class for notes.py
 
 import wx
-from utilities import AutoSize
-from utilities import MakeEncirclingRect
+from utilities import *
 import wx.lib.newevent as ne
 from card import *
 
@@ -129,8 +128,19 @@ class BoardBase(AutoSize):
                 pos = (pad, pad)
     
             # if there's a selection, place it next to it
-            elif self.GetFocusedCard():
-                rect = self.GetFocusedCard().GetRect()
+            elif self.GetSelection():
+                rect = self.GetSelection()[-1].GetRect()
+                if below:
+                    top = rect.bottom + pad
+                    left = rect.left
+                else:
+                    top = rect.top
+                    left = rect.right + pad
+                pos = (left, top)
+
+            # if cursor is inside a card, place it next to it
+            elif isinstance(self.FindFocus().GetParent(), Card):
+                rect = self.FindFocus().GetParent().GetRect()
                 if below:
                     top = rect.bottom + pad
                     left = rect.left
@@ -215,6 +225,45 @@ class BoardBase(AutoSize):
         """Move card by (dx, dy)."""
         pos = card.GetPosition()
         card.Move((pos.x + dx, pos.y + dy))
+
+    def SelectNext(self, direc):
+        """
+        Selects next card in the specified direction. The selected
+        card may not be the same as the one returned from GetNextCard().
+        direc should be one of "left", "right", "top" or "bottom".
+        """
+        if   direc == "left":
+            side  = lambda x: x.right
+            getp1 = lambda x: x.GetTopLeft()
+            getp2 = lambda x: x.GetBottomLeft()
+        elif direc == "right":
+            side  = lambda x: x.left
+            getp1 = lambda x: x.GetTopLeft()
+            getp2 = lambda x: x.GetTopRight()
+        elif direc == "top":
+            side  = lambda x: x.bottom
+            getp1 = lambda x: x.GetTopLeft()
+            getp2 = lambda x: x.GetBottomLeft()
+        elif direc == "bottom":
+            side  = lambda x: x.top
+            getp1 = lambda x: x.GetBottomLeft()
+            getp2 = lambda x: x.GetTopLeft()
+
+        sel = self.GetSelection()
+        if len(sel) == 1:
+            # get those that are above me
+            rect = sel[0].GetRect()
+            if direc == "left" or direc == "top":
+                nxt = [c for c in self.GetCards() if side(c.GetRect()) < side(rect)]
+            elif direc == "right" or direc == "bottom":
+                nxt = [c for c in self.GetCards() if side(c.GetRect()) > side(rect)]
+            if nxt:
+                # if any, order them by distance
+                nxt.sort(key=lambda x: dist2(getp1(x.GetRect()), getp2(rect)))
+                # and select the nearest one
+                self.SelectCard(nxt[0], True)
+        else:
+            ev.Skip()
 
     def MoveSelected(self, dx, dy):
         """Move all selected cards by dx, dy."""

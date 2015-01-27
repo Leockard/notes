@@ -521,14 +521,7 @@ class MyFrame(wx.Frame):
         bd = self.GetCurrentBoard()
         sel = bd.GetSelection()
         if len(sel) == 1:
-            # get those that are to my left
-            rect = sel[0].GetRect()
-            nxt = [c for c in bd.GetCards() if c.GetRect().right < rect.right]
-            if nxt:
-                # if any, order them by distance
-                nxt.sort(key=lambda x: dist2(x.GetRect().GetTopRight(), rect.GetTopLeft()))
-                # and select the nearest one
-                bd.SelectCard(nxt[0], True)
+            bd.SelectNext("left")
         else:
             ev.Skip()
     
@@ -536,14 +529,7 @@ class MyFrame(wx.Frame):
         bd = self.GetCurrentBoard()
         sel = bd.GetSelection()
         if len(sel) == 1:
-            # get those that are to my right
-            rect = sel[0].GetRect()
-            nxt = [c for c in bd.GetCards() if c.GetRect().left > rect.left]
-            if nxt:
-                # if any, order them by distance
-                nxt.sort(key=lambda x: dist2(x.GetRect().GetTopLeft(), rect.GetTopRight()))
-                # and select the nearest one
-                bd.SelectCard(nxt[0], True)
+            bd.SelectNext("right")
         else:
             ev.Skip()
 
@@ -551,14 +537,7 @@ class MyFrame(wx.Frame):
         bd = self.GetCurrentBoard()
         sel = bd.GetSelection()
         if len(sel) == 1:
-            # get those that are above me
-            rect = sel[0].GetRect()
-            nxt = [c for c in bd.GetCards() if c.GetRect().bottom < rect.bottom]
-            if nxt:
-                # if any, order them by distance
-                nxt.sort(key=lambda x: dist2(x.GetRect().GetTopLeft(), rect.GetBottomLeft()))
-                # and select the nearest one
-                bd.SelectCard(nxt[0], True)
+            bd.SelectNext("top")
         else:
             ev.Skip()
 
@@ -566,14 +545,7 @@ class MyFrame(wx.Frame):
         bd = self.GetCurrentBoard()
         sel = bd.GetSelection()
         if len(sel) == 1:
-            # get those that are below me
-            rect = sel[0].GetRect()
-            nxt = [c for c in bd.GetCards() if c.GetRect().top > rect.top]
-            if nxt:
-                # if any, order them by distance
-                nxt.sort(key=lambda x: dist2(x.GetRect().GetBottomLeft(), rect.GetTopLeft()))
-                # and select the nearest one
-                bd.SelectCard(nxt[0], True)
+            bd.SelectNext("bottom")
         else:
             ev.Skip()
 
@@ -655,7 +627,6 @@ class MyFrame(wx.Frame):
             sel = bd.GetSelection()
 
             if isinstance(sel, list) and len(sel) > 1:
-                print "1 select board"
                 # selecting a group: select board
                 bd.UnselectAll()
                 bd.SetFocusIgnoringChildren()
@@ -664,14 +635,11 @@ class MyFrame(wx.Frame):
                 card = sel[0]
                 bd.UnselectAll()                
                 if bd.GetContainingGroups(card):
-                    print "select group"
                     bd.SelectGroup(bd.GetContainingGroups(card)[0], True)
                 else:
-                    print "2 select board"
                     bd.SetFocusIgnoringChildren()
             elif isinstance(self.FindFocus().GetParent(), Card):
                 # inside a card: select the card
-                print "select card"
                 card = self.FindFocus().GetParent()
                 bd.SelectCard(card, True)
                 card.SetFocusIgnoringChildren()
