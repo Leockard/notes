@@ -521,12 +521,14 @@ class MyFrame(wx.Frame):
         bd = self.GetCurrentBoard()
         sel = bd.GetSelection()
         if len(sel) == 1:
-            nxt = [c for c in bd.GetCards() if c.GetRect().right < sel[0].GetRect().right]
-            print nxt
+            # get those that are to my left
+            rect = sel[0].GetRect()
+            nxt = [c for c in bd.GetCards() if c.GetRect().right < rect.right]
             if nxt:
-                nxt.sort(key=lambda x: abs(x.GetRect().top - sel[0].GetRect().top))
-                nxt.sort(key=lambda x: x.GetRect().right)
-                bd.SelectCard(nxt[-1], True)
+                # if any, order them by distance
+                nxt.sort(key=lambda x: dist2(x.GetRect().GetTopRight(), rect.GetTopLeft()))
+                # and select the nearest one
+                bd.SelectCard(nxt[0], True)
         else:
             ev.Skip()
     
@@ -534,13 +536,13 @@ class MyFrame(wx.Frame):
         bd = self.GetCurrentBoard()
         sel = bd.GetSelection()
         if len(sel) == 1:
-            nxt = [c for c in bd.GetCards() if c.GetRect().left > sel[0].GetRect().left]
+            # get those that are to my right
+            rect = sel[0].GetRect()
+            nxt = [c for c in bd.GetCards() if c.GetRect().left > rect.left]
             if nxt:
-                # sort by top so that the left-most cards in the next sort
-                # are ordered by top first. This will set the first element
-                # of nxt to be the next card to the right but on the same row
-                nxt.sort(key=lambda x: abs(x.GetRect().top - sel[0].GetRect().top))
-                nxt.sort(key=lambda x: x.GetRect().left)
+                # if any, order them by distance
+                nxt.sort(key=lambda x: dist2(x.GetRect().GetTopLeft(), rect.GetTopRight()))
+                # and select the nearest one
                 bd.SelectCard(nxt[0], True)
         else:
             ev.Skip()
@@ -549,9 +551,13 @@ class MyFrame(wx.Frame):
         bd = self.GetCurrentBoard()
         sel = bd.GetSelection()
         if len(sel) == 1:
-            nxt = [c for c in bd.GetCards() if c.GetRect().bottom < sel[0].GetRect().bottom]
+            # get those that are above me
+            rect = sel[0].GetRect()
+            nxt = [c for c in bd.GetCards() if c.GetRect().bottom < rect.bottom]
             if nxt:
-                nxt.sort(key=lambda x: x.GetRect().bottom)
+                # if any, order them by distance
+                nxt.sort(key=lambda x: dist2(x.GetRect().GetTopLeft(), rect.GetBottomLeft()))
+                # and select the nearest one
                 bd.SelectCard(nxt[0], True)
         else:
             ev.Skip()
@@ -560,10 +566,14 @@ class MyFrame(wx.Frame):
         bd = self.GetCurrentBoard()
         sel = bd.GetSelection()
         if len(sel) == 1:
-            nxt = [c for c in bd.GetCards() if c.GetRect().top < sel[0].GetRect().top]
+            # get those that are below me
+            rect = sel[0].GetRect()
+            nxt = [c for c in bd.GetCards() if c.GetRect().top > rect.top]
             if nxt:
-                nxt.sort(key=lambda x: x.GetRect().top)
-                bd.SelectCard(nxt[-1], True)
+                # if any, order them by distance
+                nxt.sort(key=lambda x: dist2(x.GetRect().GetBottomLeft(), rect.GetTopLeft()))
+                # and select the nearest one
+                bd.SelectCard(nxt[0], True)
         else:
             ev.Skip()
 
@@ -685,11 +695,15 @@ class MyFrame(wx.Frame):
 
     def OnDelete(self, ev):
         """Delete selected cards."""
+        print "OnDelete"
         pg = self.notebook.GetCurrentPage()
         sel = pg.board.GetSelection()
         if pg.GetCurrentContent() == Board and len(sel) > 0:
             self.Log("Delete " + str(len(sel)) + " Cards.")
-            for c in sel: c.Delete()
+            # since sel points to cards that are being deleted,
+            # we can't iterate normally
+            while len(sel) > 0:
+                sel[-1].Delete()
         else:
             ev.Skip()
 

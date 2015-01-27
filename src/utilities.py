@@ -3,7 +3,7 @@
 
 import wx
 import wx.lib.stattext as st
-
+from math import sqrt
 
 
 ######################
@@ -164,3 +164,8 @@ def isnumber(s):
     except ValueError:
         return False
 
+def dist2(p1, p2):
+    return sum([i**2 for i in p1 - p2])
+
+def dist(p1, p2):
+    return sqrt(dist2(p1, p2))

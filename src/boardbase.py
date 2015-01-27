@@ -422,7 +422,6 @@ class BoardBase(AutoSize):
         
     def OnCardDelete(self, ev):
         card = ev.GetEventObject()
-        self.SelectCard(card, new_sel=True)
         self.cards.remove(card)
         self.UnselectCard(card)
 
