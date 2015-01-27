@@ -16,7 +16,7 @@ class BoardInspect(wx.Window):
     DEFAULT_MINI_CL = (220, 218, 213, 255)
     
     def __init__(self, parent, board=None, pos=wx.DefaultPosition, size=wx.DefaultSize):
-        super(BoardInspect, self).__init__(parent, pos=(200, 200), size=(400, 400))
+        super(BoardInspect, self).__init__(parent, pos=(200, 200), size=(400, 250))
         
         self.factor = BoardInspect.DEFAULT_FACTOR
         self.cards = {}

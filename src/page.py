@@ -98,7 +98,15 @@ class Page(wx.Panel):
         self.canvas.Scroll(view)
 
     def ShowMinimap(self):
-        """Show the minimap. Note that the minimap is not considered a "content"."""
+        """
+        Show the minimap. Note that the minimap is not considered
+        a "content".  Be sure to use this method and not inspect.Show(),
+        as we also calculate the position before showing.
+        """
+        w, h = self.minimap.GetSize()
+        rect = self.GetClientRect()
+        pos = (rect.right - w, rect.bottom - h)
+        self.minimap.Move(pos)
         self.minimap.Show()
 
     def HideMinimap(self):
@@ -107,8 +115,8 @@ class Page(wx.Panel):
 
     def ToggleMinimap(self):
         mp = self.minimap
-        if mp.IsShown(): mp.Hide()
-        else:            mp.Show()
+        if mp.IsShown(): self.HideMinimap()
+        else:            self.ShowMinimap()
 
     def GetBoardBmp(self):
         # get the current board as a bitmap
