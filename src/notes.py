@@ -478,7 +478,8 @@ class MyFrame(wx.Frame):
 
     def OnDebug(self, ev):
         print "debug"
-        print self.FindFocus()
+        print "focus: ", self.FindFocus()
+        print "selec: ", self.GetCurrentBoard().GetSelection()
         
     def Save(self, out_file, d):
         """Save the data in the dict d in the file out_file."""
@@ -564,35 +565,48 @@ class MyFrame(wx.Frame):
         self.GetCurrentBoard().SetFocusIgnoringChildren()
 
     def OnEsc(self, ev):
-        """When in board: if inside a card, select it. If selecting a card, select None.
-        When searching: cancel search. When in CardInspect: don't do anything."""
+        """
+        When in board: cycle selection through card, group, board.
+        When searching: cancel search.
+        When in CardInspect: don't do anything.
+        """
+        # search: cancel search
         if self.FindFocus() == self.search_ctrl:
             self.CancelSearch()
             return
 
-        if self.notebook.GetCurrentPage().GetCurrentContent() == CardInspect:
+        # inspection: nil
+        content = self.notebook.GetCurrentPage().GetCurrentContent()
+        if content == CardInspect:
             return
 
-        bd = self.GetCurrentBoard()
-        ctrl = self.FindFocus()
-        parent = ctrl.GetParent()
+        # board: cycle selection
+        if content == Board:
+            bd = self.GetCurrentBoard()
+            sel = bd.GetSelection()
 
-        if isinstance(parent, Card):
-            # inside a card!
-            if not parent in bd.GetSelection():
-                # inside a non-selected card: select card
-                bd.SelectCard(parent, new_sel=True)
-            else:
-                # inside selected card: select none
+            if isinstance(sel, list) and len(sel) > 1:
+                print "1 select board"
+                # selecting a group: select board
                 bd.UnselectAll()
                 bd.SetFocusIgnoringChildren()
-        else:
-            # not inside a card, but are we selecting any?
-            if bd.GetSelection():
-                # if so, select none
-                bd.UnselectAll()
-                bd.SetFocusIgnoringChildren()
-
+            elif len(sel) == 1:
+                # selecting a card: select group (if any)
+                card = sel[0]
+                bd.UnselectAll()                
+                if bd.GetContainingGroups(card):
+                    print "select group"
+                    bd.SelectGroup(bd.GetContainingGroups(card)[0], True)
+                else:
+                    print "2 select board"
+                    bd.SetFocusIgnoringChildren()
+            elif isinstance(self.FindFocus().GetParent(), Card):
+                # inside a card: select the card
+                print "select card"
+                card = self.FindFocus().GetParent()
+                bd.SelectCard(card, True)
+                card.SetFocusIgnoringChildren()
+                    
     def OnPageChange(self, ev):
         pass
 

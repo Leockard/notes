@@ -197,6 +197,8 @@ class BoardBase(AutoSize):
         new.Bind(Card.EVT_CARD_DELETE, self.OnCardDelete)
         new.Bind(Card.EVT_CARD_COLLAPSE, self.OnCardCollapse)
         new.Bind(Card.EVT_CARD_REQUEST_INSPECT, self.OnCardRequest)
+        for ch in new.GetChildren():
+            ch.Bind(wx.EVT_LEFT_DOWN, self.OnCardChildLeftDown)
 
         # raise the "new card" event
         event = self.NewCardEvent(id=wx.ID_ANY)
@@ -252,6 +254,10 @@ class BoardBase(AutoSize):
             c = self.selected_cards[0]
             self.UnselectCard(c)
 
+    def SelectGroup(self, group, new_sel=True):
+        if new_sel: self.UnselectAll()
+        for c in group.GetMembers(): self.SelectCard(c)
+
     def CopySelected(self):
         sel = self.selected_cards[:]
         new = []
@@ -281,6 +287,9 @@ class BoardBase(AutoSize):
 
     def GetGroups(self):
         return self.groups
+
+    def GetContainingGroups(self, card):
+        return [g for g in self.groups if card in g.GetMembers()]
 
     def NewGroup(self, cards=[]):
         self.groups.append(CardGroup(label=len(self.groups), members=cards))
@@ -429,6 +438,11 @@ class BoardBase(AutoSize):
 
     def OnChildFocus(self, ev):
         pass # important to avoid automatic scrolling to focused child
+
+    def OnCardChildLeftDown(self, ev):
+        """Called when a Card's child window is clicked."""
+        self.UnselectAll()
+        ev.Skip()
 
     def OnCardLeftDown(self, ev):
         """Called when a child card has been clicked."""

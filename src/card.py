@@ -492,6 +492,9 @@ class CardGroup():
         self.members = members[:]
         self.label = label
 
+    def GetMembers(self):
+        return self.members
+
     def GetLabel(self):
         return self.label
 
