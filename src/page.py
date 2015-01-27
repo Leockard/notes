@@ -7,7 +7,7 @@ import wx
 from utilities import AutoSize
 from utilities import *
 from board import *
-from view import *
+from cardinspect import *
 from canvas import Canvas
 
 
@@ -63,9 +63,9 @@ class Page(wx.Panel):
         self.inspect.SetLabel("Save and return")
         
         self.ShowContent(self.view_card)
-        self.view_card.SetCard(card)
+        self.view_card.SetCards([card])
         # SetCard copies its argument, so we have to use Get now
-        self.view_card.GetCard().content.SetFocus()
+        self.view_card.GetCards()[0].content.SetFocus()
 
     def SaveFromInspect(self):
         """
@@ -75,7 +75,7 @@ class Page(wx.Panel):
         unselects the original card.
         """
         if self.GetCurrentContent() == CardInspect:
-            card = self.view_card.GetCard()
+            card = self.view_card.GetCards()[0]
             ins = self.inspecting
 
             # copy state
