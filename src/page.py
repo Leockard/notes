@@ -58,12 +58,12 @@ class Page(wx.Panel):
         ctrl.SetFocusIgnoringChildren()
         self.Layout()
 
-    def InspectCard(self, card):
-        self.inspecting = card
+    def InspectCards(self, cards):
+        self.inspecting = cards
         self.inspect.SetLabel("Save and return")
         
         self.ShowContent(self.view_card)
-        self.view_card.SetCards([card])
+        self.view_card.SetCards(cards)
         # SetCard copies its argument, so we have to use Get now
         self.view_card.GetCards()[0].content.SetFocus()
 
@@ -75,14 +75,15 @@ class Page(wx.Panel):
         unselects the original card.
         """
         if self.GetCurrentContent() == CardInspect:
-            card = self.view_card.GetCards()[0]
-            ins = self.inspecting
+            # card = self.view_card.GetCards()[0]
+            # ins = self.inspecting
 
             # copy state
-            ins.SetTitle(card.GetTitle())
-            ins.SetContent(card.GetContent())
-            ins.SetKind(card.GetKind())
-            ins.SetCaretPos(*card.GetCaretPos())
+            for card, ins in self.view_card.GetPairs().iteritems():
+                ins.SetTitle(card.GetTitle())
+                ins.SetContent(card.GetContent())
+                ins.SetKind(card.GetKind())
+                ins.SetCaretPos(*card.GetCaretPos())
 
             self.inspecting = None
             self.inspect.SetLabel("Inspect")

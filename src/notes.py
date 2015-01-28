@@ -579,9 +579,12 @@ class MyFrame(wx.Frame):
         # toggle between Board and Inspect modes        
         if cont == Board:
             sel = pg.board.GetSelection()
-            if len(sel) == 1:
-                pg.InspectCard(sel[0])
-                self.Log("Inspecting \"" + sel[0].GetTitle() + "\".")
+            if len(sel) > 0:
+                pg.InspectCards(sel)
+                if len(sel) == 1:
+                    self.Log("Inspecting \"" + sel[0].GetTitle() + "\".")
+                else:
+                    self.Log("Inspecting " + str(len(sel)) + " cards.")
         elif cont == CardInspect:
             pg.SaveFromInspect()
             pg.ShowBoard()

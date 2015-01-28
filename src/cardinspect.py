@@ -1,5 +1,5 @@
 # inspect.py
-# CardInspect class: for editing a single card
+# Inspect classes: for editing a single card or viewing the whole board
 
 import wx
 from card import *
@@ -117,19 +117,44 @@ class CardInspect(wx.Panel):
 
     def __init__(self, parent, cards=[], pos=wx.DefaultPosition, size=wx.DefaultSize):
         super(CardInspect, self).__init__(parent, size=size)
-
+        # GUI
         self.SetBackgroundColour(self.BACKGROUND_CL)
 
+        # boxes
         hbox = wx.BoxSizer(wx.HORIZONTAL)
         self.SetSizer(hbox)
-        
-        self.cards = cards
+
+        # add the first few
+        self.pairs = {}
+        for c in cards:
+            self.AddCard()        
 
                 
     ### Behavior functions
 
     def GetCards(self):
-        return self.cards
+        """
+        Returns the cards currently shown on the inspection view,
+        not the ones on the board.
+        """
+        return self.pairs.keys()
+
+    def GetInspectingCards(self):
+        """
+        Returns the original cards that we are inspecting which
+        are currently on the board. Not the ones shown on the
+        inspection view.
+        """
+        return self.pairs.values()
+
+    def GetPairs(self):
+        """
+        Returns a dict where each pair has a Card for key and
+        for value. The key is the card currently shown on the
+        inspection view, while the value is the corresponding
+        card on the board it represents.
+        """
+        return self.pairs
 
     def AddCard(self, new_card):
         # copy the card, since we don't want to add
@@ -138,12 +163,10 @@ class CardInspect(wx.Panel):
         card.title.SetFont(wx.Font(*self.TITLE_FONT))
         card.content.SetFont(wx.Font(*self.CONTENT_FONT))
 
-        # erase pewvious cards and set new one
         box = self.GetSizer()
         box.Add(card, proportion=1, flag=wx.ALL|wx.EXPAND, border=self.CARD_PADDING)
-        
         box.Layout()
-        self.cards.append(card)
+        self.pairs[card] = new_card
 
     def SetCards(self, cards):
         """Clears previous cards and sets the new ones."""
@@ -153,7 +176,7 @@ class CardInspect(wx.Panel):
     def Clear(self):
         """Clear all contained cards."""
         self.GetSizer().Clear()
-        self.cards = []
+        self.pairs = {}
 
 
     ### Auxiliary functions
