@@ -10,7 +10,7 @@ from card import *
 # Board Class
 ######################
 
-class Board(wx.Panel):
+class Board(wx.Window):
     CARD_PADDING = BoardBase.CARD_PADDING
     HORIZONTAL = BoardBase.HORIZONTAL
     VERTICAL   = BoardBase.VERTICAL

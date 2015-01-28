@@ -175,6 +175,8 @@ class CardInspect(wx.Panel):
 
     def Clear(self):
         """Clear all contained cards."""
+        for c in self.pairs.keys():
+            c.Delete()
         self.GetSizer().Clear()
         self.pairs = {}
 

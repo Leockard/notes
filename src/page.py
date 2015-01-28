@@ -55,7 +55,7 @@ class Page(wx.Panel):
         
         for c in self.contents: c.Hide()
         ctrl.Show()
-        ctrl.SetFocusIgnoringChildren()
+        # ctrl.SetFocusIgnoringChildren()
         self.Layout()
 
     def InspectCards(self, cards):
@@ -75,9 +75,6 @@ class Page(wx.Panel):
         unselects the original card.
         """
         if self.GetCurrentContent() == CardInspect:
-            # card = self.view_card.GetCards()[0]
-            # ins = self.inspecting
-
             # copy state
             for card, ins in self.view_card.GetPairs().iteritems():
                 ins.SetTitle(card.GetTitle())

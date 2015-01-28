@@ -632,7 +632,7 @@ class MyFrame(wx.Frame):
             if isinstance(sel, list) and len(sel) > 1:
                 # selecting a group: select board
                 bd.UnselectAll()
-                bd.SetFocusIgnoringChildren()
+                bd.GetParent().SetFocus()
             elif len(sel) == 1:
                 # selecting a card: select group (if any)
                 card = sel[0]
@@ -640,7 +640,7 @@ class MyFrame(wx.Frame):
                 if bd.GetContainingGroups(card):
                     bd.SelectGroup(bd.GetContainingGroups(card)[0], True)
                 else:
-                    bd.SetFocusIgnoringChildren()
+                    bd.GetParent().SetFocus()
             elif isinstance(self.FindFocus().GetParent(), Card):
                 # inside a card: select the card
                 card = self.FindFocus().GetParent()
