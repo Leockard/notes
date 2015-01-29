@@ -369,13 +369,16 @@ class Book(wx.Notebook):
 
     def Dump(self):
         di = {}
+        print "noteboko dump"
         for i in range(self.GetPageCount()):
             pg = self.GetPage(i)
+            print "dumping: ", self.GetPageText(i)
             di[self.GetPageText(i)] = pg.Dump()
         return di
 
     def Load(self, di):
         for title, page in di.iteritems():
+            print title, page
             pg = Page(self)
             pg.Hide()        # hide while all data is loaded
             pg.Load(page)

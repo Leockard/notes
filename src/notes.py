@@ -491,10 +491,11 @@ class MyFrame(wx.Frame):
         print "debug"
         print self.FindFocus()
         
-    def Save(self, out_file, d):
+    def Save(self, out_file):
         """Save the data in the dict d in the file out_file."""
+        di =  self.notebook.Dump()
         with open(out_file, 'w') as out:
-            pickle.dump(d, out)
+            pickle.dump(di, out)
 
     def Load(self, path):
         carddict = {}
@@ -749,7 +750,7 @@ class MyFrame(wx.Frame):
 
         # if there's a current file, save it
         if self.cur_file != "":
-            self.Save(self.cur_file, self.notebook.GetCurrentPage().Dump())
+            self.Save(self.cur_file)
             
         else: # else, ask for a file name
             fd = wx.FileDialog(self, "Save", os.getcwd(), "", "P files (*.p)|*.p",
@@ -757,7 +758,7 @@ class MyFrame(wx.Frame):
             if fd.ShowModal() == wx.ID_CANCEL: return # user changed her mind
 
             # let Save() worry about serializing
-            self.Save(fd.GetPath(), self.notebook.Dump())
+            self.Save(fd.GetPath())
             self.cur_file = fd.GetPath()
 
         focus.SetFocus()
