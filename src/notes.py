@@ -770,7 +770,8 @@ class MyFrame(wx.Frame):
             self.Save(fd.GetPath())
             self.cur_file = fd.GetPath()
 
-        focus.SetFocus()
+        if focus:
+            focus.SetFocus()
         self.Log("Saved file" + self.cur_file)
 
     def OnOpen(self, ev):
