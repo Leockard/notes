@@ -217,11 +217,6 @@ class MyFrame(wx.Frame):
         copy_it = wx.MenuItem(edit_menu, wx.ID_COPY, "Copy")
         past_it = wx.MenuItem(edit_menu, wx.ID_PASTE, "Paste")
         delt_it = wx.MenuItem(edit_menu, wx.ID_DELETE, "Delete")
-        # ghost items
-        movel_it = wx.MenuItem(edit_menu, wx.ID_ANY, "Move Left")
-        mover_it = wx.MenuItem(edit_menu, wx.ID_ANY, "Move Right")
-        moveu_it = wx.MenuItem(edit_menu, wx.ID_ANY, "Move Up")
-        moved_it = wx.MenuItem(edit_menu, wx.ID_ANY, "Move Down")
 
         edit_menu.AppendItem(copy_it)
         edit_menu.AppendItem(past_it)
@@ -249,11 +244,6 @@ class MyFrame(wx.Frame):
         harr_it = wx.MenuItem(selection_menu, wx.ID_ANY, "Arrange &Horizontally")
         varr_it = wx.MenuItem(selection_menu, wx.ID_ANY, "Arrange &Vertically")
         group_it = wx.MenuItem(selection_menu, wx.ID_ANY, "Group selection")
-        # arrow key selecction: gost items
-        selr_it = wx.MenuItem(selection_menu, wx.ID_ANY, "Select Right")
-        sell_it = wx.MenuItem(selection_menu, wx.ID_ANY, "Select Left")
-        selu_it = wx.MenuItem(selection_menu, wx.ID_ANY, "Select Up")
-        seld_it = wx.MenuItem(selection_menu, wx.ID_ANY, "Select Down")
                 
         selection_menu.AppendItem(sela_it)
         selection_menu.AppendItem(selc_it)
@@ -279,8 +269,8 @@ class MyFrame(wx.Frame):
         debug_menu = wx.Menu()                
         debug_it = wx.MenuItem(debug_menu, wx.ID_ANY, "&Debug")
         debug_menu.AppendItem(debug_it)
-
-        ## search menu (ghost)
+    
+        ## search menu. ghost
         search_menu = wx.Menu()
         search_it = wx.MenuItem(search_menu, wx.ID_ANY, "Search")
         next_it   = wx.MenuItem(search_menu, wx.ID_ANY, "Next")
@@ -303,51 +293,33 @@ class MyFrame(wx.Frame):
         self.Bind(wx.EVT_MENU, self.OnInspectCard   , inspc_it)
         self.Bind(wx.EVT_MENU, self.OnToggleMinimap , tgmap_it)
 
-        self.Bind(wx.EVT_MENU, self.OnCtrlF      , search_it)
-        # self.Bind(wx.EVT_MENU, self.OnCtrlG      , next_it)   # special! see below
-        self.Bind(wx.EVT_MENU, self.OnCtrlShftG  , prev_it)
         self.Bind(wx.EVT_MENU, self.OnCtrlRet    , contr_it)
         self.Bind(wx.EVT_MENU, self.OnAltRet     , headr_it)
         self.Bind(wx.EVT_MENU, self.OnImage      , img_it)
         self.Bind(wx.EVT_MENU, self.OnCtrlShftRet , contb_it)
         self.Bind(wx.EVT_MENU, self.OnAltShftRet  , headb_it)
 
+        self.Bind(wx.EVT_MENU, self.OnCtrlF      , search_it)
+        # self.Bind(wx.EVT_MENU, self.OnCtrlG      , next_it)     # ctrl+g is a special accelerator. See below
+        self.Bind(wx.EVT_MENU, self.OnCtrlShftG  , prev_it)        
+
         self.Bind(wx.EVT_MENU, self.OnHArrange   , harr_it)
         self.Bind(wx.EVT_MENU, self.OnVArrange   , varr_it)
         self.Bind(wx.EVT_MENU, self.OnDebug      , debug_it)
         
-        self.Bind(wx.EVT_MENU, self.OnMoveLeft  , movel_it)
-        self.Bind(wx.EVT_MENU, self.OnMoveRight , mover_it)
-        self.Bind(wx.EVT_MENU, self.OnMoveUp    , moveu_it)
-        self.Bind(wx.EVT_MENU, self.OnMoveDown  , moved_it)
-
-        self.Bind(wx.EVT_MENU, self.OnSelectionLeft  , sell_it)
-        self.Bind(wx.EVT_MENU, self.OnSelectionRight , selr_it)
-        self.Bind(wx.EVT_MENU, self.OnSelectionUp    , selu_it)
-        self.Bind(wx.EVT_MENU, self.OnSelectionDown  , seld_it)
-
         ## shortcuts
         self.accels.append(wx.AcceleratorEntry(wx.ACCEL_NORMAL, 127, delt_it.GetId())) # DEL
-
-        self.accels.append(wx.AcceleratorEntry(wx.ACCEL_ALT, wx.WXK_LEFT,  movel_it.GetId()))
-        self.accels.append(wx.AcceleratorEntry(wx.ACCEL_ALT, wx.WXK_RIGHT, mover_it.GetId()))
-        self.accels.append(wx.AcceleratorEntry(wx.ACCEL_ALT, wx.WXK_UP,    moveu_it.GetId()))
-        self.accels.append(wx.AcceleratorEntry(wx.ACCEL_ALT, wx.WXK_DOWN,  moved_it.GetId()))
-
-        self.accels.append(wx.AcceleratorEntry(wx.ACCEL_NORMAL, wx.WXK_LEFT,  sell_it.GetId()))
-        self.accels.append(wx.AcceleratorEntry(wx.ACCEL_NORMAL, wx.WXK_RIGHT, selr_it.GetId()))
-        self.accels.append(wx.AcceleratorEntry(wx.ACCEL_NORMAL, wx.WXK_UP,    selu_it.GetId()))
-        self.accels.append(wx.AcceleratorEntry(wx.ACCEL_NORMAL, wx.WXK_DOWN,  seld_it.GetId()))
 
         self.accels.append(wx.AcceleratorEntry(wx.ACCEL_CTRL, ord("I"), inspc_it.GetId()))
         self.accels.append(wx.AcceleratorEntry(wx.ACCEL_CTRL, ord("M"), tgmap_it.GetId()))
         self.accels.append(wx.AcceleratorEntry(wx.ACCEL_CTRL, ord("A"), sela_it.GetId()))
         self.accels.append(wx.AcceleratorEntry(wx.ACCEL_CTRL, ord("D"), debug_it.GetId()))
+
         self.accels.append(wx.AcceleratorEntry(wx.ACCEL_CTRL, ord("F"), search_it.GetId()))
+        self.accels.append(wx.AcceleratorEntry(wx.ACCEL_SHIFT|wx.ACCEL_CTRL , ord("G"), prev_it.GetId()))        
         
         self.accels.append(wx.AcceleratorEntry(wx.ACCEL_CTRL, wx.WXK_RETURN , contr_it.GetId()))
         self.accels.append(wx.AcceleratorEntry(wx.ACCEL_ALT, wx.WXK_RETURN  , headr_it.GetId()))
-        self.accels.append(wx.AcceleratorEntry(wx.ACCEL_SHIFT|wx.ACCEL_CTRL , ord("G"), prev_it.GetId()))
         self.accels.append(wx.AcceleratorEntry(wx.ACCEL_SHIFT|wx.ACCEL_CTRL , wx.WXK_RETURN, contb_it.GetId()))
         self.accels.append(wx.AcceleratorEntry(wx.ACCEL_SHIFT|wx.ACCEL_ALT  , wx.WXK_RETURN, headb_it.GetId()))
 
@@ -383,7 +355,6 @@ class MyFrame(wx.Frame):
         if not self.ui_ready:
             # make new
             ctrl = wx.SearchCtrl(self, style=wx.TE_PROCESS_ENTER)
-            # ctrl.Bind(wx.EVT_SEARCHCTRL_SEARCH_BTN, self.Search)
             ctrl.Bind(wx.EVT_TEXT, self.Search)
             ctrl.Bind(wx.EVT_SEARCHCTRL_CANCEL_BTN, self.OnCancelSearch)
             ctrl.Bind(wx.EVT_TEXT_ENTER, self.OnSearchEnter)
@@ -396,7 +367,7 @@ class MyFrame(wx.Frame):
         right = self.GetCurrentBoard().GetRect().right - ctrl.GetRect().width
         ctrl.SetPosition((right, top))
 
-        # stuff
+        # finish up
         ctrl.Hide()
         self.search_ctrl = ctrl
 
@@ -437,7 +408,6 @@ class MyFrame(wx.Frame):
             pg.Hide()
             self.sheet = None
             self.SetSizer(None)
-
 
         # make new UI
         vbox = wx.BoxSizer(wx.VERTICAL)
@@ -523,58 +493,6 @@ class MyFrame(wx.Frame):
 
     def OnGroupSelection(self, ev):
         self.GetCurrentBoard().GroupSelected()
-
-    def OnSelectionLeft(self, ev):
-        bd = self.GetCurrentBoard()
-        sel = bd.GetSelection()
-        if len(sel) == 1:
-            bd.SelectNext("left")
-        else:
-            ev.Skip()
-    
-    def OnSelectionRight(self, ev):
-        bd = self.GetCurrentBoard()
-        sel = bd.GetSelection()
-        if len(sel) == 1:
-            bd.SelectNext("right")
-        else:
-            ev.Skip()
-
-    def OnSelectionUp(self, ev):
-        bd = self.GetCurrentBoard()
-        sel = bd.GetSelection()
-        if len(sel) == 1:
-            bd.SelectNext("top")
-        else:
-            ev.Skip()
-
-    def OnSelectionDown(self, ev):
-        bd = self.GetCurrentBoard()
-        sel = bd.GetSelection()
-        if len(sel) == 1:
-            bd.SelectNext("bottom")
-        else:
-            ev.Skip()
-
-    def OnMoveLeft(self, ev):
-        board = self.GetCurrentBoard()
-        delta = board.SCROLL_STEP
-        board.MoveSelected(-delta, 0)
-
-    def OnMoveRight(self, ev):
-        board = self.GetCurrentBoard()
-        delta = board.SCROLL_STEP
-        board.MoveSelected(delta, 0)
-
-    def OnMoveUp(self, ev):
-        board = self.GetCurrentBoard()
-        delta = board.SCROLL_STEP
-        board.MoveSelected(0, -delta)
-
-    def OnMoveDown(self, ev):
-        board = self.GetCurrentBoard()
-        delta = board.SCROLL_STEP
-        board.MoveSelected(0, delta)
 
     def OnToggleMinimap(self, ev):
         self.notebook.GetCurrentPage().ToggleMinimap()

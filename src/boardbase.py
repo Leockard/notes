@@ -30,6 +30,7 @@ class BoardBase(AutoSize):
         self.moving_cards_pos = []
         self.drag_select = False
         self.scale = 1.0
+        self.InitAccels()
 
         # Bindings
         self.Bind(wx.EVT_LEFT_DOWN, self.OnLeftDown)
@@ -635,7 +636,43 @@ class BoardBase(AutoSize):
         
             
     ### Auxiliary functions
+
+    def InitAccels(self):
+        # we create ghost menus so that we can
+        # bind its items to some accelerators
+        accels = []
+        ghost = wx.Menu()
+
+        # move selected cards        
+        movel = wx.MenuItem(ghost, wx.ID_ANY, "Move Left")
+        mover = wx.MenuItem(ghost, wx.ID_ANY, "Move Right")
+        moveu = wx.MenuItem(ghost, wx.ID_ANY, "Move Up")
+        moved = wx.MenuItem(ghost, wx.ID_ANY, "Move Down")
+        self.Bind(wx.EVT_MENU, self.OnMoveLeft  , movel)
+        self.Bind(wx.EVT_MENU, self.OnMoveRight , mover)
+        self.Bind(wx.EVT_MENU, self.OnMoveUp    , moveu)
+        self.Bind(wx.EVT_MENU, self.OnMoveDown  , moved)
+        accels.append(wx.AcceleratorEntry(wx.ACCEL_ALT, wx.WXK_LEFT,  movel.GetId()))
+        accels.append(wx.AcceleratorEntry(wx.ACCEL_ALT, wx.WXK_RIGHT, mover.GetId()))
+        accels.append(wx.AcceleratorEntry(wx.ACCEL_ALT, wx.WXK_UP,    moveu.GetId()))
+        accels.append(wx.AcceleratorEntry(wx.ACCEL_ALT, wx.WXK_DOWN,  moved.GetId()))
         
+        # select next card
+        selr = wx.MenuItem(ghost, wx.ID_ANY, "Select Right")
+        sell = wx.MenuItem(ghost, wx.ID_ANY, "Select Left")
+        selu = wx.MenuItem(ghost, wx.ID_ANY, "Select Up")
+        seld = wx.MenuItem(ghost, wx.ID_ANY, "Select Down")
+        self.Bind(wx.EVT_MENU, self.OnSelectionLeft  , sell)
+        self.Bind(wx.EVT_MENU, self.OnSelectionRight , selr)
+        self.Bind(wx.EVT_MENU, self.OnSelectionUp    , selu)
+        self.Bind(wx.EVT_MENU, self.OnSelectionDown  , seld)
+        accels.append(wx.AcceleratorEntry(wx.ACCEL_NORMAL, wx.WXK_LEFT,  sell.GetId()))
+        accels.append(wx.AcceleratorEntry(wx.ACCEL_NORMAL, wx.WXK_RIGHT, selr.GetId()))
+        accels.append(wx.AcceleratorEntry(wx.ACCEL_NORMAL, wx.WXK_UP,    selu.GetId()))
+        accels.append(wx.AcceleratorEntry(wx.ACCEL_NORMAL, wx.WXK_DOWN,  seld.GetId()))
+
+        self.SetAcceleratorTable(wx.AcceleratorTable(accels))
+
     def PaintRect(self, rect, thick = MOVING_RECT_THICKNESS, style = wx.SOLID, refresh = True):
         """Paints a rectangle. Use style = wx.TRANSPARENT to erase a rectangle."""
         dc = wx.ClientDC(self)
@@ -718,3 +755,39 @@ class BoardBase(AutoSize):
 
                 
     ### Callbacks
+
+    def OnMoveLeft(self, ev):
+        self.MoveSelected(-self.SCROLL_STEP, 0)
+
+    def OnMoveRight(self, ev):
+        self.MoveSelected(self.SCROLL_STEP, 0)
+
+    def OnMoveUp(self, ev):
+        self.MoveSelected(0, -self.SCROLL_STEP)
+
+    def OnMoveDown(self, ev):
+        self.MoveSelected(0, self.SCROLL_STEP)
+
+    def OnSelectionLeft(self, ev):
+        if len(self.GetSelection()) == 1:
+            self.SelectNext("left")
+        else:
+            ev.Skip()
+    
+    def OnSelectionRight(self, ev):
+        if len(self.GetSelection()) == 1:
+            self.SelectNext("right")
+        else:
+            ev.Skip()
+
+    def OnSelectionUp(self, ev):
+        if len(self.GetSelection()) == 1:
+            self.SelectNext("top")
+        else:
+            ev.Skip()
+
+    def OnSelectionDown(self, ev):
+        if len(self.GetSelection()) == 1:
+            self.SelectNext("bottom")
+        else:
+            ev.Skip()
