@@ -43,7 +43,11 @@ class Board(wx.Window):
 
     def InitMenu(self):
         menu = wx.Menu()
-        
+
+        # edit actions
+        past_it = wx.MenuItem(menu, wx.ID_PASTE, "Paste")
+        self.Bind(wx.EVT_MENU, self.OnPaste, past_it)
+
         # insert actions
         cont_it = wx.MenuItem(menu, wx.ID_ANY, "Insert Content")
         self.Bind(wx.EVT_MENU, self.OnInsertContent, cont_it)
@@ -58,6 +62,7 @@ class Board(wx.Window):
         close_it = wx.MenuItem(menu, wx.ID_ANY, "Close")
         self.Bind(wx.EVT_MENU, self.OnClose, close_it)
 
+        menu.AppendItem(past_it)
         menu.AppendItem(cont_it)
         menu.AppendItem(head_it)
         menu.AppendItem(img_it)
@@ -72,6 +77,9 @@ class Board(wx.Window):
     def OnRightDown(self, ev):
         self.menu_position = ev.GetPosition()
         self.PopupMenu(self.menu, ev.GetPosition())
+
+    def OnPaste(self, ev):
+        self.board.PasteFromClipboard(self.menu_position)
 
     def OnInsertContent(self, ev):
         self.board.PlaceNewCard("Content", pos=self.menu_position)
