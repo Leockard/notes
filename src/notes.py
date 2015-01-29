@@ -6,7 +6,7 @@
 import wx
 import os
 import pickle
-from page import Page
+from page import *
 from card import *
 from canvas import *
 from board import *
@@ -20,12 +20,13 @@ import wx.richtext as rt
 
 class MyFrame(wx.Frame):
     DEFAULT_SZ = (800, 600)
+    DEFAULT_PAGE_NAME = "Untitled Notes"
 
     def __init__(self, parent, title="Board", size=DEFAULT_SZ, style=wx.DEFAULT_FRAME_STYLE|wx.NO_FULL_REPAINT_ON_RESIZE):
         super(MyFrame, self).__init__(parent, title=title, size=size, style=style)
 
         self.accels = [] # will hold keyboard shortcuts aka accelerators
-        self.SetTitle("Notes")
+        self.SetTitle(self.DEFAULT_PAGE_NAME)
         self.cur_file = ""
         self.search_find = []
         self.search_str = ""
@@ -449,11 +450,12 @@ class MyFrame(wx.Frame):
         self.ui_ready = True
 
     def InitNotebook(self, size = wx.DefaultSize):
-        nb = wx.Notebook(self, size=size)
+        # nb = wx.Notebook(self, size=size)
+        nb = Book(self, size=size)
 
         # make starting page
         pg = Page(nb, size = size)
-        nb.AddPage(pg, "Unittled Notes")
+        nb.AddPage(pg, self.DEFAULT_PAGE_NAME)
 
         # UI setup
         vbox = self.GetSizer()
@@ -487,8 +489,7 @@ class MyFrame(wx.Frame):
 
     def OnDebug(self, ev):
         print "debug"
-        print "focus: ", self.FindFocus()
-        print "selec: ", self.GetCurrentBoard().GetSelection()
+        print self.FindFocus()
         
     def Save(self, out_file, d):
         """Save the data in the dict d in the file out_file."""
@@ -498,7 +499,7 @@ class MyFrame(wx.Frame):
     def Load(self, path):
         carddict = {}
         with open(path, 'r') as f: d = pickle.load(f)
-        self.GetCurrentBoard().LoadData(d)
+        self.notebook.Load(d)
 
     def AddAccelerator(self, entry):
         """entry should be a AcceleratorEntry()."""
@@ -731,7 +732,15 @@ class MyFrame(wx.Frame):
         self.Log("Placed new Image.")
 
     def OnNew(self, ev):
-        self.notebook.AddPage(Page(self.notebook), "Unittled Notes 2", select=True)
+        dlg = wx.TextEntryDialog(self, "New page title: ")
+        if dlg.ShowModal() == wx.ID_OK:
+            # erase the place holder page
+            nb = self.notebook
+            if nb.GetPageCount() == 1 and nb.GetPageText(0) == self.DEFAULT_PAGE_NAME:
+                nb.DeletePage(0)
+            
+            # and create the new one
+            self.notebook.AddPage(Page(self.notebook), dlg.GetValue(), select=True)
 
     def OnSave(self, ev):
         """Save file."""
@@ -748,7 +757,7 @@ class MyFrame(wx.Frame):
             if fd.ShowModal() == wx.ID_CANCEL: return # user changed her mind
 
             # let Save() worry about serializing
-            self.Save(fd.GetPath(), self.notebook.GetCurrentPage().Dump())
+            self.Save(fd.GetPath(), self.notebook.Dump())
             self.cur_file = fd.GetPath()
 
         focus.SetFocus()
@@ -762,13 +771,14 @@ class MyFrame(wx.Frame):
                            wx.FD_OPEN | wx.FD_FILE_MUST_EXIST)
         if fd.ShowModal() == wx.ID_CANCEL: return # user changed her mind
 
-        pg = Page(self.notebook)
-        self.notebook.AddPage(pg, fd.GetPath(), select=True)
 
-        self.GetCurrentBoard().Hide()     # hide while we load/paint all the info
-        self.Load(fd.GetPath())           # load and paint all cards
-        self.GetCurrentBoard().Show()     # show everything at the same time
-        
+        # erase the placeholder
+        nb = self.notebook
+        if nb.GetPageCount() == 1 and nb.GetPageText(0) == self.DEFAULT_PAGE_NAME:
+            nb.DeletePage(0)
+
+        # load the chosen file
+        self.Load(fd.GetPath())
         self.cur_file = fd.GetPath()
         self.Log("Opened file" + self.cur_file)        
 

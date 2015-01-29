@@ -9,6 +9,7 @@ from utilities import *
 from board import *
 from cardinspect import *
 from canvas import Canvas
+import wx.lib.agw.flatnotebook as fnb
 
 
 
@@ -159,6 +160,9 @@ class Page(wx.Panel):
             if "height" in card.keys():
                 card["height"] = int(card["height"] / self.scale)
         return di
+
+    def Load(self, di):
+        self.board.Load(di)
 
     def CleanUpUI(self):
         """Resets all control member values. Returns previous Board size."""
@@ -351,3 +355,29 @@ class Page(wx.Panel):
         hide = list(set(self.board.GetCards()) - set(show))
         for c in show: c.Show()
         for c in hide: c.Hide()
+
+
+
+######################
+# Book class
+######################            
+
+class Book(wx.Notebook):
+    
+    def __init__(self, parent, pos=wx.DefaultPosition, size=wx.DefaultSize):
+        super(Book, self).__init__(parent, pos=pos, size=size)
+
+    def Dump(self):
+        di = {}
+        for i in range(self.GetPageCount()):
+            pg = self.GetPage(i)
+            di[self.GetPageText(i)] = pg.Dump()
+        return di
+
+    def Load(self, di):
+        for title, page in di.iteritems():
+            pg = Page(self)
+            pg.Hide()        # hide while all data is loaded
+            pg.Load(page)
+            pg.Show()        # then show everything at the same time
+            self.AddPage(pg, title, select=True)

@@ -665,7 +665,7 @@ class BoardBase(AutoSize):
         """Returns a dict with all the info contained in this Board."""
         return {"cards": self.DumpCards(), "groups": self.DumpGroups()}
 
-    def LoadData(self, d):
+    def Load(self, d):
         """Argument should be a dict returned by Dump."""
         if "cards" in d.keys():
             # note we are not loading the id
