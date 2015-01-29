@@ -134,6 +134,16 @@ class EditText(wx.TextCtrl):
 # Auxiliary functions
 ######################
 
+def GetAncestors(ctrl):
+    """Returns a list of ctrl's parent and its parent's parent and so on."""
+    ancestors = []
+    while ctrl:
+        ancestors.append(ctrl.GetParent())
+        ctrl = ctrl.GetParent()
+    # the last element was None
+    del ancestors[-1]
+    return ancestors
+
 def DumpSizerChildren(sizer, depth=1):
     """Recursively prints all children."""
     print ("    " * (depth - 1)) + "Sizer: ", sizer
