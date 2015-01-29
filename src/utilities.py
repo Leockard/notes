@@ -144,6 +144,15 @@ def GetAncestors(ctrl):
     del ancestors[-1]
     return ancestors
 
+def GetCardAncestor(ctrl):
+    """If the ctrl is inside a Card, return it. Otherwise, return None."""
+    from card import Card
+    cards = [p for p in GetAncestors(ctrl) if isinstance(p, Card)]
+    if cards:
+        return cards[0]
+    else:
+        return None
+
 def DumpSizerChildren(sizer, depth=1):
     """Recursively prints all children."""
     print ("    " * (depth - 1)) + "Sizer: ", sizer

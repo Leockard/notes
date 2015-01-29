@@ -648,9 +648,9 @@ class MyFrame(wx.Frame):
                     bd.SelectGroup(bd.GetContainingGroups(card)[0], True)
                 else:
                     bd.GetParent().SetFocus()
-            elif any([isinstance(p, Card) for p in GetAncestors(self.FindFocus())]):
+            elif GetCardAncestor(self.FindFocus()):
                 # inside a card: select the card
-                card = [p for p in GetAncestors(self.FindFocus()) if isinstance(p, Card)][0]
+                card = GetCardAncestor(self.FindFocus())
                 bd.SelectCard(card, True)
                 card.SetFocusIgnoringChildren()
                     
@@ -678,7 +678,6 @@ class MyFrame(wx.Frame):
 
     def OnDelete(self, ev):
         """Delete selected cards."""
-        print "OnDelete"
         pg = self.notebook.GetCurrentPage()
         sel = pg.board.GetSelection()
         if pg.GetCurrentContent() == Board and len(sel) > 0:

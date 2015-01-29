@@ -140,8 +140,8 @@ class BoardBase(AutoSize):
                 pos = (left, top)
 
             # if cursor is inside a card, place it next to it
-            elif isinstance(self.FindFocus().GetParent(), Card):
-                rect = self.FindFocus().GetParent().GetRect()
+            elif GetCardAncestor(self.FindFocus()):
+                rect = GetCardAncestor(self.FindFocus()).GetRect()
                 if below:
                     top = rect.bottom + pad
                     left = rect.left
