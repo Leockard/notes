@@ -212,7 +212,7 @@ class BoardBase(AutoSize):
         for ch in new.GetChildren():
             ch.Bind(wx.EVT_LEFT_DOWN, self.OnCardChildLeftDown)
 
-        # raise the "new card" event
+        # raise the appropriate event
         event = self.NewCardEvent(id=wx.ID_ANY)
         event.SetEventObject(new)
         self.GetEventHandler().ProcessEvent(event)
@@ -545,7 +545,8 @@ class BoardBase(AutoSize):
             self.moving_cards_pos.append((c, c.GetPosition() - pos, c.GetPosition()))
 
     def OnCardChildFocus(self, ev):
-        """If a child o card is focused, unselect all (including parent)."""
+        """If a child of card is focused, unselect all (including parent)."""
+        self.UnselectAll()
         ev.Skip()
 
     def OnMovingCard(self, ev):
