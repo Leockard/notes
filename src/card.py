@@ -13,7 +13,7 @@ from utilities import EditText
 # Card Class
 ######################
 
-class Card(wx.Panel):
+class Card(wx.Window):
     BORDER_WIDTH = 2
     BORDER_THICK = 5
 
@@ -26,8 +26,9 @@ class Card(wx.Panel):
     def __init__(self, parent, label, id=wx.ID_ANY, pos=wx.DefaultPosition, size=wx.DefaultSize, style=0):
         """Base class for every window that will be placed on Board. Override SetupUI()."""
         super(Card, self).__init__(parent, id, pos, size, style)
-
-        self.label = label        
+        self.main = None
+        self.InitBorder()
+        self.label = label
 
         # create CardBar        
         if Card.bar == None:
@@ -58,8 +59,28 @@ class Card(wx.Panel):
         self.Hide()
         self.Destroy()
 
+    def SetBorderColour(self, cl):
+        super(Card, self).SetBackgroundColour(cl)
+
+    def SetBackgroundColour(self, cl):
+        self.main.SetBackgroundColour(cl)
+
+    def SetCardSizer(self, sz):
+        self.main.SetSizer(sz)
+
+    def GetCardSizer(self):
+        return self.main.GetSizer()
+
                         
     ### Auxiliary functions
+
+    def InitBorder(self):
+        self.SetBorderColour(self.GetParent().GetBackgroundColour())
+        main = wx.Panel(self, style=wx.BORDER_RAISED)
+        box = wx.BoxSizer(wx.VERTICAL)
+        box.Add(main, proportion=1, flag=wx.ALL|wx.EXPAND, border=1)
+        self.SetSizer(box)
+        self.main = main
         
     def InitUI(self):
         """Override me!"""
@@ -68,7 +89,7 @@ class Card(wx.Panel):
     def Dump(self):
         """Override me!"""
 
-
+        
     
 ######################
 # Class Header
@@ -80,8 +101,7 @@ class Header(Card):
     DEFAULT_TITLE = ""
     
     def __init__(self, parent, label, id=wx.ID_ANY, pos=wx.DefaultPosition, header = "Header...", size=DEFAULT_SZ):
-        super(Header, self).__init__(parent, label, id=id, pos=pos, size=size,
-                                     style = wx.BORDER_RAISED|wx.TAB_TRAVERSAL)
+        super(Header, self).__init__(parent, label, id=id, pos=pos, size=size, style=wx.TAB_TRAVERSAL)
         self.InitUI()
         self.header.SetValue(header)
         self.len = len(self.GetHeader())
@@ -94,16 +114,16 @@ class Header(Card):
     ### Auxiliary functions
     def InitUI(self):
         # Controls
-        txt = EditText(self)
+        txt = EditText(self.main)
         txt.SetHint("Header...")
         txt.Bind(wx.EVT_KEY_UP, self.OnKeyUp)
         
         # Boxes
-        vbox = wx.BoxSizer(wx.VERTICAL)                
+        vbox = wx.BoxSizer(wx.VERTICAL)
         vbox.Add(txt, proportion=0, flag=wx.ALL|wx.EXPAND, border=Card.BORDER_WIDTH)
         
         self.header = txt
-        self.SetSizer(vbox)
+        self.SetCardSizer(vbox)
         self.Show(True)
 
     def Dump(self):
@@ -151,7 +171,6 @@ class Header(Card):
 ######################
 # Class Content
 ######################
-
 class Content(Card):
     # sizes
     DEFAULT_SZ   = (250, 150)
@@ -194,9 +213,7 @@ class Content(Card):
     KindEvent, EVT_CONT_KIND = ne.NewCommandEvent()
 
     def __init__(self, parent, label, id=wx.ID_ANY, pos=wx.DefaultPosition, size=DEFAULT_SZ, title="", kind=DEFAULT_LBL, content=""):
-        super(Content, self).__init__(parent, label, id=id, pos=pos, size=size,
-                                      style=wx.BORDER_RAISED|wx.TAB_TRAVERSAL)
-
+        super(Content, self).__init__(parent, label, id=id, pos=pos, size=size, style=wx.TAB_TRAVERSAL)
         self.InitUI()
         self.SetKind(kind)
         if title: self.title.SetValue(title)
@@ -321,13 +338,13 @@ class Content(Card):
     
     def InitUI(self):
         # controls
-        title = EditText(self)
+        title = EditText(self.main)
         title.SetHint("Title...")
         
-        kindbut = wx.Button(self, label = "kind", size=Content.KIND_BTN_SZ, style=wx.BORDER_NONE)
+        kindbut = wx.Button(self.main, label = "kind", size=Content.KIND_BTN_SZ, style=wx.BORDER_NONE)
         kindbut.SetOwnFont(wx.Font(8, wx.FONTFAMILY_DEFAULT, wx.FONTSTYLE_ITALIC, wx.FONTWEIGHT_NORMAL, False))
         
-        content = wx.TextCtrl(self, size=(10, 10), style=wx.TE_RICH|wx.TE_MULTILINE|wx.TE_NO_VSCROLL)
+        content = wx.TextCtrl(self.main, size=(10, 10), style=wx.TE_RICH|wx.TE_MULTILINE|wx.TE_NO_VSCROLL)
         
         # boxes
         hbox1 = wx.BoxSizer(wx.HORIZONTAL)
@@ -335,10 +352,10 @@ class Content(Card):
         hbox1.Add(kindbut, proportion=0, flag=wx.ALL,           border=Card.BORDER_WIDTH)
 
         hbox2 = wx.BoxSizer(wx.HORIZONTAL)
-        hbox2.Add(content, proportion=1, flag=wx.EXPAND, border=Card.BORDER_THICK)
+        hbox2.Add(content, proportion=1, flag=wx.EXPAND)
 
         vbox = wx.BoxSizer(wx.VERTICAL)
-        self.SetSizer(vbox)
+        self.SetCardSizer(vbox)
         vbox.Add(hbox1, proportion=0, flag=wx.ALL|wx.EXPAND, border=Card.BORDER_WIDTH)
         vbox.Add(hbox2, proportion=1, flag=wx.ALL|wx.EXPAND, border=Card.BORDER_THICK)
         
@@ -385,7 +402,7 @@ class Content(Card):
         self.PopupMenu(KindSelectMenu(self), pos)
 
 
-            
+
 class KindSelectMenu(wx.Menu):
     def __init__(self, card):
         super(KindSelectMenu, self).__init__()
@@ -416,7 +433,7 @@ class KindSelectMenu(wx.Menu):
         if isinstance(self.card, Content):
             self.card.SetKind(kind)
 
-
+            
 
 ######################
 # Class Image
@@ -427,7 +444,7 @@ class Image(Card):
     DEFAULT_PATH = ""
     
     def __init__(self, parent, label, path=None, id=wx.ID_ANY, pos=wx.DefaultPosition, size=DEFAULT_SZ):
-        super(Image, self).__init__(parent, label, id=id, pos=pos, size=size, style=wx.BORDER_RAISED)
+        super(Image, self).__init__(parent, label, id=id, pos=pos, size=size)
         self.btn = None
         self.InitUI(path)
         self.path = path
@@ -437,7 +454,7 @@ class Image(Card):
 
     def SetImage(self, path):
         bmp = wx.Bitmap(path)
-        img = wx.StaticBitmap(self)
+        img = wx.StaticBitmap(self.main)
         img.SetBitmap(bmp)
         img.SetSize(bmp.GetSize())
         
@@ -447,17 +464,17 @@ class Image(Card):
             self.btn = None
 
         self.path = path
-        self.GetSizer().Add(img, proportion=1, flag=wx.ALL|wx.EXPAND, border=self.BORDER_THICK)
+        self.GetCardSizer().Add(img, proportion=1, flag=wx.ALL|wx.EXPAND, border=self.BORDER_THICK)
         self.Fit()
 
     ### Auxiliary functions
     
     def InitUI(self, path=None):
         vbox = wx.BoxSizer(wx.VERTICAL)
-        self.SetSizer(vbox)
+        self.SetCardSizer(vbox)
 
         if not path:
-            btn = wx.BitmapButton(self, bitmap=wx.ArtProvider.GetBitmap(wx.ART_MISSING_IMAGE), size=self.DEFAULT_SZ)
+            btn = wx.BitmapButton(self.main, bitmap=wx.ArtProvider.GetBitmap(wx.ART_MISSING_IMAGE), size=self.DEFAULT_SZ)
             vbox.Add(btn, proportion=1, flag=wx.ALL|wx.EXPAND, border=self.BORDER_THICK)
             self.btn = btn
             btn.Bind(wx.EVT_BUTTON, self.OnButton)

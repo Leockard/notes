@@ -493,12 +493,7 @@ class MyFrame(wx.Frame):
 
     def OnDebug(self, ev):
         print "debug"
-        # Read some text
-        if wx.TheClipboard.Open():
-            data = wx.CustomDataObject("Card")
-            wx.TheClipboard.GetData(data)
-            print json.loads(data.GetData())
-            wx.TheClipboard.Close()
+        print dir(self.GetCurrentBoard().GetCards()[0])
         
     def Save(self, out_file):
         """Save the data in the dict d in the file out_file."""
