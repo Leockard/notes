@@ -5,6 +5,7 @@ import wx
 from utilities import *
 import wx.lib.newevent as ne
 from card import *
+import json
 
 
 ######################
@@ -308,21 +309,34 @@ class BoardBase(AutoSize):
         for c in group.GetMembers(): self.SelectCard(c)
 
     def CopySelected(self):
-        sel = self.selected_cards[:]
-        new = []
+        # get the data        
+        card = self.GetSelection()[0]
+        data = card.Dump()
 
-        for c in sel:
-            # create the right card at the right position
-            pad = self.GetPadding()
-            pos = c.GetPosition() + (pad, pad)
-            if isinstance(c, Content):
-                new.append(self.NewCard("Content", pos=pos, title=c.GetTitle(), kind=c.GetKind(), content=c.GetContent()))
-            if isinstance(c, Header):
-                new.append(self.NewCard("Header", pos=pos, txt=c.GetHeader()))
+        # create our own custom data object
+        obj = wx.CustomDataObject("Card")
+        obj.SetData(json.dumps(data))
 
-        # select only the new cards
-        self.UnselectAll()
-        for c in new: self.SelectCard(c, False)
+        # write the data to the clipboard
+        if wx.TheClipboard.Open():
+            wx.TheClipboard.SetData(obj)
+            wx.TheClipboard.Close()
+
+    def PasteFromClipboard(self, pos=wx.DefaultPosition):
+        if wx.TheClipboard.Open():
+            print "get from the clipboard"
+            # get data
+            obj = wx.CustomDataObject("Card")
+            wx.TheClipboard.GetData(obj)
+            data = json.loads(obj.GetData())
+
+            # create new card with the data
+            if pos == wx.DefaultPosition:
+                pos = [i + self.GetPadding() for i in data["pos"]]
+            card = self.NewCard("Content", pos=pos, title=data["title"],
+                                kind=data["kind"], content=data["content"])
+
+            wx.TheClipboard.Close()
 
     def GetFocusedCard(self):
         """Returns the card currently in focus, or None."""

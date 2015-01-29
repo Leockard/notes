@@ -12,6 +12,7 @@ from canvas import *
 from board import *
 from cardinspect import *
 import wx.richtext as rt
+import json
 
 
 ######################
@@ -213,8 +214,9 @@ class MyFrame(wx.Frame):
 
         ## edit menu
         edit_menu = wx.Menu()
-        copy_it        = wx.MenuItem(edit_menu, wx.ID_COPY, "Copy")
-        delt_it        = wx.MenuItem(edit_menu, wx.ID_DELETE, "Delete")
+        copy_it = wx.MenuItem(edit_menu, wx.ID_COPY, "Copy")
+        past_it = wx.MenuItem(edit_menu, wx.ID_PASTE, "Paste")
+        delt_it = wx.MenuItem(edit_menu, wx.ID_DELETE, "Delete")
         # ghost items
         movel_it = wx.MenuItem(edit_menu, wx.ID_ANY, "Move Left")
         mover_it = wx.MenuItem(edit_menu, wx.ID_ANY, "Move Right")
@@ -222,6 +224,7 @@ class MyFrame(wx.Frame):
         moved_it = wx.MenuItem(edit_menu, wx.ID_ANY, "Move Down")
 
         edit_menu.AppendItem(copy_it)
+        edit_menu.AppendItem(past_it)
         edit_menu.AppendItem(delt_it)
 
         ## insert menu
@@ -286,6 +289,7 @@ class MyFrame(wx.Frame):
         ## bindings
         self.Bind(wx.EVT_MENU, self.OnQuit       , quit_it)
         self.Bind(wx.EVT_MENU, self.OnCopy       , copy_it)
+        self.Bind(wx.EVT_MENU, self.OnPaste      , past_it)
         self.Bind(wx.EVT_MENU, self.OnDelete     , delt_it)
         
         self.Bind(wx.EVT_MENU, self.OnSelectAll     , sela_it)
@@ -489,7 +493,12 @@ class MyFrame(wx.Frame):
 
     def OnDebug(self, ev):
         print "debug"
-        print self.FindFocus()
+        # Read some text
+        if wx.TheClipboard.Open():
+            data = wx.CustomDataObject("Card")
+            wx.TheClipboard.GetData(data)
+            print json.loads(data.GetData())
+            wx.TheClipboard.Close()
         
     def Save(self, out_file):
         """Save the data in the dict d in the file out_file."""
@@ -665,6 +674,11 @@ class MyFrame(wx.Frame):
         if self.GetCurrentBoard().selected_cards:
             self.Log("Copy " + str(len(self.GetCurrentBoard().selected_cards)) + " Cards.")
             self.GetCurrentBoard().CopySelected()
+
+    def OnPaste(self, ev):
+        """Copy cards in the clip board."""
+        self.Log("Paste " + str(len(self.GetCurrentBoard().selected_cards)) + " Cards.")
+        self.GetCurrentBoard().PasteFromClipboard()
 
     def OnDelete(self, ev):
         """Delete selected cards."""

@@ -9,7 +9,6 @@ import cardbar as CardBar
 from utilities import EditText
 
 
-
 ######################
 # Card Class
 ######################
@@ -111,11 +110,11 @@ class Header(Card):
         """Returns a dict with all the information contained."""
         sz = self.GetSize()
         return {"class": "Header",
-                "label": self.label,
-                "pos": self.GetPosition(),
-                "width": sz.width,
-                "height": sz.height,
-                "header": self.GetHeader()}
+               "label": self.label,
+               "pos": self.GetPosition(),
+               "width": sz.width,
+               "height": sz.height,
+               "header": self.GetHeader()}
 
     
     ### Callbacks
