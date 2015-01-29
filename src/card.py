@@ -507,3 +507,5 @@ class CardGroup():
 
     def Dump(self):
         return [c.label for c in self.members]
+
+    

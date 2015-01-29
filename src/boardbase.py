@@ -312,6 +312,7 @@ class BoardBase(AutoSize):
         new = []
 
         for c in sel:
+            # create the right card at the right position
             pad = self.GetPadding()
             pos = c.GetPosition() + (pad, pad)
             if isinstance(c, Content):
@@ -319,6 +320,7 @@ class BoardBase(AutoSize):
             if isinstance(c, Header):
                 new.append(self.NewCard("Header", pos=pos, txt=c.GetHeader()))
 
+        # select only the new cards
         self.UnselectAll()
         for c in new: self.SelectCard(c, False)
 
