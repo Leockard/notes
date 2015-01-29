@@ -16,6 +16,7 @@ from utilities import EditText
 class Card(wx.Window):
     BORDER_WIDTH = 2
     BORDER_THICK = 5
+    SELECT_CL = (0, 0, 0, 0)
 
     bar = None
     
@@ -59,6 +60,13 @@ class Card(wx.Window):
         self.Hide()
         self.Destroy()
 
+    def Select(self):
+        """Show this card as selected. At the time, the border colour changes."""
+        self.SetBorderColour(self.SELECT_CL)
+
+    def Unselect(self):
+        self.SetBorderColour(self.GetParent().GetBackgroundColour())
+
     def SetBorderColour(self, cl):
         super(Card, self).SetBackgroundColour(cl)
 
@@ -75,10 +83,21 @@ class Card(wx.Window):
     ### Auxiliary functions
 
     def InitBorder(self):
+        # border is just a window that sits behind the actual controls
+        # it's used for changing selection rect around the card
         self.SetBorderColour(self.GetParent().GetBackgroundColour())
+
+        # main is the window where the real controls will be placed        
         main = wx.Panel(self, style=wx.BORDER_RAISED)
         box = wx.BoxSizer(wx.VERTICAL)
         box.Add(main, proportion=1, flag=wx.ALL|wx.EXPAND, border=1)
+
+        # since it's the main window displayed as a Card
+        # we have to make it work like one
+        # basically, just redirect all events
+        main.Bind(wx.EVT_MOUSE_EVENTS, self.OnMouseEvent)
+
+        # use Set/GetCardSizer to get the control sizer
         self.SetSizer(box)
         self.main = main
         
@@ -88,6 +107,14 @@ class Card(wx.Window):
 
     def Dump(self):
         """Override me!"""
+
+
+    ### Callbacks
+
+    def OnMouseEvent(self, ev):
+        ev.SetEventObject(self)
+        ev.SetPosition(ev.GetPosition() + self.main.GetPosition())
+        self.GetEventHandler().ProcessEvent(ev)
 
         
     
