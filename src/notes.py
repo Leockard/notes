@@ -493,7 +493,8 @@ class MyFrame(wx.Frame):
 
     def OnDebug(self, ev):
         print "debug"
-        print dir(self.GetCurrentBoard().GetCards()[0])
+        print "focus:", self.FindFocus()
+        print "selec:", self.GetCurrentBoard().GetSelection()
         
     def Save(self, out_file):
         """Save the data in the dict d in the file out_file."""
@@ -647,9 +648,9 @@ class MyFrame(wx.Frame):
                     bd.SelectGroup(bd.GetContainingGroups(card)[0], True)
                 else:
                     bd.GetParent().SetFocus()
-            elif isinstance(self.FindFocus().GetParent(), Card):
+            elif any([isinstance(p, Card) for p in GetAncestors(self.FindFocus())]):
                 # inside a card: select the card
-                card = self.FindFocus().GetParent()
+                card = [p for p in GetAncestors(self.FindFocus()) if isinstance(p, Card)][0]
                 bd.SelectCard(card, True)
                 card.SetFocusIgnoringChildren()
                     

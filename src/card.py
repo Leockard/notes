@@ -13,7 +13,7 @@ from utilities import EditText
 # Card Class
 ######################
 
-class Card(wx.Window):
+class Card(wx.Panel):
     BORDER_WIDTH = 2
     BORDER_THICK = 5
     SELECT_CL = (0, 0, 0, 0)
