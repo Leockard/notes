@@ -283,17 +283,18 @@ class BoardBase(AutoSize):
         if new_sel:
             self.UnselectAll()
             self.selected_cards = [card]
-            self.PaintCardRect(card, card.GetPosition(), refresh = False)
+            card.Select()
+            
         # else, select card only if it was not already selected
         elif card not in self.selected_cards:
             self.selected_cards.append(card)
             for c in self.selected_cards:
-                self.PaintCardRect(c, c.GetPosition(), refresh = False)
+                c.Select()
 
     def UnselectCard(self, card):
         if card in self.selected_cards:
             self.selected_cards.remove(card)
-            self.EraseCardRect(card, card.GetPosition())
+            card.Unselect()
 
     def UnselectAll(self):
         """
@@ -513,7 +514,7 @@ class BoardBase(AutoSize):
         card = ev.GetEventObject()
 
         # bring to front and set focus
-        card.SetFocusIgnoringChildren()
+        card.SetFocus()
         card.Raise()
         
         # selection
