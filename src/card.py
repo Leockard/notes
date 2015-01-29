@@ -31,7 +31,7 @@ class Card(wx.Panel):
         self.InitBorder()
         self.label = label
 
-        # create CardBar        
+        # create CardBar
         if Card.bar == None:
             Card.bar = CardBar.Create(self.GetParent())
 
