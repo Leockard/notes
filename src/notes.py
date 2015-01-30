@@ -513,11 +513,13 @@ class MyFrame(wx.Frame):
         if cont == Board:
             sel = pg.board.GetSelection()
             if len(sel) > 0:
-                pg.InspectCards(sel)
-                if len(sel) == 1:
-                    self.Log("Inspecting \"" + sel[0].GetTitle() + "\".")
-                else:
-                    self.Log("Inspecting " + str(len(sel)) + " cards.")
+                cards = [c for c in sel if isinstance(c, Content)]
+                if cards:
+                    pg.InspectCards(cards)
+                    if len(cards) == 1:
+                        self.Log("Inspecting \"" + cards[0].GetTitle() + "\".")
+                    else:
+                        self.Log("Inspecting " + str(len(cards)) + " cards.")
         elif cont == CardInspect:
             pg.SaveFromInspect()
             pg.ShowBoard()
