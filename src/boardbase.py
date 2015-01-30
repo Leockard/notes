@@ -619,9 +619,7 @@ class BoardBase(AutoSize):
         self.ReleaseMouse()
 
     def OnLeftDClick(self, ev):
-        self.NewCard("Content", pos=ev.GetPosition(),
-                      kind=Content.DEFAULT_LBL,
-                      title="", content="")
+        self.NewCard("Content", pos=ev.GetPosition())
         
             
     ### Auxiliary functions

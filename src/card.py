@@ -25,7 +25,7 @@ class Card(wx.Panel):
     
     def __init__(self, parent, label, id=wx.ID_ANY, pos=wx.DefaultPosition, size=wx.DefaultSize, style=0):
         """Base class for every window that will be placed on Board. Override SetupUI()."""
-        super(Card, self).__init__(parent, id, pos, size, style)
+        super(Card, self).__init__(parent, id, pos, size, style=style)
         self.main = None
         self.InitBorder()
         self.label = label
@@ -87,7 +87,7 @@ class Card(wx.Panel):
         self.SetBorderColour(self.GetParent().GetBackgroundColour())
 
         # main is the window where the real controls will be placed        
-        main = wx.Panel(self, style=wx.BORDER_RAISED)
+        main = wx.Panel(self, style=wx.BORDER_RAISED|wx.TAB_TRAVERSAL)
         box = wx.BoxSizer(wx.VERTICAL)
         box.Add(main, proportion=1, flag=wx.ALL|wx.EXPAND, border=1)
 
@@ -414,7 +414,7 @@ class Content(Card):
     ### Callbacks
 
     def OnContentKeyDown(self, ev):
-        # skip TAB, so that we don't input \t and tab traversal still works
+        # skip anything but TAB, so that we don't input \t and tab traversal still works
         if ev.GetKeyCode() != 9:
             ev.ResumePropagation(True)
             ev.Skip()
