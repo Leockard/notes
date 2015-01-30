@@ -101,7 +101,8 @@ class MyFrame(wx.Frame):
 
             self.search_find = finds
             self.search_str = s
-            self.searching = 0        # when done, set to None
+            # when done, set to None
+            self.searching = 0
 
         # if not found: make sure variables are setup correctly too
         else:
@@ -173,7 +174,7 @@ class MyFrame(wx.Frame):
         Use those ones instead.
         """
         s = self.search_ctrl.GetValue()
-        
+
         # erase strong highlight on previous search find
         # even if this is the first one, nothing bad will happen
         # we'd just painting yellow again over the last one
@@ -187,12 +188,13 @@ class MyFrame(wx.Frame):
         ctrl.SetStyle(pos, pos + len(s), wx.TextAttr(None, wx.RED))
 
         # make sure the find is visible            
-        card = ctrl.GetParent()            
-        self.GetCurrentBoard().ScrollToCard(card)
-        if isinstance(card, Content):
-            if card.IsCollapsed():
-                card.Uncollapse()
-            card.ScrollToChar(pos)
+        card = GetCardAncestor(ctrl)
+        if card:
+            self.GetCurrentBoard().ScrollToCard(card)
+            if isinstance(card, Content):
+                if card.IsCollapsed():
+                    card.Uncollapse()
+                card.ScrollToChar(pos)
 
                                 
     ### Auxiliary functions
