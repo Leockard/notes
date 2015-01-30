@@ -177,12 +177,8 @@ class BoardBase(AutoSize):
             if "content" in kwargs.keys(): content = kwargs["content"]
             else: content = Content.DEFAULT_CONTENT
                 
-            new = Content(self, label, pos=pos, title=title, kind=kind, content=content,
-                          size=[i*self.scale for i in Content.DEFAULT_SZ])
-
-            # bindings        
-            new.Bind(wx.EVT_ENTER_WINDOW, self.OnMouseOverCard)
-            new.Bind(wx.EVT_LEAVE_WINDOW, self.OnMouseLeaveCard)
+            sz = [i*self.scale for i in Content.DEFAULT_SZ]
+            new = Content(self, label, pos=pos, title=title, kind=kind, content=content, size=sz)
             
         elif subclass == "Header":
             if "txt" in kwargs.keys(): txt = kwargs["txt"]
@@ -194,14 +190,15 @@ class BoardBase(AutoSize):
                 w = Header.DEFAULT_SZ[0]
                 h = Header.DEFAULT_SZ[1]
 
-            new = Header(self, label, pos=pos, header=txt,
-                         size=[i*self.scale for i in (w, h)])
+            sz = [i*self.scale for i in (w, h)]
+            new = Header(self, label, pos=pos, header=txt, size=sz)
             
         elif subclass == "Image":
             if "path" in kwargs.keys(): path = kwargs["path"]
             else: path = Image.DEFAULT_PATH
-                
-            new = Image(self, label, pos=pos, path=path, size=[i*self.scale for i in Image.DEFAULT_SZ])
+
+            sz = [i*self.scale for i in Image.DEFAULT_SZ]
+            new = Image(self, label, pos=pos, path=path, size=sz)
 
         # set bindings for every card
         new.Bind(wx.EVT_LEFT_DOWN, self.OnCardLeftDown)
@@ -625,15 +622,6 @@ class BoardBase(AutoSize):
         self.NewCard("Content", pos=ev.GetPosition(),
                       kind=Content.DEFAULT_LBL,
                       title="", content="")
-
-    def OnMouseOverCard(self, ev):
-        card = ev.GetEventObject()
-        card.Unbind(wx.EVT_ENTER_WINDOW)
-        card.ShowBar()
-
-    def OnMouseLeaveCard(self, ev):
-        card = ev.GetEventObject()
-        card.Bind(wx.EVT_ENTER_WINDOW, self.OnMouseOverCard)
         
             
     ### Auxiliary functions
