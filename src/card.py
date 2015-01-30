@@ -5,7 +5,6 @@ import wx
 import os
 import wx.richtext as rt
 import wx.lib.newevent as ne
-import cardbar as CardBar
 from utilities import EditText
 
 

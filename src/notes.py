@@ -255,11 +255,13 @@ class MyFrame(wx.Frame):
 
         ## view menu
         view_menu = wx.Menu()
+        collp_it = wx.MenuItem(view_menu, wx.ID_ANY, "(Un)Collapse card")
         inspc_it = wx.MenuItem(view_menu, wx.ID_ANY, "Inspect card")
         tgmap_it = wx.MenuItem(view_menu, wx.ID_ANY, "Show map")
         zoomi_it = wx.MenuItem(view_menu, wx.ID_ANY, "Zoom in")
         zoomo_it = wx.MenuItem(view_menu, wx.ID_ANY, "Zoom out")
-        
+
+        view_menu.AppendItem(collp_it)
         view_menu.AppendItem(inspc_it)
         view_menu.AppendItem(tgmap_it)
         view_menu.AppendItem(zoomi_it)
@@ -290,6 +292,7 @@ class MyFrame(wx.Frame):
         self.Bind(wx.EVT_MENU, self.OnSave       , save_it)
         self.Bind(wx.EVT_MENU, self.OnOpen       , open_it)
 
+        self.Bind(wx.EVT_MENU, self.OnToggleCollapse, collp_it)
         self.Bind(wx.EVT_MENU, self.OnInspectCard   , inspc_it)
         self.Bind(wx.EVT_MENU, self.OnToggleMinimap , tgmap_it)
 
@@ -310,6 +313,7 @@ class MyFrame(wx.Frame):
         ## shortcuts
         self.accels.append(wx.AcceleratorEntry(wx.ACCEL_NORMAL, 127, delt_it.GetId())) # DEL
 
+        self.accels.append(wx.AcceleratorEntry(wx.ACCEL_CTRL, ord("U"), collp_it.GetId()))
         self.accels.append(wx.AcceleratorEntry(wx.ACCEL_CTRL, ord("I"), inspc_it.GetId()))
         self.accels.append(wx.AcceleratorEntry(wx.ACCEL_CTRL, ord("M"), tgmap_it.GetId()))
         self.accels.append(wx.AcceleratorEntry(wx.ACCEL_CTRL, ord("A"), sela_it.GetId()))
@@ -496,6 +500,10 @@ class MyFrame(wx.Frame):
 
     def OnToggleMinimap(self, ev):
         self.notebook.GetCurrentPage().ToggleMinimap()
+
+    def OnToggleCollapse(self, ev):
+        for c in [t for t in self.GetCurrentBoard().GetSelection() if isinstance(t, Content)]:
+            c.ToggleCollapse()
 
     def OnInspectCard(self, ev):
         pg = self.notebook.GetCurrentPage()
