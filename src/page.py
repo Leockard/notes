@@ -56,7 +56,6 @@ class Page(wx.Panel):
         
         for c in self.contents: c.Hide()
         ctrl.Show()
-        # ctrl.SetFocusIgnoringChildren()
         self.Layout()
 
     def InspectCards(self, cards):
@@ -194,7 +193,6 @@ class Page(wx.Panel):
         # content sizer takes all available space for content
         # always use the individual ShowXXX() controls
         self.ShowBoard()
-
         self.Layout()
         self.ui_ready = True
 

@@ -15,29 +15,30 @@ class Board(wx.Window):
     HORIZONTAL = BoardBase.HORIZONTAL
     VERTICAL   = BoardBase.VERTICAL
 
-    def __init__(self, parent, id = wx.ID_ANY, pos = (0, 0), size = (20, 20)):
-        super(Board, self).__init__(parent, size=size)
+    def __init__(self, parent, id=wx.ID_ANY, pos=(0,0), size=(20,20)):
+        super(Board, self).__init__(parent, size=size, pos=pos)
 
         self.menu_position = (0, 0)
 
-        hbox = wx.BoxSizer(wx.HORIZONTAL)
-        self.SetSizer(hbox)
+        # box = self.GetSizer()        
+        # self.SetSizer(hbox)
 
-        # UI steup
+        # UI setup
         self.InitBoard(pos=pos, size=size)
         self.InitMenu()
-
-        # Bindings
-        self.board.Bind(wx.EVT_RIGHT_DOWN, self.OnRightDown)
 
 
     ### Auxiliary functions
 
     def InitBoard(self, pos, size):
-        box = self.GetSizer()
+        box = wx.BoxSizer(wx.HORIZONTAL)        
+        self.SetSizer(box)
         board = BoardBase(self, pos=pos, size=size)
         box.Add(board, proportion=1, flag=wx.ALL|wx.EXPAND, border=1)
-        
+
+        # Bindings
+        board.Bind(wx.EVT_RIGHT_DOWN, self.OnRightDown)
+
         # set members
         self.board = board
 

@@ -423,7 +423,7 @@ class MyFrame(wx.Frame):
         if not self.ui_ready:
             self.InitMenuBar()
             self.CreateStatusBar()
-            self.InitNotebook(sz)            
+            self.InitNotebook(sz)
             self.InitSearchBar()
             self.InitToolBar()
             
