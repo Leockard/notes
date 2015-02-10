@@ -21,23 +21,10 @@ class Board(BoardBase):
         self.menu_position = (0, 0)
 
         # UI setup
-        # self.InitBoard(pos=pos, size=size)
         self.InitMenu()
 
         
     ### Auxiliary functions
-
-    def InitBoard(self, pos, size):
-        box = wx.BoxSizer(wx.HORIZONTAL)        
-        self.SetSizer(box)
-        board = BoardBase(self, pos=pos, size=size)
-        box.Add(board, proportion=1, flag=wx.ALL|wx.EXPAND, border=1)
-
-        # Bindings
-        board.Bind(wx.EVT_RIGHT_DOWN, self.OnRightDown)
-
-        # set members
-        self.board = board
 
     def InitMenu(self):
         menu = wx.Menu()
