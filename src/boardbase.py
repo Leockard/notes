@@ -621,6 +621,43 @@ class BoardBase(AutoSize):
     def OnLeftDClick(self, ev):
         self.NewCard("Content", pos=ev.GetPosition())
         
+
+            def OnMoveLeft(self, ev):
+        self.MoveSelected(-self.SCROLL_STEP, 0)
+
+    def OnMoveRight(self, ev):
+        self.MoveSelected(self.SCROLL_STEP, 0)
+
+    def OnMoveUp(self, ev):
+        self.MoveSelected(0, -self.SCROLL_STEP)
+
+    def OnMoveDown(self, ev):
+        self.MoveSelected(0, self.SCROLL_STEP)
+
+    def OnSelectionLeft(self, ev):
+        if len(self.GetSelection()) == 1:
+            self.SelectNext("left")
+        else:
+            ev.Skip()
+    
+    def OnSelectionRight(self, ev):
+        if len(self.GetSelection()) == 1:
+            self.SelectNext("right")
+        else:
+            ev.Skip()
+
+    def OnSelectionUp(self, ev):
+        if len(self.GetSelection()) == 1:
+            self.SelectNext("top")
+        else:
+            ev.Skip()
+
+    def OnSelectionDown(self, ev):
+        if len(self.GetSelection()) == 1:
+            self.SelectNext("bottom")
+        else:
+            ev.Skip()
+
             
     ### Auxiliary functions
 
@@ -740,41 +777,3 @@ class BoardBase(AutoSize):
                 cards = [self.GetCard(l) for l in members]
                 self.NewGroup(cards)
 
-                
-    ### Callbacks
-
-    def OnMoveLeft(self, ev):
-        self.MoveSelected(-self.SCROLL_STEP, 0)
-
-    def OnMoveRight(self, ev):
-        self.MoveSelected(self.SCROLL_STEP, 0)
-
-    def OnMoveUp(self, ev):
-        self.MoveSelected(0, -self.SCROLL_STEP)
-
-    def OnMoveDown(self, ev):
-        self.MoveSelected(0, self.SCROLL_STEP)
-
-    def OnSelectionLeft(self, ev):
-        if len(self.GetSelection()) == 1:
-            self.SelectNext("left")
-        else:
-            ev.Skip()
-    
-    def OnSelectionRight(self, ev):
-        if len(self.GetSelection()) == 1:
-            self.SelectNext("right")
-        else:
-            ev.Skip()
-
-    def OnSelectionUp(self, ev):
-        if len(self.GetSelection()) == 1:
-            self.SelectNext("top")
-        else:
-            ev.Skip()
-
-    def OnSelectionDown(self, ev):
-        if len(self.GetSelection()) == 1:
-            self.SelectNext("bottom")
-        else:
-            ev.Skip()
