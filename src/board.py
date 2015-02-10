@@ -10,7 +10,7 @@ from card import *
 # Board Class
 ######################
 
-class Board(wx.Window):
+class Board(BoardBase):
     CARD_PADDING = BoardBase.CARD_PADDING
     HORIZONTAL = BoardBase.HORIZONTAL
     VERTICAL   = BoardBase.VERTICAL
@@ -20,11 +20,8 @@ class Board(wx.Window):
 
         self.menu_position = (0, 0)
 
-        # box = self.GetSizer()        
-        # self.SetSizer(hbox)
-
         # UI setup
-        self.InitBoard(pos=pos, size=size)
+        # self.InitBoard(pos=pos, size=size)
         self.InitMenu()
 
         

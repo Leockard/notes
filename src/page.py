@@ -56,7 +56,12 @@ class Page(wx.Panel):
         
         for c in self.contents: c.Hide()
         ctrl.Show()
+        print "before layout"
+
+        DumpSizerChildren(self.GetSizer())
+
         self.Layout()
+        print "after layout"
 
     def InspectCards(self, cards):
         self.inspecting = cards
@@ -192,7 +197,9 @@ class Page(wx.Panel):
 
         # content sizer takes all available space for content
         # always use the individual ShowXXX() controls
+        print "calling showboard"
         self.ShowBoard()
+        print "done showboard"
         self.Layout()
         self.ui_ready = True
 
@@ -208,18 +215,23 @@ class Page(wx.Panel):
         self.content_sizer = box
 
     def InitBoard(self, size=wx.DefaultSize):
-        # init board
+        # make board
         bd = Board(self, size=size)
-        self.board = bd.board
-        bd.Hide()
-        self.contents.append(bd)
-
-        bd.board.Bind(Card.EVT_CARD_REQUEST_INSPECT, self.OnRequestInspect)
+        box = wx.BoxSizer(wx.HORIZONTAL)
+        box.Add(bd, proportion=1, flag=wx.EXPAND)
+        
+        # bindings
+        bd.Bind(Card.EVT_CARD_REQUEST_INSPECT, self.OnRequestInspect)
 
         # init also the inspection view
-        ins = BoardInspect(self, self.board)
+        ins = BoardInspect(self, bd)
         ins.Hide()
         self.minimap = ins
+
+        # finish up
+        self.board = bd
+        bd.Hide()
+        self.contents.append(bd)        
 
     def InitCanvas(self, size=wx.DefaultSize):
         cv = Canvas(self, size=size)
