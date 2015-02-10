@@ -146,6 +146,13 @@ class Page(wx.Panel):
         if mp.IsShown(): self.HideMinimap()
         else:            self.ShowMinimap()
 
+    def ShowToolBar(self, show=True):
+        self.GetSizer().Show(self.GetToolBarSizer(), show=show, recursive=True)
+        self.Layout()
+
+    def GetToolBarSizer(self):
+        return self.toolbar
+
     def GetBoardBmp(self):
         # get the current board as a bitmap
         sz = self.board.content_sz
@@ -298,6 +305,7 @@ class Page(wx.Panel):
         box.Add(zbox,      proportion=1, flag=wx.ALIGN_RIGHT|wx.EXPAND, border=1)        
 
         self.GetSizer().Add(box, proportion=0, flag=wx.LEFT|wx.EXPAND, border=1)
+        self.toolbar = box
 
 
     ### Callbacks

@@ -203,12 +203,13 @@ class MyFrame(wx.Frame):
         bar = wx.MenuBar()
 
         ## file menu
-        file_menu = wx.Menu()                
+        file_menu = wx.Menu()
+        newt_it = wx.MenuItem(file_menu, wx.ID_NEW,  "&New")
         open_it = wx.MenuItem(file_menu, wx.ID_OPEN, "&Open")
         save_it = wx.MenuItem(file_menu, wx.ID_SAVE, "&Save")
         quit_it = wx.MenuItem(file_menu, wx.ID_EXIT, "&Quit")
 
-        file_menu.Append(wx.ID_NEW, "&New")        
+        file_menu.AppendItem(newt_it)
         file_menu.AppendItem(open_it)
         file_menu.AppendItem(save_it)
         file_menu.AppendSeparator()
@@ -262,12 +263,17 @@ class MyFrame(wx.Frame):
         tgmap_it = wx.MenuItem(view_menu, wx.ID_ANY, "Show map")
         zoomi_it = wx.MenuItem(view_menu, wx.ID_ANY, "Zoom in")
         zoomo_it = wx.MenuItem(view_menu, wx.ID_ANY, "Zoom out")
+        hideb_it = wx.MenuItem(view_menu, wx.ID_ANY, "Hide Page tool bar", kind=wx.ITEM_CHECK)
 
         view_menu.AppendItem(collp_it)
         view_menu.AppendItem(inspc_it)
         view_menu.AppendItem(tgmap_it)
         view_menu.AppendItem(zoomi_it)
         view_menu.AppendItem(zoomo_it)
+        view_menu.AppendSeparator()
+        view_menu.AppendItem(hideb_it)
+        
+        view_menu.Check(hideb_it.GetId(), True)        
 
         ## debug menu
         debug_menu = wx.Menu()                
@@ -296,6 +302,8 @@ class MyFrame(wx.Frame):
 
         self.Bind(wx.EVT_MENU, self.OnZoomIn  , zoomi_it)
         self.Bind(wx.EVT_MENU, self.OnZoomOut , zoomo_it)
+        
+        self.Bind(wx.EVT_MENU, self.OnViewPageBar , hideb_it)
 
         self.Bind(wx.EVT_MENU, self.OnToggleCollapse  , collp_it)
         self.Bind(wx.EVT_MENU, self.OnMenuInspectCard , inspc_it)
@@ -406,8 +414,12 @@ class MyFrame(wx.Frame):
         cpy_it = toolbar.AddLabelTool(wx.ID_COPY, "Copy",
                                       wx.ArtProvider.GetBitmap(wx.ART_COPY),
                                       kind=wx.ITEM_NORMAL)
+        pas_it = toolbar.AddLabelTool(wx.ID_PASTE, "Paste",
+                                      wx.ArtProvider.GetBitmap(wx.ART_PASTE),
+                                      kind=wx.ITEM_NORMAL)
         self.Bind(wx.EVT_TOOL, self.OnDelete, del_it)
         self.Bind(wx.EVT_TOOL, self.OnCopy, cpy_it)
+        self.Bind(wx.EVT_TOOL, self.OnCopy, pas_it)
 
     def InitUI(self):
         sz = (20, 20)
@@ -518,6 +530,9 @@ class MyFrame(wx.Frame):
     def OnToggleCollapse(self, ev):
         for c in [t for t in self.GetCurrentBoard().GetSelection() if isinstance(t, Content)]:
             c.ToggleCollapse()
+
+    def OnViewPageBar(self, ev):
+        self.notebook.GetCurrentPage().ShowToolBar(show=ev.IsChecked())
 
     def OnMenuInspectCard(self, ev):
         """Called by the View menu item."""
