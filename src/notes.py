@@ -582,8 +582,8 @@ class MyFrame(wx.Frame):
                 # inside a card: select the card
                 card = GetCardAncestor(self.FindFocus())
                 bd.SelectCard(card, True)
-                card.GetTopLevelParent().SetFocus()
-                    
+                bd.SetFocus()
+
     def OnPageChange(self, ev):
         pass
 

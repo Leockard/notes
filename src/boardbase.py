@@ -621,8 +621,7 @@ class BoardBase(AutoSize):
     def OnLeftDClick(self, ev):
         self.NewCard("Content", pos=ev.GetPosition())
         
-
-            def OnMoveLeft(self, ev):
+    def OnMoveLeft(self, ev):
         self.MoveSelected(-self.SCROLL_STEP, 0)
 
     def OnMoveRight(self, ev):
