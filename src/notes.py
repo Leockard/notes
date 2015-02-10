@@ -294,6 +294,9 @@ class MyFrame(wx.Frame):
         self.Bind(wx.EVT_MENU, self.OnSave       , save_it)
         self.Bind(wx.EVT_MENU, self.OnOpen       , open_it)
 
+        self.Bind(wx.EVT_MENU, self.OnZoomIn  , zoomi_it)
+        self.Bind(wx.EVT_MENU, self.OnZoomOut , zoomo_it)
+
         self.Bind(wx.EVT_MENU, self.OnToggleCollapse, collp_it)
         self.Bind(wx.EVT_MENU, self.OnInspectCard   , inspc_it)
         self.Bind(wx.EVT_MENU, self.OnToggleMinimap , tgmap_it)
@@ -320,6 +323,9 @@ class MyFrame(wx.Frame):
         self.accels.append(wx.AcceleratorEntry(wx.ACCEL_CTRL, ord("M"), tgmap_it.GetId()))
         self.accels.append(wx.AcceleratorEntry(wx.ACCEL_CTRL, ord("A"), sela_it.GetId()))
         self.accels.append(wx.AcceleratorEntry(wx.ACCEL_CTRL, ord("D"), debug_it.GetId()))
+
+        self.accels.append(wx.AcceleratorEntry(wx.ACCEL_CTRL, ord("+"), zoomi_it.GetId()))
+        self.accels.append(wx.AcceleratorEntry(wx.ACCEL_CTRL, ord("-"), zoomo_it.GetId()))
 
         self.accels.append(wx.AcceleratorEntry(wx.ACCEL_CTRL, ord("F"), search_it.GetId()))
         self.accels.append(wx.AcceleratorEntry(wx.ACCEL_SHIFT|wx.ACCEL_CTRL , ord("G"), prev_it.GetId()))        
@@ -496,6 +502,12 @@ class MyFrame(wx.Frame):
                 
         
     ### Callbacks
+
+    def OnZoomIn(self, ev):
+        self.notebook.GetCurrentPage().ZoomIn()
+
+    def OnZoomOut(self, ev):
+        self.notebook.GetCurrentPage().ZoomOut()
 
     def OnGroupSelection(self, ev):
         self.GetCurrentBoard().GroupSelected()

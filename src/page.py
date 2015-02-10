@@ -21,6 +21,7 @@ class Page(wx.Panel):
     CARD_PADDING = Board.CARD_PADDING
     PIXELS_PER_SCROLL = 20
     DEFAULT_SZ = (20, 20)
+    ZOOM_CHOICES = ["50%", "100%", "150%", "200%"]
 
     VIEW_CH_DEF = "View"
     VIEW_CHOICES = ("All", Content.CONCEPT_LBL_LONG, Content.ASSUMPTION_LBL_LONG, Content.RESEARCH_LBL_LONG, Content.FACT_LBL_LONG)
@@ -248,7 +249,8 @@ class Page(wx.Panel):
         self.view.SetSelection(0)
         self.view.Bind(wx.EVT_CHOICE, self.OnView)
                     
-        chs = ["50%", "100%", "150%", "200%"]
+        # chs = ["50%", "100%", "150%", "200%"]
+        chs = self.ZOOM_CHOICES
         self.zoom = wx.ComboBox(self, value=chs[1], choices=chs, style=wx.TE_PROCESS_ENTER)
         self.zoom.SetSelection(1)
         self.zoom.Bind(wx.EVT_COMBOBOX, self.OnZoomCombo)
@@ -305,16 +307,21 @@ class Page(wx.Panel):
         # never forget to Layout after Sizer operations            
         self.Layout()
 
+    def GetScaleFromStr(self, s):
+        """s should be a string of the type \d\d\d%?. Returns the float corresponding to the scale s."""
+        scale = 1.0
+        if isnumber(s):
+            scale = float(s)/100
+        elif isnumber(s[:-1]) and s[-1] == "%":
+            scale = float(s[:-1])/100
+        return scale
+        
     def OnZoomCombo(self, ev):
         """Called when an item in the zoom combo box is selected."""
-        self.Zoom(float(ev.GetString()[:-1])/100)
+        self.Zoom(self.GetScaleFromStr(ev.GetString()))
 
     def OnZoomEnter(self, ev):
-        s = ev.GetString()
-        if isnumber(s):
-            self.Zoom(float(s)/100)
-        elif isnumber(s[:-1]) and s[-1] == "%":
-            self.Zoom(float(s[:-1])/100)
+        self.Zoom(self.GetScaleFromStr(ev.GetString()))
 
     def Zoom(self, new_scale):
         """Zoom is actually a change of scale of all relevant coordinates."""
@@ -341,9 +348,25 @@ class Page(wx.Panel):
         # return to previous scroll position
         self.board.Scroll(*scroll_pos)
 
+        # make sure the combo matches the new scale
+        self.zoom.SetValue(str(int(new_scale * 100)) + "%")
+
+        # setup members
         self.board.scale = new_scale
         self.canvas.scale = new_scale
         self.scale = new_scale            
+
+    def ZoomIn(self):
+        chs = self.ZOOM_CHOICES
+        new = chs.index(self.zoom.GetValue()) - 1
+        if new > -1 and new < len(chs):
+            self.Zoom(self.GetScaleFromStr(chs[new]))
+
+    def ZoomOut(self):
+        chs = self.ZOOM_CHOICES
+        new = chs.index(self.zoom.GetValue()) + 1
+        if new > -1 and new < len(chs):
+            self.Zoom(self.GetScaleFromStr(chs[new]))
 
     def OnView(self, ev):
         s = ev.GetString()
