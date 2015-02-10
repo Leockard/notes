@@ -27,7 +27,9 @@ class Board(BoardBase):
     ### Auxiliary functions
 
     def InitMenu(self):
+        # make menu
         menu = wx.Menu()
+        self.Bind(wx.EVT_RIGHT_DOWN, self.OnRightDown)
 
         # edit actions
         past_it = wx.MenuItem(menu, wx.ID_PASTE, "Paste")
@@ -64,16 +66,16 @@ class Board(BoardBase):
         self.PopupMenu(self.menu, ev.GetPosition())
 
     def OnPaste(self, ev):
-        self.board.PasteFromClipboard(self.menu_position)
+        self.PasteFromClipboard(self.menu_position)
 
     def OnInsertContent(self, ev):
-        self.board.PlaceNewCard("Content", pos=self.menu_position)
+        self.PlaceNewCard("Content", pos=self.menu_position)
 
     def OnInsertHeader(self, ev):
-        self.board.PlaceNewCard("Header", pos=self.menu_position)
+        self.PlaceNewCard("Header", pos=self.menu_position)
 
     def OnInsertImg(self, ev):
-        self.board.PlaceNewCard("Image", pos=self.menu_position)
+        self.PlaceNewCard("Image", pos=self.menu_position)
 
     def OnClose(self, ev):
         # should close tab
