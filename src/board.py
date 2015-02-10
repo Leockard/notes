@@ -27,7 +27,7 @@ class Board(wx.Window):
         self.InitBoard(pos=pos, size=size)
         self.InitMenu()
 
-
+        
     ### Auxiliary functions
 
     def InitBoard(self, pos, size):

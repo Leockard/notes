@@ -43,7 +43,7 @@ class BoardBase(AutoSize):
         self.SetBackgroundColour(BoardBase.BACKGROUND_CL)
         self.SetFocus()
 
-        
+foo        
     ### Behavior functions
     
     def GetCards(self):
