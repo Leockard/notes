@@ -379,11 +379,7 @@ class Page(wx.Panel):
             rect = c.GetRect()
             # revert to original coordinates
             # and then calculate the actual new one
-            left   = int((float(rect.left) / self.scale)   * new_scale)
-            right  = int((float(rect.right) / self.scale)  * new_scale)
-            top    = int((float(rect.top) / self.scale)    * new_scale)
-            bottom = int((float(rect.bottom) / self.scale) * new_scale)
-            c.SetRect(wx.Rect(left, top, right - left + 1, bottom - top + 1))
+            c.Scale(new_scale / self.scale)
 
         # scale content size
         self.board.content_sz  = wx.Size(*[i / self.scale * new_scale for i in self.board.content_sz])
@@ -392,7 +388,7 @@ class Page(wx.Panel):
         # return to previous scroll position
         self.board.Scroll(*scroll_pos)
 
-        # make sure the combo matches the new scale
+        # make sure the combo text matches the new scale
         self.zoom.SetValue(str(int(new_scale * 100)) + "%")
 
         # setup members

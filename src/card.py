@@ -79,6 +79,14 @@ class Card(wx.Panel):
     def GetCardSizer(self):
         return self.main.GetSizer()
 
+    def Scale(self, factor):
+        rect = self.GetRect()
+        left   = int(float(rect.left)   * factor)
+        right  = int(float(rect.right)  * factor)
+        top    = int(float(rect.top)    * factor)
+        bottom = int(float(rect.bottom) * factor)
+        self.SetRect(wx.Rect(left, top, right - left + 1, bottom - top + 1))
+
                         
     ### Auxiliary functions
 
@@ -249,6 +257,7 @@ class Content(Card):
         self.InitAccels()
 
         self.inspecting = False
+        self.collapse_enabled = True
 
         self.SetKind(kind)
         if title: self.title.SetValue(title)
@@ -319,8 +328,16 @@ class Content(Card):
                 ctrl.ScrollLines(1)
                 x, y = ctrl.PositionToCoords(pos)
 
+    def DisableCollapse(self):
+        """Calling Collapse() or Uncollapse() after calling this function will do nothing."""
+        self.collapse_enabled = False
+
+    def EnableCollapse(self):
+        """Calling Collapse() or Uncollapse() after calling this function will work again."""
+        self.collapse_enabled = True
+
     def Collapse(self):
-        if not self.IsCollapsed():
+        if self.collapse_enabled and not self.IsCollapsed():
             self.content.Hide()
             self.SetSize(self.COLLAPSED_SZ)
 
@@ -329,7 +346,7 @@ class Content(Card):
             self.GetEventHandler().ProcessEvent(event)
 
     def Uncollapse(self):
-        if self.IsCollapsed():
+        if self.collapse_enabled and self.IsCollapsed():
             self.content.Show()
             self.SetSize(self.DEFAULT_SZ)
             
@@ -537,17 +554,16 @@ class Image(Card):
     def __init__(self, parent, label, path=None, id=wx.ID_ANY, pos=wx.DefaultPosition, size=DEFAULT_SZ):
         super(Image, self).__init__(parent, label, id=id, pos=pos, size=size)
         self.btn = None
+        self.img = None
+        self.path = path        
         self.InitUI(path)
-        self.path = path
 
-
+        
     ### Behavior funtions
 
-    def SetImage(self, path):
+    def LoadImage(self, path):
         bmp = wx.Bitmap(path)
-        img = wx.StaticBitmap(self.main)
-        img.SetBitmap(bmp)
-        img.SetSize(bmp.GetSize())
+        self.SetImage(bmp)
         
         if self.btn:
             self.btn.Hide()
@@ -555,8 +571,19 @@ class Image(Card):
             self.btn = None
 
         self.path = path
-        self.GetCardSizer().Add(img, proportion=1, flag=wx.ALL|wx.EXPAND, border=self.BORDER_THICK)
+
+    def SetImage(self, bmp):
+        if not self.img:
+            self.img = wx.StaticBitmap(self.main)
+            
+        self.img.SetBitmap(bmp)
+        self.img.SetSize(bmp.GetSize())
+        self.GetCardSizer().Clear()
+        self.GetCardSizer().Add(self.img, proportion=1, flag=wx.ALL|wx.EXPAND, border=self.BORDER_THICK)
         self.Fit()
+
+    def Scale(self, factor):
+        super(Image, self).Scale(factor)
 
     ### Auxiliary functions
     
@@ -570,7 +597,7 @@ class Image(Card):
             self.btn = btn
             btn.Bind(wx.EVT_BUTTON, self.OnButton)
         else:
-            self.SetImage(path)        
+            self.LoadImage(path)        
 
     def Dump(self):
         pos = self.GetPosition()
@@ -586,7 +613,7 @@ class Image(Card):
         fd = wx.FileDialog(self, "Save", os.getcwd(), "", "All files (*.*)|*.*",
                            wx.FD_OPEN | wx.FD_FILE_MUST_EXIST)
         if fd.ShowModal() == wx.ID_CANCEL: return # user changed her mind
-        self.SetImage(fd.GetPath())
+        self.LoadImage(fd.GetPath())
 
 
         

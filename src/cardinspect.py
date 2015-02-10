@@ -161,6 +161,7 @@ class CardInspect(wx.Panel):
         card = Content(self, -1, title=new_card.GetTitle(), kind=new_card.GetKind(), content=new_card.GetContent())
         card.title.SetFont(wx.Font(*self.TITLE_FONT))
         card.content.SetFont(wx.Font(*self.CONTENT_FONT))
+        card.DisableCollapse()
 
         # setup UI
         box = self.GetSizer()
