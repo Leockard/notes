@@ -229,6 +229,9 @@ class Content(Card):
     COLOURS[RESEARCH_LBL]   = {"border": (255, 232, 154, 255), "bg": (255, 252, 243, 255)}
     COLOURS[FACT_LBL]       = {"border": (169, 163, 247, 255), "bg": (245, 244, 254, 255)}
 
+    # fonts
+    KIND_FONT = (8, wx.FONTFAMILY_DEFAULT, wx.FONTSTYLE_ITALIC, wx.FONTWEIGHT_NORMAL, False)
+
     # content text colours
     # CONCEPT_CNT_CL    = (24, 243, 171, 255)
     # ASSUMPTION_CNT_CL = (255, 102, 25, 255)
@@ -240,13 +243,22 @@ class Content(Card):
 
     def __init__(self, parent, label, id=wx.ID_ANY, pos=wx.DefaultPosition, size=DEFAULT_SZ, title="", kind=DEFAULT_LBL, content=""):
         super(Content, self).__init__(parent, label, id=id, pos=pos, size=size, style=wx.TAB_TRAVERSAL)
+        
         self.InitUI()
+        self.InitAccels()
+
         self.SetKind(kind)
         if title: self.title.SetValue(title)
         if content: self.content.SetValue(content)
 
         
     ### Behavior functions
+
+    def BoldRange(self, start, end):
+        self.content.SetStyle(start, end, wx.TextAttr(None, None, self.content.GetFont().Bold()))
+
+    def ItalicRange(self, start, end):
+        self.content.SetStyle(start, end, wx.TextAttr(None, None, self.content.GetFont().Italic()))
 
     def GetCaretPos(self):
         """
@@ -321,6 +333,7 @@ class Content(Card):
             self.Uncollapse()
         else:
             self.Collapse()
+            self.title.SetFocus()
 
     def IsCollapsed(self):
         return not self.content.IsShown()
@@ -368,9 +381,9 @@ class Content(Card):
         title.SetHint("Title...")
         
         kindbut = wx.Button(self.main, label = "kind", size=Content.KIND_BTN_SZ, style=wx.BORDER_NONE)
-        kindbut.SetOwnFont(wx.Font(8, wx.FONTFAMILY_DEFAULT, wx.FONTSTYLE_ITALIC, wx.FONTWEIGHT_NORMAL, False))
+        kindbut.SetOwnFont(wx.Font(*self.KIND_FONT))
         
-        content = wx.TextCtrl(self.main, size=(10, 10), style=wx.TE_RICH|wx.TE_MULTILINE|wx.TE_NO_VSCROLL)
+        content = wx.TextCtrl(self.main, size=(10,10), style=wx.TE_RICH|wx.TE_MULTILINE|wx.TE_NO_VSCROLL)
         
         # boxes
         hbox1 = wx.BoxSizer(wx.HORIZONTAL)
@@ -394,6 +407,26 @@ class Content(Card):
         self.content = content
         self.Show(True)
 
+    def InitAccels(self):
+        # ghost menu to generate menu item events and setup accelerators
+        accels = []        
+        ghost = wx.Menu()
+
+        # content style
+        bold = wx.MenuItem(ghost, wx.ID_ANY, "Bold selection")
+        ital = wx.MenuItem(ghost, wx.ID_ANY, "Italic selection")
+        self.Bind(wx.EVT_MENU, self.OnCtrlB , bold)
+        self.Bind(wx.EVT_MENU, self.OnCtrlI , ital)
+        accels.append(wx.AcceleratorEntry(wx.ACCEL_CTRL, ord("B"), bold.GetId()))
+        accels.append(wx.AcceleratorEntry(wx.ACCEL_CTRL, ord("I"), ital.GetId()))
+
+        # view
+        coll = wx.MenuItem(ghost, wx.ID_ANY, "Toggle collapse")
+        self.Bind(wx.EVT_MENU, self.OnCtrlU , coll)
+        accels.append(wx.AcceleratorEntry(wx.ACCEL_CTRL, ord("U"), coll.GetId()))
+
+        self.SetAcceleratorTable(wx.AcceleratorTable(accels))
+
     def Dump(self):
         pos = self.GetPosition()
         return {"class": "Content",
@@ -412,6 +445,22 @@ class Content(Card):
 
 
     ### Callbacks
+
+    def OnCtrlB(self, ev):
+        start, end = self.content.GetSelection()
+        if start != end:
+            self.BoldRange(start, end)
+
+    def OnCtrlI(self, ev):
+        start, end = self.content.GetSelection()
+        if start != end:
+            self.ItalicRange(start, end)
+        else:
+            # inspect!
+            pass
+
+    def OnCtrlU(self, ev):
+        self.ToggleCollapse()
 
     def OnContentKeyDown(self, ev):
         # skip anything but TAB, so that we don't input \t and tab traversal still works

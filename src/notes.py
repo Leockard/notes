@@ -318,7 +318,6 @@ class MyFrame(wx.Frame):
         ## shortcuts
         self.accels.append(wx.AcceleratorEntry(wx.ACCEL_NORMAL, 127, delt_it.GetId())) # DEL
 
-        self.accels.append(wx.AcceleratorEntry(wx.ACCEL_CTRL, ord("U"), collp_it.GetId()))
         self.accels.append(wx.AcceleratorEntry(wx.ACCEL_CTRL, ord("I"), inspc_it.GetId()))
         self.accels.append(wx.AcceleratorEntry(wx.ACCEL_CTRL, ord("M"), tgmap_it.GetId()))
         self.accels.append(wx.AcceleratorEntry(wx.ACCEL_CTRL, ord("A"), sela_it.GetId()))
@@ -477,7 +476,7 @@ class MyFrame(wx.Frame):
         print "debug"
         print "focus:", self.FindFocus()
         print "selec:", self.GetCurrentBoard().GetSelection()
-        
+
     def Save(self, out_file):
         """Save the data in the dict d in the file out_file."""
         di =  self.notebook.Dump()
