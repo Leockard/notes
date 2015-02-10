@@ -56,12 +56,7 @@ class Page(wx.Panel):
         
         for c in self.contents: c.Hide()
         ctrl.Show()
-        print "before layout"
-
-        DumpSizerChildren(self.GetSizer())
-
         self.Layout()
-        print "after layout"
 
     def InspectCards(self, cards):
         self.inspecting = cards
@@ -93,7 +88,7 @@ class Page(wx.Panel):
     def ShowBoard(self):
         # remember that self.board is a BoardBase
         # but we added the parent Board object to our Sizer
-        self.ShowContent(self.board.GetParent())
+        self.ShowContent(self.board)
 
     def ShowCanvas(self):
         self.ShowContent(self.canvas)
@@ -197,9 +192,7 @@ class Page(wx.Panel):
 
         # content sizer takes all available space for content
         # always use the individual ShowXXX() controls
-        print "calling showboard"
         self.ShowBoard()
-        print "done showboard"
         self.Layout()
         self.ui_ready = True
 
@@ -209,7 +202,7 @@ class Page(wx.Panel):
         self.SetSizer(vbox)
 
         # content sizer takes all available space for content
-        # always use the individual ShowXXX() controls
+        # always use the individual ShowXXX() methods
         box = wx.BoxSizer(wx.HORIZONTAL)
         vbox.Add(box, proportion=1, flag=wx.ALL|wx.EXPAND, border=1)
         self.content_sizer = box
@@ -217,8 +210,6 @@ class Page(wx.Panel):
     def InitBoard(self, size=wx.DefaultSize):
         # make board
         bd = Board(self, size=size)
-        box = wx.BoxSizer(wx.HORIZONTAL)
-        box.Add(bd, proportion=1, flag=wx.EXPAND)
         
         # bindings
         bd.Bind(Card.EVT_CARD_REQUEST_INSPECT, self.OnRequestInspect)
