@@ -22,9 +22,11 @@ class Page(wx.Panel):
     PIXELS_PER_SCROLL = 20
     DEFAULT_SZ = (20, 20)
     ZOOM_CHOICES = ["50%", "100%", "150%", "200%"]
-
     VIEW_CH_DEF = "View"
     VIEW_CHOICES = ("All", Content.CONCEPT_LBL_LONG, Content.ASSUMPTION_LBL_LONG, Content.RESEARCH_LBL_LONG, Content.FACT_LBL_LONG)
+
+    InspectEvent, EVT_PAGE_INSPECT = ne.NewEvent()
+    CancelInspectEvent, EVT_PAGE_CANCEL_INSPECT = ne.NewEvent()
 
     def __init__(self, parent, id=wx.ID_ANY, pos=wx.DefaultPosition, size = wx.DefaultSize):
         super(Page, self).__init__(parent, id=id, pos=pos, size=size)
@@ -68,12 +70,21 @@ class Page(wx.Panel):
         # SetCard copies its argument, so we have to use Get now
         self.view_card.GetCards()[0].content.SetFocus()
 
+        # raise the event
+        number = len(self.inspecting)
+        if number == 1:
+            title = self.inspecting[0].GetTitle()
+        else:
+            title = ""
+        event = self.InspectEvent(id=wx.ID_ANY, number=number, title=title)
+        event.SetEventObject(self)
+        self.GetEventHandler().ProcessEvent(event)
+
     def SaveFromInspect(self):
         """
-        If inspecting a card, return to Board view and copy the
-        inspected card's state to the original. This includes
-        caret position within the card, which effectively
-        unselects the original card.
+        If inspecting a card, copy the inspected card's state to the
+        original. This includes caret position within the card, which
+        effectively unselects the original card.
         """
         if self.GetCurrentContent() == CardInspect:
             # copy state
@@ -83,8 +94,26 @@ class Page(wx.Panel):
                 ins.SetKind(card.GetKind())
                 ins.SetCaretPos(*card.GetCaretPos())
 
-            self.inspecting = None
-            self.inspect.SetLabel("Inspect")
+    def CancelInspect(self):
+        # save modifications
+        self.SaveFromInspect()
+
+        # raise the event
+        number = len(self.inspecting)
+        if number == 1:
+            title = self.inspecting[0].GetTitle()
+        else:
+            title = ""
+        event = self.CancelInspectEvent(id=wx.ID_ANY, number=number, title=title)
+        event.SetEventObject(self)
+        self.GetEventHandler().ProcessEvent(event)
+
+        # clean up
+        for c in self.inspecting:
+            c.SetInspecting(False)
+        self.inspecting = None
+        self.inspect.SetLabel("Inspect")
+        self.ShowBoard()
 
     def ShowBoard(self):
         # remember that self.board is a BoardBase
@@ -237,6 +266,9 @@ class Page(wx.Panel):
         self.view_card.Hide()
         self.contents.append(vw)
 
+        # bindings
+        vw.Bind(Card.EVT_CARD_CANCEL_INSPECT, self.OnCancelInspect)
+
     def InitButtonBar(self):
         # controls
         self.inspect = wx.Button(self, label = "Inspect")
@@ -273,7 +305,11 @@ class Page(wx.Panel):
     def OnRequestInspect(self, ev):
         card = ev.GetEventObject()
         self.board.SelectCard(card, True)
-        self.InspectCard(card)
+        self.InspectCards([card])
+
+    def OnCancelInspect(self, ev):
+        self.CancelInspect()
+        
 
     def OnSize(self, ev):
         # important to skip the event for Sizers to work correctly

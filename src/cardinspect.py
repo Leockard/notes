@@ -157,16 +157,23 @@ class CardInspect(wx.Panel):
         return self.pairs
 
     def AddCard(self, new_card):
-        # copy the card, since we don't want to add
-        # the same window (card) in two different sizers!
+        # copy the card, since we don't want to reparent it
         card = Content(self, -1, title=new_card.GetTitle(), kind=new_card.GetKind(), content=new_card.GetContent())
         card.title.SetFont(wx.Font(*self.TITLE_FONT))
         card.content.SetFont(wx.Font(*self.CONTENT_FONT))
 
+        # setup UI
         box = self.GetSizer()
         box.Add(card, proportion=1, flag=wx.ALL|wx.EXPAND, border=self.CARD_PADDING)
         box.Layout()
         self.pairs[card] = new_card
+
+        # bindings
+        card.Bind(Card.EVT_CARD_CANCEL_INSPECT, self.OnCancelInspect)
+
+        # finish up
+        new_card.SetInspecting(True)
+        card.SetInspecting(True)
 
     def SetCards(self, cards):
         """Clears previous cards and sets the new ones."""
@@ -178,10 +185,19 @@ class CardInspect(wx.Panel):
         for c in self.pairs.keys():
             c.Delete()
         self.GetSizer().Clear()
+        for c in self.pairs.values():
+            c.SetInspecting(False)
         self.pairs = {}
 
 
     ### Auxiliary functions
+
+    ### Callbacks
+
+    def OnCancelInspect(self, ev):
+        event = Card.CancelInspectEvent(id=wx.ID_ANY)
+        event.SetEventObject(ev.GetEventObject())
+        self.GetEventHandler().ProcessEvent(event)
     
 
 

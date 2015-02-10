@@ -500,12 +500,12 @@ class BoardBase(AutoSize):
         is that now a Page() can Bind() to EVT_CARD_REQUEST_INSPECT events coming from
         this board, instead of having to bind to every individual card.
         """
-        event = Card.InspectEvent(id=wx.ID_ANY)
+        event = Card.ReqInspectEvent(id=wx.ID_ANY)
         event.SetEventObject(ev.GetEventObject())
         self.GetEventHandler().ProcessEvent(event)
 
     def OnChildFocus(self, ev):
-        pass # important to avoid automatic scrolling to focused child
+        pass # important to avoid automatically scrolling to focused child
 
     def OnCardChildLeftDown(self, ev):
         """Called when a Card's child window is clicked."""

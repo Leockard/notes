@@ -19,9 +19,10 @@ class Card(wx.Panel):
 
     bar = None
     
-    DeleteEvent, EVT_CARD_DELETE = ne.NewCommandEvent()
+    DeleteEvent,   EVT_CARD_DELETE = ne.NewCommandEvent()
     CollapseEvent, EVT_CARD_COLLAPSE = ne.NewCommandEvent()
-    InspectEvent, EVT_CARD_REQUEST_INSPECT = ne.NewEvent()
+    ReqInspectEvent,    EVT_CARD_REQUEST_INSPECT = ne.NewEvent()
+    CancelInspectEvent, EVT_CARD_CANCEL_INSPECT = ne.NewEvent()
     
     def __init__(self, parent, label, id=wx.ID_ANY, pos=wx.DefaultPosition, size=wx.DefaultSize, style=0):
         """Base class for every window that will be placed on Board. Override SetupUI()."""
@@ -247,12 +248,20 @@ class Content(Card):
         self.InitUI()
         self.InitAccels()
 
+        self.inspecting = False
+
         self.SetKind(kind)
         if title: self.title.SetValue(title)
         if content: self.content.SetValue(content)
 
         
     ### Behavior functions
+
+    def SetInspecting(self, val):
+        self.inspecting = val
+
+    def GetInspecting(self):
+        return self.inspecting
 
     def BoldRange(self, start, end):
         self.content.SetStyle(start, end, wx.TextAttr(None, None, self.content.GetFont().Bold()))
@@ -343,7 +352,13 @@ class Content(Card):
         Call to raise an event signaling that this card wants to be inspected.
         Interested classes should listen to Card.EVT_CARD_REQUEST_INSPECT.
         """
-        event = self.InspectEvent(id=wx.ID_ANY)
+        event = self.ReqInspectEvent(id=wx.ID_ANY)
+        event.SetEventObject(self)
+        self.GetEventHandler().ProcessEvent(event)
+
+    def CancelInspect(self):
+        """Signals this card wants to stop being inspected."""
+        event = self.CancelInspectEvent(id=wx.ID_ANY)
         event.SetEventObject(self)
         self.GetEventHandler().ProcessEvent(event)
 
@@ -455,9 +470,10 @@ class Content(Card):
         start, end = self.content.GetSelection()
         if start != end:
             self.ItalicRange(start, end)
-        else:
-            # inspect!
-            pass
+        elif not self.inspecting:
+            self.RequestInspect()
+        elif self.inspecting:
+            self.CancelInspect()
 
     def OnCtrlU(self, ev):
         self.ToggleCollapse()

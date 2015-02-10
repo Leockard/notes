@@ -297,9 +297,9 @@ class MyFrame(wx.Frame):
         self.Bind(wx.EVT_MENU, self.OnZoomIn  , zoomi_it)
         self.Bind(wx.EVT_MENU, self.OnZoomOut , zoomo_it)
 
-        self.Bind(wx.EVT_MENU, self.OnToggleCollapse, collp_it)
-        self.Bind(wx.EVT_MENU, self.OnInspectCard   , inspc_it)
-        self.Bind(wx.EVT_MENU, self.OnToggleMinimap , tgmap_it)
+        self.Bind(wx.EVT_MENU, self.OnToggleCollapse  , collp_it)
+        self.Bind(wx.EVT_MENU, self.OnMenuInspectCard , inspc_it)
+        self.Bind(wx.EVT_MENU, self.OnToggleMinimap   , tgmap_it)
 
         self.Bind(wx.EVT_MENU, self.OnCtrlRet    , contr_it)
         self.Bind(wx.EVT_MENU, self.OnAltRet     , headr_it)
@@ -318,7 +318,6 @@ class MyFrame(wx.Frame):
         ## shortcuts
         self.accels.append(wx.AcceleratorEntry(wx.ACCEL_NORMAL, 127, delt_it.GetId())) # DEL
 
-        self.accels.append(wx.AcceleratorEntry(wx.ACCEL_CTRL, ord("I"), inspc_it.GetId()))
         self.accels.append(wx.AcceleratorEntry(wx.ACCEL_CTRL, ord("M"), tgmap_it.GetId()))
         self.accels.append(wx.AcceleratorEntry(wx.ACCEL_CTRL, ord("A"), sela_it.GetId()))
         self.accels.append(wx.AcceleratorEntry(wx.ACCEL_CTRL, ord("D"), debug_it.GetId()))
@@ -450,6 +449,8 @@ class MyFrame(wx.Frame):
 
         # bindings
         nb.Bind(wx.EVT_NOTEBOOK_PAGE_CHANGED, self.OnPageChange)
+        pg.Bind(Page.EVT_PAGE_INSPECT, self.OnInspect)
+        pg.Bind(Page.EVT_PAGE_CANCEL_INSPECT, self.OnCancelInspect)
 
         # set members
         self.notebook = nb
@@ -518,7 +519,8 @@ class MyFrame(wx.Frame):
         for c in [t for t in self.GetCurrentBoard().GetSelection() if isinstance(t, Content)]:
             c.ToggleCollapse()
 
-    def OnInspectCard(self, ev):
+    def OnMenuInspectCard(self, ev):
+        """Called by the View menu item."""
         pg = self.notebook.GetCurrentPage()
         cont = pg.GetCurrentContent()
 
@@ -534,9 +536,17 @@ class MyFrame(wx.Frame):
                     else:
                         self.Log("Inspecting " + str(len(cards)) + " cards.")
         elif cont == CardInspect:
-            pg.SaveFromInspect()
-            pg.ShowBoard()
+            pg.CancelInspect()
             self.Log("Done inspecting.")
+
+    def OnInspect(self, ev):
+        if ev.number == 1:
+            self.Log("Inspecting \"" + ev.title + "\".")
+        else:
+            self.Log("Inspecting " + str(ev.number) + " cards.")
+
+    def OnCancelInspect(self, ev):
+        self.Log("Done inspecting.")
 
     def OnSelectAll(self, ev):
         board = self.GetCurrentBoard()
