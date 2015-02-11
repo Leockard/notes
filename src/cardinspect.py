@@ -211,3 +211,24 @@ class MiniCard(wx.Window):
         super(MiniCard, self).__init__(parent, pos=pos, size=size)
         
         self.SetBackgroundColour("#FFFFFF")
+
+
+
+######################
+# TagsInspect Class
+######################        
+
+class TagsInspect(wx.Panel):
+    def __init__(self, parent, pos=wx.DefaultPosition, size=wx.DefaultSize):
+        super(TagsInspect, self).__init__(parent, pos=pos, size=size)
+        self.InitUI()
+
+        
+    ### Auxiliary functions
+
+    def InitUI(self):
+        box = wx.BoxSizer(wx.VERTICAL)
+        self.SetSizer(box)
+
+        txt = wx.TextCtrl(self)
+        box.Add(txt, proportion=1, flag=wx.ALL|wx.EXPAND, border=1)

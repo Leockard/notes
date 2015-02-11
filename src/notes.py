@@ -487,8 +487,9 @@ class MyFrame(wx.Frame):
 
     def OnDebug(self, ev):
         print "debug"
-        print "focus:", self.FindFocus()
-        print "selec:", self.GetCurrentBoard().GetSelection()
+        # print "focus:", self.FindFocus()
+        # print "selec:", self.GetCurrentBoard().GetSelection()
+        self.notebook.GetCurrentPage().HideSidebar()
 
     def Save(self, out_file):
         """Save the data in the dict d in the file out_file."""
