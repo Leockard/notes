@@ -499,7 +499,13 @@ class MyFrame(wx.Frame):
     def Load(self, path):
         carddict = {}
         with open(path, 'r') as f: d = pickle.load(f)
-        self.notebook.Load(d)
+
+        nb = self.notebook
+        nb.Load(d)
+        for i in  range(nb.GetPageCount()):
+            pg = nb.GetPage(i)
+            pg.Bind(Page.EVT_PAGE_INSPECT, self.OnInspect)
+            pg.Bind(Page.EVT_PAGE_CANCEL_INSPECT, self.OnCancelInspect)
 
     def AddAccelerator(self, entry):
         """entry should be a AcceleratorEntry()."""
@@ -716,7 +722,10 @@ class MyFrame(wx.Frame):
                 nb.DeletePage(0)
             
             # and create the new one
-            self.notebook.AddPage(Page(self.notebook), dlg.GetValue(), select=True)
+            pg = Page(self.notebook)
+            self.notebook.AddPage(pg, dlg.GetValue(), select=True)
+            pg.Bind(Page.EVT_PAGE_INSPECT, self.OnInspect)
+            pg.Bind(Page.EVT_PAGE_CANCEL_INSPECT, self.OnCancelInspect)
 
     def OnSave(self, ev):
         """Save file."""
