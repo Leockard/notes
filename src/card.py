@@ -555,7 +555,8 @@ class Image(Card):
         super(Image, self).__init__(parent, label, id=id, pos=pos, size=size)
         self.btn = None
         self.img = None
-        self.path = path        
+        self.scale = 1.0
+        self.path = path
         self.InitUI(path)
 
         
@@ -564,6 +565,7 @@ class Image(Card):
     def LoadImage(self, path):
         bmp = wx.Bitmap(path)
         self.SetImage(bmp)
+        self.Scale(self.scale)
         
         if self.btn:
             self.btn.Hide()
@@ -571,6 +573,7 @@ class Image(Card):
             self.btn = None
 
         self.path = path
+        self.SetFocus()
 
     def SetImage(self, bmp):
         if not self.img:
@@ -584,6 +587,12 @@ class Image(Card):
 
     def Scale(self, factor):
         super(Image, self).Scale(factor)
+        self.scale = factor
+        if self.img:
+           img = self.img.GetBitmap().ConvertToImage()
+           bmp = wx.BitmapFromImage(img.Scale(*self.GetClientSize(),
+                                    quality=wx.IMAGE_QUALITY_BILINEAR))
+           self.SetImage(bmp)
 
     ### Auxiliary functions
     

@@ -442,7 +442,7 @@ class MyFrame(wx.Frame):
             self.InitNotebook(sz)
             self.InitSearchBar()
             self.InitToolBar()
-            
+
         self.ui_ready = True
 
     def InitNotebook(self, size = wx.DefaultSize):

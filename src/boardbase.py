@@ -38,6 +38,7 @@ class BoardBase(AutoSize):
         self.Bind(wx.EVT_LEFT_DCLICK, self.OnLeftDClick)
         self.Bind(wx.EVT_MOUSE_CAPTURE_LOST, self.OnMouseCaptureLost)
         self.Bind(wx.EVT_CHILD_FOCUS, self.OnChildFocus)
+        self.Bind(wx.EVT_SCROLL, self.OnScroll)
 
         # Other gui setup
         self.SetBackgroundColour(BoardBase.BACKGROUND_CL)
@@ -484,6 +485,9 @@ class BoardBase(AutoSize):
     def __del__(self):
         # don't forget to stop all timers!
         pass
+
+    def OnScroll(self, ev):
+        print "board scroll"
 
     def OnCardCollapse(self, ev):
         card = ev.GetEventObject()

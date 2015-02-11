@@ -41,9 +41,10 @@ class Page(wx.Panel):
         self.ui_ready = False        
         self.InitUI()
 
+        # bindings
         self.Bind(wx.EVT_SIZE, self.OnSize)
 
-
+        
     ### Behavior functions
 
     def GetCurrentContent(self):
