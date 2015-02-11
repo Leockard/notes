@@ -223,6 +223,8 @@ class TagsInspect(wx.Panel):
         super(TagsInspect, self).__init__(parent, pos=pos, size=size)
         self.InitUI()
 
+        # bindings
+        self.Bind(wx.EVT_SHOW, self.OnShow)
         
     ### Auxiliary functions
 
@@ -230,5 +232,15 @@ class TagsInspect(wx.Panel):
         box = wx.BoxSizer(wx.VERTICAL)
         self.SetSizer(box)
 
-        txt = wx.TextCtrl(self)
+        txt = wx.TextCtrl(self, style=wx.TE_MULTILINE)
+        self.txt = txt        
         box.Add(txt, proportion=1, flag=wx.ALL|wx.EXPAND, border=1)
+
+
+    ### Callbacks
+
+    def OnShow(self, ev):
+        if ev.IsShown():
+            card = GetCardAncestor(self.FindFocus())
+            if card and isinstance(card, Content):
+                self.txt.SetValue(card.GetContent())

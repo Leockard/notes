@@ -319,6 +319,7 @@ class Page(wx.Panel):
     def InitSidebar(self, size=wx.DefaultSize):
         tg = TagsInspect(self)
         self.tags_sb = tg
+        self.tags_sb.Hide()
         # doesn't go in contents since it can be shown
         # alongside board and inspect
         # self.contents.append(tg)
