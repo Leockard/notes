@@ -272,6 +272,8 @@ class SelectionManager(wx.Window):
                 self.MoveSelected(0, -bd.SCROLL_STEP)
             elif key == wx.WXK_DOWN:
                 self.MoveSelected(0, bd.SCROLL_STEP)
+            else:
+                ev.Skip()
 
         elif ev.ControlDown():
             ev.Skip()

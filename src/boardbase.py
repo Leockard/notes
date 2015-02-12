@@ -245,13 +245,14 @@ class BoardBase(AutoSize):
         self.selec.SelectGroup(group, new_sel)
 
     def CopySelected(self):
-        # get the data        
-        card = self.GetSelection()[0]
-        data = card.Dump()
+        # get the data
+        data = []
+        for c in self.GetSelection():
+            data.append(c.Dump())
 
         # create our own custom data object
-        obj = wx.CustomDataObject("Card")
-        obj.SetData(json.dumps(data))
+        obj = wx.CustomDataObject("CardList")
+        obj.SetData(str([json.dumps(d) for d in data]))
 
         # write the data to the clipboard
         if wx.TheClipboard.Open():
@@ -261,16 +262,20 @@ class BoardBase(AutoSize):
     def PasteFromClipboard(self, pos=wx.DefaultPosition):
         if wx.TheClipboard.Open():
             # get data
-            obj = wx.CustomDataObject("Card")
+            obj = wx.CustomDataObject("CardList")
             wx.TheClipboard.GetData(obj)
-            data = json.loads(obj.GetData())
 
-            # create new card with the data
-            if pos == wx.DefaultPosition:
-                pos = [i + self.GetPadding() for i in data["pos"]]
-            card = self.NewCard("Content", pos=pos, title=data["title"],
-                                kind=data["kind"], content=data["content"])
-            card.SetFocus()
+            # don't use eval()! Use ast.literal_eval() instead
+            import ast
+            data = [json.loads(d) for d in ast.literal_eval(obj.GetData())]
+
+            # create new cards with the data
+            for d in data:
+                if pos == wx.DefaultPosition:
+                    new_pos = [i + self.GetPadding() for i in d["pos"]]
+                card = self.NewCard("Content", pos=new_pos, title=d["title"],
+                                    kind=d["kind"], content=d["content"])
+                card.SetFocus()
 
             wx.TheClipboard.Close()
 
@@ -369,10 +374,10 @@ class BoardBase(AutoSize):
         If there are any selected cards, arrange them in a horizontal grid,
         to the right of the left-most selected card.
         """
-        if len(self.selected_cards) < 1: return
+        if len(self.GetSelection()) < 1: return
 
         # we unselect first so that we erase the selection rectangles correctly
-        arrange = self.selected_cards[:]
+        arrange = self.GetSelection()[:]
         self.UnselectAll()         
 
         lefts = [c.GetRect().left for c in arrange]
@@ -392,10 +397,10 @@ class BoardBase(AutoSize):
         If there are any selected cards, arrange them in a vertical grid,
         below of the top-most selected card.
         """
-        if len(self.selected_cards) < 1: return
+        if len(self.GetSelection()) < 1: return
 
         # we unselect first so that we erase the selection rectangles correctly
-        arrange = self.selected_cards[:]
+        arrange = self.GetSelection()[:]
         self.UnselectAll()         
 
         tops = [c.GetRect().top for c in arrange]
@@ -459,9 +464,9 @@ class BoardBase(AutoSize):
         if not wx.GetMouseState().ControlDown():    # no control: simple click
             self.SelectCard(card, new_sel = True)   # select only this card
         else:                                       # control down
-            if card in self.selected_cards:         # ctrl + click while selected: unselect
+            if card in self.GetSelection():         # ctrl + click while selected: unselect
                 self.UnselectCard(card)
-            elif card not in self.selected_cards:   # ctrl + click while not selected: add select
+            elif card not in self.GetSelection():   # ctrl + click while not selected: add select
                 self.SelectCard(card, new_sel = False)        
 
         # initiate moving
@@ -472,7 +477,7 @@ class BoardBase(AutoSize):
         self.on_motion = False
         pos = card.GetPosition() + ev.GetPosition() # relative to the canvas
         self.moving_cards_pos = []
-        for c in self.selected_cards:
+        for c in self.GetSelection():
             # (card, card position with respect to the original click, current position)
             self.moving_cards_pos.append((c, c.GetPosition() - pos, c.GetPosition()))
 
@@ -494,7 +499,7 @@ class BoardBase(AutoSize):
     def OnCardLeftUp(self, ev):
         # terminate moving
         if self.on_motion:
-            self.selected_cards = []
+            # self.selected_cards = []
             self.on_motion = False
             for c, orig, pos in self.moving_cards_pos:
                 self.EraseCardRect(c, pos)
