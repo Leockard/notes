@@ -31,7 +31,7 @@ class MyFrame(wx.Frame):
         self.cur_file = ""
         self.search_find = []
         self.search_str = ""
-        self.searching = None      # contains the current search index
+        self.search_head = None    # contains the current search index
                                    # when not searching, set to None
         self.ui_ready = False
         self.InitUI()              # sets up the sizer and the buttons' bindings
@@ -68,7 +68,7 @@ class MyFrame(wx.Frame):
             self.search_ctrl.SetBackgroundColour(wx.WHITE)
             self.search_find = []
             self.search_str = ""
-            self.searching = None
+            self.search_head = None
             return
                 
         # if we were already searching, clear up  highlighting
@@ -102,14 +102,14 @@ class MyFrame(wx.Frame):
             self.search_find = finds
             self.search_str = s
             # when done, set to None
-            self.searching = 0
+            self.search_head = 0
 
         # if not found: make sure variables are setup correctly too
         else:
             self.search_ctrl.SetBackgroundColour(wx.RED)
             self.search_find = []
             self.search_str = ""
-            self.searching = None
+            self.search_head = None
 
     def OnCancelSearch(self, ev):
         """Called when the cancel button in the search control is pressed."""
@@ -123,14 +123,14 @@ class MyFrame(wx.Frame):
                 c.SetStyle(i, i + len(s), c.GetDefaultStyle())
 
             # set focus on last result
-            ctrl = self.search_find[self.searching - 1][0]
-            pos = self.search_find[self.searching - 1][1]
+            ctrl = self.search_find[self.search_head - 1][0]
+            pos = self.search_find[self.search_head - 1][1]
             ctrl.SetFocus()
             ctrl.SetSelection(pos, pos + len(self.search_str))
 
             # clear up variables
             self.search_find = []
-            self.searching = None
+            self.search_head = None
             self.search_str = ""
         else:
             # return the focus to the last selected card or to the board
@@ -144,27 +144,21 @@ class MyFrame(wx.Frame):
         self.search_ctrl.Hide()
 
     def PrevSearchResult(self):
-        if self.searching != None:
-            # used when changing direction in searching
-            i = self.searching
-            self.JumpSearchResults(i, i-1)
-            
-            # advance and wrap
-            i -= 1
-            if i < 0: i = len(self.search_find) - 1
-            self.searching = i
+        if self.search_head != None:
+            old = i = self.search_head
+            new = i - 1
+            if new < 0: new = len(self.search_find) - 1
+            self.JumpSearchResults(old, new)
+            self.search_head = new
 
     def NextSearchResult(self):
         """Add a strong highlight and scroll to the next search result."""
-        if self.searching != None:
-            # used when changing direction in searching
-            i = self.searching
-            self.JumpSearchResults(i-1, i)
-            
-            # advance and wrap
-            i += 1            
-            if i >= len(self.search_find): i = 0
-            self.searching = i
+        if self.search_head != None:
+            old = i = self.search_head
+            new = i + 1
+            if new >= len(self.search_find): new = 0
+            self.JumpSearchResults(i, i+1)
+            self.search_head = new
 
     def JumpSearchResults(self, old, new):
         """
