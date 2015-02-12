@@ -495,12 +495,15 @@ class Content(Card):
         self.ToggleCollapse()
 
     def OnContentKeyDown(self, ev):
-        # skip anything but TAB, so that we don't input \t and tab traversal still works
+        # skip everything but tab
         if ev.GetKeyCode() != 9:
-            ev.ResumePropagation(True)
             ev.Skip()
+        # on TAB: don't input a \t char and simulate a tab traversal
         else:
-            self.Navigate(wx.MouseState().ShiftDown())
+            if ev.ShiftDown():
+                self.kindbut.SetFocus()
+            else:
+                self.title.SetFocus()
 
     def OnKindPressed(self, ev):
         ctrl = ev.GetEventObject()
