@@ -284,9 +284,8 @@ class SelectionManager(wx.Window):
             elif key == wx.WXK_DOWN:
                 self.SelectNext("down")
                 
-            # any other key: cancel selection and
-            # return focus to the last card
-            else:
+            # deactivate on any other key that's not a modifier
+            elif key != 308 and key != 306:
                 self.Deactivate()
 
     
