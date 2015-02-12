@@ -260,7 +260,6 @@ class BoardBase(AutoSize):
 
     def PasteFromClipboard(self, pos=wx.DefaultPosition):
         if wx.TheClipboard.Open():
-            print "get from the clipboard"
             # get data
             obj = wx.CustomDataObject("Card")
             wx.TheClipboard.GetData(obj)
