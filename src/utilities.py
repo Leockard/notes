@@ -273,6 +273,9 @@ class SelectionManager(wx.Window):
             elif key == wx.WXK_DOWN:
                 self.MoveSelected(0, bd.SCROLL_STEP)
 
+        elif ev.ControlDown():
+            ev.Skip()
+
         # naked arrow keys: select next card    
         else:
             if   key == wx.WXK_LEFT:
