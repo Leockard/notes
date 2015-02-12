@@ -480,9 +480,10 @@ class MyFrame(wx.Frame):
         self.StatusBar.SetStatusText(s)
 
     def OnDebug(self, ev):
-        print "debug"
-        # print "focus:", self.FindFocus()
-        # print "selec:", self.GetCurrentBoard().GetSelection()
+        print "---DEBUG---"
+        bd = self.GetCurrentBoard()
+        print "real: ", bd.GetSize()
+        print "virt: ", bd.GetVirtualSize()
 
     def Save(self, out_file):
         """Save the data in the dict d in the file out_file."""

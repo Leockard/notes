@@ -162,14 +162,16 @@ class BoardBase(AutoSize):
                 left = max(rights) + pad
                 pos = (left, top)
     
-        new = self.NewCard(subclass, pos=pos)
+        new = self.NewCard(subclass, pos=pos, scroll=True)
         self.UnselectAll()
         new.SetFocus()
 
-    def NewCard(self, subclass, pos, label=-1, **kwargs):
+    def NewCard(self, subclass, pos, label=-1, scroll=False, **kwargs):
+        """
+        Create a new card of type subclass (string) at pos. If scroll
+        is True, scroll the board so that the new card is in view.
+        """
         # never use labels, always let Board set its own
-        # or use -1 (default) if it doesn't matter
-        # for ex, if it's a temporary object
         if label == -1: label = len(self.cards)
 
         # unpack values and set bindings based on subclass
@@ -218,10 +220,17 @@ class BoardBase(AutoSize):
         event.SetEventObject(new)
         self.GetEventHandler().ProcessEvent(event)
 
+        # make sure the new card is visible
+        self.FitToChildren()
+        if scroll:
+            rect = new.GetRect()
+            board = self.GetRect()
+            if rect.bottom > board.bottom or rect.right > board.right or rect.left < 0 or rect.top < 0:
+                self.ScrollToCard(new)
+
         # finish up
         new.SetFocus()
         self.cards.append(new)
-        self.FitToChildren()
         return new
 
     def MoveCard(self, card, dx, dy):
@@ -544,16 +553,18 @@ class BoardBase(AutoSize):
     def OnLeftUp(self, ev):
         # terminate drag select
         if self.drag_select:
-            self.Unbind(wx.EVT_MOTION)
-            self.drag_select = False
-            final_rect = MakeEncirclingRect(self.init_pos, self.init_pos + self.cur_pos)            
-
             # erase the last selection rect
+            final_rect = MakeEncirclingRect(self.init_pos, self.init_pos + self.cur_pos)                        
             self.PaintRect(final_rect, style = wx.TRANSPARENT)
 
             # select cards
             selected = [c for c in self.GetCards() if c.GetRect().Intersects(final_rect)]
             for c in selected: self.SelectCard(c)
+
+            # finish up
+            self.Unbind(wx.EVT_MOTION)
+            self.drag_select = False
+            self.FitToChildren()
 
     def OnMouseCaptureLost(self, ev):
         self.ReleaseMouse()

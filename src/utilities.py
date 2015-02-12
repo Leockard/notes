@@ -49,8 +49,9 @@ class AutoSize(wx.ScrolledWindow):
         children = self.GetChildren()
         if len(children) == 0: return
 
-        # set view start at 0, 0 to get absolute cordinates
+        # set view start at (0,0) to get absolute cordinates
         view = self.GetViewStart()
+        self.Scroll(0, 0)
 
         # calculate children extension
         rects = [c.GetRect() for c in self.GetChildren()]
@@ -63,6 +64,8 @@ class AutoSize(wx.ScrolledWindow):
         if bottom > sz.y: sz = wx.Size(sz.x, bottom)
         self.content_sz = sz
         self.SetVirtualSize(self.content_sz)
+
+        # return to the previous scroll position
         self.Scroll(view[0], view[1])
 
 
