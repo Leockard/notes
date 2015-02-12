@@ -33,6 +33,7 @@ class Page(wx.Panel):
 
         # members
         self.contents = []
+        self.sidebars = []
         self.inspecting = None
         self.scale = 1.0
         self.content_size = wx.Size(size[0], size[1])
@@ -40,6 +41,7 @@ class Page(wx.Panel):
         # GUI
         self.ui_ready = False        
         self.InitUI()
+        self.InitAccels()
 
         # bindings
         self.Bind(wx.EVT_SIZE, self.OnSize)
@@ -184,6 +186,19 @@ class Page(wx.Panel):
         # pass the bitmap to canvas        
         self.canvas.SetBackground(self.GetBoardBmp())
 
+    def ShowSidebar(self, show=True):
+        self.sidebar_sizer.Clear()
+        for c in self.sidebars: c.Hide()
+
+        if show:
+            self.sidebar_sizer.Add(self.tags_sb, proportion=1, flag=wx.EXPAND, border=1)            
+            self.tags_sb.Show()
+            
+        self.Layout()
+
+    def HideSidebar(self):
+        self.ShowSidebar(False)
+
                         
     ### Auxiliary functions
     
@@ -225,6 +240,7 @@ class Page(wx.Panel):
         self.InitBoard(sz)
         self.InitCanvas()
         self.InitInspect()
+        self.InitSidebar()
         # execute only the first time
         if not self.ui_ready: self.InitButtonBar()
 
@@ -234,16 +250,39 @@ class Page(wx.Panel):
         self.Layout()
         self.ui_ready = True
 
-    def InitSizers(self):
-        # main sizer
-        vbox = wx.BoxSizer(wx.VERTICAL)
-        self.SetSizer(vbox)
+    def InitAccels(self):
+        # we create ghost menus so that we can
+        # bind its items to some accelerators
+        accels = []
+        ghost = wx.Menu()
 
-        # content sizer takes all available space for content
+        # show/hide sidebar        
+        sbar = wx.MenuItem(ghost, wx.ID_ANY, "View sidebar", kind=wx.ITEM_CHECK)
+        self.Bind(wx.EVT_MENU, self.OnToggleSidebar, sbar)
+        accels.append(wx.AcceleratorEntry(wx.ACCEL_NORMAL, wx.WXK_F9, sbar.GetId()))
+        
+        self.SetAcceleratorTable(wx.AcceleratorTable(accels))
+
+    def InitSizers(self):
+        # main sizer, with two main regions: data (dbox) and buttons (bbox)
+        vbox = wx.BoxSizer(wx.VERTICAL)
+        dbox = wx.BoxSizer(wx.HORIZONTAL)
+        bbox = wx.BoxSizer(wx.HORIZONTAL)
+        vbox.Add(dbox, proportion=1, flag=wx.ALL|wx.EXPAND, border=1)
+        vbox.Add(bbox, proportion=0, flag=wx.ALL|wx.EXPAND, border=1)
+        self.SetSizer(vbox)
+        self.toolbar = bbox
+
+        # the data sizer contains the sidebar (sbox) and the
+        # contents sizer (cbox), which in turn contains the board/canvas/inspect views.
+        # the contents sizer takes all available space for content
         # always use the individual ShowXXX() methods
-        box = wx.BoxSizer(wx.HORIZONTAL)
-        vbox.Add(box, proportion=1, flag=wx.ALL|wx.EXPAND, border=1)
-        self.content_sizer = box
+        sbox = wx.BoxSizer(wx.VERTICAL)
+        cbox = wx.BoxSizer(wx.HORIZONTAL)
+        dbox.Add(sbox, proportion=1, flag=wx.ALL|wx.EXPAND, border=1)
+        dbox.Add(cbox, proportion=4, flag=wx.ALL|wx.EXPAND, border=1)        
+        self.sidebar_sizer = sbox
+        self.content_sizer = cbox
 
     def InitBoard(self, size=wx.DefaultSize):
         # make board
@@ -277,6 +316,16 @@ class Page(wx.Panel):
         # bindings
         vw.Bind(Card.EVT_CARD_CANCEL_INSPECT, self.OnCancelInspect)
 
+    def InitSidebar(self, size=wx.DefaultSize):
+        tg = TagsInspect(self)
+        self.tags_sb = tg
+        self.tags_sb.Hide()
+        # doesn't go in contents since it can be shown
+        # alongside board and inspect
+        # self.contents.append(tg)
+        self.sidebar_sizer.Add(tg, proportion=1, flag=wx.EXPAND)
+        self.sidebars.append(tg)
+
     def InitButtonBar(self):
         # controls
         self.inspect = wx.Button(self, label = "Inspect")
@@ -299,17 +348,21 @@ class Page(wx.Panel):
         zbox.Add(self.zoom, proportion=1, flag=wx.ALIGN_RIGHT, border=1)        
 
         # boxing
-        box = wx.BoxSizer(wx.HORIZONTAL)
+        # box = wx.BoxSizer(wx.HORIZONTAL)
+        box = self.toolbar
         box.Add(self.inspect, proportion=0, flag=wx.LEFT|wx.EXPAND, border=1)
         box.Add(self.toggle,  proportion=0, flag=wx.LEFT|wx.EXPAND, border=1)
         box.Add(self.view,    proportion=0, flag=wx.LEFT|wx.EXPAND, border=1)
         box.Add(zbox,      proportion=1, flag=wx.ALIGN_RIGHT|wx.EXPAND, border=1)        
 
-        self.GetSizer().Add(box, proportion=0, flag=wx.LEFT|wx.EXPAND, border=1)
-        self.toolbar = box
+        # self.GetSizer().Add(box, proportion=0, flag=wx.LEFT|wx.EXPAND, border=1)
+        # self.toolbar = box
 
 
     ### Callbacks
+
+    def OnToggleSidebar(self, ev):
+        self.ShowSidebar(not self.tags_sb.IsShown())
 
     def OnRequestInspect(self, ev):
         card = ev.GetEventObject()
