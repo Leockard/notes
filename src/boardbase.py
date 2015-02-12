@@ -245,12 +245,9 @@ class BoardBase(AutoSize):
         self.selec.SelectGroup(group, new_sel)
 
     def CopySelected(self):
-        print "copy"
         # get the data        
         card = self.GetSelection()[0]
         data = card.Dump()
-
-        print data
 
         # create our own custom data object
         obj = wx.CustomDataObject("Card")
@@ -262,13 +259,11 @@ class BoardBase(AutoSize):
             wx.TheClipboard.Close()
 
     def PasteFromClipboard(self, pos=wx.DefaultPosition):
-        print pos
         if wx.TheClipboard.Open():
             print "get from the clipboard"
             # get data
             obj = wx.CustomDataObject("Card")
             wx.TheClipboard.GetData(obj)
-            print obj.GetData()
             data = json.loads(obj.GetData())
 
             # create new card with the data
@@ -276,6 +271,7 @@ class BoardBase(AutoSize):
                 pos = [i + self.GetPadding() for i in data["pos"]]
             card = self.NewCard("Content", pos=pos, title=data["title"],
                                 kind=data["kind"], content=data["content"])
+            card.SetFocus()
 
             wx.TheClipboard.Close()
 

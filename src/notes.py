@@ -419,7 +419,7 @@ class MyFrame(wx.Frame):
                                       kind=wx.ITEM_NORMAL)
         self.Bind(wx.EVT_TOOL, self.OnDelete, del_it)
         self.Bind(wx.EVT_TOOL, self.OnCopy, cpy_it)
-        self.Bind(wx.EVT_TOOL, self.OnCopy, pas_it)
+        self.Bind(wx.EVT_TOOL, self.OnPaste, pas_it)
 
     def InitUI(self):
         sz = (20, 20)
@@ -639,14 +639,15 @@ class MyFrame(wx.Frame):
 
     def OnCopy(self, ev):
         """Copy selected cards."""
-        if self.GetCurrentBoard().selected_cards:
-            self.Log("Copy " + str(len(self.GetCurrentBoard().selected_cards)) + " Cards.")
+        sel = self.GetCurrentBoard().GetSelection()
+        if sel:
             self.GetCurrentBoard().CopySelected()
+            self.Log("Copy " + str(len(sel)) + " Cards.")
 
     def OnPaste(self, ev):
         """Copy cards in the clip board."""
-        self.Log("Paste " + str(len(self.GetCurrentBoard().selected_cards)) + " Cards.")
         self.GetCurrentBoard().PasteFromClipboard()
+        self.Log("Paste " + str(len(self.GetCurrentBoard().GetSelection())) + " Cards.")
 
     def OnDelete(self, ev):
         """Delete selected cards."""
