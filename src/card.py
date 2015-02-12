@@ -410,7 +410,6 @@ class Content(Card):
     def InitUI(self):
         # controls
         title = EditText(self.main)
-        title.SetHint("Title...")
         
         kindbut = wx.Button(self.main, label = "kind", size=Content.KIND_BTN_SZ, style=wx.BORDER_NONE)
         kindbut.SetOwnFont(wx.Font(*self.KIND_FONT))

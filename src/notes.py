@@ -609,17 +609,17 @@ class MyFrame(wx.Frame):
             sel = bd.GetSelection()
 
             if isinstance(sel, list) and len(sel) > 1:
-                # selecting a group: select board
+                # selecting a group: there's no more to select
+                # so just cancel selection
                 bd.UnselectAll()
-                bd.GetParent().SetFocus()
             elif len(sel) == 1:
                 # selecting a card: select group (if any)
                 card = sel[0]
-                bd.UnselectAll()                
                 if bd.GetContainingGroups(card):
                     bd.SelectGroup(bd.GetContainingGroups(card)[0], True)
+                # if no group, cancel selection
                 else:
-                    bd.GetParent().SetFocus()
+                    bd.UnselectAll()
             elif GetCardAncestor(self.FindFocus()):
                 # inside a card: select the card
                 card = GetCardAncestor(self.FindFocus())

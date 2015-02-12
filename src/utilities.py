@@ -130,6 +130,167 @@ class EditText(wx.TextCtrl):
         
         
 
+class SelectionManager(wx.Window):
+    """
+    SelectionManager is an invisible window that positions itself on the top left corner of a Board
+    and gets focus every time a card is (or many cards are) selected. This is done to hide carets
+    and selections from other controls while selection is active. SelectionManager also manages
+    card selection by managing key down events, such as arrow keys to move selection, shift + arrow
+    keys to extend selection, etc.
+    """
+    SIZE = (1,1)
+    POS  = (0,0)
+
+    def __init__(self, parent):
+        super(SelectionManager, self).__init__(parent, size=self.SIZE, pos=self.POS)
+        self.cards = []
+        self.last = None
+        self.SetBackgroundColour(self.GetParent().GetBackgroundColour())
+
+
+    ### behavior functions
+
+    def Activate(self):
+        self.Bind(wx.EVT_KEY_DOWN, self.OnKeyDown)
+        self.SetFocus()
+
+    def Deactivate(self):
+        # return focus to the last card
+        if self.last:
+            self.last.SetFocus()
+            self.last = None
+        else:
+            self.GetParent().SetFocus()
+            
+        # clean up
+        for c in self.cards:
+            c.Unselect()
+        self.cards = []
+        self.Unbind(wx.EVT_KEY_DOWN)
+
+    def GetSelection(self):
+        return self.cards
+
+    def SelectCard(self, card, new_sel=False):
+        """
+        Selects the card. If new_sel is True, erase all other
+        selected cards and select only this one.
+        """
+        # if new_sel, select only this card
+        if new_sel:
+            self.Activate()
+            self.UnselectAll()
+            self.cards = [card]
+            card.Select()
+            self.last = card
+            
+        # else, select card only if it was not already selected
+        elif card not in self.cards:
+            self.cards.append(card)
+            for c in self.cards:
+                self.Activate()                
+                c.Select()
+                self.last = card
+
+    def UnselectCard(self, card):
+        n = len(self.cards)
+        if card in self.cards:
+            self.cards.remove(card)
+            card.Unselect()
+
+    def UnselectAll(self):
+        """
+        Unselects all cards. Be sure to call this method instead of
+        Unselect()ing every card for proper cleanup.
+        """
+        while len(self.cards) > 0:
+            c = self.cards[0]
+            self.UnselectCard(c)
+
+    def SelectGroup(self, group, new_sel):
+        if new_sel: self.UnselectAll()
+        for c in group.GetMembers(): self.SelectCard(c)
+
+    def SelectNext(self, direc):
+        """
+        Selects next card in the specified direction. The selected
+        card may not be the same as the one returned from GetNextCard().
+        direc should be one of "left", "right", "up" or "down".
+        """
+        if   direc == "left":
+            side  = lambda x: x.right
+            getp1 = lambda x: x.GetTopLeft()
+            getp2 = lambda x: x.GetBottomLeft()
+        elif direc == "right":
+            side  = lambda x: x.left
+            getp1 = lambda x: x.GetTopLeft()
+            getp2 = lambda x: x.GetTopRight()
+        elif direc == "up":
+            side  = lambda x: x.bottom
+            getp1 = lambda x: x.GetTopLeft()
+            getp2 = lambda x: x.GetBottomLeft()
+        elif direc == "down":
+            side  = lambda x: x.top
+            getp1 = lambda x: x.GetBottomLeft()
+            getp2 = lambda x: x.GetTopLeft()
+
+        sel = self.GetSelection()
+        bd = self.GetParent()
+        if len(sel) == 1:
+            # get those that are above me
+            rect = sel[0].GetRect()
+            nxt = []
+            if direc == "left" or direc == "up":
+                nxt = [c for c in bd.GetCards() if side(c.GetRect()) < side(rect)]
+            elif direc == "right" or direc == "down":
+                nxt = [c for c in bd.GetCards() if side(c.GetRect()) > side(rect)]
+            if nxt:
+                # if any, order them by distance
+                nxt.sort(key=lambda x: dist2(getp1(x.GetRect()), getp2(rect)))
+                # and select the nearest one
+                self.SelectCard(nxt[0], True)
+
+    def MoveSelected(self, dx, dy):
+        """Move all selected cards by dx, dy."""
+        for c in self.GetSelection():
+            self.GetParent().MoveCard(c, dx, dy)
+
+
+    ### callbacks
+
+    def OnKeyDown(self, ev):
+        key = ev.GetKeyCode()
+        bd = self.GetParent()
+
+        # alt + arrow: move selection
+        if ev.AltDown():
+            if   key == wx.WXK_LEFT:
+                self.MoveSelected(-bd.SCROLL_STEP, 0)
+            elif key == wx.WXK_RIGHT:
+                self.MoveSelected(bd.SCROLL_STEP, 0)
+            elif key == wx.WXK_UP:
+                self.MoveSelected(0, -bd.SCROLL_STEP)
+            elif key == wx.WXK_DOWN:
+                self.MoveSelected(0, bd.SCROLL_STEP)
+
+        # naked arrow keys: select next card    
+        else:
+            if   key == wx.WXK_LEFT:
+                self.SelectNext("left")
+            elif key == wx.WXK_RIGHT:
+                self.SelectNext("right")
+            elif key == wx.WXK_UP:
+                self.SelectNext("up")
+            elif key == wx.WXK_DOWN:
+                self.SelectNext("down")
+                
+            # any other key: cancel selection and
+            # return focus to the last card
+            else:
+                self.Deactivate()
+
+    
+    
 ######################
 # Auxiliary functions
 ######################

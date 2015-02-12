@@ -23,10 +23,11 @@ class BoardBase(AutoSize):
 
     def __init__(self, parent, id=wx.ID_ANY, pos=(0,0), size=wx.DefaultSize):
         super(BoardBase, self).__init__(parent, id=id, pos=pos, size=size, style=wx.BORDER_NONE)
-        
+
+        # members
         self.cards = []
         self.groups = []
-        self.selected_cards = []
+        # self.selected_cards = []
         self.moving_cards_pos = []
         self.drag_select = False
         self.scale = 1.0
@@ -40,9 +41,11 @@ class BoardBase(AutoSize):
         self.Bind(wx.EVT_CHILD_FOCUS, self.OnChildFocus)
         self.Bind(wx.EVT_SCROLL, self.OnScroll)
 
-        # Other gui setup
-        self.SetBackgroundColour(BoardBase.BACKGROUND_CL)
-        self.SetFocus()
+        # selection 
+        self.selec = SelectionManager(self)
+        
+        # other gui setup
+        self.SetBackgroundColour(BoardBase.BACKGROUND_CL)        
 
 
     ### Behavior functions
@@ -222,91 +225,24 @@ class BoardBase(AutoSize):
         return new
 
     def MoveCard(self, card, dx, dy):
-        """Move card by (dx, dy)."""
         pos = card.GetPosition()
         card.Move((pos.x + dx, pos.y + dy))
 
-    def SelectNext(self, direc):
-        """
-        Selects next card in the specified direction. The selected
-        card may not be the same as the one returned from GetNextCard().
-        direc should be one of "left", "right", "top" or "bottom".
-        """
-        if   direc == "left":
-            side  = lambda x: x.right
-            getp1 = lambda x: x.GetTopLeft()
-            getp2 = lambda x: x.GetBottomLeft()
-        elif direc == "right":
-            side  = lambda x: x.left
-            getp1 = lambda x: x.GetTopLeft()
-            getp2 = lambda x: x.GetTopRight()
-        elif direc == "top":
-            side  = lambda x: x.bottom
-            getp1 = lambda x: x.GetTopLeft()
-            getp2 = lambda x: x.GetBottomLeft()
-        elif direc == "bottom":
-            side  = lambda x: x.top
-            getp1 = lambda x: x.GetBottomLeft()
-            getp2 = lambda x: x.GetTopLeft()
-
-        sel = self.GetSelection()
-        if len(sel) == 1:
-            # get those that are above me
-            rect = sel[0].GetRect()
-            if direc == "left" or direc == "top":
-                nxt = [c for c in self.GetCards() if side(c.GetRect()) < side(rect)]
-            elif direc == "right" or direc == "bottom":
-                nxt = [c for c in self.GetCards() if side(c.GetRect()) > side(rect)]
-            if nxt:
-                # if any, order them by distance
-                nxt.sort(key=lambda x: dist2(getp1(x.GetRect()), getp2(rect)))
-                # and select the nearest one
-                self.SelectCard(nxt[0], True)
-        else:
-            ev.Skip()
-
-    def MoveSelected(self, dx, dy):
-        """Move all selected cards by dx, dy."""
-        for c in self.GetSelection():
-            self.MoveCard(c, dx, dy)
-
     def GetSelection(self):
-        return self.selected_cards
+        return self.selec.GetSelection()
 
-    def SelectCard(self, card, new_sel = False):
-        """
-        Selects the card. If new_sel is True, erase all other
-        selected cards and select only this one.
-        """
-        # if new_sel, select only this card
-        if new_sel:
-            self.UnselectAll()
-            self.selected_cards = [card]
-            card.Select()
-            
-        # else, select card only if it was not already selected
-        elif card not in self.selected_cards:
-            self.selected_cards.append(card)
-            for c in self.selected_cards:
-                c.Select()
+    def SelectCard(self, card, new_sel=False):
+        self.selec.SelectCard(card, new_sel)
 
     def UnselectCard(self, card):
-        if card in self.selected_cards:
-            self.selected_cards.remove(card)
-            card.Unselect()
+        self.selec.UnselectCard(card)
 
     def UnselectAll(self):
-        """
-        Unselects all cards. Be sure to call this method instead of
-        Unselecting() every card for proper rectangle erasing and attribute cleanup.
-        """
-        while len(self.selected_cards) > 0:
-            c = self.selected_cards[0]
-            self.UnselectCard(c)
+        self.selec.UnselectAll()
+        self.selec.Deactivate()
 
     def SelectGroup(self, group, new_sel=True):
-        if new_sel: self.UnselectAll()
-        for c in group.GetMembers(): self.SelectCard(c)
+        self.selec.SelectGroup(group, new_sel)
 
     def CopySelected(self):
         print "copy"
@@ -625,42 +561,6 @@ class BoardBase(AutoSize):
     def OnLeftDClick(self, ev):
         self.NewCard("Content", pos=ev.GetPosition())
         
-    def OnMoveLeft(self, ev):
-        self.MoveSelected(-self.SCROLL_STEP, 0)
-
-    def OnMoveRight(self, ev):
-        self.MoveSelected(self.SCROLL_STEP, 0)
-
-    def OnMoveUp(self, ev):
-        self.MoveSelected(0, -self.SCROLL_STEP)
-
-    def OnMoveDown(self, ev):
-        self.MoveSelected(0, self.SCROLL_STEP)
-
-    def OnSelectionLeft(self, ev):
-        if len(self.GetSelection()) == 1:
-            self.SelectNext("left")
-        else:
-            ev.Skip()
-    
-    def OnSelectionRight(self, ev):
-        if len(self.GetSelection()) == 1:
-            self.SelectNext("right")
-        else:
-            ev.Skip()
-
-    def OnSelectionUp(self, ev):
-        if len(self.GetSelection()) == 1:
-            self.SelectNext("top")
-        else:
-            ev.Skip()
-
-    def OnSelectionDown(self, ev):
-        if len(self.GetSelection()) == 1:
-            self.SelectNext("bottom")
-        else:
-            ev.Skip()
-
             
     ### Auxiliary functions
 
@@ -669,34 +569,6 @@ class BoardBase(AutoSize):
         # bind its items to some accelerators
         accels = []
         ghost = wx.Menu()
-
-        # move selected cards        
-        movel = wx.MenuItem(ghost, wx.ID_ANY, "Move Left")
-        mover = wx.MenuItem(ghost, wx.ID_ANY, "Move Right")
-        moveu = wx.MenuItem(ghost, wx.ID_ANY, "Move Up")
-        moved = wx.MenuItem(ghost, wx.ID_ANY, "Move Down")
-        self.Bind(wx.EVT_MENU, self.OnMoveLeft  , movel)
-        self.Bind(wx.EVT_MENU, self.OnMoveRight , mover)
-        self.Bind(wx.EVT_MENU, self.OnMoveUp    , moveu)
-        self.Bind(wx.EVT_MENU, self.OnMoveDown  , moved)
-        accels.append(wx.AcceleratorEntry(wx.ACCEL_ALT, wx.WXK_LEFT,  movel.GetId()))
-        accels.append(wx.AcceleratorEntry(wx.ACCEL_ALT, wx.WXK_RIGHT, mover.GetId()))
-        accels.append(wx.AcceleratorEntry(wx.ACCEL_ALT, wx.WXK_UP,    moveu.GetId()))
-        accels.append(wx.AcceleratorEntry(wx.ACCEL_ALT, wx.WXK_DOWN,  moved.GetId()))
-        
-        # select next card
-        selr = wx.MenuItem(ghost, wx.ID_ANY, "Select Right")
-        sell = wx.MenuItem(ghost, wx.ID_ANY, "Select Left")
-        selu = wx.MenuItem(ghost, wx.ID_ANY, "Select Up")
-        seld = wx.MenuItem(ghost, wx.ID_ANY, "Select Down")
-        self.Bind(wx.EVT_MENU, self.OnSelectionLeft  , sell)
-        self.Bind(wx.EVT_MENU, self.OnSelectionRight , selr)
-        self.Bind(wx.EVT_MENU, self.OnSelectionUp    , selu)
-        self.Bind(wx.EVT_MENU, self.OnSelectionDown  , seld)
-        accels.append(wx.AcceleratorEntry(wx.ACCEL_NORMAL, wx.WXK_LEFT,  sell.GetId()))
-        accels.append(wx.AcceleratorEntry(wx.ACCEL_NORMAL, wx.WXK_RIGHT, selr.GetId()))
-        accels.append(wx.AcceleratorEntry(wx.ACCEL_NORMAL, wx.WXK_UP,    selu.GetId()))
-        accels.append(wx.AcceleratorEntry(wx.ACCEL_NORMAL, wx.WXK_DOWN,  seld.GetId()))
 
         self.SetAcceleratorTable(wx.AcceleratorTable(accels))
 
