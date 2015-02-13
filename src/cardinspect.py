@@ -18,12 +18,15 @@ class BoardInspect(AutoSize):
     
     def __init__(self, parent, board=None, pos=wx.DefaultPosition, size=wx.DefaultSize):
         super(BoardInspect, self).__init__(parent, pos=pos, size=size)
-        
+
+        # members        
         self.factor = BoardInspect.DEFAULT_FACTOR
         self.cards = {}
         self.SetBackgroundColour(self.BACKGROUND_CL)
-
         self.SetBoard(board)
+
+        # bindings
+        self.Bind(wx.EVT_SHOW, self.OnShow)
 
 
     ## Behavior functions
@@ -81,6 +84,13 @@ class BoardInspect(AutoSize):
 
 
     ### Callbacks
+
+    def OnShow(self, ev):
+        w, h = self.GetSize()
+        rect = self.GetParent().GetClientRect()
+        pos = (rect.right - w, rect.bottom - h)
+        self.Move(pos)
+        ev.Skip()
 
     def OnBoardScroll(self, ev):
         view = ev.GetEventObject().GetViewStart()
