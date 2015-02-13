@@ -77,6 +77,9 @@ class Card(wx.Panel):
     def SetBackgroundColour(self, cl):
         self.main.SetBackgroundColour(cl)
 
+    def GetBackgroundColour(self):
+        return self.main.GetBackgroundColour()
+
     def SetCardSizer(self, sz):
         self.main.SetSizer(sz)
 
