@@ -318,7 +318,7 @@ class MyFrame(wx.Frame):
         self.Bind(wx.EVT_MENU, self.OnDebug      , debug_it)
         
         ## shortcuts
-        self.accels.append(wx.AcceleratorEntry(wx.ACCEL_NORMAL, 127, delt_it.GetId())) # DEL
+        # self.accels.append(wx.AcceleratorEntry(wx.ACCEL_NORMAL, 127, delt_it.GetId())) # DEL
 
         self.accels.append(wx.AcceleratorEntry(wx.ACCEL_CTRL, ord("M"), tgmap_it.GetId()))
         self.accels.append(wx.AcceleratorEntry(wx.ACCEL_CTRL, ord("A"), sela_it.GetId()))
@@ -443,6 +443,9 @@ class MyFrame(wx.Frame):
         # nb = wx.Notebook(self, size=size)
         nb = Book(self, size=size)
 
+        # bindings: make sure to Bind EVT_BK_NEW_PAGE before creating any pages!
+        nb.Bind(Book.EVT_BK_NEW_PAGE, self.OnNewPage)
+
         # make starting page
         pg = Page(nb, size = size)
         nb.AddPage(pg, self.DEFAULT_PAGE_NAME)
@@ -452,11 +455,6 @@ class MyFrame(wx.Frame):
         nb_box = wx.BoxSizer(wx.HORIZONTAL)
         nb_box.Add(nb, proportion=1,   flag=wx.ALL|wx.EXPAND, border=1)
         vbox.Add(nb_box, proportion=1, flag=wx.ALL|wx.EXPAND, border=1)
-
-        # bindings
-        nb.Bind(wx.EVT_NOTEBOOK_PAGE_CHANGED, self.OnPageChange)
-        pg.Bind(Page.EVT_PAGE_INSPECT, self.OnInspect)
-        pg.Bind(Page.EVT_PAGE_CANCEL_INSPECT, self.OnCancelInspect)
 
         # set members
         self.notebook = nb
@@ -496,10 +494,10 @@ class MyFrame(wx.Frame):
 
         nb = self.notebook
         nb.Load(d)
-        for i in  range(nb.GetPageCount()):
-            pg = nb.GetPage(i)
-            pg.Bind(Page.EVT_PAGE_INSPECT, self.OnInspect)
-            pg.Bind(Page.EVT_PAGE_CANCEL_INSPECT, self.OnCancelInspect)
+        # for i in  range(nb.GetPageCount()):
+        #     pg = nb.GetPage(i)
+        #     pg.Bind(Page.EVT_PAGE_INSPECT, self.OnInspect)
+        #     pg.Bind(Page.EVT_PAGE_CANCEL_INSPECT, self.OnCancelInspect)
 
     def AddAccelerator(self, entry):
         """entry should be a AcceleratorEntry()."""
@@ -514,6 +512,11 @@ class MyFrame(wx.Frame):
                 
         
     ### Callbacks
+
+    def OnNewPage(self, ev):
+        ev.page.Bind(Page.EVT_PAGE_INSPECT, self.OnInspect)
+        ev.page.Bind(Page.EVT_PAGE_CANCEL_INSPECT, self.OnCancelInspect)
+        ev.page.Bind(Page.EVT_PAGE_DEL_CARD, self.AfterDelete)
 
     def OnZoomIn(self, ev):
         self.notebook.GetCurrentPage().ZoomIn()
@@ -620,9 +623,6 @@ class MyFrame(wx.Frame):
                 bd.SelectCard(card, True)
                 bd.SetFocus()
 
-    def OnPageChange(self, ev):
-        pass
-
     def OnHArrange(self, ev):
         self.GetCurrentBoard().ArrangeSelection(Board.HORIZONTAL)
         self.Log("Horizontal arrange.")
@@ -644,17 +644,14 @@ class MyFrame(wx.Frame):
         self.Log("Paste " + str(len(self.GetCurrentBoard().GetSelection())) + " Cards.")
 
     def OnDelete(self, ev):
-        """Delete selected cards."""
-        pg = self.notebook.GetCurrentPage()
-        sel = pg.board.GetSelection()
-        if pg.GetCurrentContent() == Board and len(sel) > 0:
-            self.Log("Delete " + str(len(sel)) + " Cards.")
-            # since sel points to cards that are being deleted,
-            # we can't iterate normally
-            while len(sel) > 0:
-                sel[-1].Delete()
-        else:
-            ev.Skip()
+        """Requests board to delete some cards, raised from the menu. See AfterDelete."""
+        bd = self.GetCurrentBoard()
+        sel = len(bd.GetSelection())
+        bd.DeleteSelected()
+
+    def AfterDelete(self, ev):
+        """Called after a delete action on a board."""
+        self.Log("Delete " + str(ev.number) + " Cards.")
 
     def OnCtrlF(self, ev):
         """Show/hide the search control."""
@@ -719,8 +716,8 @@ class MyFrame(wx.Frame):
             # and create the new one
             pg = Page(self.notebook)
             self.notebook.AddPage(pg, dlg.GetValue(), select=True)
-            pg.Bind(Page.EVT_PAGE_INSPECT, self.OnInspect)
-            pg.Bind(Page.EVT_PAGE_CANCEL_INSPECT, self.OnCancelInspect)
+            # pg.Bind(Page.EVT_PAGE_INSPECT, self.OnInspect)
+            # pg.Bind(Page.EVT_PAGE_CANCEL_INSPECT, self.OnCancelInspect)
             pg.SetFocus()
 
     def OnSave(self, ev):

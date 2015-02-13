@@ -27,6 +27,7 @@ class Page(wx.Panel):
 
     InspectEvent, EVT_PAGE_INSPECT = ne.NewEvent()
     CancelInspectEvent, EVT_PAGE_CANCEL_INSPECT = ne.NewEvent()
+    DeleteEvent, EVT_PAGE_DEL_CARD = ne.NewEvent()
 
     def __init__(self, parent, id=wx.ID_ANY, pos=wx.DefaultPosition, size = wx.DefaultSize):
         super(Page, self).__init__(parent, id=id, pos=pos, size=size)
@@ -75,10 +76,9 @@ class Page(wx.Panel):
 
         # raise the event
         number = len(self.inspecting)
+        title = ""
         if number == 1:
             title = self.inspecting[0].GetTitle()
-        else:
-            title = ""
         event = self.InspectEvent(id=wx.ID_ANY, number=number, title=title)
         event.SetEventObject(self)
         self.GetEventHandler().ProcessEvent(event)
@@ -290,6 +290,7 @@ class Page(wx.Panel):
         
         # bindings
         bd.Bind(Card.EVT_CARD_REQUEST_INSPECT, self.OnRequestInspect)
+        bd.Bind(bd.EVT_BOARD_DEL_CARD, self.OnDelete)
 
         # init also the inspection view
         ins = BoardInspect(self, bd)
@@ -372,6 +373,10 @@ class Page(wx.Panel):
     def OnCancelInspect(self, ev):
         self.CancelInspect()
         
+    def OnDelete(self, ev):
+        event = self.DeleteEvent(id=wx.ID_ANY, number=ev.number)
+        event.SetEventObject(self)
+        self.GetEventHandler().ProcessEvent(event)
 
     def OnSize(self, ev):
         # important to skip the event for Sizers to work correctly
@@ -481,7 +486,8 @@ class Page(wx.Panel):
 ######################            
 
 class Book(wx.Notebook):
-    
+    NewPageEvent, EVT_BK_NEW_PAGE = ne.NewEvent()
+
     def __init__(self, parent, pos=wx.DefaultPosition, size=wx.DefaultSize):
         super(Book, self).__init__(parent, pos=pos, size=size)
 
@@ -499,3 +505,11 @@ class Book(wx.Notebook):
             pg.Load(page)
             pg.Show()        # then show everything at the same time
             self.AddPage(pg, title, select=True)
+
+    def AddPage(self, page, text, select=False, imageId=wx.Notebook.NO_IMAGE):
+        """Call the usual wx.Notebook.AddPage, and also raise the EVT_NB_NEW_PAGE event."""
+        super(Book, self).AddPage(page, text, select, imageId)
+        
+        event = self.NewPageEvent(id=wx.ID_ANY, page=page, title=text)
+        event.SetEventObject(self)
+        self.GetEventHandler().ProcessEvent(event)

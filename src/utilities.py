@@ -3,6 +3,7 @@
 
 import wx
 import wx.lib.stattext as st
+import wx.lib.newevent as ne
 from math import sqrt
 
 
@@ -158,6 +159,8 @@ class SelectionManager(wx.Window):
     SIZE = (1,1)
     POS  = (0,0)
 
+    DeleteEvent, EVT_MGR_DELETE = ne.NewCommandEvent()
+
     def __init__(self, parent):
         super(SelectionManager, self).__init__(parent, size=self.SIZE, pos=self.POS)
         self.cards = []
@@ -234,6 +237,22 @@ class SelectionManager(wx.Window):
         if new_sel: self.UnselectAll()
         for c in group.GetMembers(): self.SelectCard(c)
 
+    def DeleteSelected(self):
+        number = len(self.cards)
+        while len(self.cards) > 0:
+            c = self.cards[-1]
+            c.Delete()
+            if c in self.cards:
+                self.cards.remove(c)
+
+        # raise the event; it differs from Card.DeleteEvent in that
+        # we raise only one event for every delete action
+        # e.g., if we delete five cards, there will be five Card.DeleteEvent's
+        # raised, but only one SelectionManager.DeleteEvent
+        event = self.DeleteEvent(id=wx.ID_ANY, number=number)
+        event.SetEventObject(self)
+        self.GetEventHandler().ProcessEvent(event)
+
     def SelectNext(self, direc):
         """
         Selects next card in the specified direction. The selected
@@ -301,8 +320,9 @@ class SelectionManager(wx.Window):
         elif ev.ControlDown():
             ev.Skip()
 
-        # naked arrow keys: select next card    
+        # no modifiers
         else:
+            # arrow keys: select next card    
             if   key == wx.WXK_LEFT:
                 self.SelectNext("left")
             elif key == wx.WXK_RIGHT:
@@ -311,6 +331,10 @@ class SelectionManager(wx.Window):
                 self.SelectNext("up")
             elif key == wx.WXK_DOWN:
                 self.SelectNext("down")
+
+            # DEL: delete all selection
+            elif key == wx.WXK_DELETE:
+                self.DeleteSelected()
                 
             # deactivate on any other key that's not a modifier
             elif key != 308 and key != 306:

@@ -20,6 +20,7 @@ class BoardBase(AutoSize):
     VERTICAL   = 2
 
     NewCardEvent, EVT_NEW_CARD = ne.NewEvent()
+    DeleteEvent,  EVT_BOARD_DEL_CARD = ne.NewEvent()
 
     def __init__(self, parent, id=wx.ID_ANY, pos=(0,0), size=wx.DefaultSize):
         super(BoardBase, self).__init__(parent, id=id, pos=pos, size=size, style=wx.BORDER_NONE)
@@ -43,6 +44,7 @@ class BoardBase(AutoSize):
 
         # selection 
         self.selec = SelectionManager(self)
+        self.Bind(self.selec.EVT_MGR_DELETE, self.OnMgrDelete)
         
         # other gui setup
         self.SetBackgroundColour(BoardBase.BACKGROUND_CL)        
@@ -253,6 +255,9 @@ class BoardBase(AutoSize):
     def SelectGroup(self, group, new_sel=True):
         self.selec.SelectGroup(group, new_sel)
 
+    def DeleteSelected(self):
+        self.selec.DeleteSelected()
+
     def CopySelected(self):
         # get the data
         data = []
@@ -439,9 +444,16 @@ class BoardBase(AutoSize):
         card.SetSize([i*self.scale for i in card.GetSize()])
         
     def OnCardDelete(self, ev):
+        """Listens to every deleted card."""
         card = ev.GetEventObject()
         self.cards.remove(card)
         self.UnselectCard(card)
+
+    def OnMgrDelete(self, ev):
+        """Listens to every delete action on SelectionManager."""
+        event = self.DeleteEvent(id=wx.ID_ANY, number=ev.number)
+        event.SetEventObject(self)
+        self.GetEventHandler().ProcessEvent(event)
 
     def OnCardRequest(self, ev):
         """
