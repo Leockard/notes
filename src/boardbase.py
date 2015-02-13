@@ -519,7 +519,6 @@ class BoardBase(AutoSize):
     def OnCardLeftUp(self, ev):
         # terminate moving
         if self.on_motion:
-            # self.selected_cards = []
             self.on_motion = False
             for c, orig, pos in self.moving_cards_pos:
                 self.EraseCardRect(c, pos)

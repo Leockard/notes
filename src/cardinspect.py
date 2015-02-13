@@ -117,17 +117,14 @@ class CardInspect(wx.Panel):
 
     def __init__(self, parent, cards=[], pos=wx.DefaultPosition, size=wx.DefaultSize):
         super(CardInspect, self).__init__(parent, size=size)
+        
         # GUI
         self.SetBackgroundColour(self.BACKGROUND_CL)
-
-        # boxes
         hbox = wx.BoxSizer(wx.HORIZONTAL)
         self.SetSizer(hbox)
 
-        # add the first few
+        # members
         self.pairs = {}
-        for c in cards:
-            self.AddCard()        
 
                 
     ### Behavior functions

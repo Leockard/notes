@@ -452,6 +452,7 @@ class Content(Card):
         ghost = wx.Menu()
 
         # content style
+        # note that ital has accel CTRL + I, which also handels inspect requests
         bold = wx.MenuItem(ghost, wx.ID_ANY, "Bold selection")
         ital = wx.MenuItem(ghost, wx.ID_ANY, "Italic selection")
         self.Bind(wx.EVT_MENU, self.OnCtrlB , bold)

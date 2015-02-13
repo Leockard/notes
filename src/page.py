@@ -203,6 +203,10 @@ class Page(wx.Panel):
     ### Auxiliary functions
     
     def Dump(self):
+        # if we're inspecting, first save those changes and then dump
+        if self.GetCurrentContent() == CardInspect:
+            self.SaveFromInspect()
+            
         di = self.board.Dump()
         for id, card in di.iteritems():
             if "pos" in card.keys():

@@ -477,11 +477,10 @@ class MyFrame(wx.Frame):
 
     def OnDebug(self, ev):
         print "---DEBUG---"
-        print self.FindFocus()
-        print self.GetCurrentBoard().selec.IsActive()
+        print self.notebook.GetCurrentPage().GetCurrentContent()
 
     def Save(self, out_file):
-        """Save the data in the dict d in the file out_file."""
+        """Save the data in the out_file."""
         di =  self.notebook.Dump()
         with open(out_file, 'w') as out:
             pickle.dump(di, out)
@@ -489,13 +488,7 @@ class MyFrame(wx.Frame):
     def Load(self, path):
         carddict = {}
         with open(path, 'r') as f: d = pickle.load(f)
-
-        nb = self.notebook
-        nb.Load(d)
-        # for i in  range(nb.GetPageCount()):
-        #     pg = nb.GetPage(i)
-        #     pg.Bind(Page.EVT_PAGE_INSPECT, self.OnInspect)
-        #     pg.Bind(Page.EVT_PAGE_CANCEL_INSPECT, self.OnCancelInspect)
+        self.notebook.Load(d)
 
     def AddAccelerator(self, entry):
         """entry should be a AcceleratorEntry()."""
@@ -723,21 +716,25 @@ class MyFrame(wx.Frame):
         # return focus after saving
         focus = self.FindFocus()
 
-        # if there's a current file, save it
+        # if we don't have a path yet, ask for one
+        path = ""
         if self.cur_file != "":
-            self.Save(self.cur_file)
-            
-        else: # else, ask for a file name
+            path = self.cur_file
+        else:
             fd = wx.FileDialog(self, "Save", os.getcwd(), "", "P files (*.p)|*.p",
-                               wx.FD_SAVE | wx.FD_OVERWRITE_PROMPT)
-            if fd.ShowModal() == wx.ID_CANCEL: return # user changed her mind
+                               wx.FD_SAVE|wx.FD_OVERWRITE_PROMPT)
+            # check if user changed her mind
+            if fd.ShowModal() == wx.ID_CANCEL:
+                return
+            path = fd.GetPath()
 
-            # let Save() worry about serializing
-            self.Save(fd.GetPath())
-            self.cur_file = fd.GetPath()
+        # finish up
+        self.Save(path)
+        self.cur_file = path
 
         if focus:
             focus.SetFocus()
+        
         self.Log("Saved file" + self.cur_file)
 
     def OnOpen(self, ev):
