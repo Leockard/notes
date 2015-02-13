@@ -477,7 +477,7 @@ class MyFrame(wx.Frame):
 
     def OnDebug(self, ev):
         print "---DEBUG---"
-        print self.notebook.GetCurrentPage().GetCurrentContent()
+        print self.FindFocus()
 
     def Save(self, out_file):
         """Save the data in the out_file."""
@@ -489,6 +489,7 @@ class MyFrame(wx.Frame):
         carddict = {}
         with open(path, 'r') as f: d = pickle.load(f)
         self.notebook.Load(d)
+        self.notebook.SetFocus()
 
     def AddAccelerator(self, entry):
         """entry should be a AcceleratorEntry()."""
