@@ -77,7 +77,7 @@ class EditText(wx.TextCtrl):
     
     def __init__(self, parent, id = wx.ID_ANY, value="",
                  pos=wx.DefaultPosition, size=DEFAULT_SZ,
-                 style=wx.BORDER_NONE|wx.TE_RICH|wx.TE_PROCESS_ENTER):
+                 style=wx.BORDER_NONE|wx.TE_RICH|wx.TE_PROCESS_ENTER|wx.TE_MULTILINE):
         super(EditText, self).__init__(parent, id=id, pos=pos, size=size, style=style, value=value)
 
         # colours
@@ -92,12 +92,13 @@ class EditText(wx.TextCtrl):
         self.Bind(wx.EVT_LEFT_DOWN, self.OnLeftDown)
         self.Bind(wx.EVT_SET_FOCUS, self.OnSetFocus)
         self.Bind(wx.EVT_KILL_FOCUS, self.OnKillFocus)
-        self.Bind(wx.EVT_TEXT_ENTER, self.ToggleColours)
+        self.Bind(wx.EVT_TEXT_ENTER, self.OnEnter)
+        self.Bind(wx.EVT_KEY_DOWN, self.OnKeyDown)
 
     
     ### Behavior functions
 
-    def ToggleColours(self, ev):
+    def ToggleColours(self):
         if self.GetBackgroundColour() == self.first_cl:
             self.ShowSecondColour()
         else:
@@ -118,6 +119,18 @@ class EditText(wx.TextCtrl):
 
 
     ### Callbacks
+
+    def OnKeyDown(self, ev):
+        # skip everything but tab
+        if ev.GetKeyCode() != 9:
+            ev.Skip()
+        # on TAB: don't input a \t char and simulate a tab traversal
+        else:
+            self.Navigate(not ev.ShiftDown())
+
+    def OnEnter(self, ev):
+        self.ToggleColours()
+        self.Navigate(not wx.MouseState().ShiftDown())
     
     def OnLeftDown(self, ev):
         if self.GetBackgroundColour() == self.first_cl:
@@ -129,6 +142,7 @@ class EditText(wx.TextCtrl):
         self.ShowSecondColour()
 
     def OnKillFocus(self, ev):
+        self.SetSelection(0,0)
         self.ShowFirstColour()
         
         

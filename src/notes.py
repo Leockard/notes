@@ -157,7 +157,7 @@ class MyFrame(wx.Frame):
             old = i = self.search_head
             new = i + 1
             if new >= len(self.search_find): new = 0
-            self.JumpSearchResults(i, i+1)
+            self.JumpSearchResults(old, new)
             self.search_head = new
 
     def JumpSearchResults(self, old, new):
@@ -481,9 +481,9 @@ class MyFrame(wx.Frame):
 
     def OnDebug(self, ev):
         print "---DEBUG---"
-        bd = self.GetCurrentBoard()
-        print "real: ", bd.GetSize()
-        print "virt: ", bd.GetVirtualSize()
+        card = self.GetCurrentBoard().GetCards()[0]
+        card.title.SetStyle(0, 3, wx.TextAttr(wx.NullColour, wx.YELLOW))
+        card.content.SetStyle(0, 3, wx.TextAttr(wx.NullColour, wx.YELLOW))
 
     def Save(self, out_file):
         """Save the data in the dict d in the file out_file."""

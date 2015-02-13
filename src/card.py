@@ -500,10 +500,7 @@ class Content(Card):
             ev.Skip()
         # on TAB: don't input a \t char and simulate a tab traversal
         else:
-            if ev.ShiftDown():
-                self.kindbut.SetFocus()
-            else:
-                self.title.SetFocus()
+            self.Navigate(not ev.ShiftDown())
 
     def OnKindPressed(self, ev):
         ctrl = ev.GetEventObject()
