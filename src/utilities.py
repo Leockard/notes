@@ -317,8 +317,12 @@ class SelectionManager(wx.Window):
             else:
                 ev.Skip()
 
+        # pass the CTRL keys to the last selected card
         elif ev.ControlDown():
-            ev.Skip()
+            if key == ord("I"):
+                self.last.OnCtrlI(ev)
+            else:
+                ev.Skip()
 
         # no modifiers
         else:
