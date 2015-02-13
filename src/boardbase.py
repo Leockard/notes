@@ -28,7 +28,6 @@ class BoardBase(AutoSize):
         # members
         self.cards = []
         self.groups = []
-        # self.selected_cards = []
         self.moving_cards_pos = []
         self.drag_select = False
         self.scale = 1.0
