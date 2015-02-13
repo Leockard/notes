@@ -30,6 +30,10 @@ class Card(wx.Panel):
         self.main = None
         self.InitBorder()
         self.label = label
+        # frect stores the floating point coordinates of this card's rect
+        # in the usual order: [left, top, width, height]
+        # see Card.Scale()
+        self.frect = []
 
         # create CardBar
         # if Card.bar == None:
@@ -80,12 +84,17 @@ class Card(wx.Panel):
         return self.main.GetSizer()
 
     def Scale(self, factor):
-        rect = self.GetRect()
-        left   = int(float(rect.left)   * factor)
-        right  = int(float(rect.right)  * factor)
-        top    = int(float(rect.top)    * factor)
-        bottom = int(float(rect.bottom) * factor)
-        self.SetRect(wx.Rect(left, top, right - left + 1, bottom - top + 1))
+        # it this is the first time, get the integer coordinate rect
+        if not self.frect:
+            self.frect = self.GetRect()
+
+        # compute and store our "real" rect in floating point coordinates
+        self.frect = [f * factor for f in self.frect]
+
+        # wx.Rect() converts everything to integers
+        # since factor is always a float, this is why
+        # we need to store our own coordinates!
+        self.SetRect(wx.Rect(*self.frect))
 
                         
     ### Auxiliary functions
@@ -150,7 +159,6 @@ class Header(Card):
     def InitUI(self):
         # Controls
         txt = EditText(self.main)
-        txt.SetHint("Header...")
         txt.Bind(wx.EVT_KEY_UP, self.OnKeyUp)
         
         # Boxes
@@ -556,23 +564,27 @@ class Image(Card):
         self.img = None
         self.scale = 1.0
         self.path = path
+        self.orig = None
         self.InitUI(path)
 
         
     ### Behavior funtions
 
     def LoadImage(self, path):
+        # load the image
         bmp = wx.Bitmap(path)
         self.SetImage(bmp)
         self.Scale(self.scale)
-        
+
+        # hide the button
         if self.btn:
             self.btn.Hide()
-            del self.btn
             self.btn = None
 
+        # set members
         self.path = path
-        self.SetFocus()
+        self.orig = bmp
+        self.GetParent().SetFocus()
 
     def SetImage(self, bmp):
         if not self.img:
@@ -585,13 +597,22 @@ class Image(Card):
         self.Fit()
 
     def Scale(self, factor):
+        # Card.Scale takes care of the new rect size
         super(Image, self).Scale(factor)
         self.scale = factor
+
+        # with the new rect, we only need resize the image to it
         if self.img:
-           img = self.img.GetBitmap().ConvertToImage()
-           bmp = wx.BitmapFromImage(img.Scale(*self.GetClientSize(),
+            img = self.img.GetBitmap().ConvertToImage()
+
+            if self.orig and self.img.GetSize() == self.orig.GetSize():
+                # if we're returning to the original size, reload instead of resize,
+                # because an image after several resizes looks bad
+                bmp = self.orig
+            else:
+                bmp = wx.BitmapFromImage(img.Scale(*self.GetSize(),
                                     quality=wx.IMAGE_QUALITY_BILINEAR))
-           self.SetImage(bmp)
+            self.SetImage(bmp)
 
     ### Auxiliary functions
     
@@ -618,7 +639,7 @@ class Image(Card):
     ### Callbacks
 
     def OnButton(self, ev):
-        fd = wx.FileDialog(self, "Save", os.getcwd(), "", "All files (*.*)|*.*",
+        fd = wx.FileDialog(self, "Open", os.getcwd(), "", "All files (*.*)|*.*",
                            wx.FD_OPEN | wx.FD_FILE_MUST_EXIST)
         if fd.ShowModal() == wx.ID_CANCEL: return # user changed her mind
         self.LoadImage(fd.GetPath())

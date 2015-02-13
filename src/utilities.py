@@ -162,6 +162,7 @@ class SelectionManager(wx.Window):
         super(SelectionManager, self).__init__(parent, size=self.SIZE, pos=self.POS)
         self.cards = []
         self.last = None
+        self.active = False
         self.SetBackgroundColour(self.GetParent().GetBackgroundColour())
 
 
@@ -170,6 +171,7 @@ class SelectionManager(wx.Window):
     def Activate(self):
         self.Bind(wx.EVT_KEY_DOWN, self.OnKeyDown)
         self.SetFocus()
+        self.active = True
 
     def Deactivate(self):
         # return focus to the last card
@@ -184,6 +186,10 @@ class SelectionManager(wx.Window):
             c.Unselect()
         self.cards = []
         self.Unbind(wx.EVT_KEY_DOWN)
+        self.active = False
+
+    def IsActive(self):
+        return self.active
 
     def GetSelection(self):
         return self.cards

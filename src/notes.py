@@ -481,9 +481,8 @@ class MyFrame(wx.Frame):
 
     def OnDebug(self, ev):
         print "---DEBUG---"
-        card = self.GetCurrentBoard().GetCards()[0]
-        card.title.SetStyle(0, 3, wx.TextAttr(wx.NullColour, wx.YELLOW))
-        card.content.SetStyle(0, 3, wx.TextAttr(wx.NullColour, wx.YELLOW))
+        print self.FindFocus()
+        print self.GetCurrentBoard().selec.IsActive()
 
     def Save(self, out_file):
         """Save the data in the dict d in the file out_file."""
@@ -712,7 +711,7 @@ class MyFrame(wx.Frame):
     def OnNew(self, ev):
         dlg = wx.TextEntryDialog(self, "New page title: ")
         if dlg.ShowModal() == wx.ID_OK:
-            # erase the place holder page
+            # erase the placeholder page
             nb = self.notebook
             if nb.GetPageCount() == 1 and nb.GetPageText(0) == self.DEFAULT_PAGE_NAME:
                 nb.DeletePage(0)
@@ -722,6 +721,7 @@ class MyFrame(wx.Frame):
             self.notebook.AddPage(pg, dlg.GetValue(), select=True)
             pg.Bind(Page.EVT_PAGE_INSPECT, self.OnInspect)
             pg.Bind(Page.EVT_PAGE_CANCEL_INSPECT, self.OnCancelInspect)
+            pg.SetFocus()
 
     def OnSave(self, ev):
         """Save file."""
