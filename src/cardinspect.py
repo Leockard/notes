@@ -82,15 +82,17 @@ class BoardInspect(AutoSize):
             mini.Destroy()
             del self.cards[card]
 
+    def SetPosition(self):
+        w, h = self.GetSize()
+        rect = self.board.GetClientRect()
+        pos = (rect.right - w, rect.bottom - h)
+        self.Move(pos)
+
 
     ### Callbacks
 
     def OnShow(self, ev):
-        w, h = self.GetSize()
-        rect = self.GetParent().GetClientRect()
-        pos = (rect.right - w, rect.bottom - h)
-        self.Move(pos)
-        ev.Skip()
+        self.SetPosition()
 
     def OnBoardScroll(self, ev):
         view = ev.GetEventObject().GetViewStart()
@@ -99,6 +101,7 @@ class BoardInspect(AutoSize):
     def OnBoardSize(self, ev):
         board = ev.GetEventObject()
         self.SetSize([i / self.factor for i in board.GetSize()])
+        self.SetPosition()
 
     def OnNewCard(self, ev):
         self.AddCard(ev.GetEventObject())
