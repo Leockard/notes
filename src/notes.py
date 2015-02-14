@@ -478,9 +478,15 @@ class MyFrame(wx.Frame):
 
     def OnDebug(self, ev):
         print "---DEBUG---"
-        pg = self.notebook.GetCurrentPage()
-        print "Page.GetGetCurrentContent: ", pg.GetCurrentContent()
-        DumpSizerChildren(pg.GetSizer())
+        c = self.GetCurrentBoard().GetCards()[0]
+        attr = wx.TextAttr()
+        print "chars' bg: "
+        for i in range(len(c.title.GetValue())):
+            c.title.GetStyle(i, attr)
+            print attr.GetBackgroundColour()
+        print "ctrl bg  cl: ", c.title.GetBackgroundColour()
+        print "ctrl 1st cl: ", c.title.GetFirstColour()
+        print "ctrl 2nd cl: ", c.title.GetSecondColour()
 
     def Save(self, out_file):
         """Save the data in the out_file."""

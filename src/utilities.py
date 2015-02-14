@@ -108,6 +108,34 @@ class EditText(wx.TextCtrl):
     
     ### Behavior functions
 
+    def SetBackgroundColour(self, new_cl):
+        # If we change background colour from A to B, but a char in the text
+        # has background colour C, TextCtrl.SetBackgroundColour() won't change
+        # it correctly. Solution: store the bg colour (of those chars that have
+        # a different bg colour than the current one), change the bg for all
+        # and then restore the ones saved.
+        text = self.GetValue()
+        attr = wx.TextAttr()
+        cur = self.GetBackgroundColour()
+        char_old_bg = {}
+
+        # store those bg's different than the current
+        for i in range(len(text)):
+            self.GetStyle(i, attr)
+            old = attr.GetBackgroundColour()
+            if old != cur:
+                char_old_bg[i] = old
+
+        # set the new bg for all, but don't use attr again!
+        # char_old_bg is pointing to one of its members
+        super(EditText, self).SetBackgroundColour(new_cl)
+        self.SetStyle(0, len(text), wx.TextAttr(None, new_cl))
+
+        # restore the saved ones
+        for i in char_old_bg.keys():
+            attr.SetBackgroundColour(char_old_bg[i])
+            self.SetStyle(i, i+1, attr)
+
     def ToggleColours(self):
         if self.GetBackgroundColour() == self.first_cl:
             self.ShowSecondColour()
@@ -123,9 +151,15 @@ class EditText(wx.TextCtrl):
     def SetSecondColour(self, cl):
         self.second_cl = cl
 
+    def GetSecondColour(self):
+        return self.second_cl
+
     def SetFirstColour(self, cl):
         self.first_cl = cl
         self.SetBackgroundColour(self.first_cl)
+
+    def GetFirstColour(self):
+        return self.first_cl
 
 
     ### Callbacks
