@@ -353,8 +353,8 @@ class SelectionManager(wx.Window):
             elif key != 308 and key != 306:
                 self.Deactivate()
 
-    
-    
+
+                    
 ######################
 # Auxiliary functions
 ######################
