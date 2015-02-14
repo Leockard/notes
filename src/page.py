@@ -1,4 +1,5 @@
 #!/usr/bin/python
+# -*- coding: utf-8 -*-
 
 # page.py
 # Page class: contains a Board and a canvas, plus functionality to switch between the two
@@ -394,14 +395,8 @@ class Page(wx.Panel):
             self.ShowBoard()
 
     def OnToggle(self, ev):
-        # EXTREMELY important!
-        # remember that self.board is a BoardBase
-        # but we added the parent Board object to our Sizer
-        bd = self.board.GetParent()
-        cv = self.canvas
-
         # now do the actual toggling replacing bd with self.canvas
-        if bd.IsShown():
+        if self.GetCurrentContent() == Board:
             self.SetupCanvas()
             self.ShowCanvas()
         else:

@@ -1,4 +1,6 @@
 # boardbase.py
+# -*- coding: utf-8 -*-
+
 # base board class for notes.py
 
 import wx
@@ -31,6 +33,7 @@ class BoardBase(AutoSize):
         self.moving_cards_pos = []
         self.drag_select = False
         self.scale = 1.0
+        self.selec = SelectionManager(self)        
         self.InitAccels()
 
         # Bindings
@@ -39,10 +42,6 @@ class BoardBase(AutoSize):
         self.Bind(wx.EVT_LEFT_DCLICK, self.OnLeftDClick)
         self.Bind(wx.EVT_MOUSE_CAPTURE_LOST, self.OnMouseCaptureLost)
         self.Bind(wx.EVT_CHILD_FOCUS, self.OnChildFocus)
-        self.Bind(wx.EVT_SCROLL, self.OnScroll)
-
-        # selection 
-        self.selec = SelectionManager(self)
         self.Bind(self.selec.EVT_MGR_DELETE, self.OnMgrDelete)
         
         # other gui setup
@@ -434,9 +433,6 @@ class BoardBase(AutoSize):
     def __del__(self):
         # don't forget to stop all timers!
         pass
-
-    def OnScroll(self, ev):
-        print "board scroll"
 
     def OnCardCollapse(self, ev):
         card = ev.GetEventObject()

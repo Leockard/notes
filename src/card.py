@@ -1,4 +1,6 @@
 # card.py
+# -*- coding: utf-8 -*-
+
 # Card classes. The windows that go in a BoardBase.
 
 import wx
@@ -424,6 +426,8 @@ class Content(Card):
         
         kindbut = wx.Button(self.main, label = "kind", size=Content.KIND_BTN_SZ, style=wx.BORDER_NONE)
         kindbut.SetOwnFont(wx.Font(*self.KIND_FONT))
+
+        stars = wx.StaticText(self.main, label=u"★★★")
         
         content = wx.TextCtrl(self.main, size=(10,10), style=wx.TE_RICH|wx.TE_MULTILINE|wx.TE_NO_VSCROLL)
         
@@ -431,6 +435,8 @@ class Content(Card):
         hbox1 = wx.BoxSizer(wx.HORIZONTAL)
         hbox1.Add(title,   proportion=1, flag=wx.ALL|wx.EXPAND, border=Card.BORDER_WIDTH)
         hbox1.Add(kindbut, proportion=0, flag=wx.ALL,           border=Card.BORDER_WIDTH)
+        
+        hbox1.Add(stars, proportion=0, flag=wx.ALL,           border=Card.BORDER_WIDTH)
 
         hbox2 = wx.BoxSizer(wx.HORIZONTAL)
         hbox2.Add(content, proportion=1, flag=wx.EXPAND)

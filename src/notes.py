@@ -1,4 +1,5 @@
 #!/usr/bin/python
+# -*- coding: utf-8 -*-
 
 # notes.py
 # main class and executable for note taking application
@@ -477,7 +478,9 @@ class MyFrame(wx.Frame):
 
     def OnDebug(self, ev):
         print "---DEBUG---"
-        print self.FindFocus()
+        pg = self.notebook.GetCurrentPage()
+        print "Page.GetGetCurrentContent: ", pg.GetCurrentContent()
+        DumpSizerChildren(pg.GetSizer())
 
     def Save(self, out_file):
         """Save the data in the out_file."""

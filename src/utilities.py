@@ -1,4 +1,6 @@
 # utilities.py
+# -*- coding: utf-8 -*-
+
 # some auxiliary classes for notes.py
 
 import wx
@@ -16,10 +18,14 @@ class AutoSize(wx.ScrolledWindow):
     
     def __init__(self, parent, id=wx.ID_ANY, pos=wx.DefaultPosition, size=wx.DefaultSize, style=0):
         super(AutoSize, self).__init__(parent, id=id, pos=pos, size=size, style=style)
-        self.Bind(wx.EVT_SIZE, self.AutoSizeOnSize)
-        self.SetScrollRate(self.SCROLL_STEP, self.SCROLL_STEP)
-        self.content_sz = wx.Size(size[0], size[1])
 
+        self.content_sz = wx.Size(size[0], size[1])
+        self.SetScrollRate(self.SCROLL_STEP, self.SCROLL_STEP)
+
+        # bindings
+        self.Bind(wx.EVT_SIZE, self.AutoSizeOnSize)
+
+        
     def UpdateContentSize(self, sz):
         """
         If sz contains a dimension that is bigger than the
@@ -37,10 +43,6 @@ class AutoSize(wx.ScrolledWindow):
             
         if flag:
             self.SetVirtualSize(self.content_sz)
-
-    def AutoSizeOnSize(self, ev):
-        self.UpdateContentSize(ev.GetSize())
-        ev.Skip()
 
     def FitToChildren(self):
         """
@@ -70,7 +72,14 @@ class AutoSize(wx.ScrolledWindow):
         self.Scroll(view[0], view[1])
 
 
-                
+    ### Callbacks
+
+    def AutoSizeOnSize(self, ev):
+        self.UpdateContentSize(ev.GetSize())
+        ev.Skip()
+
+
+
 class EditText(wx.TextCtrl):
     DEFAULT_SZ = (200, 25)
     DEFAULT_FONT = (12, wx.SWISS, wx.ITALIC, wx.BOLD)
@@ -369,17 +378,39 @@ def GetCardAncestor(ctrl):
     else:
         return None
 
-def DumpSizerChildren(sizer, depth=1):
+def DumpSizerChildren(sizer, depth=1, full=False):
     """Recursively prints all children."""
-    print ("    " * (depth - 1)) + "Sizer: ", sizer
-    
+    # prepare the info string for the sizer
+    # indentation
+    sizer_info = str("    " * (depth - 1))
+
+    # obj info
+    if full: sizer_info = sizer_info + "Sizer: " # + str(sizer)
+    else:    sizer_info = sizer_info + "Sizer: " # + str(sizer.__class__)
+
+    # orientation
+    orient = sizer.GetOrientation()
+    if orient == wx.VERTICAL: sizer_info = sizer_info + "vertical"
+    else:                     sizer_info = sizer_info + "horizontal"
+        
+    print sizer_info
+
+    # for each children: indentation, class and shown state
     for c in sizer.GetChildren():
         if c.IsWindow():
-            print "    " * depth, c.GetWindow()
+            msg = str("    " * depth)
+
+            if full: msg = msg + str(c.GetWindow())
+            else:    msg = msg + str(c.GetWindow().__class__)
+
+            if c.IsShown(): msg = msg + ", shown"
+            else:           msg = msg + ", hidden"                
+
+            print msg
+
+        # and recursively for nested sizers
         elif c.IsSizer():
-            DumpSizerChildren(c.GetSizer(), depth + 1)
-        else:
-            print "wtf"
+            DumpSizerChildren(c.GetSizer(), depth + 1, full)
 
 def MakeEncirclingRect(p1, p2):
     """

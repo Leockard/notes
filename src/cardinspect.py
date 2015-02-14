@@ -1,4 +1,6 @@
 # inspect.py
+# -*- coding: utf-8 -*-
+
 # Inspect classes: for editing a single card or viewing the whole board
 
 import wx
@@ -99,8 +101,7 @@ class BoardInspect(AutoSize):
         self.Scroll(view.x / self.factor, view.y / self.factor)
 
     def OnBoardSize(self, ev):
-        board = ev.GetEventObject()
-        self.SetSize([i / self.factor for i in board.GetSize()])
+        self.SetSize([i / self.factor + 30 for i in self.board.GetSize()])
         self.SetPosition()
 
     def OnNewCard(self, ev):

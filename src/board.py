@@ -1,4 +1,6 @@
 # board.py
+# -*- coding: utf-8 -*-
+
 # note taking class for notes.py
 
 import wx
