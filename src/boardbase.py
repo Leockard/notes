@@ -182,9 +182,11 @@ class BoardBase(AutoSize):
             else: kind = Content.DEFAULT_LBL
             if "content" in kwargs.keys(): content = kwargs["content"]
             else: content = Content.DEFAULT_CONTENT
+            if "rating" in kwargs.keys(): rating = kwargs["rating"]
+            else: rating = 0
                 
             sz = [i*self.scale for i in Content.DEFAULT_SZ]
-            new = Content(self, label, pos=pos, title=title, kind=kind, content=content, size=sz)
+            new = Content(self, label, pos=pos, title=title, kind=kind, content=content, rating=rating, size=sz)
             
         elif subclass == "Header":
             if "txt" in kwargs.keys(): txt = kwargs["txt"]
@@ -649,10 +651,12 @@ class BoardBase(AutoSize):
                 pos = values["pos"]
                 label = values["label"]
                 if values["class"] == "Content":
+                    print "loading a content"
                     new = self.NewCard(values["class"], pos=pos, label=label,
                                   title   = str(values["title"]),
                                   kind    = values["kind"],
-                                  content = values["content"])
+                                  content = values["content"],
+                                  rating  = values["rating"])
                     if values["collapsed"]: new.Collapse()
                 elif values["class"] == "Header":
                     self.NewCard(values["class"], pos=pos, label=label,

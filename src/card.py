@@ -263,7 +263,8 @@ class Content(Card):
     # Content events
     KindEvent, EVT_CONT_KIND = ne.NewCommandEvent()
 
-    def __init__(self, parent, label, id=wx.ID_ANY, pos=wx.DefaultPosition, size=DEFAULT_SZ, title="", kind=DEFAULT_LBL, content=""):
+    def __init__(self, parent, label, id=wx.ID_ANY, pos=wx.DefaultPosition, size=DEFAULT_SZ,
+                 title="", kind=DEFAULT_LBL, content="", rating=0):
         super(Content, self).__init__(parent, label, id=id, pos=pos, size=size, style=wx.TAB_TRAVERSAL)
         
         self.InitUI()
@@ -272,9 +273,10 @@ class Content(Card):
         self.inspecting = False
         self.collapse_enabled = True
 
-        self.SetKind(kind)
-        if title: self.title.SetValue(title)
+        if title:   self.title.SetValue(title)
         if content: self.content.SetValue(content)
+        self.SetKind(kind)
+        self.rating.SetRating(rating)
 
         
     ### Behavior functions
@@ -449,6 +451,7 @@ class Content(Card):
         self.kindbut = kindbut
         self.title = title
         self.content = content
+        self.rating = rating
         self.Show(True)
 
     def InitAccels(self):
@@ -480,7 +483,8 @@ class Content(Card):
                 "kind": self.GetKind(),
                 "title": self.GetTitle(),
                 "content": self.GetContent(),
-                "collapsed": self.IsCollapsed()}
+                "collapsed": self.IsCollapsed(),
+                "rating": self.rating.GetRating()}
 
     def SetColours(self, kind):
         self.SetBackgroundColour(self.COLOURS[kind]["border"])

@@ -383,6 +383,7 @@ class StarRating(wx.Button):
     def SetRating(self, n):
         self.SetBitmap(self.BMPS[n])
         self.rating = n
+        print "setting", n
 
     def GetRating(self):
         return self.rating
