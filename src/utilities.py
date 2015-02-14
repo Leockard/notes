@@ -354,6 +354,53 @@ class SelectionManager(wx.Window):
                 self.Deactivate()
 
 
+
+class StarRating(wx.Button):
+    PATH = "/home/leo/code/notes/img/"
+    
+    # thanks openclipart.org for the stars!
+    # https://openclipart.org/detail/117079/5-star-rating-system-by-jhnri4
+    FILES = ["stars_0.png", "stars_1.png", "stars_2.png", "stars_3.png"]
+    BMPS = []
+    MAX = 3
+    
+    def __init__(self, parent):
+        super(StarRating, self).__init__(parent, size=(20, 35),
+                                         style=wx.BORDER_NONE|wx.BU_EXACTFIT)
+
+        # the first instance loads all BMPs
+        if not StarRating.BMPS:
+            StarRating.BMPS = [wx.Bitmap(self.PATH + self.FILES[n]) for n in range(4)]
+
+        self.rating = 0
+        self.SetRating(0)
+
+        # bindings
+        self.Bind(wx.EVT_BUTTON, self.OnPress)
+
+    ### Behavior functions
+    
+    def SetRating(self, n):
+        self.SetBitmap(self.BMPS[n])
+        self.rating = n
+
+    def GetRating(self):
+        return self.rating
+
+    def IncreaseRating(self, wrap=True):
+        """If wrap is True, and we increase to more than the maximum rating, we set it to zero."""
+        new = self.GetRating() + 1
+        if new > self.MAX:
+            new = 0
+        self.SetRating(new)
+
+
+    ### Callbacks
+
+    def OnPress(self, ev):
+        self.IncreaseRating()
+
+    
                     
 ######################
 # Auxiliary functions

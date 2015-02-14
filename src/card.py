@@ -7,7 +7,7 @@ import wx
 import os
 import wx.richtext as rt
 import wx.lib.newevent as ne
-from utilities import EditText
+from utilities import *
 
 
 ######################
@@ -423,14 +423,16 @@ class Content(Card):
     def InitUI(self):
         # controls
         title = EditText(self.main)
-        kindbut = wx.Button(self.main, label = "kind", size=Content.KIND_BTN_SZ, style=wx.BORDER_NONE)
+        kindbut = wx.Button(self.main, label="kind", size=Content.KIND_BTN_SZ, style=wx.BORDER_NONE)
         kindbut.SetOwnFont(wx.Font(*self.KIND_FONT))
+        rating = StarRating(self.main)
         content = wx.TextCtrl(self.main, size=(10,10), style=wx.TE_RICH|wx.TE_MULTILINE|wx.TE_NO_VSCROLL)
         
         # boxes
         hbox1 = wx.BoxSizer(wx.HORIZONTAL)
-        hbox1.Add(title,   proportion=1, flag=wx.ALL|wx.EXPAND, border=Card.BORDER_WIDTH)
-        hbox1.Add(kindbut, proportion=0, flag=wx.ALL|wx.EXPAND, border=Card.BORDER_WIDTH)        
+        hbox1.Add(title,   proportion=1, flag=wx.ALL|wx.ALIGN_CENTRE, border=Card.BORDER_WIDTH)
+        hbox1.Add(kindbut, proportion=0, flag=wx.ALL|wx.ALIGN_CENTRE, border=Card.BORDER_WIDTH)
+        hbox1.Add(rating,  proportion=0, flag=wx.ALL|wx.EXPAND, border=0)
 
         hbox2 = wx.BoxSizer(wx.HORIZONTAL)
         hbox2.Add(content, proportion=1, flag=wx.EXPAND)
