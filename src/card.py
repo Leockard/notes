@@ -214,24 +214,89 @@ class Header(Card):
         # important!
         ev.Skip()
 
+
+############################################
+# Classes for the controls in Content card
+############################################
+
+class ContentText(wx.TextCtrl):
+    def __init__(self, parent, size=wx.DefaultSize, style=wx.TE_RICH|wx.TE_MULTILINE|wx.TE_NO_VSCROLL):
+        super(ContentText, self).__init__(parent, size=size, style=style)
+        self.InitAccels()
+
+        # bindings
+        self.Bind(wx.EVT_KEY_DOWN, self.OnKeyDown)
+
+        
+    ### Behavior functions
+
+    def BoldRange(self, start, end):
+        self.SetStyle(start, end, wx.TextAttr(None, None, self.GetFont().Bold()))
+
+    def ItalicRange(self, start, end):
+        self.SetStyle(start, end, wx.TextAttr(None, None, self.GetFont().Italic()))
+
+
+    def ScrollToChar(self, pos):
+        if pos > -1 and pos < len(self.GetValue()):
+            sz = self.GetSize()
+            x, y = self.PositionToCoords(pos)
+
+            while y < 0:
+                self.ScrollLines(-1)
+                x, y = self.PositionToCoords(pos)
+            # the offset should account for font height                
+            while y >= sz.height - 18:
+                self.ScrollLines(1)
+                x, y = self.PositionToCoords(pos)
+
+                
+    ### Auxiliary functions
+
+    def InitAccels(self):
+        # ghost menu to generate menu item events and setup accelerators
+        accels = []        
+        ghost = wx.Menu()
+
+        bold = wx.MenuItem(ghost, wx.ID_ANY, "Bold selection")
+        ital = wx.MenuItem(ghost, wx.ID_ANY, "Italic selection")
+        
+        self.Bind(wx.EVT_MENU, self.OnCtrlB, bold)
+        self.Bind(wx.EVT_MENU, self.OnCtrlI, ital)
+        
+        accels.append(wx.AcceleratorEntry(wx.ACCEL_CTRL, ord("B"), bold.GetId()))
+        accels.append(wx.AcceleratorEntry(wx.ACCEL_CTRL, ord("I"), ital.GetId()))
+
+        self.SetAcceleratorTable(wx.AcceleratorTable(accels))
+        
+
+    ### Callbacks
+
+    def OnKeyDown(self, ev):
+        # skip everything but tab
+        if ev.GetKeyCode() != 9:
+            ev.Skip()
+        # on TAB: don't input a \t char and simulate a tab traversal
+        else:
+            self.GetParent().Navigate(not ev.ShiftDown())
+
+    def OnCtrlB(self, ev):
+        start, end = self.GetSelection()
+        if start != end:
+            self.BoldRange(start, end)
+
+    def OnCtrlI(self, ev):
+        start, end = self.GetSelection()
+        if start != end:
+            self.ItalicRange(start, end)
+
+
             
+class KindButton(wx.Button):
+    DEFAULT_SIZE = (33, 23)
+    DEFAULT_FONT = (8, wx.FONTFAMILY_DEFAULT, wx.FONTSTYLE_ITALIC, wx.FONTWEIGHT_NORMAL, False)
 
-######################
-# Class Content
-######################
-class Content(Card):
-    # sizes
-    DEFAULT_SZ   = (250, 150)
-    COLLAPSED_SZ = (250, 30)
-    BIG_SZ       = (350, 250)
-    KIND_BTN_SZ  = (33, 23)
-
-    # default control contents
-    DEFAULT_TITLE   = ""
-    DEFAULT_CONTENT = ""
-    
-    # kind labels
-    DEFAULT_LBL     = "kind"    
+    DEFAULT_LBL    = "kind"    
     CONCEPT_LBL    = "C"
     ASSUMPTION_LBL = "A"
     RESEARCH_LBL   = "R"
@@ -242,17 +307,99 @@ class Content(Card):
     RESEARCH_LBL_LONG   = "Research"
     FACT_LBL_LONG       = "Fact"
     LONG_LABELS = {CONCEPT_LBL: CONCEPT_LBL_LONG, ASSUMPTION_LBL: ASSUMPTION_LBL_LONG, RESEARCH_LBL: RESEARCH_LBL_LONG, FACT_LBL: FACT_LBL_LONG, DEFAULT_LBL: DEFAULT_LBL_LONG}
+    
+    
+    def __init__(self, parent, size=DEFAULT_SIZE, pos=wx.DefaultPosition, label="kind", style=wx.BORDER_NONE):
+        super(KindButton, self).__init__(parent, size=size, pos=pos, label=label, style=style)
+        self.SetOwnFont(wx.Font(*self.DEFAULT_FONT))
+        self.Bind(wx.EVT_BUTTON, self.OnPress)
+
+
+    ### Behavior functions
+
+    def GetKind(self, long=False):
+        if long: return self.LONG_LABELS[self.GetLabel()]
+        else:    return self.GetLabel()
+
+    def SetKind(self, kind):
+        if kind == "kind": self.SetLabel("kind")
+        else:              self.SetLabel(kind[0])            
+        
+    ### Callbacks
+
+    def OnPress(self, ev):
+        rect = self.GetRect()
+        self.PopupMenu(KindSelectMenu(GetCardAncestor(self)), (rect.width, rect.height))
+
+
+
+class KindSelectMenu(wx.Menu):
+    def __init__(self, card):
+        super(KindSelectMenu, self).__init__()
+        self.card = card
+
+        A_item = wx.MenuItem(self, wx.NewId(), "Assumption")
+        C_item = wx.MenuItem(self, wx.NewId(), "Concept")
+        R_item = wx.MenuItem(self, wx.NewId(), "Research")
+        F_item = wx.MenuItem(self, wx.NewId(), "Fact")
+        N_item = wx.MenuItem(self, wx.NewId(), "None")
+
+        self.AppendItem(A_item)
+        self.AppendItem(C_item)
+        self.AppendItem(R_item)        
+        self.AppendItem(F_item)
+        self.AppendItem(N_item)
+
+        self.Bind(wx.EVT_MENU, lambda ev: self.OnSelect(ev, KindButton.ASSUMPTION_LBL), A_item)
+        self.Bind(wx.EVT_MENU, lambda ev: self.OnSelect(ev, KindButton.CONCEPT_LBL), C_item)
+        self.Bind(wx.EVT_MENU, lambda ev: self.OnSelect(ev, KindButton.RESEARCH_LBL), R_item)
+        self.Bind(wx.EVT_MENU, lambda ev: self.OnSelect(ev, KindButton.FACT_LBL), F_item)
+        self.Bind(wx.EVT_MENU, lambda ev: self.OnSelect(ev, KindButton.DEFAULT_LBL), N_item)
+
+        
+    # Callbacks
+    def OnSelect(self, ev, kind):
+        # my parent is the control that displayed the menu
+        if isinstance(self.card, Content):
+            self.card.SetKind(kind)
+        
+            
+
+######################
+# Class Content
+######################
+
+class Content(Card):
+    # sizes
+    DEFAULT_SZ   = (250, 150)
+    COLLAPSED_SZ = (250, 30)
+    BIG_SZ       = (350, 250)
+
+    # default control contents
+    DEFAULT_TITLE   = ""
+    DEFAULT_CONTENT = ""
+    
+    # # kind labels
+    DEFAULT_KIND = "kind"
+    # DEFAULT_LBL     = "kind"    
+    # CONCEPT_LBL    = "C"
+    # ASSUMPTION_LBL = "A"
+    # RESEARCH_LBL   = "R"
+    # FACT_LBL       = "F"
+    # DEFAULT_LBL_LONG    = "kind"
+    # CONCEPT_LBL_LONG    = "Concept"
+    # ASSUMPTION_LBL_LONG = "Assumption"
+    # RESEARCH_LBL_LONG   = "Research"
+    # FACT_LBL_LONG       = "Fact"
+    # LONG_LABELS = {CONCEPT_LBL: CONCEPT_LBL_LONG, ASSUMPTION_LBL: ASSUMPTION_LBL_LONG, RESEARCH_LBL: RESEARCH_LBL_LONG, FACT_LBL: FACT_LBL_LONG, DEFAULT_LBL: DEFAULT_LBL_LONG}
 
     # colours; thanks paletton.com!        
     COLOURS = {}
-    COLOURS[DEFAULT_LBL]    = {"border": (220, 218, 213, 255), "bg": (255, 255, 255, 255)}
-    COLOURS[CONCEPT_LBL]    = {"border": (149, 246, 214, 255), "bg": (242, 254, 250, 255)}
-    COLOURS[ASSUMPTION_LBL] = {"border": (255, 188, 154, 255), "bg": (255, 247, 243, 255)}
-    COLOURS[RESEARCH_LBL]   = {"border": (255, 232, 154, 255), "bg": (255, 252, 243, 255)}
-    COLOURS[FACT_LBL]       = {"border": (169, 163, 247, 255), "bg": (245, 244, 254, 255)}
-
-    # fonts
-    KIND_FONT = (8, wx.FONTFAMILY_DEFAULT, wx.FONTSTYLE_ITALIC, wx.FONTWEIGHT_NORMAL, False)
+    COLOURS[KindButton.DEFAULT_LBL]    = {"border": (220, 218, 213, 255), "bg": (255, 255, 255, 255)}
+    COLOURS[KindButton.CONCEPT_LBL]    = {"border": (149, 246, 214, 255), "bg": (242, 254, 250, 255)}
+    COLOURS[KindButton.ASSUMPTION_LBL] = {"border": (255, 188, 154, 255), "bg": (255, 247, 243, 255)}
+    COLOURS[KindButton.RESEARCH_LBL]   = {"border": (255, 232, 154, 255), "bg": (255, 252, 243, 255)}
+    COLOURS[KindButton.FACT_LBL]       = {"border": (169, 163, 247, 255), "bg": (245, 244, 254, 255)}
 
     # content text colours
     # CONCEPT_CNT_CL    = (24, 243, 171, 255)
@@ -264,7 +411,7 @@ class Content(Card):
     KindEvent, EVT_CONT_KIND = ne.NewCommandEvent()
 
     def __init__(self, parent, label, id=wx.ID_ANY, pos=wx.DefaultPosition, size=DEFAULT_SZ,
-                 title="", kind=DEFAULT_LBL, content="", rating=0):
+                 title="", kind=KindButton.DEFAULT_LBL, content="", rating=0):
         super(Content, self).__init__(parent, label, id=id, pos=pos, size=size, style=wx.TAB_TRAVERSAL)
         
         self.InitUI()
@@ -324,18 +471,7 @@ class Content(Card):
             ctrl.SetInsertionPoint(pos)
 
     def ScrollToChar(self, pos):
-        ctrl = self.content
-        if pos > -1 and pos < len(ctrl.GetValue()):
-            sz = ctrl.GetSize()
-            x, y = ctrl.PositionToCoords(pos)
-
-            while y < 0:
-                ctrl.ScrollLines(-1)
-                x, y = ctrl.PositionToCoords(pos)
-            # the offset should account for font height                
-            while y >= sz.height - 18:
-                ctrl.ScrollLines(1)
-                x, y = ctrl.PositionToCoords(pos)
+        self.content.ScrollToChar(pos)
 
     def DisableCollapse(self):
         """Calling Collapse() or Uncollapse() after calling this function will do nothing."""
@@ -401,12 +537,10 @@ class Content(Card):
         self.content.SetValue(value)
     
     def GetKind(self, long=False):
-        if long: return self.LONG_LABELS[self.kindbut.GetLabel()]
-        else:    return self.kindbut.GetLabel()
+        self.kindbut.GetKind()
 
     def SetKind(self, kind):
-        if kind == "kind": self.kindbut.SetLabel("kind")
-        else:              self.kindbut.SetLabel(kind[0])
+        self.kindbut.SetKind(kind)
         self.SetColours(kind)
 
         event = self.KindEvent(id=wx.ID_ANY)
@@ -419,8 +553,7 @@ class Content(Card):
     def InitUI(self):
         # controls
         title = EditText(self.main)
-        kindbut = wx.Button(self.main, label="kind", size=Content.KIND_BTN_SZ, style=wx.BORDER_NONE)
-        kindbut.SetOwnFont(wx.Font(*self.KIND_FONT))
+        kindbut = KindButton(self.main)
         rating = StarRating(self.main)
         content = ContentText(self.main)
         
@@ -437,9 +570,6 @@ class Content(Card):
         self.SetCardSizer(vbox)
         vbox.Add(hbox1, proportion=0, flag=wx.ALL|wx.EXPAND, border=Card.BORDER_WIDTH)
         vbox.Add(hbox2, proportion=1, flag=wx.ALL|wx.EXPAND, border=Card.BORDER_THICK)
-        
-        # bindings
-        kindbut.Bind(wx.EVT_BUTTON, self.OnKindPressed)
 
         self.kindbut = kindbut
         self.title = title
@@ -491,104 +621,8 @@ class Content(Card):
     def OnCtrlU(self, ev):
         self.ToggleCollapse()
 
-    def OnKindPressed(self, ev):
-        ctrl = ev.GetEventObject()
-        rect = ctrl.GetRect()
-        pos = ctrl.GetPosition() + (rect.width, rect.height)
-        self.PopupMenu(KindSelectMenu(self), pos)
 
 
-
-
-class ContentText(wx.TextCtrl):
-    def __init__(self, parent, size=wx.DefaultSize, style=wx.TE_RICH|wx.TE_MULTILINE|wx.TE_NO_VSCROLL):
-        super(ContentText, self).__init__(parent, size=size, style=style)
-
-        self.InitAccels()
-
-        # bindings
-        self.Bind(wx.EVT_KEY_DOWN, self.OnKeyDown)
-
-        
-    ### Behavior functions
-
-    def BoldRange(self, start, end):
-        self.SetStyle(start, end, wx.TextAttr(None, None, self.GetFont().Bold()))
-
-    def ItalicRange(self, start, end):
-        self.SetStyle(start, end, wx.TextAttr(None, None, self.GetFont().Italic()))
-
-
-    ### Auxiliary functions
-
-    def InitAccels(self):
-        # ghost menu to generate menu item events and setup accelerators
-        accels = []        
-        ghost = wx.Menu()
-
-        # content style
-        # note that ital has accel CTRL + I, which also handels inspect requests
-        bold = wx.MenuItem(ghost, wx.ID_ANY, "Bold selection")
-        ital = wx.MenuItem(ghost, wx.ID_ANY, "Italic selection")
-        self.Bind(wx.EVT_MENU, self.OnCtrlB, bold)
-        self.Bind(wx.EVT_MENU, self.OnCtrlI, ital)
-        accels.append(wx.AcceleratorEntry(wx.ACCEL_CTRL, ord("B"), bold.GetId()))
-        accels.append(wx.AcceleratorEntry(wx.ACCEL_CTRL, ord("I"), ital.GetId()))
-
-        self.SetAcceleratorTable(wx.AcceleratorTable(accels))
-        
-
-    ### Callbacks
-
-    def OnKeyDown(self, ev):
-        # skip everything but tab
-        if ev.GetKeyCode() != 9:
-            ev.Skip()
-        # on TAB: don't input a \t char and simulate a tab traversal
-        else:
-            self.GetParent().Navigate(not ev.ShiftDown())
-
-    def OnCtrlB(self, ev):
-        start, end = self.GetSelection()
-        if start != end:
-            self.BoldRange(start, end)
-
-    def OnCtrlI(self, ev):
-        start, end = self.GetSelection()
-        if start != end:
-            self.ItalicRange(start, end)
-            
-
-
-class KindSelectMenu(wx.Menu):
-    def __init__(self, card):
-        super(KindSelectMenu, self).__init__()
-        self.card = card
-
-        A_item = wx.MenuItem(self, wx.NewId(), "Assumption")
-        C_item = wx.MenuItem(self, wx.NewId(), "Concept")
-        R_item = wx.MenuItem(self, wx.NewId(), "Research")
-        F_item = wx.MenuItem(self, wx.NewId(), "Fact")
-        N_item = wx.MenuItem(self, wx.NewId(), "None")
-
-        self.AppendItem(A_item)
-        self.AppendItem(C_item)
-        self.AppendItem(R_item)        
-        self.AppendItem(F_item)
-        self.AppendItem(N_item)
-
-        self.Bind(wx.EVT_MENU, lambda ev: self.OnSelect(ev, Content.ASSUMPTION_LBL), A_item)
-        self.Bind(wx.EVT_MENU, lambda ev: self.OnSelect(ev, Content.CONCEPT_LBL), C_item)
-        self.Bind(wx.EVT_MENU, lambda ev: self.OnSelect(ev, Content.RESEARCH_LBL), R_item)
-        self.Bind(wx.EVT_MENU, lambda ev: self.OnSelect(ev, Content.FACT_LBL), F_item)
-        self.Bind(wx.EVT_MENU, lambda ev: self.OnSelect(ev, Content.DEFAULT_LBL), N_item)
-
-        
-    # Callbacks
-    def OnSelect(self, ev, kind):
-        # my parent is the control that displayed the menu
-        if isinstance(self.card, Content):
-            self.card.SetKind(kind)
 
             
 

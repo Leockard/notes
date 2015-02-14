@@ -179,7 +179,7 @@ class BoardBase(AutoSize):
             if "title" in kwargs.keys(): title = kwargs["title"]
             else: title = Content.DEFAULT_TITLE
             if "kind" in kwargs.keys(): kind = kwargs["kind"]
-            else: kind = Content.DEFAULT_LBL
+            else: kind = Content.DEFAULT_KIND
             if "content" in kwargs.keys(): content = kwargs["content"]
             else: content = Content.DEFAULT_CONTENT
             if "rating" in kwargs.keys(): rating = kwargs["rating"]

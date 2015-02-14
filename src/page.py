@@ -24,7 +24,7 @@ class Page(wx.Panel):
     DEFAULT_SZ = (20, 20)
     ZOOM_CHOICES = ["50%", "100%", "150%", "200%"]
     VIEW_CH_DEF = "View"
-    VIEW_CHOICES = ("All", Content.CONCEPT_LBL_LONG, Content.ASSUMPTION_LBL_LONG, Content.RESEARCH_LBL_LONG, Content.FACT_LBL_LONG)
+    VIEW_CHOICES = ("All", KindButton.CONCEPT_LBL_LONG, KindButton.ASSUMPTION_LBL_LONG, KindButton.RESEARCH_LBL_LONG, KindButton.FACT_LBL_LONG)
 
     InspectEvent, EVT_PAGE_INSPECT = ne.NewEvent()
     CancelInspectEvent, EVT_PAGE_CANCEL_INSPECT = ne.NewEvent()
