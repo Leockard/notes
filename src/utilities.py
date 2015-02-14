@@ -79,34 +79,11 @@ class AutoSize(wx.ScrolledWindow):
         ev.Skip()
 
 
-
-class EditText(wx.TextCtrl):
-    DEFAULT_SZ = (200, 25)
-    DEFAULT_FONT = (12, wx.SWISS, wx.ITALIC, wx.BOLD)
-    DEFAULT_2_CL = (255, 255, 255, 255)
-    
-    def __init__(self, parent, id = wx.ID_ANY, value="",
-                 pos=wx.DefaultPosition, size=DEFAULT_SZ,
-                 style=wx.BORDER_NONE|wx.TE_RICH|wx.TE_PROCESS_ENTER|wx.TE_MULTILINE):
-        super(EditText, self).__init__(parent, id=id, pos=pos, size=size, style=style, value=value)
-
-        # colours
-        self.first_cl = parent.GetBackgroundColour()
-        self.second_cl = self.DEFAULT_2_CL
-        self.SetBackgroundColour(self.first_cl)
-
-        # style
-        self.SetFont(wx.Font(*self.DEFAULT_FONT))
         
-        # bindings
-        self.Bind(wx.EVT_LEFT_DOWN, self.OnLeftDown)
-        self.Bind(wx.EVT_SET_FOCUS, self.OnSetFocus)
-        self.Bind(wx.EVT_KILL_FOCUS, self.OnKillFocus)
-        self.Bind(wx.EVT_TEXT_ENTER, self.OnEnter)
-        self.Bind(wx.EVT_KEY_DOWN, self.OnKeyDown)
 
-    
-    ### Behavior functions
+class ColouredText(wx.TextCtrl):
+    def __init__(self, parent, value ="", size=wx.DefaultSize, pos=wx.DefaultPosition, style=0):
+        super(ColouredText, self).__init__(parent, value=value, size=size, pos=pos, style=style)
 
     def SetBackgroundColour(self, new_cl):
         # If we change background colour from A to B, but a char in the text
@@ -128,13 +105,42 @@ class EditText(wx.TextCtrl):
 
         # set the new bg for all, but don't use attr again!
         # char_old_bg is pointing to one of its members
-        super(EditText, self).SetBackgroundColour(new_cl)
+        super(ColouredText, self).SetBackgroundColour(new_cl)
         self.SetStyle(0, len(text), wx.TextAttr(None, new_cl))
 
         # restore the saved ones
         for i in char_old_bg.keys():
             attr.SetBackgroundColour(char_old_bg[i])
             self.SetStyle(i, i+1, attr)
+
+
+
+class EditText(ColouredText):
+    DEFAULT_SZ = (200, 25)
+    DEFAULT_FONT = (12, wx.SWISS, wx.ITALIC, wx.BOLD)
+    DEFAULT_2_CL = (255, 255, 255, 255)
+    
+    def __init__(self, parent, value="", pos=wx.DefaultPosition, size=DEFAULT_SZ,
+                 style=wx.BORDER_NONE|wx.TE_RICH|wx.TE_PROCESS_ENTER|wx.TE_MULTILINE):
+        super(EditText, self).__init__(parent, pos=pos, size=size, style=style, value=value)
+
+        # colours
+        self.first_cl = parent.GetBackgroundColour()
+        self.second_cl = self.DEFAULT_2_CL
+        self.SetBackgroundColour(self.first_cl)
+
+        # style
+        self.SetFont(wx.Font(*self.DEFAULT_FONT))
+        
+        # bindings
+        self.Bind(wx.EVT_LEFT_DOWN, self.OnLeftDown)
+        self.Bind(wx.EVT_SET_FOCUS, self.OnSetFocus)
+        self.Bind(wx.EVT_KILL_FOCUS, self.OnKillFocus)
+        self.Bind(wx.EVT_TEXT_ENTER, self.OnEnter)
+        self.Bind(wx.EVT_KEY_DOWN, self.OnKeyDown)
+
+    
+    ### Behavior functions
 
     def ToggleColours(self):
         if self.GetBackgroundColour() == self.first_cl:

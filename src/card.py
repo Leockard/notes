@@ -219,23 +219,21 @@ class Header(Card):
 # Classes for the controls in Content card
 ############################################
 
-class ContentText(wx.TextCtrl):
+class ContentText(ColouredText):
     def __init__(self, parent, size=wx.DefaultSize, style=wx.TE_RICH|wx.TE_MULTILINE|wx.TE_NO_VSCROLL):
         super(ContentText, self).__init__(parent, size=size, style=style)
-        self.InitAccels()
-
-        # bindings
         self.Bind(wx.EVT_KEY_DOWN, self.OnKeyDown)
 
         
     ### Behavior functions
 
-    def BoldRange(self, start, end):
+    def BoldRange(self):
+        start, end = self.GetSelection()
         self.SetStyle(start, end, wx.TextAttr(None, None, self.GetFont().Bold()))
 
-    def ItalicRange(self, start, end):
+    def ItalicRange(self):
+        start, end = self.GetSelection()
         self.SetStyle(start, end, wx.TextAttr(None, None, self.GetFont().Italic()))
-
 
     def ScrollToChar(self, pos):
         if pos > -1 and pos < len(self.GetValue()):
@@ -249,46 +247,27 @@ class ContentText(wx.TextCtrl):
             while y >= sz.height - 18:
                 self.ScrollLines(1)
                 x, y = self.PositionToCoords(pos)
-
                 
-    ### Auxiliary functions
-
-    def InitAccels(self):
-        # ghost menu to generate menu item events and setup accelerators
-        accels = []        
-        ghost = wx.Menu()
-
-        bold = wx.MenuItem(ghost, wx.ID_ANY, "Bold selection")
-        ital = wx.MenuItem(ghost, wx.ID_ANY, "Italic selection")
-        
-        self.Bind(wx.EVT_MENU, self.OnCtrlB, bold)
-        self.Bind(wx.EVT_MENU, self.OnCtrlI, ital)
-        
-        accels.append(wx.AcceleratorEntry(wx.ACCEL_CTRL, ord("B"), bold.GetId()))
-        accels.append(wx.AcceleratorEntry(wx.ACCEL_CTRL, ord("I"), ital.GetId()))
-
-        self.SetAcceleratorTable(wx.AcceleratorTable(accels))
-        
 
     ### Callbacks
 
     def OnKeyDown(self, ev):
+        key = ev.GetKeyCode()
+        
         # skip everything but tab
-        if ev.GetKeyCode() != 9:
-            ev.Skip()
+        if key != 9:
+            if ev.ControlDown():
+                if   key == ord("B"):
+                    self.BoldRange()
+                elif key == ord("I"):
+                    self.ItalicRange()
+                else:
+                    ev.Skip()
+            else:
+                ev.Skip()
         # on TAB: don't input a \t char and simulate a tab traversal
         else:
             self.GetParent().Navigate(not ev.ShiftDown())
-
-    def OnCtrlB(self, ev):
-        start, end = self.GetSelection()
-        if start != end:
-            self.BoldRange(start, end)
-
-    def OnCtrlI(self, ev):
-        start, end = self.GetSelection()
-        if start != end:
-            self.ItalicRange(start, end)
 
 
             
@@ -323,7 +302,7 @@ class KindButton(wx.Button):
 
     def SetKind(self, kind):
         if kind == "kind": self.SetLabel("kind")
-        else:              self.SetLabel(kind[0])            
+        else:              self.SetLabel(kind[0])
         
     ### Callbacks
 
@@ -537,7 +516,7 @@ class Content(Card):
         self.content.SetValue(value)
     
     def GetKind(self, long=False):
-        self.kindbut.GetKind()
+        return self.kindbut.GetKind()
 
     def SetKind(self, kind):
         self.kindbut.SetKind(kind)
@@ -613,6 +592,13 @@ class Content(Card):
     ### Callbacks
 
     def OnCtrlI(self, ev):
+        # if there's a selection, let ContentText handle styling
+        start, end = self.content.GetSelection()
+        if start != end:
+            ev.Skip()
+            return
+
+        # if not, then handle inspection
         if not self.inspecting:
             self.RequestInspect()
         elif self.inspecting:
