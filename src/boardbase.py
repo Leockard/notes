@@ -651,7 +651,6 @@ class BoardBase(AutoSize):
                 pos = values["pos"]
                 label = values["label"]
                 if values["class"] == "Content":
-                    print "loading a content"
                     new = self.NewCard(values["class"], pos=pos, label=label,
                                   title   = str(values["title"]),
                                   kind    = values["kind"],
