@@ -287,12 +287,6 @@ class Content(Card):
     def GetInspecting(self):
         return self.inspecting
 
-    def BoldRange(self, start, end):
-        self.content.SetStyle(start, end, wx.TextAttr(None, None, self.content.GetFont().Bold()))
-
-    def ItalicRange(self, start, end):
-        self.content.SetStyle(start, end, wx.TextAttr(None, None, self.content.GetFont().Italic()))
-
     def GetCaretPos(self):
         """
         Returns a tuple (ctrl, pos) where ctrl may be "title" or "content",
@@ -428,7 +422,7 @@ class Content(Card):
         kindbut = wx.Button(self.main, label="kind", size=Content.KIND_BTN_SZ, style=wx.BORDER_NONE)
         kindbut.SetOwnFont(wx.Font(*self.KIND_FONT))
         rating = StarRating(self.main)
-        content = wx.TextCtrl(self.main, size=(10,10), style=wx.TE_RICH|wx.TE_MULTILINE|wx.TE_NO_VSCROLL)
+        content = ContentText(self.main)
         
         # boxes
         hbox1 = wx.BoxSizer(wx.HORIZONTAL)
@@ -446,7 +440,6 @@ class Content(Card):
         
         # bindings
         kindbut.Bind(wx.EVT_BUTTON, self.OnKindPressed)
-        content.Bind(wx.EVT_KEY_DOWN, self.OnContentKeyDown)
 
         self.kindbut = kindbut
         self.title = title
@@ -459,19 +452,13 @@ class Content(Card):
         accels = []        
         ghost = wx.Menu()
 
-        # content style
-        # note that ital has accel CTRL + I, which also handels inspect requests
-        bold = wx.MenuItem(ghost, wx.ID_ANY, "Bold selection")
-        ital = wx.MenuItem(ghost, wx.ID_ANY, "Italic selection")
-        self.Bind(wx.EVT_MENU, self.OnCtrlB , bold)
-        self.Bind(wx.EVT_MENU, self.OnCtrlI , ital)
-        accels.append(wx.AcceleratorEntry(wx.ACCEL_CTRL, ord("B"), bold.GetId()))
-        accels.append(wx.AcceleratorEntry(wx.ACCEL_CTRL, ord("I"), ital.GetId()))
-
         # view
         coll = wx.MenuItem(ghost, wx.ID_ANY, "Toggle collapse")
-        self.Bind(wx.EVT_MENU, self.OnCtrlU , coll)
+        insp = wx.MenuItem(ghost, wx.ID_ANY, "Request inspection")        
+        self.Bind(wx.EVT_MENU, self.OnCtrlU, coll)
+        self.Bind(wx.EVT_MENU, self.OnCtrlI, insp)
         accels.append(wx.AcceleratorEntry(wx.ACCEL_CTRL, ord("U"), coll.GetId()))
+        accels.append(wx.AcceleratorEntry(wx.ACCEL_CTRL, ord("I"), insp.GetId()))
 
         self.SetAcceleratorTable(wx.AcceleratorTable(accels))
 
@@ -495,16 +482,8 @@ class Content(Card):
 
     ### Callbacks
 
-    def OnCtrlB(self, ev):
-        start, end = self.content.GetSelection()
-        if start != end:
-            self.BoldRange(start, end)
-
     def OnCtrlI(self, ev):
-        start, end = self.content.GetSelection()
-        if start != end:
-            self.ItalicRange(start, end)
-        elif not self.inspecting:
+        if not self.inspecting:
             self.RequestInspect()
         elif self.inspecting:
             self.CancelInspect()
@@ -512,20 +491,73 @@ class Content(Card):
     def OnCtrlU(self, ev):
         self.ToggleCollapse()
 
-    def OnContentKeyDown(self, ev):
-        # skip everything but tab
-        if ev.GetKeyCode() != 9:
-            ev.Skip()
-        # on TAB: don't input a \t char and simulate a tab traversal
-        else:
-            self.Navigate(not ev.ShiftDown())
-
     def OnKindPressed(self, ev):
         ctrl = ev.GetEventObject()
         rect = ctrl.GetRect()
         pos = ctrl.GetPosition() + (rect.width, rect.height)
         self.PopupMenu(KindSelectMenu(self), pos)
 
+
+
+
+class ContentText(wx.TextCtrl):
+    def __init__(self, parent, size=wx.DefaultSize, style=wx.TE_RICH|wx.TE_MULTILINE|wx.TE_NO_VSCROLL):
+        super(ContentText, self).__init__(parent, size=size, style=style)
+
+        self.InitAccels()
+
+        # bindings
+        self.Bind(wx.EVT_KEY_DOWN, self.OnKeyDown)
+
+        
+    ### Behavior functions
+
+    def BoldRange(self, start, end):
+        self.SetStyle(start, end, wx.TextAttr(None, None, self.GetFont().Bold()))
+
+    def ItalicRange(self, start, end):
+        self.SetStyle(start, end, wx.TextAttr(None, None, self.GetFont().Italic()))
+
+
+    ### Auxiliary functions
+
+    def InitAccels(self):
+        # ghost menu to generate menu item events and setup accelerators
+        accels = []        
+        ghost = wx.Menu()
+
+        # content style
+        # note that ital has accel CTRL + I, which also handels inspect requests
+        bold = wx.MenuItem(ghost, wx.ID_ANY, "Bold selection")
+        ital = wx.MenuItem(ghost, wx.ID_ANY, "Italic selection")
+        self.Bind(wx.EVT_MENU, self.OnCtrlB, bold)
+        self.Bind(wx.EVT_MENU, self.OnCtrlI, ital)
+        accels.append(wx.AcceleratorEntry(wx.ACCEL_CTRL, ord("B"), bold.GetId()))
+        accels.append(wx.AcceleratorEntry(wx.ACCEL_CTRL, ord("I"), ital.GetId()))
+
+        self.SetAcceleratorTable(wx.AcceleratorTable(accels))
+        
+
+    ### Callbacks
+
+    def OnKeyDown(self, ev):
+        # skip everything but tab
+        if ev.GetKeyCode() != 9:
+            ev.Skip()
+        # on TAB: don't input a \t char and simulate a tab traversal
+        else:
+            self.GetParent().Navigate(not ev.ShiftDown())
+
+    def OnCtrlB(self, ev):
+        start, end = self.GetSelection()
+        if start != end:
+            self.BoldRange(start, end)
+
+    def OnCtrlI(self, ev):
+        start, end = self.GetSelection()
+        if start != end:
+            self.ItalicRange(start, end)
+            
 
 
 class KindSelectMenu(wx.Menu):
