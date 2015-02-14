@@ -23,6 +23,7 @@ import json
 class MyFrame(wx.Frame):
     DEFAULT_SZ = (800, 600)
     DEFAULT_PAGE_NAME = "Untitled Notes"
+    CLEAN_STATUS_BAR_AFTER_MS = 5000
 
     def __init__(self, parent, title="Board", size=DEFAULT_SZ, style=wx.DEFAULT_FRAME_STYLE|wx.NO_FULL_REPAINT_ON_RESIZE):
         super(MyFrame, self).__init__(parent, title=title, size=size, style=style)
@@ -475,6 +476,8 @@ class MyFrame(wx.Frame):
     def Log(self, s):
         """Log the string s into the status bar."""
         self.StatusBar.SetStatusText(s)
+        wx.CallLater(self.CLEAN_STATUS_BAR_AFTER_MS,
+                     self.StatusBar.SetStatusText, "")
 
     def OnDebug(self, ev):
         print "---DEBUG---"
