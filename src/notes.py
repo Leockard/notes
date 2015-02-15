@@ -10,7 +10,7 @@ import pickle
 from page import *
 from card import *
 from canvas import *
-from board import *
+from boardbase import *
 from cardinspect import *
 import wx.richtext as rt
 import json
@@ -505,8 +505,8 @@ class MyFrame(wx.Frame):
     def OnNewPage(self, ev):
         ev.page.Bind(Page.EVT_PAGE_INSPECT, self.OnInspect)
         ev.page.Bind(Page.EVT_PAGE_CANCEL_INSPECT, self.OnCancelInspect)
-        ev.page.board.Bind(BoardBase.EVT_BOARD_DEL_CARD, self.AfterDelete)
-        ev.page.board.Bind(BoardBase.EVT_NEW_CARD, self.AfterCardCreated)
+        ev.page.board.Bind(Board.EVT_BOARD_DEL_CARD, self.AfterDelete)
+        ev.page.board.Bind(Board.EVT_NEW_CARD, self.AfterCardCreated)
 
     def OnZoomIn(self, ev):
         self.notebook.GetCurrentPage().ZoomIn()

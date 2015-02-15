@@ -14,7 +14,7 @@ import json
 # BoardBase Class
 ######################
 
-class BoardBase(AutoSize):
+class Board(AutoSize):
     MOVING_RECT_THICKNESS = 1
     BACKGROUND_CL = "#CCCCCC"
     CARD_PADDING = 15
@@ -25,7 +25,7 @@ class BoardBase(AutoSize):
     DeleteEvent,  EVT_BOARD_DEL_CARD = ne.NewEvent()
 
     def __init__(self, parent, id=wx.ID_ANY, pos=(0,0), size=wx.DefaultSize):
-        super(BoardBase, self).__init__(parent, id=id, pos=pos, size=size, style=wx.BORDER_NONE)
+        super(Board, self).__init__(parent, id=id, pos=pos, size=size, style=wx.BORDER_NONE)
 
         # members
         self.cards = []
@@ -47,7 +47,7 @@ class BoardBase(AutoSize):
         self.Bind(self.selec.EVT_MGR_DELETE, self.OnMgrDelete)
         
         # other gui setup
-        self.SetBackgroundColour(BoardBase.BACKGROUND_CL)        
+        self.SetBackgroundColour(Board.BACKGROUND_CL)        
 
 
     ### Behavior functions
@@ -379,10 +379,10 @@ class BoardBase(AutoSize):
             self.Scroll(xsc, ysc)
 
     def ArrangeSelection(self, orient):
-        """Use BoardBase.HORIZONTAL or BoardBase.VERTICAL."""
-        if   orient == BoardBase.HORIZONTAL:
+        """Use Board.HORIZONTAL or Board.VERTICAL."""
+        if   orient == Board.HORIZONTAL:
             self.HArrangeSelectedCards()
-        elif orient == BoardBase.VERTICAL:
+        elif orient == Board.VERTICAL:
             self.VArrangeSelectedCards()
 
     def HArrangeSelectedCards(self):

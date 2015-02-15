@@ -6,7 +6,7 @@
 import wx
 import re
 from card import *
-from boardbase import BoardBase
+from boardbase import Board
 from utilities import *
 
 
@@ -53,7 +53,7 @@ class BoardInspect(AutoSize):
         self.SetScrollRate(step[0] / self.factor, step[1] / self.factor)
 
         # listen to events
-        board.Bind(BoardBase.EVT_NEW_CARD, self.OnNewCard)
+        board.Bind(Board.EVT_NEW_CARD, self.OnNewCard)
         board.Bind(wx.EVT_SIZE, self.OnBoardSize)
         board.Bind(wx.EVT_SCROLLWIN, self.OnBoardScroll)
         
@@ -110,7 +110,7 @@ class BoardInspect(AutoSize):
 
     def OnDeleteCard(self, ev):
         self.RemoveCard(ev.GetEventObject())
-        # dont' consume it! BoardBase also needs it
+        # dont' consume it! Board also needs it
         ev.Skip()
 
     def OnContentKind(self, ev):
@@ -124,7 +124,7 @@ class BoardInspect(AutoSize):
 ######################        
 
 class CardInspect(wx.Panel):
-    CARD_PADDING = BoardBase.CARD_PADDING
+    CARD_PADDING = Board.CARD_PADDING
     BACKGROUND_CL = "#CCCCCC"
     
     TITLE_FONT   = (18, wx.SWISS, wx.ITALIC, wx.BOLD)
@@ -240,7 +240,7 @@ class TagsInspect(wx.Panel):
 
         # bindings
         self.Bind(wx.EVT_SHOW, self.OnShow)
-        board.Bind(BoardBase.EVT_NEW_CARD, self.OnNewCard)
+        board.Bind(Board.EVT_NEW_CARD, self.OnNewCard)
 
 
     ### Behavior functions

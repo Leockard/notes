@@ -7,7 +7,7 @@
 import wx
 from utilities import AutoSize
 from utilities import *
-from board import *
+from boardbase import *
 from cardinspect import *
 from canvas import Canvas
 import wx.lib.agw.flatnotebook as fnb
@@ -120,7 +120,7 @@ class Page(wx.Panel):
         self.ShowBoard()
 
     def ShowBoard(self):
-        # remember that self.board is a BoardBase
+        # remember that self.board is a Board
         # but we added the parent Board object to our Sizer
         self.ShowContent(self.board)
 
