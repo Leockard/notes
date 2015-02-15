@@ -283,5 +283,6 @@ class TagsInspect(wx.Panel):
 
     def OnCardChildFocus(self, ev):
         card = GetCardAncestor(ev.GetEventObject())
-        self.ShowTags(card)
+        if self.IsShown():
+            self.ShowTags(card)
         ev.Skip()

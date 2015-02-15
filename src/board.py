@@ -663,9 +663,11 @@ class Board(AutoSize):
         self.Hide()
         view_start = self.GetViewStart()
         self.Scroll(0, 0)
-        
+
+        # with the scrollbars at the origin, dump the cards        
         for c in self.cards:
             carddict[c.GetId()] = c.Dump()
+            carddict[c.GetId()]["pos"] = [i / self.scale for i in carddict[c.GetId()]["pos"]]
             
         # and return to the original view
         self.Scroll(view_start[0], view_start[1])

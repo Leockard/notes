@@ -575,10 +575,12 @@ class Content(Card):
         self.SetAcceleratorTable(wx.AcceleratorTable(accels))
 
     def Dump(self):
-        pos = self.GetPosition()
+        if self.frect: pos = self.frect[:2]
+        else:          pos = self.GetPosition()
+        
         return {"class": "Content",
                 "label": self.label,
-                "pos": (pos.x, pos.y),
+                "pos": (pos[0], pos[1]),
                 "kind": self.GetKind(),
                 "title": self.GetTitle(),
                 "content": self.GetContent(),
