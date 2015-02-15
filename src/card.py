@@ -47,6 +47,9 @@ class Card(wx.Panel):
     def __del__(self):
         pass
 
+    def GetChildren(self):
+        return self.main.GetChildren()
+
     def GetLabel(self):
         return self.label
 
