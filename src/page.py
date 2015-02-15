@@ -35,7 +35,6 @@ class Page(wx.Panel):
         # members
         self.contents = []
         self.sidebars = []
-        self.inspecting = None
         self.scale = 1.0
         self.content_size = wx.Size(size[0], size[1])
 
@@ -64,47 +63,36 @@ class Page(wx.Panel):
         for c in self.contents: c.Hide()
         ctrl.Show()
         self.Layout()
+        self.GetTopLevelParent().SetFocus()
 
     def InspectCards(self, cards):
-        self.inspecting = cards
+        print "InspectCards: ", cards
+        toinspect = cards[:]
+
+        # make sure to first SetCards() and then Deactivate()
+        self.ShowContent(self.view_card)
+        self.view_card.SetCards(toinspect)
+
+        # clean up
+        self.board.UnselectAll()
+        self.board.selec.Deactivate()
         self.inspect.SetLabel("Save and return")
         
-        self.ShowContent(self.view_card)
-        self.view_card.SetCards(cards)
-        # SetCard copies its argument, so we have to use Get now
-        self.view_card.GetCards()[0].content.SetFocus()
-
         # raise the event
-        number = len(self.inspecting)
+        number = len(toinspect)
         title = ""
         if number == 1:
-            title = self.inspecting[0].GetTitle()
+            title = toinspect[0].GetTitle()
         event = self.InspectEvent(id=wx.ID_ANY, number=number, title=title)
         event.SetEventObject(self)
         self.GetEventHandler().ProcessEvent(event)
 
-    def SaveFromInspect(self):
-        """
-        If inspecting a card, copy the inspected card's state to the
-        original. This includes caret position within the card, which
-        effectively unselects the original card.
-        """
-        if self.GetCurrentContent() == CardInspect:
-            # copy state
-            for card, ins in self.view_card.GetPairs().iteritems():
-                ins.SetTitle(card.GetTitle())
-                ins.SetContent(card.GetContent())
-                ins.SetKind(card.GetKind())
-                ins.SetCaretPos(*card.GetCaretPos())
-
     def CancelInspect(self):
-        # save modifications
-        self.SaveFromInspect()
-
         # raise the event
-        number = len(self.inspecting)
+        cards = self.view_card.GetCards()
+        number = len(cards)
         if number == 1:
-            title = self.inspecting[0].GetTitle()
+            title = cards[0].GetTitle()
         else:
             title = ""
         event = self.CancelInspectEvent(id=wx.ID_ANY, number=number, title=title)
@@ -112,11 +100,8 @@ class Page(wx.Panel):
         self.GetEventHandler().ProcessEvent(event)
 
         # clean up
-        for c in self.inspecting:
-            c.SetInspecting(False)
-        self.inspecting = None
-        self.inspect.SetLabel("Inspect")
         self.ShowBoard()
+        self.inspect.SetLabel("Inspect")
 
     def ShowBoard(self):
         # remember that self.board is a Board
@@ -199,9 +184,11 @@ class Page(wx.Panel):
     ### Auxiliary functions
     
     def Dump(self):
-        # if we're inspecting, first save those changes and then dump
+        # if we're inspecting, restore the cards, dump and then return to the inspection view
+        cards = []
         if self.GetCurrentContent() == CardInspect:
-            self.SaveFromInspect()
+            cards = self.view_card.GetCards()
+            self.view_card.Restore()
             
         di = self.board.Dump()
         for id, card in di.iteritems():
@@ -211,6 +198,10 @@ class Page(wx.Panel):
                 card["width"] = int(card["width"] / self.scale)
             if "height" in card.keys():
                 card["height"] = int(card["height"] / self.scale)
+
+        if cards:
+            self.InspectCards(cards)
+
         return di
 
     def Load(self, di):
@@ -366,6 +357,7 @@ class Page(wx.Panel):
         self.ShowSidebar(not self.tags_sb.IsShown())
 
     def OnRequestInspect(self, ev):
+        print "OnRequestInspect"
         card = ev.GetEventObject()
         self.board.SelectCard(card, True)
         self.InspectCards([card])
@@ -383,15 +375,16 @@ class Page(wx.Panel):
         ev.Skip()
 
     def OnInspect(self, ev):
-        if self.board.GetParent().IsShown():
-            # inspect selected card
+        content = self.GetCurrentContent()
+        if content == Board:
             sel = self.board.GetSelection()
-            if len(sel) == 1:
-                self.InspectCard(sel[0])
-        elif self.view_card.IsShown():
-            # save modifications
-            self.SaveFromInspect()
-            self.ShowBoard()
+            if sel:
+                self.InspectCards(sel)
+        elif content == CardInspect:
+            # don't call self.CancelInspect()
+            # instead, tell the inspected cards that they should request
+            # a cancelation
+            self.view_card.GetCards()[-1].CancelInspect()
 
     def OnToggle(self, ev):
         # now do the actual toggling replacing bd with self.canvas

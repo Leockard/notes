@@ -793,7 +793,7 @@ class SelectionManager(wx.Window):
             self.last.SetFocus()
             self.last = None
         else:
-            self.GetParent().SetFocus()
+            self.GetGrandParent().SetFocus()
             
         # clean up
         for c in self.cards:
@@ -834,7 +834,6 @@ class SelectionManager(wx.Window):
                 self.last = card
 
     def UnselectCard(self, card):
-        n = len(self.cards)
         if card in self.cards:
             self.cards.remove(card)
             card.Unselect()

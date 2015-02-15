@@ -139,7 +139,7 @@ class CardInspect(wx.Panel):
         self.SetSizer(hbox)
 
         # members
-        self.pairs = {}
+        self.cards = {}
 
                 
     ### Behavior functions
@@ -149,58 +149,44 @@ class CardInspect(wx.Panel):
         Returns the cards currently shown on the inspection view,
         not the ones on the board.
         """
-        return self.pairs.keys()
+        return self.cards.keys()
 
-    def GetInspectingCards(self):
-        """
-        Returns the original cards that we are inspecting which
-        are currently on the board. Not the ones shown on the
-        inspection view.
-        """
-        return self.pairs.values()
-
-    def GetPairs(self):
-        """
-        Returns a dict where each pair has a Card for key and
-        for value. The key is the card currently shown on the
-        inspection view, while the value is the corresponding
-        card on the board it represents.
-        """
-        return self.pairs
-
-    def AddCard(self, new_card):
-        # copy the card, since we don't want to reparent it
-        card = Content(self, -1, title=new_card.GetTitle(), kind=new_card.GetKind(), content=new_card.GetContent())
-        card.title.SetFont(wx.Font(*self.TITLE_FONT))
-        card.content.SetFont(wx.Font(*self.CONTENT_FONT))
-        card.DisableCollapse()
-
+    def AddCard(self, card):
+        # setup and reparent: wil restore parent when done. See RestoreCards.
+        self.cards[card] = {}
+        self.cards[card]["parent"] = card.GetParent()
+        self.cards[card]["rect"] = card.GetRect()
+        card.Reparent(self)
+        card.SetInspecting(True)
+        
         # setup UI
         box = self.GetSizer()
         box.Add(card, proportion=1, flag=wx.ALL|wx.EXPAND, border=self.CARD_PADDING)
         box.Layout()
-        self.pairs[card] = new_card
 
         # bindings
         card.Bind(Card.EVT_CARD_CANCEL_INSPECT, self.OnCancelInspect)
 
-        # finish up
-        new_card.SetInspecting(True)
-        card.SetInspecting(True)
-
     def SetCards(self, cards):
         """Clears previous cards and sets the new ones."""
+        print "SetCards: ", cards
         self.Clear()
+        print "SetCards: ", cards
         for c in cards: self.AddCard(c)
+        print "SetCards: ", cards
+
+    def Restore(self):
+        for c in self.cards:
+            c.Reparent(self.cards[c]["parent"])
+            c.SetRect(self.cards[c]["rect"])
+        self.Clear()
 
     def Clear(self):
         """Clear all contained cards."""
-        for c in self.pairs.keys():
-            c.Delete()
         self.GetSizer().Clear()
-        for c in self.pairs.values():
+        for c in self.cards.keys():
             c.SetInspecting(False)
-        self.pairs = {}
+        self.cards = {}
 
 
     ### Auxiliary functions
@@ -208,6 +194,7 @@ class CardInspect(wx.Panel):
     ### Callbacks
 
     def OnCancelInspect(self, ev):
+        self.Restore()
         event = Card.CancelInspectEvent(id=wx.ID_ANY)
         event.SetEventObject(ev.GetEventObject())
         self.GetEventHandler().ProcessEvent(event)
