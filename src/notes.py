@@ -761,7 +761,6 @@ class MyFrame(wx.Frame):
 ######################            
 
 class WelcomePage(wx.Panel):
-    DEFAULT_TITLE = "Welcome"
     
     def __init__(self, parent):
         super(WelcomePage, self).__init__(parent)
