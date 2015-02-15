@@ -523,17 +523,26 @@ class Book(wx.Notebook):
         # make menu items
         menu = wx.Menu()
         self.Bind(wx.EVT_RIGHT_DOWN, self.OnRightDown)
+        
+        # change page name
+        name = wx.MenuItem(menu, wx.ID_ANY, "Change current page name")
+        self.Bind(wx.EVT_MENU, self.OnNameChange, name)
 
         # page close
         close = wx.MenuItem(menu, wx.ID_CLOSE, "Close page")
-        self.Bind(wx.EVT_MENU, self.OnClose)
-        menu.AppendItem(close)
+        self.Bind(wx.EVT_MENU, self.OnClose, close)
+
+        # setup (order matters)
+        menu.AppendItem(name)
+        # don't append close yet, check OnRightDown()
+        # menu.AppendItem(close)
 
         # setup accelerators        
         accels = []
         accels.append(wx.AcceleratorEntry(wx.ACCEL_CTRL, ord("W"), close.GetId()))
 
         self.SetAcceleratorTable(wx.AcceleratorTable(accels))
+        self.close_item = close
         self.menu = menu
         
     def Dump(self):
@@ -549,7 +558,8 @@ class Book(wx.Notebook):
             pg.Hide()        # hide while all data is loaded
             pg.Load(page)
             pg.Show()        # then show everything at the same time
-            self.AddPage(pg, title, select=True)
+            self.AddPage(pg, title, select=False)
+        self.SetSelection(0)
 
 
     ### Callbacks
@@ -566,8 +576,16 @@ class Book(wx.Notebook):
         dlg = wx.MessageDialog(self, "Are you sure you want to delete " + title + " page?", style=wx.YES_NO)
         if dlg.ShowModal() == wx.ID_YES:
             self.DeletePage(cur)
+
+    def OnNameChange(self, ev):
+        dlg = wx.TextEntryDialog(self, "New page title: ")
+        if dlg.ShowModal() == wx.ID_OK:
+            cur = self.GetSelection()
+            self.SetPageText(cur, dlg.GetValue())            
             
     def OnRightDown(self, ev):
+        if not(self.GetPageCount() == 1 and self.GetPage(0).__class__ == WelcomePage):
+            self.menu.AppendItem(self.close_item)
         self.menu_position = ev.GetPosition()
         self.PopupMenu(self.menu, ev.GetPosition())
 

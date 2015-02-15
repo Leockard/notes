@@ -729,7 +729,7 @@ class MyFrame(wx.Frame):
 
         # erase the placeholder
         nb = self.notebook
-        if nb.GetPageCount() == 1 and nb.GetPageText(0) == self.DEFAULT_PAGE_NAME:
+        if nb.GetPageCount() == 1 and nb.GetPage(0).__class__ == WelcomePage:
             nb.DeletePage(0)
 
         # load the chosen file
