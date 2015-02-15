@@ -485,7 +485,6 @@ class Book(wx.Notebook):
     def __init__(self, parent, pos=wx.DefaultPosition, size=wx.DefaultSize):
         super(Book, self).__init__(parent, pos=pos, size=size)
         self.InitMenu()
-        self.ShowWelcomePage()        
 
         
     ### Behavior functions
@@ -493,11 +492,6 @@ class Book(wx.Notebook):
     def NewPage(self):
         dlg = wx.TextEntryDialog(self, "New page title: ")
         if dlg.ShowModal() == wx.ID_OK:
-            # erase the welcome page
-            if self.GetPageCount() == 1 and self.GetPage(0).__class__ == WelcomePage:
-                self.DeletePage(0)
-            
-            # create the new one
             pg = Page(self)
             self.AddPage(pg, dlg.GetValue(), select=True)
             pg.SetFocus()
@@ -510,12 +504,7 @@ class Book(wx.Notebook):
         event.SetEventObject(self)
         self.GetEventHandler().ProcessEvent(event)
 
-    def ShowWelcomePage(self):
-        # use the ancertor's method since we don't want
-        # to raise EVT_NB_NEW_PAGE
-        super(Book, self).AddPage(WelcomePage(self), WelcomePage.DEFAULT_TITLE, True)
-
-
+        
     ### Auxiliary functions
 
     def InitMenu(self):
@@ -533,8 +522,7 @@ class Book(wx.Notebook):
 
         # setup (order matters)
         menu.AppendItem(name)
-        # don't append close yet, check OnRightDown()
-        # menu.AppendItem(close)
+        menu.AppendItem(close)
 
         # setup accelerators        
         accels = []
@@ -564,12 +552,6 @@ class Book(wx.Notebook):
     ### Callbacks
 
     def OnClose(self, ev):
-        # don't do anything for the welcome page
-        if self.GetPageCount() == 1 and self.GetPage(0).__class__ == WelcomePage:
-            ev.Skip()
-            return
-
-        # for any other page, confirm closing
         cur = self.GetSelection()
         title = self.GetPageText(cur)
         dlg = wx.MessageDialog(self, "Are you sure you want to delete " + title + " page?", style=wx.YES_NO)
@@ -583,47 +565,5 @@ class Book(wx.Notebook):
             self.SetPageText(cur, dlg.GetValue())            
             
     def OnRightDown(self, ev):
-        if not(self.GetPageCount() == 1 and self.GetPage(0).__class__ == WelcomePage):
-            self.menu.AppendItem(self.close_item)
         self.menu_position = ev.GetPosition()
         self.PopupMenu(self.menu, ev.GetPosition())
-
-        
-
-######################
-# WelcomePage class
-######################            
-
-class WelcomePage(wx.Panel):
-    DEFAULT_TITLE = "Welcome"
-    
-    def __init__(self, parent):
-        super(WelcomePage, self).__init__(parent)
-        self.InitUI()
-        
-
-    ### Auxiliary functions
-
-    def InitUI(self):
-        # controls
-        newb  = wx.Button(self, label="New book")
-        loadb = wx.Button(self, label="Load book")
-
-        # boxing
-        box = wx.BoxSizer(wx.VERTICAL)
-        self.SetSizer(box)
-        box.Add(newb, proportion=0)
-        box.Add(loadb, proportion=0)
-        
-        # bindings
-        newb.Bind(wx.EVT_BUTTON, self.OnNewBook)
-        loadb.Bind(wx.EVT_BUTTON, self.OnLoadBook)
-
-
-    ### Callbacks
-
-    def OnNewBook(self, ev):
-        self.GetParent().NewPage()
-
-    def OnLoadBook(self, ev):
-        self.GetTopLevelParent().OnOpen(None)

@@ -33,11 +33,12 @@ class MyFrame(wx.Frame):
         self.cur_file = ""
         self.search_find = []
         self.search_str = ""
+        self.notebook = None
+        self.welcome = None
         self.search_head = None    # contains the current search index
                                    # when not searching, set to None
         self.ui_ready = False
         self.InitUI()              # sets up the sizer and the buttons' bindings
-        self.notebook.SetFocus()
 
         # keyboard shortcuts
         # accels is populated in InitUI()
@@ -51,11 +52,12 @@ class MyFrame(wx.Frame):
 
     def GetCurrentBoard(self):
         """Returns the active board, or None."""
-        pg = self.notebook.GetCurrentPage()
-        if pg and hasattr(pg, "board"):
-            return pg.board
-        else:
-            return None
+        result = None
+        if self.notebook:
+            pg = self.notebook.GetCurrentPage()
+            if pg and hasattr(pg, "board"):
+                result = pg.board
+        return result
 
     def Search(self, ev):
         """
@@ -432,25 +434,38 @@ class MyFrame(wx.Frame):
         if not self.ui_ready:
             self.InitMenuBar()
             self.CreateStatusBar()
-            self.InitNotebook(sz)
+            self.InitWelcome()
             self.InitSearchBar()
             self.InitToolBar()
 
         self.ui_ready = True
 
+    def InitWelcome(self):
+        panel = WelcomePage(self)
+        vbox = self.GetSizer()
+        vbox.Add(panel, proportion=1, flag=wx.EXPAND)
+        self.welcome = panel
+
     def InitNotebook(self, size = wx.DefaultSize):
+        # delete the welcome page
+        # at this point, self.GetSizer() should only have the WelcomePage
+        box = self.GetSizer()
+        self.welcome.Hide()
+        box.Clear()
+
+        # create and setup the notebook
         nb = Book(self, size=size)
 
         # bindings: make sure to Bind EVT_BK_NEW_PAGE before creating any pages!
         nb.Bind(Book.EVT_BK_NEW_PAGE, self.OnNewPage)
 
         # UI setup
-        vbox = self.GetSizer()
         nb_box = wx.BoxSizer(wx.HORIZONTAL)
         nb_box.Add(nb, proportion=1,   flag=wx.ALL|wx.EXPAND, border=1)
-        vbox.Add(nb_box, proportion=1, flag=wx.ALL|wx.EXPAND, border=1)
+        box.Add(nb_box, proportion=1, flag=wx.ALL|wx.EXPAND, border=1)
 
-        # set members
+        # finish up
+        box.Layout()
         self.notebook = nb
 
     def CreateBitmap(self):
@@ -726,20 +741,60 @@ class MyFrame(wx.Frame):
                            wx.FD_OPEN | wx.FD_FILE_MUST_EXIST)
         if fd.ShowModal() == wx.ID_CANCEL: return # user changed her mind
 
-
-        # erase the placeholder
-        nb = self.notebook
-        if nb.GetPageCount() == 1 and nb.GetPage(0).__class__ == WelcomePage:
-            nb.DeletePage(0)
+        # delete the welcome page and create a new notebook
+        self.InitNotebook()
 
         # load the chosen file
-        self.Load(fd.GetPath())
-        self.cur_file = fd.GetPath()
-        self.Log("Opened file" + self.cur_file)        
+        self.cur_file = fd.GetPath()        
+        self.Log("Loading file...")
+        self.Load(self.cur_file)
+        self.Log("Opened file" + self.cur_file)
 
     def OnQuit(self, ev):
         """Quit program."""
         self.Close()
+
+
+
+######################
+# WelcomePage class
+######################            
+
+class WelcomePage(wx.Panel):
+    DEFAULT_TITLE = "Welcome"
+    
+    def __init__(self, parent):
+        super(WelcomePage, self).__init__(parent)
+        self.InitUI()
+        
+
+    ### Auxiliary functions
+
+    def InitUI(self):
+        # controls
+        newb  = wx.Button(self, label="New book")
+        loadb = wx.Button(self, label="Load book")
+
+        # boxing
+        box = wx.BoxSizer(wx.VERTICAL)
+        self.SetSizer(box)
+        box.Add(newb, proportion=0)
+        box.Add(loadb, proportion=0)
+        
+        # bindings
+        newb.Bind(wx.EVT_BUTTON, self.OnNewBook)
+        loadb.Bind(wx.EVT_BUTTON, self.OnLoadBook)
+
+
+    ### Callbacks
+
+    def OnNewBook(self, ev):
+        self.GetParent().InitNotebook()
+        self.GetParent().notebook.NewPage()
+
+    def OnLoadBook(self, ev):
+        self.GetParent().OnOpen(None)
+
 
 
 if __name__ == "__main__":
