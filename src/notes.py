@@ -37,7 +37,7 @@ class MyFrame(wx.Frame):
                                    # when not searching, set to None
         self.ui_ready = False
         self.InitUI()              # sets up the sizer and the buttons' bindings
-        self.GetCurrentBoard().SetFocus()
+        self.notebook.SetFocus()
 
         # keyboard shortcuts
         # accels is populated in InitUI()
@@ -50,10 +50,12 @@ class MyFrame(wx.Frame):
     ### Behavior Functions
 
     def GetCurrentBoard(self):
-        """Returns the active board."""
+        """Returns the active board, or None."""
         pg = self.notebook.GetCurrentPage()
-        if pg: return pg.board
-        else: return None
+        if pg and hasattr(pg, "board"):
+            return pg.board
+        else:
+            return None
 
     def Search(self, ev):
         """
@@ -375,9 +377,11 @@ class MyFrame(wx.Frame):
             ctrl = self.search_ctrl
 
         # position
-        top = self.GetCurrentBoard().GetRect().top
-        right = self.GetCurrentBoard().GetRect().right - ctrl.GetRect().width
-        ctrl.SetPosition((right, top))
+        bd = self.GetCurrentBoard()
+        if bd:
+            top = bd.GetRect().top
+            right = bd.GetRect().right - ctrl.GetRect().width
+            ctrl.SetPosition((right, top))
 
         # finish up
         ctrl.Hide()
@@ -440,15 +444,10 @@ class MyFrame(wx.Frame):
         self.ui_ready = True
 
     def InitNotebook(self, size = wx.DefaultSize):
-        # nb = wx.Notebook(self, size=size)
         nb = Book(self, size=size)
 
         # bindings: make sure to Bind EVT_BK_NEW_PAGE before creating any pages!
         nb.Bind(Book.EVT_BK_NEW_PAGE, self.OnNewPage)
-
-        # make starting page
-        pg = Page(nb, size = size)
-        nb.AddPage(pg, self.DEFAULT_PAGE_NAME)
 
         # UI setup
         vbox = self.GetSizer()
@@ -490,7 +489,6 @@ class MyFrame(wx.Frame):
             pickle.dump(di, out)
 
     def Load(self, path):
-        carddict = {}
         with open(path, 'r') as f: d = pickle.load(f)
         self.notebook.Load(d)
         self.notebook.SetFocus()
@@ -706,19 +704,7 @@ class MyFrame(wx.Frame):
         self.Log("Placed new Image.")
 
     def OnNew(self, ev):
-        dlg = wx.TextEntryDialog(self, "New page title: ")
-        if dlg.ShowModal() == wx.ID_OK:
-            # erase the placeholder page
-            nb = self.notebook
-            if nb.GetPageCount() == 1 and nb.GetPageText(0) == self.DEFAULT_PAGE_NAME:
-                nb.DeletePage(0)
-            
-            # and create the new one
-            pg = Page(self.notebook)
-            self.notebook.AddPage(pg, dlg.GetValue(), select=True)
-            # pg.Bind(Page.EVT_PAGE_INSPECT, self.OnInspect)
-            # pg.Bind(Page.EVT_PAGE_CANCEL_INSPECT, self.OnCancelInspect)
-            pg.SetFocus()
+        self.notebook.NewPage()
 
     def OnSave(self, ev):
         """Save file."""

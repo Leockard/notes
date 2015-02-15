@@ -485,7 +485,50 @@ class Book(wx.Notebook):
 
     def __init__(self, parent, pos=wx.DefaultPosition, size=wx.DefaultSize):
         super(Book, self).__init__(parent, pos=pos, size=size)
+        self.ShowWelcomePage()
 
+
+    ### Behavior functions
+
+    def NewPage(self):
+        dlg = wx.TextEntryDialog(self, "New page title: ")
+        if dlg.ShowModal() == wx.ID_OK:
+            # erase the welcome page
+            if self.GetPageCount() == 1 and self.GetPageText(0) == "Welcome":
+                self.DeletePage(0)
+            
+            # and create the new one
+            pg = Page(self)
+            self.AddPage(pg, dlg.GetValue(), select=True)
+            pg.SetFocus()
+
+    def AddPage(self, page, text, select=False, imageId=wx.Notebook.NO_IMAGE):
+        """Call the usual wx.Notebook.AddPage, and also raise the EVT_NB_NEW_PAGE event."""
+        super(Book, self).AddPage(page, text, select, imageId)
+        
+        event = self.NewPageEvent(id=wx.ID_ANY, page=page, title=text)
+        event.SetEventObject(self)
+        self.GetEventHandler().ProcessEvent(event)
+
+    def ShowWelcomePage(self):
+        # controls
+        panel = wx.Panel(self)
+        newb  = wx.Button(panel, label="New book")
+        loadb = wx.Button(panel, label="Load book")
+
+        # boxing
+        box = wx.BoxSizer(wx.VERTICAL)
+        box.Add(newb, proportion=0)
+        box.Add(loadb, proportion=0)
+        panel.SetSizer(box)
+
+        # use the ancertor's addpage since we don't want
+        # to raise EVT_NB_NEW_PAGE
+        super(Book, self).AddPage(panel, "Welcome", True)
+
+
+    ### Auxiliary functions
+    
     def Dump(self):
         di = {}
         for i in range(self.GetPageCount()):
@@ -501,10 +544,5 @@ class Book(wx.Notebook):
             pg.Show()        # then show everything at the same time
             self.AddPage(pg, title, select=True)
 
-    def AddPage(self, page, text, select=False, imageId=wx.Notebook.NO_IMAGE):
-        """Call the usual wx.Notebook.AddPage, and also raise the EVT_NB_NEW_PAGE event."""
-        super(Book, self).AddPage(page, text, select, imageId)
-        
-        event = self.NewPageEvent(id=wx.ID_ANY, page=page, title=text)
-        event.SetEventObject(self)
-        self.GetEventHandler().ProcessEvent(event)
+    
+
