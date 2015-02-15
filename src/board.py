@@ -945,15 +945,20 @@ class SelectionManager(wx.Window):
             else:
                 ev.Skip()
 
-        # pass the CTRL keys to the last selected card
+        # ctrl key
         elif ev.ControlDown():
-            if key == ord("I"):
-                self.last.OnCtrlI(ev)
-            else:
-                ev.Skip()
+            ev.Skip()
 
         # meta key
         elif ev.MetaDown():
+            ev.Skip()
+
+        # shift key
+        elif ev.ShiftDown():
+            ev.Skip()
+
+        # function keys
+        elif IsFunctionKey(key):
             ev.Skip()
 
         # no modifiers
@@ -972,9 +977,5 @@ class SelectionManager(wx.Window):
             elif key == wx.WXK_DELETE:
                 self.DeleteSelected()
                 
-            # deactivate on any other key that's not a modifier
-            elif key != 308 and key != 306:
+            else:
                 self.Deactivate()
-
-
-
