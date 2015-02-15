@@ -4,6 +4,7 @@
 # Inspect classes: for editing a single card or viewing the whole board
 
 import wx
+import re
 from card import *
 from boardbase import BoardBase
 from utilities import *
@@ -230,12 +231,31 @@ class MiniCard(wx.Window):
 ######################        
 
 class TagsInspect(wx.Panel):
-    def __init__(self, parent, pos=wx.DefaultPosition, size=wx.DefaultSize):
+    TAGS_REGEX = "^(\w+):(.*)$"
+    
+    def __init__(self, parent, board, pos=wx.DefaultPosition, size=wx.DefaultSize):
         super(TagsInspect, self).__init__(parent, pos=pos, size=size)
+        self.board = board
         self.InitUI()
 
         # bindings
         self.Bind(wx.EVT_SHOW, self.OnShow)
+        board.Bind(BoardBase.EVT_NEW_CARD, self.OnNewCard)
+
+
+    ### Behavior functions
+
+    def ParseTags(self, txt):
+        string = ""
+        results = re.findall(self.TAGS_REGEX, txt, re.MULTILINE)
+        for tag, val in results:
+            string += tag + ":" + val
+            string += "\n\n"
+        return string
+
+    def ShowTags(self, card):
+        self.txt.SetValue(self.ParseTags(card.GetContent()))
+    
         
     ### Auxiliary functions
 
@@ -254,4 +274,14 @@ class TagsInspect(wx.Panel):
         if ev.IsShown():
             card = GetCardAncestor(self.FindFocus())
             if card and isinstance(card, Content):
-                self.txt.SetValue(card.GetContent())
+                self.ShowTags(card)
+
+    def OnNewCard(self, ev):
+        card = ev.GetEventObject()
+        for ch in card.GetChildren():
+            ch.Bind(wx.EVT_SET_FOCUS, self.OnCardChildFocus)
+
+    def OnCardChildFocus(self, ev):
+        card = GetCardAncestor(ev.GetEventObject())
+        self.ShowTags(card)
+        ev.Skip()

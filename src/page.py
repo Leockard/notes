@@ -319,7 +319,7 @@ class Page(wx.Panel):
         vw.Bind(Card.EVT_CARD_CANCEL_INSPECT, self.OnCancelInspect)
 
     def InitSidebar(self, size=wx.DefaultSize):
-        tg = TagsInspect(self)
+        tg = TagsInspect(self, self.board)
         self.tags_sb = tg
         self.tags_sb.Hide()
         # doesn't go in contents since it can be shown
