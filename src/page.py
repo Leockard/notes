@@ -261,7 +261,7 @@ class Page(wx.Panel):
         sbar = wx.MenuItem(ghost, wx.ID_ANY, "View sidebar", kind=wx.ITEM_CHECK)
         self.Bind(wx.EVT_MENU, self.OnToggleSidebar, sbar)
         accels.append(wx.AcceleratorEntry(wx.ACCEL_NORMAL, wx.WXK_F9, sbar.GetId()))
-        
+
         self.SetAcceleratorTable(wx.AcceleratorTable(accels))
 
     def InitSizers(self):
@@ -485,9 +485,10 @@ class Book(wx.Notebook):
 
     def __init__(self, parent, pos=wx.DefaultPosition, size=wx.DefaultSize):
         super(Book, self).__init__(parent, pos=pos, size=size)
-        self.ShowWelcomePage()
+        self.InitMenu()
+        self.ShowWelcomePage()        
 
-
+        
     ### Behavior functions
 
     def NewPage(self):
@@ -519,7 +520,24 @@ class Book(wx.Notebook):
 
 
     ### Auxiliary functions
-    
+
+    def InitMenu(self):
+        # make menu items
+        menu = wx.Menu()
+        self.Bind(wx.EVT_RIGHT_DOWN, self.OnRightDown)
+
+        # page close
+        close = wx.MenuItem(menu, wx.ID_CLOSE, "Close page")
+        self.Bind(wx.EVT_MENU, self.OnClose)
+        menu.AppendItem(close)
+
+        # setup accelerators        
+        accels = []
+        accels.append(wx.AcceleratorEntry(wx.ACCEL_CTRL, ord("W"), close.GetId()))
+
+        self.SetAcceleratorTable(wx.AcceleratorTable(accels))
+        self.menu = menu
+        
     def Dump(self):
         di = {}
         for i in range(self.GetPageCount()):
@@ -535,7 +553,27 @@ class Book(wx.Notebook):
             pg.Show()        # then show everything at the same time
             self.AddPage(pg, title, select=True)
 
-    
+
+    ### Callbacks
+
+    def OnClose(self, ev):
+        # don't do anything for the welcome page
+        if self.GetPageCount() == 1 and self.GetPage(0).__class__ == WelcomePage:
+            ev.Skip()
+            return
+
+        # for any other page, confirm closing
+        cur = self.GetSelection()
+        title = self.GetPageText(cur)
+        dlg = wx.MessageDialog(self, "Are you sure you want to delete " + title + " page?", style=wx.YES_NO)
+        if dlg.ShowModal() == wx.ID_YES:
+            self.DeletePage(cur)
+            
+    def OnRightDown(self, ev):
+        self.menu_position = ev.GetPosition()
+        self.PopupMenu(self.menu, ev.GetPosition())
+
+        
 
 ######################
 # WelcomePage class
