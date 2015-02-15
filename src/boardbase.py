@@ -11,7 +11,7 @@ import json
 
 
 ######################
-# BoardBase Class
+# Board Class
 ######################
 
 class Board(AutoSize):
