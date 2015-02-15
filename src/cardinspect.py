@@ -158,6 +158,7 @@ class CardInspect(wx.Panel):
         self.cards[card]["rect"] = card.GetRect()
         card.Reparent(self)
         card.SetInspecting(True)
+        card.content.SetFocus()
         
         # setup UI
         box = self.GetSizer()
@@ -169,11 +170,8 @@ class CardInspect(wx.Panel):
 
     def SetCards(self, cards):
         """Clears previous cards and sets the new ones."""
-        print "SetCards: ", cards
         self.Clear()
-        print "SetCards: ", cards
         for c in cards: self.AddCard(c)
-        print "SetCards: ", cards
 
     def Restore(self):
         for c in self.cards:

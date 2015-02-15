@@ -66,7 +66,6 @@ class Page(wx.Panel):
         self.GetTopLevelParent().SetFocus()
 
     def InspectCards(self, cards):
-        print "InspectCards: ", cards
         toinspect = cards[:]
 
         # make sure to first SetCards() and then Deactivate()
@@ -107,6 +106,9 @@ class Page(wx.Panel):
         # remember that self.board is a Board
         # but we added the parent Board object to our Sizer
         self.ShowContent(self.board)
+        cards = self.board.GetCards()
+        if cards:
+            cards[0].SetFocus()
 
     def ShowCanvas(self):
         self.ShowContent(self.canvas)
@@ -364,6 +366,7 @@ class Page(wx.Panel):
 
     def OnCancelInspect(self, ev):
         self.CancelInspect()
+        ev.GetEventObject().SetFocus()
         
     def OnDelete(self, ev):
         event = self.DeleteEvent(id=wx.ID_ANY, number=ev.number)
