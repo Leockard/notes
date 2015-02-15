@@ -618,6 +618,10 @@ class MyFrame(wx.Frame):
                 card = GetCardAncestor(self.FindFocus())
                 bd.SelectCard(card, True)
                 bd.SetFocus()
+            else:
+                ev.Skip()
+        else:
+            ev.Skip()
 
     def OnHArrange(self, ev):
         self.GetCurrentBoard().ArrangeSelection(Board.HORIZONTAL)
