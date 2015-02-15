@@ -477,15 +477,6 @@ class BoardBase(AutoSize):
         # bring to front and set focus
         card.SetFocus()
         card.Raise()
-        
-        # selection
-        if not wx.GetMouseState().ControlDown():    # no control: simple click
-            self.SelectCard(card, new_sel = True)   # select only this card
-        else:                                       # control down
-            if card in self.GetSelection():         # ctrl + click while selected: unselect
-                self.UnselectCard(card)
-            elif card not in self.GetSelection():   # ctrl + click while not selected: add select
-                self.SelectCard(card, new_sel = False)        
 
         # initiate moving
         self.CaptureMouse()
@@ -496,7 +487,7 @@ class BoardBase(AutoSize):
         pos = card.GetPosition() + ev.GetPosition() # relative to the canvas
         self.moving_cards_pos = []
         for c in self.GetSelection():
-            # (card, card position with respect to the original click, current position)
+            # (card, pos w.r.t. the original click, current pos)
             self.moving_cards_pos.append((c, c.GetPosition() - pos, c.GetPosition()))
 
     def OnCardChildFocus(self, ev):

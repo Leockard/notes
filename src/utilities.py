@@ -225,6 +225,9 @@ class SelectionManager(wx.Window):
         self.SetFocus()
         self.active = True
 
+        for c in self.GetParent().GetCards():
+            c.Bind(wx.EVT_LEFT_DOWN, self.OnCardLeftDown)
+
     def Deactivate(self):
         # return focus to the last card
         if self.last:
@@ -238,6 +241,8 @@ class SelectionManager(wx.Window):
             c.Unselect()
         self.cards = []
         self.Unbind(wx.EVT_KEY_DOWN)
+        for c in self.GetParent().GetCards():
+            c.Unbind(wx.EVT_LEFT_DOWN)
         self.active = False
 
     def IsActive(self):
@@ -261,9 +266,11 @@ class SelectionManager(wx.Window):
             
         # else, select card only if it was not already selected
         elif card not in self.cards:
-            self.cards.append(card)
+            if not self.IsActive():
+                self.Activate()
+            self.cards.append(card)                        
+            
             for c in self.cards:
-                self.Activate()                
                 c.Select()
                 self.last = card
 
@@ -349,6 +356,20 @@ class SelectionManager(wx.Window):
 
     ### callbacks
 
+    def OnCardLeftDown(self, ev):
+        card = ev.GetEventObject()
+        
+        if not ev.ShiftDown():
+            # no shift: select only this card
+            self.SelectCard(card, new_sel = True)
+        else:                                      
+            if card in self.GetSelection():
+                # shift + click while selected: unselect
+                self.UnselectCard(card)
+            elif card not in self.GetSelection():
+                # shift + click while not selected: add select   
+                self.SelectCard(card, new_sel = False)
+
     def OnKeyDown(self, ev):
         key = ev.GetKeyCode()
         bd = self.GetParent()
@@ -372,6 +393,10 @@ class SelectionManager(wx.Window):
                 self.last.OnCtrlI(ev)
             else:
                 ev.Skip()
+
+        # meta key
+        elif ev.MetaDown():
+            ev.Skip()
 
         # no modifiers
         else:
