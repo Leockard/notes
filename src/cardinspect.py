@@ -6,7 +6,7 @@
 import wx
 import re
 from card import *
-from boardbase import Board
+from board import Board
 from utilities import *
 
 

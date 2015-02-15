@@ -1,7 +1,7 @@
-# boardbase.py
+# board.py
 # -*- coding: utf-8 -*-
 
-# base board class for notes.py
+# board class for notes.py
 
 import wx
 from utilities import *

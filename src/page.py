@@ -7,11 +7,10 @@
 import wx
 from utilities import AutoSize
 from utilities import *
-from boardbase import *
+from board import *
 from cardinspect import *
 from canvas import Canvas
 import wx.lib.agw.flatnotebook as fnb
-
 
 
 ######################
