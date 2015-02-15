@@ -50,13 +50,19 @@ class MyFrame(wx.Frame):
         
     ### Behavior Functions
 
+    def GetCurrentPage(self):
+        """Returns the active page, or None."""
+        result = None
+        if self.notebook:
+            result = self.notebook.GetCurrentPage()
+        return result
+
     def GetCurrentBoard(self):
         """Returns the active board, or None."""
         result = None
-        if self.notebook:
-            pg = self.notebook.GetCurrentPage()
-            if pg and hasattr(pg, "board"):
-                result = pg.board
+        pg = self.GetCurrentPage()
+        if pg and hasattr(pg, "board"):
+            result = pg.board
         return result
 
     def Search(self, ev):
@@ -420,7 +426,7 @@ class MyFrame(wx.Frame):
         sz = (20, 20)
         # # cleanup the previous UI, if any
         if self.ui_ready:
-            pg = self.notebook.GetCurrentPage()
+            pg = self.GetCurrentPage()
             sz = pg.GetSize()
             pg.Hide()
             self.sheet = None
@@ -452,6 +458,7 @@ class MyFrame(wx.Frame):
         box = self.GetSizer()
         self.welcome.Hide()
         box.Clear()
+        self.welcome = None
 
         # create and setup the notebook
         nb = Book(self, size=size)
@@ -490,7 +497,8 @@ class MyFrame(wx.Frame):
 
     def OnDebug(self, ev):
         print "---DEBUG---"
-        print self.FindFocus()
+        for m in self.GetMenuBar().GetMenus():
+            print m[1], " is ", m[0].GetWindow()
 
     def Save(self, out_file):
         """Save the data in the out_file."""
@@ -524,27 +532,27 @@ class MyFrame(wx.Frame):
         ev.page.board.Bind(Board.EVT_NEW_CARD, self.AfterCardCreated)
 
     def OnZoomIn(self, ev):
-        self.notebook.GetCurrentPage().ZoomIn()
+        self.GetCurrentPage().ZoomIn()
 
     def OnZoomOut(self, ev):
-        self.notebook.GetCurrentPage().ZoomOut()
+        self.GetCurrentPage().ZoomOut()
 
     def OnGroupSelection(self, ev):
         self.GetCurrentBoard().GroupSelected()
 
     def OnToggleMinimap(self, ev):
-        self.notebook.GetCurrentPage().ToggleMinimap()
+        self.GetCurrentPage().ToggleMinimap()
 
     def OnToggleCollapse(self, ev):
         for c in [t for t in self.GetCurrentBoard().GetSelection() if isinstance(t, Content)]:
             c.ToggleCollapse()
 
     def OnViewPageBar(self, ev):
-        self.notebook.GetCurrentPage().ShowToolBar(show=ev.IsChecked())
+        self.GetCurrentPage().ShowToolBar(show=ev.IsChecked())
 
     def OnMenuInspectCard(self, ev):
         """Called by the View menu item."""
-        pg = self.notebook.GetCurrentPage()
+        pg = self.GetCurrentPage()
         cont = pg.GetCurrentContent()
 
         # toggle between Board and Inspect modes        
@@ -595,17 +603,24 @@ class MyFrame(wx.Frame):
         When searching: cancel search.
         When in CardInspect: don't do anything.
         """
-        # search: cancel search
+        # if searching: cancel search
         if self.FindFocus() == self.search_ctrl:
             self.CancelSearch()
             return
 
-        # inspection: nil
-        content = self.notebook.GetCurrentPage().GetCurrentContent()
-        if content == CardInspect:
+        # if on welcome page: nil
+        if self.welcome:
             return
 
-        # board: cycle selection
+        # if inspecting: nil
+        pg = self.GetCurrentPage()
+        if pg:
+            content = pg.GetCurrentContent()
+            if content and content == CardInspect:
+                return
+
+        # if on board: cycle selection
+        content = pg.GetCurrentContent()
         if content == Board:
             bd = self.GetCurrentBoard()
             sel = bd.GetSelection()
