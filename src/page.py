@@ -512,11 +512,9 @@ class Book(wx.Notebook):
         self.GetEventHandler().ProcessEvent(event)
 
     def ShowWelcomePage(self):
-        page = WelcomePage(self)
-
-        # use the ancertor's addpage since we don't want
+        # use the ancertor's method since we don't want
         # to raise EVT_NB_NEW_PAGE
-        super(Book, self).AddPage(page, WelcomePage.DEFAULT_TITLE, True)
+        super(Book, self).AddPage(WelcomePage(self), WelcomePage.DEFAULT_TITLE, True)
 
 
     ### Auxiliary functions
