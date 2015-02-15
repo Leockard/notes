@@ -218,7 +218,7 @@ class BoardBase(AutoSize):
             ch.Bind(wx.EVT_LEFT_DOWN, self.OnCardChildLeftDown)
 
         # raise the appropriate event
-        event = self.NewCardEvent(id=wx.ID_ANY)
+        event = self.NewCardEvent(id=wx.ID_ANY, subclass=subclass)
         event.SetEventObject(new)
         self.GetEventHandler().ProcessEvent(event)
 
@@ -580,6 +580,21 @@ class BoardBase(AutoSize):
         accels = []
         ghost = wx.Menu()
 
+        contr = wx.MenuItem(ghost, wx.ID_ANY, "New Card: Right")
+        contb = wx.MenuItem(ghost, wx.ID_ANY, "New Card: Below")
+        headr = wx.MenuItem(ghost, wx.ID_ANY, "New Header: Right")
+        headb = wx.MenuItem(ghost, wx.ID_ANY, "New Header: Below")
+
+        self.Bind(wx.EVT_MENU, self.OnCtrlRet    , contr)
+        self.Bind(wx.EVT_MENU, self.OnAltRet     , headr)
+        self.Bind(wx.EVT_MENU, self.OnCtrlShftRet , contb)
+        self.Bind(wx.EVT_MENU, self.OnAltShftRet  , headb)
+
+        accels.append(wx.AcceleratorEntry(wx.ACCEL_CTRL, wx.WXK_RETURN , contr.GetId()))
+        accels.append(wx.AcceleratorEntry(wx.ACCEL_ALT, wx.WXK_RETURN  , headr.GetId()))
+        accels.append(wx.AcceleratorEntry(wx.ACCEL_SHIFT|wx.ACCEL_CTRL , wx.WXK_RETURN, contb.GetId()))
+        accels.append(wx.AcceleratorEntry(wx.ACCEL_SHIFT|wx.ACCEL_ALT  , wx.WXK_RETURN, headb.GetId()))        
+
         self.SetAcceleratorTable(wx.AcceleratorTable(accels))
 
     def PaintRect(self, rect, thick = MOVING_RECT_THICKNESS, style = wx.SOLID, refresh = True):
@@ -662,6 +677,21 @@ class BoardBase(AutoSize):
             for label, members in d["groups"].iteritems():
                 cards = [self.GetCard(l) for l in members]
                 self.NewGroup(cards)
+
+
+    ### Callbacks
+
+    def OnCtrlRet(self, ev):
+        self.PlaceNewCard("Content", below=False)
+
+    def OnCtrlShftRet(self, ev):
+        self.PlaceNewCard("Content", below=True)
+
+    def OnAltRet(self, ev):
+        self.PlaceNewCard("Header", below=False)
+        
+    def OnAltShftRet(self, ev):
+        self.PlaceNewCard("Header", below=True)
 
 
                 

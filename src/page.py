@@ -494,10 +494,10 @@ class Book(wx.Notebook):
         dlg = wx.TextEntryDialog(self, "New page title: ")
         if dlg.ShowModal() == wx.ID_OK:
             # erase the welcome page
-            if self.GetPageCount() == 1 and self.GetPageText(0) == "Welcome":
+            if self.GetPageCount() == 1 and self.GetPage(0).__class__ == WelcomePage:
                 self.DeletePage(0)
             
-            # and create the new one
+            # create the new one
             pg = Page(self)
             self.AddPage(pg, dlg.GetValue(), select=True)
             pg.SetFocus()
@@ -511,20 +511,11 @@ class Book(wx.Notebook):
         self.GetEventHandler().ProcessEvent(event)
 
     def ShowWelcomePage(self):
-        # controls
-        panel = wx.Panel(self)
-        newb  = wx.Button(panel, label="New book")
-        loadb = wx.Button(panel, label="Load book")
-
-        # boxing
-        box = wx.BoxSizer(wx.VERTICAL)
-        box.Add(newb, proportion=0)
-        box.Add(loadb, proportion=0)
-        panel.SetSizer(box)
+        page = WelcomePage(self)
 
         # use the ancertor's addpage since we don't want
         # to raise EVT_NB_NEW_PAGE
-        super(Book, self).AddPage(panel, "Welcome", True)
+        super(Book, self).AddPage(page, WelcomePage.DEFAULT_TITLE, True)
 
 
     ### Auxiliary functions
@@ -546,3 +537,40 @@ class Book(wx.Notebook):
 
     
 
+######################
+# WelcomePage class
+######################            
+
+class WelcomePage(wx.Panel):
+    DEFAULT_TITLE = "Welcome"
+    
+    def __init__(self, parent):
+        super(WelcomePage, self).__init__(parent)
+        self.InitUI()
+        
+
+    ### Auxiliary functions
+
+    def InitUI(self):
+        # controls
+        newb  = wx.Button(self, label="New book")
+        loadb = wx.Button(self, label="Load book")
+
+        # boxing
+        box = wx.BoxSizer(wx.VERTICAL)
+        self.SetSizer(box)
+        box.Add(newb, proportion=0)
+        box.Add(loadb, proportion=0)
+        
+        # bindings
+        newb.Bind(wx.EVT_BUTTON, self.OnNewBook)
+        loadb.Bind(wx.EVT_BUTTON, self.OnLoadBook)
+
+
+    ### Callbacks
+
+    def OnNewBook(self, ev):
+        self.GetParent().NewPage()
+
+    def OnLoadBook(self, ev):
+        self.GetTopLevelParent().OnOpen(None)

@@ -307,11 +307,11 @@ class MyFrame(wx.Frame):
         self.Bind(wx.EVT_MENU, self.OnMenuInspectCard , inspc_it)
         self.Bind(wx.EVT_MENU, self.OnToggleMinimap   , tgmap_it)
 
-        self.Bind(wx.EVT_MENU, self.OnCtrlRet    , contr_it)
-        self.Bind(wx.EVT_MENU, self.OnAltRet     , headr_it)
-        self.Bind(wx.EVT_MENU, self.OnImage      , img_it)
-        self.Bind(wx.EVT_MENU, self.OnCtrlShftRet , contb_it)
-        self.Bind(wx.EVT_MENU, self.OnAltShftRet  , headb_it)
+        self.Bind(wx.EVT_MENU, self.OnInsertContent , contr_it)
+        self.Bind(wx.EVT_MENU, self.OnInsertHeader  , headr_it)
+        self.Bind(wx.EVT_MENU, self.OnInsertContent , contb_it)
+        self.Bind(wx.EVT_MENU, self.OnInsertHeader  , headb_it)        
+        self.Bind(wx.EVT_MENU, self.OnInsertImage   , img_it)
 
         self.Bind(wx.EVT_MENU, self.OnCtrlF      , search_it)
         # self.Bind(wx.EVT_MENU, self.OnCtrlG      , next_it)     # ctrl+g is a special accelerator. See below
@@ -332,11 +332,6 @@ class MyFrame(wx.Frame):
         self.accels.append(wx.AcceleratorEntry(wx.ACCEL_CTRL, ord("F"), search_it.GetId()))
         self.accels.append(wx.AcceleratorEntry(wx.ACCEL_SHIFT|wx.ACCEL_CTRL , ord("G"), prev_it.GetId()))        
         
-        self.accels.append(wx.AcceleratorEntry(wx.ACCEL_CTRL, wx.WXK_RETURN , contr_it.GetId()))
-        self.accels.append(wx.AcceleratorEntry(wx.ACCEL_ALT, wx.WXK_RETURN  , headr_it.GetId()))
-        self.accels.append(wx.AcceleratorEntry(wx.ACCEL_SHIFT|wx.ACCEL_CTRL , wx.WXK_RETURN, contb_it.GetId()))
-        self.accels.append(wx.AcceleratorEntry(wx.ACCEL_SHIFT|wx.ACCEL_ALT  , wx.WXK_RETURN, headb_it.GetId()))
-
         # finish up        
         bar.Append(file_menu, "&File")
         bar.Append(edit_menu, "&Edit")
@@ -510,7 +505,8 @@ class MyFrame(wx.Frame):
     def OnNewPage(self, ev):
         ev.page.Bind(Page.EVT_PAGE_INSPECT, self.OnInspect)
         ev.page.Bind(Page.EVT_PAGE_CANCEL_INSPECT, self.OnCancelInspect)
-        ev.page.Bind(Page.EVT_PAGE_DEL_CARD, self.AfterDelete)
+        ev.page.board.Bind(BoardBase.EVT_BOARD_DEL_CARD, self.AfterDelete)
+        ev.page.board.Bind(BoardBase.EVT_NEW_CARD, self.AfterCardCreated)
 
     def OnZoomIn(self, ev):
         self.notebook.GetCurrentPage().ZoomIn()
@@ -679,29 +675,19 @@ class MyFrame(wx.Frame):
         """Go to previous search find."""
         self.PrevSearchResult()
 
-    def OnCtrlRet(self, ev):
+    def OnInsertContent(self, ev):
         """Add a new content card to the board, to the right of the current card."""
         self.GetCurrentBoard().PlaceNewCard("Content", below=False)
-        self.Log("Placed new Content card.")
 
-    def OnCtrlShftRet(self, ev):
-        """Add a new content card to the board, below of the current one."""
-        self.GetCurrentBoard().PlaceNewCard("Content", below=True)
-        self.Log("Placed new Content card.")
-
-    def OnAltRet(self, ev):
+    def OnInsertHeader(self, ev):
         """Add a new header to the board, to the right of the current card."""
         self.GetCurrentBoard().PlaceNewCard("Header", below=False)
-        self.Log("Placed new Header.")
-        
-    def OnAltShftRet(self, ev):
-        """Add a new header to the board, to the right of the current card."""
-        self.GetCurrentBoard().PlaceNewCard("Header", below=True)
-        self.Log("Placed new Header.")
 
-    def OnImage(self, ev):
+    def OnInsertImage(self, ev):
         self.GetCurrentBoard().PlaceNewCard("Image", below=False)
-        self.Log("Placed new Image.")
+
+    def AfterCardCreated(self, ev):
+        self.Log("Created new " + ev.subclass + " card.")
 
     def OnNew(self, ev):
         self.notebook.NewPage()
