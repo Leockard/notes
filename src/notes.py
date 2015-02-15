@@ -497,8 +497,6 @@ class MyFrame(wx.Frame):
 
     def OnDebug(self, ev):
         print "---DEBUG---"
-        for m in self.GetMenuBar().GetMenus():
-            print m[1], " is ", m[0].GetWindow()
 
     def Save(self, out_file):
         """Save the data in the out_file."""

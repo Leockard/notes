@@ -660,7 +660,8 @@ class Board(AutoSize):
         carddict = {}
 
         # we put the scrollbars at the origin, to get the real positions
-        self.Hide()
+        shown = self.IsShown()
+        if shown: self.Hide()
         view_start = self.GetViewStart()
         self.Scroll(0, 0)
 
@@ -671,7 +672,7 @@ class Board(AutoSize):
             
         # and return to the original view
         self.Scroll(view_start[0], view_start[1])
-        self.Show()
+        if shown: self.Show()
 
         return carddict
 
