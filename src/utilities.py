@@ -116,12 +116,12 @@ class ColouredText(wx.TextCtrl):
 
 
 class EditText(ColouredText):
-    DEFAULT_SZ = (200, 25)
+    DEFAULT_SZ = (200, 20)
+    DEFAULT_STYLE = wx.BORDER_NONE|wx.TE_RICH|wx.TE_PROCESS_ENTER|wx.TE_MULTILINE|wx.TE_NO_VSCROLL
     DEFAULT_FONT = (12, wx.SWISS, wx.ITALIC, wx.BOLD)
     DEFAULT_2_CL = (255, 255, 255, 255)
     
-    def __init__(self, parent, value="", pos=wx.DefaultPosition, size=DEFAULT_SZ,
-                 style=wx.BORDER_NONE|wx.TE_RICH|wx.TE_PROCESS_ENTER|wx.TE_MULTILINE):
+    def __init__(self, parent, value="", pos=wx.DefaultPosition, size=DEFAULT_SZ, style=DEFAULT_STYLE):
         super(EditText, self).__init__(parent, pos=pos, size=size, style=style, value=value)
 
         # colours

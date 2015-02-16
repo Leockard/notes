@@ -275,7 +275,7 @@ class ContentText(ColouredText):
 
             
 class KindButton(wx.Button):
-    DEFAULT_SIZE = (33, 23)
+    DEFAULT_SIZE = (33, 20)
     DEFAULT_FONT = (8, wx.FONTFAMILY_DEFAULT, wx.FONTSTYLE_ITALIC, wx.FONTWEIGHT_NORMAL, False)
 
     DEFAULT_LBL    = "kind"    
@@ -534,14 +534,14 @@ class Content(Card):
     
     def InitUI(self):
         # controls
-        title = EditText(self.main)
+        title = TitleEditText(self.main)
         kindbut = KindButton(self.main)
         rating = StarRating(self.main)
         content = ContentText(self.main)
         
         # boxes
         hbox1 = wx.BoxSizer(wx.HORIZONTAL)
-        hbox1.Add(title,   proportion=1, flag=wx.ALL|wx.ALIGN_CENTRE, border=Card.BORDER_WIDTH)
+        hbox1.Add(title,   proportion=1, flag=wx.LEFT|wx.ALIGN_CENTRE, border=Card.BORDER_THICK)
         hbox1.Add(kindbut, proportion=0, flag=wx.ALL|wx.ALIGN_CENTRE, border=Card.BORDER_WIDTH)
         hbox1.Add(rating,  proportion=0, flag=wx.ALL|wx.EXPAND, border=0)
 
@@ -612,10 +612,7 @@ class Content(Card):
     def OnCtrlU(self, ev):
         self.ToggleCollapse()
 
-
-
-
-            
+                    
 
 ######################
 # Class Image
@@ -712,7 +709,96 @@ class Image(Card):
         self.LoadImage(fd.GetPath())
 
 
+
+######################
+# Class TitleEditText
+######################
+
+class TitleEditText(EditText):
+    # have to use own MAX length since wx.TextCtrl.SetMaxLength
+    # is only implemented for single line text controls
+    MAXLEN_PX = 175
+    HEIGHT_PX = EditText.DEFAULT_SZ[1]
+
+    DEFAULT_WIDTH = EditText.DEFAULT_SZ[0]
+    DEFAULT_HEIGHT = EditText.DEFAULT_SZ[1]
+    HEIGHTS = [DEFAULT_HEIGHT, DEFAULT_HEIGHT * 1.75, DEFAULT_HEIGHT * 2]
+
+    DEFAULT_FONT = EditText.DEFAULT_FONT
+    DEFAULT_FONT_SZ = EditText.DEFAULT_FONT[0]
+    FONT_SIZES = [DEFAULT_FONT_SZ, DEFAULT_FONT_SZ - 2, DEFAULT_FONT_SZ - 2 - 2]
+
         
+    def __init__(self, parent):
+        super(TitleEditText, self).__init__(parent)
+        # set initial lines
+        self.current_height = 0
+        self.current_font_sz = 0
+        self.lines = 0
+        self.SetOneLine()
+
+        # save a reference to our Client's GetTextExtent:
+        # we're going to use it every time the text chagnes
+        # and we don't want to build a wx.ClientDC every time
+        dc = wx.MemoryDC()
+        dc.SetFont(wx.Font(*self.DEFAULT_FONT))
+        self.GetTextExtent = dc.GetTextExtent
+
+        # bindings        
+        self.Bind(wx.EVT_TEXT, self.OnTextEntry)
+
+
+    ### Behavior functions
+
+    def SetHeightAndFontSize(self, height, font_sz):
+        # SetMinSize + Layout will force the containing Sizer to resize
+        size = (self.DEFAULT_WIDTH, height)
+        self.SetMinSize(size)
+        self.GetParent().Layout()
+        font = list(self.DEFAULT_FONT)
+        font[0] = font_sz
+        self.SetFont(wx.Font(*font))
+
+        # members
+        self.current_height = size[1]
+        self.current_font_sz = font_sz
+
+    def SetOneLine(self):
+        self.SetHeightAndFontSize(self.HEIGHTS[0], self.DEFAULT_FONT_SZ)
+        self.lines = 1
+
+    def SetTwoLines(self):
+        self.SetHeightAndFontSize(self.HEIGHTS[1], self.FONT_SIZES[1])
+        self.lines = 2
+
+    def SetThreeLines(self):
+        self.SetHeightAndFontSize(self.HEIGHTS[2], self.FONT_SIZES[2])
+        self.lines = 3
+        
+
+    ### Callbacks
+
+    def OnTextEntry(self, ev):
+        # prepare text
+        txt = ev.GetString()
+        if self.lines == 2:
+            index = len(txt) / 2
+            txt = txt[:index+1] + "\n" + txt[index+1:]
+        elif self.lines == 3:
+            index = len(txt) / 3
+            txt = txt[:index+1] + "\n" + txt[index+1:index*2-1] + "\n" + txt[index*2+1:]
+            
+        w, h = self.GetTextExtent(txt)
+        print "extent: ", w, h
+        print "size  : ", self.GetSize()
+        if w >= self.MAXLEN_PX and abs(self.current_height - h) <= 3:
+            if self.lines == 1:
+                self.SetTwoLines()
+            elif self.lines == 2:
+                self.SetThreeLines()
+
+            
+            
 ######################
 # Class StarRating
 ######################
@@ -732,7 +818,7 @@ class StarRating(wx.Button):
 
         # the first instance loads all BMPs
         if not StarRating.BMPS:
-            StarRating.BMPS = [wx.Bitmap(self.PATH + self.FILES[n]) for n in range(4)]
+            StarRating.BMPS = [wx.Bitmap(self.PATH + self.FILES[n]) for n in range(self.MAX + 1)]
 
         self.rating = 0
         self.SetRating(0)

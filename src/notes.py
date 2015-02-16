@@ -497,8 +497,10 @@ class MyFrame(wx.Frame):
 
     def OnDebug(self, ev):
         print "---DEBUG---"
-        print "focus: ", self.FindFocus()
-        print "selec: ", self.GetCurrentBoard().GetSelection()
+        # print "focus: ", self.FindFocus()
+        # print "selec: ", self.GetCurrentBoard().GetSelection()
+        title = self.GetCurrentBoard().GetContents()[0].title
+        print title.GetSize()
 
     def Save(self, out_file):
         """Save the data in the out_file."""
