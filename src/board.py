@@ -451,6 +451,9 @@ class Board(AutoSize):
 
     def OnMgrDelete(self, ev):
         """Listens to every delete action on SelectionManager."""
+        self.selec.Deactivate()
+
+        # raise the event again, with event object = self
         event = self.DeleteEvent(id=wx.ID_ANY, number=ev.number)
         event.SetEventObject(self)
         self.GetEventHandler().ProcessEvent(event)
@@ -527,7 +530,7 @@ class Board(AutoSize):
 
     def OnLeftDown(self, ev):
         self.UnselectAll()
-        self.SetFocusIgnoringChildren()
+        self.selec.SetFocus()
 
         # initiate drag select
         self.init_pos = ev.GetPosition()
@@ -853,6 +856,7 @@ class SelectionManager(wx.Window):
         for c in group.GetMembers(): self.SelectCard(c)
 
     def DeleteSelected(self):
+        # now delete
         number = len(self.cards)
         while len(self.cards) > 0:
             c = self.cards[-1]
