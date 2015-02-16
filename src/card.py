@@ -238,19 +238,6 @@ class ContentText(ColouredText):
         start, end = self.GetSelection()
         self.SetStyle(start, end, wx.TextAttr(None, None, self.GetFont().Italic()))
 
-    def ScrollToChar(self, pos):
-        if pos > -1 and pos < len(self.GetValue()):
-            sz = self.GetSize()
-            x, y = self.PositionToCoords(pos)
-
-            while y < 0:
-                self.ScrollLines(-1)
-                x, y = self.PositionToCoords(pos)
-            # the offset should account for font height                
-            while y >= sz.height - 18:
-                self.ScrollLines(1)
-                x, y = self.PositionToCoords(pos)
-                
 
     ### Callbacks
 
@@ -453,7 +440,7 @@ class Content(Card):
             ctrl.SetInsertionPoint(pos)
 
     def ScrollToChar(self, pos):
-        self.content.ScrollToChar(pos)
+        self.content.ShowPosition(pos)
 
     def DisableCollapse(self):
         """Calling Collapse() or Uncollapse() after calling this function will do nothing."""
@@ -750,6 +737,10 @@ class TitleEditText(EditText):
 
     ### Behavior functions
 
+    def SetValue(self, val):
+        super(TitleEditText, self).SetValue(val)
+        self.ComputeLines()
+
     def SetHeightAndFontSize(self, height, font_sz):
         # SetMinSize + Layout will force the containing Sizer to resize
         size = (self.DEFAULT_WIDTH, height)
@@ -774,13 +765,10 @@ class TitleEditText(EditText):
     def SetThreeLines(self):
         self.SetHeightAndFontSize(self.HEIGHTS[2], self.FONT_SIZES[2])
         self.lines = 3
-        
 
-    ### Callbacks
-
-    def OnTextEntry(self, ev):
+    def ComputeLines(self):
         # prepare text
-        txt = ev.GetString()
+        txt = self.GetValue()
         if self.lines == 2:
             index = len(txt) / 2
             txt = txt[:index+1] + "\n" + txt[index+1:]
@@ -789,13 +777,17 @@ class TitleEditText(EditText):
             txt = txt[:index+1] + "\n" + txt[index+1:index*2-1] + "\n" + txt[index*2+1:]
             
         w, h = self.GetTextExtent(txt)
-        print "extent: ", w, h
-        print "size  : ", self.GetSize()
         if w >= self.MAXLEN_PX and abs(self.current_height - h) <= 3:
             if self.lines == 1:
                 self.SetTwoLines()
             elif self.lines == 2:
                 self.SetThreeLines()
+
+
+    ### Callbacks
+
+    def OnTextEntry(self, ev):
+        self.ComputeLines()
 
             
             
