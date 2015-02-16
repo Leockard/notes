@@ -8,6 +8,7 @@ from utilities import *
 import wx.lib.newevent as ne
 from card import *
 import json
+import ast
 
 
 ######################
@@ -307,15 +308,24 @@ class Board(AutoSize):
             wx.TheClipboard.GetData(obj)
 
             # don't use eval()! Use ast.literal_eval() instead
-            import ast
             data = [json.loads(d) for d in ast.literal_eval(obj.GetData())]
 
             # create new cards with the data
             for d in data:
+                # if we're using the default argument, place the card
+                # a step away from the original
                 if pos == wx.DefaultPosition:
                     new_pos = [i + self.GetPadding() for i in d["pos"]]
+                # if not, we're probably pasting from the context menu:
+                # use the menu position!
+                else:
+                    new_pos = pos
+
+                # copy all info, including collapsed state and set focus to it
                 card = self.NewCard("Content", pos=new_pos, title=d["title"],
                                     kind=d["kind"], content=d["content"])
+                if "collapsed" in d.keys() and d["collapsed"]:
+                    card.Collapse()
                 card.SetFocus()
 
             wx.TheClipboard.Close()
@@ -824,9 +834,10 @@ class SelectionManager(wx.Window):
             self.GetGrandParent().SetFocus()
             
         # clean up
-        for c in self.cards:
-            c.Unselect()
-        self.cards = []
+        # for c in self.cards:
+        #     c.Unselect()
+        self.UnselectAll()
+        # self.cards = []
         self.Unbind(wx.EVT_KEY_DOWN)
         for c in self.GetParent().GetCards():
             c.Unbind(wx.EVT_LEFT_DOWN)
@@ -875,12 +886,15 @@ class SelectionManager(wx.Window):
             c = self.cards[0]
             self.UnselectCard(c)
 
-    def SelectGroup(self, group, new_sel):
+    def SelectGroup(self, group, new_sel=True):
         if new_sel: self.UnselectAll()
         for c in group.GetMembers(): self.SelectCard(c)
 
     def DeleteSelected(self):
-        # now delete
+        # store the number of cards we're deleting to raise the event
+
+        # remember to use while instead of for, since in every
+        # iteration self.cards is growing shorter
         number = len(self.cards)
         while len(self.cards) > 0:
             c = self.cards[-1]
@@ -948,7 +962,21 @@ class SelectionManager(wx.Window):
 
         # ctrl key
         elif ev.ControlDown():
-            ev.Skip()
+            if   key == ord("U"):
+                # since collapsing takes away focus, store selection
+                cards = self.GetSelection()[:]
+
+                # for the same reason, don't iterate over self.GetSelection
+                for c in cards:
+                    if isinstance(c, Content):
+                        c.ToggleCollapse()
+
+                # restore selection
+                self.SelectGroup(CardGroup(members=cards), True)
+            elif key == ord("I"):
+                pass
+            else:
+                ev.Skip()
 
         # meta key
         elif ev.MetaDown():
@@ -987,5 +1015,6 @@ class SelectionManager(wx.Window):
             elif key == wx.WXK_DELETE:
                 self.DeleteSelected()
                 
+            # all other keys cancel selection
             else:
                 self.Deactivate()
