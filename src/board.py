@@ -74,26 +74,50 @@ class Board(AutoSize):
         """Returns a list of all Content cards of the kind. kind should be a Content.X_LBL constant."""
         return [c for c in self.GetContents() if c.GetKind() == kind or c.GetKind(long=True) == kind]
 
-    def GetNextCard(self, ctrl, cycle=True):
-        """Returns the card with label consecutive to that of the argument, or None.
-        If cycle=True, and card is the Card with the last label, return the Card with first label."""
-        card = ctrl.GetParent()
-        if not isinstance(card, Card):
-            card = card.GetParent()
-            if not isinstance(card, Card):
-                return
+    def GetNextCard(self, card, direc):
+        """
+        Returns the nearest card to card in the direction direc, which must be one of
+        Board.LEFT, Board.RIGHT, Board.UP, or Board.DOWN.
+        """
+        # depending on the direction we compare a different side
+        # of the cards, as well as get the points whose distance
+        # we're going to calculate in a different way
+        if   direc == "left":
+            side  = lambda x: x.right
+            getp1 = lambda x: x.GetTopLeft()
+            getp2 = lambda x: x.GetBottomLeft()
+        elif direc == "right":
+            side  = lambda x: x.left
+            getp1 = lambda x: x.GetTopLeft()
+            getp2 = lambda x: x.GetTopRight()
+        elif direc == "up":
+            side  = lambda x: x.bottom
+            getp1 = lambda x: x.GetTopLeft()
+            getp2 = lambda x: x.GetBottomLeft()
+        elif direc == "down":
+            side  = lambda x: x.top
+            getp1 = lambda x: x.GetBottomLeft()
+            getp2 = lambda x: x.GetTopLeft()
 
-        greater_lbl = [c for c in self.cards if c.label > card.label]
-        greater_lbl.sort(key = lambda x: x.label)
-        if greater_lbl:
-            return greater_lbl[0]
-
-        if not cycle:
+        # get those cards whose "side" is in the desired position with respect to card
+        rect = card.GetRect()
+        nxt = []
+        if direc == "left" or direc == "up":
+            nxt = [c for c in self.GetCards() if side(c.GetRect()) < side(rect)]
+        elif direc == "right" or direc == "down":
+            nxt = [c for c in self.GetCards() if side(c.GetRect()) > side(rect)]
+        else:
             return None
-            
-        cards = self.cards[:]
-        cards.sort(key = lambda x: x.label)
-        return cards[0]
+
+        # we're going to use getp1 to get a point in card and compare
+        # it to the point got by getp2 on all the cards in nxt
+        if nxt:
+            # order them by distance
+            nxt.sort(key=lambda x: dist2(getp1(x.GetRect()), getp2(rect)))
+            # and return the nearest one
+            return nxt[0]
+        else:
+            return None
 
     def GetPrevCard(self, ctrl, cycle=True):
         """Returns the card with label previous to that of the argument, or None.
@@ -872,44 +896,16 @@ class SelectionManager(wx.Window):
         event.SetEventObject(self)
         self.GetEventHandler().ProcessEvent(event)
 
-    def SelectNext(self, direc):
+    def SelectNext(self, direc, new_sel=False):
         """
-        Selects next card in the specified direction. The selected
-        card may not be the same as the one returned from GetNextCard().
-        direc should be one of "left", "right", "up" or "down".
+        Selects next card in the specified direction. direc should
+        be one of Board.LEFT, Board.RIGHT, Board.UP, or Board.DOWN.
+        If new_sel is True, select only the next card, if False,
+        add it to current selection.
         """
-        if   direc == "left":
-            side  = lambda x: x.right
-            getp1 = lambda x: x.GetTopLeft()
-            getp2 = lambda x: x.GetBottomLeft()
-        elif direc == "right":
-            side  = lambda x: x.left
-            getp1 = lambda x: x.GetTopLeft()
-            getp2 = lambda x: x.GetTopRight()
-        elif direc == "up":
-            side  = lambda x: x.bottom
-            getp1 = lambda x: x.GetTopLeft()
-            getp2 = lambda x: x.GetBottomLeft()
-        elif direc == "down":
-            side  = lambda x: x.top
-            getp1 = lambda x: x.GetBottomLeft()
-            getp2 = lambda x: x.GetTopLeft()
-
-        sel = self.GetSelection()
-        bd = self.GetParent()
-        if len(sel) == 1:
-            # get those that are above me
-            rect = sel[0].GetRect()
-            nxt = []
-            if direc == "left" or direc == "up":
-                nxt = [c for c in bd.GetCards() if side(c.GetRect()) < side(rect)]
-            elif direc == "right" or direc == "down":
-                nxt = [c for c in bd.GetCards() if side(c.GetRect()) > side(rect)]
-            if nxt:
-                # if any, order them by distance
-                nxt.sort(key=lambda x: dist2(getp1(x.GetRect()), getp2(rect)))
-                # and select the nearest one
-                self.SelectCard(nxt[0], True)
+        nxt = self.GetParent().GetNextCard(self.last, direc)
+        if nxt:
+            self.SelectCard(nxt, new_sel)
 
     def MoveSelected(self, dx, dy):
         """Move all selected cards by dx, dy."""
@@ -960,7 +956,16 @@ class SelectionManager(wx.Window):
 
         # shift key
         elif ev.ShiftDown():
-            ev.Skip()
+            if   key == wx.WXK_LEFT:
+                self.SelectNext("left", new_sel=False)
+            elif key == wx.WXK_RIGHT:
+                self.SelectNext("right", new_sel=False)
+            elif key == wx.WXK_UP:
+                self.SelectNext("up", new_sel=False)
+            elif key == wx.WXK_DOWN:
+                self.SelectNext("down", new_sel=False)
+            else:
+                ev.Skip()
 
         # function keys
         elif IsFunctionKey(key):
@@ -970,13 +975,13 @@ class SelectionManager(wx.Window):
         else:
             # arrow keys: select next card    
             if   key == wx.WXK_LEFT:
-                self.SelectNext("left")
+                self.SelectNext("left", new_sel=True)
             elif key == wx.WXK_RIGHT:
-                self.SelectNext("right")
+                self.SelectNext("right", new_sel=True)
             elif key == wx.WXK_UP:
-                self.SelectNext("up")
+                self.SelectNext("up", new_sel=True)
             elif key == wx.WXK_DOWN:
-                self.SelectNext("down")
+                self.SelectNext("down", new_sel=True)
 
             # DEL: delete all selection
             elif key == wx.WXK_DELETE:
