@@ -503,11 +503,9 @@ class MyFrame(wx.Frame):
 
     def OnDebug(self, ev):
         print "---DEBUG---"
-        heads = self.GetCurrentBoard().GetHeaders()
-        for h in heads:
-            width, he = h.GetSize()
-            height = 32
-            h.SetSize((width, height))
+        print "focus: ", self.FindFocus()
+        print "selec: ", self.GetCurrentBoard().GetSelection()
+        print "state: ", self.GetCurrentBoard().selec.IsActive()
 
     def Save(self, out_file):
         """Save the data in the out_file."""
@@ -629,6 +627,7 @@ class MyFrame(wx.Frame):
                 return
 
         # if on board: cycle selection
+        # none (cursor inside a card) -> card -> group -> page title label -> none (cursor inside the same card)
         content = pg.GetCurrentContent()
         if content == Board:
             bd = self.GetCurrentBoard()
@@ -636,7 +635,9 @@ class MyFrame(wx.Frame):
 
             if isinstance(sel, list) and len(sel) > 1:
                 # selecting a group: there's no more to select
-                # so just cancel selection
+                # so just cancel selection; when SelectionManager
+                # is deactivated, it will return focus to the last
+                # card that was selected
                 bd.UnselectAll()
             elif len(sel) == 1:
                 # selecting a card: select group (if any)
