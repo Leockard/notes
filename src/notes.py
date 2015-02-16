@@ -506,6 +506,7 @@ class MyFrame(wx.Frame):
         print "focus: ", self.FindFocus()
         print "selec: ", self.GetCurrentBoard().GetSelection()
         print "state: ", self.GetCurrentBoard().selec.IsActive()
+        print "groups: ", self.GetCurrentBoard().GetGroups()
 
     def Save(self, out_file):
         """Save the data in the out_file."""
