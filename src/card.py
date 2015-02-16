@@ -767,6 +767,9 @@ class TitleEditText(EditText):
         self.lines = 3
 
     def ComputeLines(self):
+        # restore the insertion point after
+        pt = self.GetInsertionPoint()
+
         # prepare text
         txt = self.GetValue()
         if self.lines == 2:
@@ -782,6 +785,9 @@ class TitleEditText(EditText):
                 self.SetTwoLines()
             elif self.lines == 2:
                 self.SetThreeLines()
+
+        # restore
+        self.SetInsertionPoint(pt)
 
 
     ### Callbacks
