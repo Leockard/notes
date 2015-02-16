@@ -490,6 +490,9 @@ class Book(wx.Notebook):
             pg = Page(self)
             self.AddPage(pg, dlg.GetValue(), select=True)
             pg.SetFocus()
+            return True
+        else:
+            return False
 
     def AddPage(self, page, text, select=False, imageId=wx.Notebook.NO_IMAGE):
         """Call the usual wx.Notebook.AddPage, and also raise the EVT_NB_NEW_PAGE event."""

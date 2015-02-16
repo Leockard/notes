@@ -226,6 +226,7 @@ class Board(AutoSize):
 
         # make sure the new card is visible
         self.FitToChildren()
+        self.ExpandVirtualSize(self.GetPadding() * 2, self.GetPadding() * 2)
         if scroll:
             rect = new.GetRect()
             board = self.GetRect()

@@ -73,6 +73,11 @@ class MyFrame(wx.Frame):
         # search string in lower case
         s = self.search_ctrl.GetValue().lower()
         
+        # if we were already searching, clear up highlighting
+        if self.search_find:
+            for c, i in self.search_find:
+                c.SetStyle(i, i + len(self.search_str), c.GetDefaultStyle())
+
         # if no search string, reset variables and quit
         if not s:
             self.search_ctrl.SetBackgroundColour(wx.WHITE)
@@ -81,11 +86,6 @@ class MyFrame(wx.Frame):
             self.search_head = None
             return
                 
-        # if we were already searching, clear up highlighting
-        if self.search_find:
-            for c, i in self.search_find:
-                c.SetStyle(i, i + len(self.search_str), c.GetDefaultStyle())
-
         # where are we searching?
         cards = []
         content = self.GetCurrentPage().GetCurrentContent()
@@ -108,6 +108,7 @@ class MyFrame(wx.Frame):
         finds = []
         for txt, ctrl in txt_ctrls:
             pos = txt.find(s)
+            print pos
             if pos > -1: finds.append((ctrl, pos))
 
         # if success: highlight and setup vars for cycling
@@ -460,7 +461,8 @@ class MyFrame(wx.Frame):
         # delete the welcome page
         # at this point, self.GetSizer() should only have the WelcomePage
         box = self.GetSizer()
-        self.welcome.Hide()
+        if self.welcome:
+            self.welcome.Hide()
         box.Clear()
         self.welcome = None
 

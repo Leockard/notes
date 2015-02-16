@@ -46,13 +46,15 @@ class AutoSize(wx.ScrolledWindow):
 
     def FitToChildren(self):
         """
-        Call to set the virtual (content) size to fit the children. If there are
-        no children, keeps the virtual size as it is.
+        Call to set the virtual (content) size to tightyly fit the children.
+        If there are no children, keeps the virtual size as it is (don't shrink).
         """
         children = self.GetChildren()
         if len(children) == 0: return
 
         # set view start at (0,0) to get absolute cordinates
+        shown = self.IsShown()
+        if shown: self.Hide()
         view = self.GetViewStart()
         self.Scroll(0, 0)
 
@@ -70,6 +72,13 @@ class AutoSize(wx.ScrolledWindow):
 
         # return to the previous scroll position
         self.Scroll(view[0], view[1])
+        if shown: self.Show()
+
+    def ExpandVirtualSize(self, dx, dy):
+        """Enlarges the virtual size by dx, dy."""
+        size = wx.Size(self.content_sz.x + dx, self.content_sz.y + dy)
+        self.SetVirtualSize(size)
+        self.content_sz = size
 
 
     ### Callbacks
