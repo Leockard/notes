@@ -73,9 +73,7 @@ class MyFrame(wx.Frame):
         # search string in lower case
         s = self.search_ctrl.GetValue().lower()
         
-        # base case: not search string
-        # the user may just have erased everything
-        # reset variables and quit
+        # if no search string, reset variables and quit
         if not s:
             self.search_ctrl.SetBackgroundColour(wx.WHITE)
             self.search_find = []
@@ -83,16 +81,23 @@ class MyFrame(wx.Frame):
             self.search_head = None
             return
                 
-        # if we were already searching, clear up  highlighting
+        # if we were already searching, clear up highlighting
         if self.search_find:
-            # unhighlight previous results
             for c, i in self.search_find:
                 c.SetStyle(i, i + len(self.search_str), c.GetDefaultStyle())
+
+        # where are we searching?
+        cards = []
+        content = self.GetCurrentPage().GetCurrentContent()
+        if content == Board:
+            cards = self.GetCurrentBoard().GetCards()
+        elif content == CardInspect:
+            cards = self.GetCurrentPage().view_card.GetCards()
 
         # gather all values in which to search
         # including the control they appear in
         txt_ctrls = []
-        for c in self.GetCurrentBoard().GetCards():
+        for c in cards:
             if isinstance(c, Content):
                 txt_ctrls.append((c.GetTitle().lower(),   c.title))
                 txt_ctrls.append((c.GetContent().lower(), c.content))
@@ -113,8 +118,7 @@ class MyFrame(wx.Frame):
 
             self.search_find = finds
             self.search_str = s
-            # when done, set to None
-            self.search_head = 0
+            self.search_head = 0    # when done, set to None
 
         # if not found: make sure variables are setup correctly too
         else:
@@ -497,10 +501,11 @@ class MyFrame(wx.Frame):
 
     def OnDebug(self, ev):
         print "---DEBUG---"
-        # print "focus: ", self.FindFocus()
-        # print "selec: ", self.GetCurrentBoard().GetSelection()
-        title = self.GetCurrentBoard().GetContents()[0].title
-        print title.GetSize()
+        heads = self.GetCurrentBoard().GetHeaders()
+        for h in heads:
+            width, he = h.GetSize()
+            height = 32
+            h.SetSize((width, height))
 
     def Save(self, out_file):
         """Save the data in the out_file."""

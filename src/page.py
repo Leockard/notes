@@ -359,7 +359,6 @@ class Page(wx.Panel):
         self.ShowSidebar(not self.tags_sb.IsShown())
 
     def OnRequestInspect(self, ev):
-        print "OnRequestInspect"
         card = ev.GetEventObject()
         self.board.SelectCard(card, True)
         self.InspectCards([card])
