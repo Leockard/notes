@@ -570,6 +570,7 @@ class Content(Card):
             self.content.Hide()
             self.SetSize(self.COLLAPSED_SZ)
 
+            # raise the event
             event = self.CollapseEvent(id=wx.ID_ANY, collapsed=True)
             event.SetEventObject(self)
             self.GetEventHandler().ProcessEvent(event)
@@ -579,6 +580,7 @@ class Content(Card):
             self.content.Show()
             self.SetSize(self.DEFAULT_SZ)
 
+            # raise the event
             event = self.CollapseEvent(id=wx.ID_ANY, collapsed=False)
             event.SetEventObject(self)
             self.GetEventHandler().ProcessEvent(event)
@@ -587,8 +589,9 @@ class Content(Card):
         if self.IsCollapsed():
             self.Uncollapse()
         else:
+            if self.FindFocus() == self.content:
+                self.title.SetFocus()
             self.Collapse()
-            self.title.SetFocus()
 
     def IsCollapsed(self):
         return not self.content.IsShown()
