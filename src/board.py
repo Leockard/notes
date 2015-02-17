@@ -798,10 +798,7 @@ class SelectionManager(wx.Window):
             self.GetGrandParent().SetFocus()
             
         # clean up
-        # for c in self.cards:
-        #     c.Unselect()
         self.UnselectAll()
-        # self.cards = []
         self.Unbind(wx.EVT_KEY_DOWN)
         for c in self.GetParent().GetCards():
             c.Unbind(wx.EVT_LEFT_DOWN)
