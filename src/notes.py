@@ -504,8 +504,9 @@ class MyFrame(wx.Frame):
 
     def OnDebug(self, ev):
         print "---DEBUG---"
-        print "focus: ", self.FindFocus().__class__
-        print "selec: ", self.GetCurrentBoard().GetSelection()
+        # print "focus: ", self.FindFocus().__class__
+        # print "selec: ", self.GetCurrentBoard().GetSelection()
+        print self.GetCurrentBoard().GetCards()[0].title.GetInsertionPoint()
 
     def Save(self, out_file):
         """Save the data in the out_file."""
@@ -736,6 +737,8 @@ class MyFrame(wx.Frame):
         """Save file."""
         # return focus after saving
         focus = self.FindFocus()
+        if isinstance(focus, wx.TextCtrl):
+            caret = focus.GetInsertionPoint()
 
         # if we don't have a path yet, ask for one
         path = ""
@@ -753,8 +756,11 @@ class MyFrame(wx.Frame):
         self.Save(path)
         self.cur_file = path
 
+        # restore focus and insertion point, if applicable
         if focus:
             focus.SetFocus()
+        if isinstance(focus, wx.TextCtrl):
+            focus.SetInsertionPoint(caret)
         
         self.Log("Saved file" + self.cur_file)
 

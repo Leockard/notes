@@ -200,7 +200,9 @@ class EditText(ColouredText):
         ev.Skip()
 
     def OnSetFocus(self, ev):
-        self.SetInsertionPoint(self.GetLastPosition())
+        last = self.GetLastPosition()
+        self.SetInsertionPoint(last)
+        self.SetSelection(0, last)
         self.ShowSecondColour()
 
     def OnKillFocus(self, ev):
