@@ -356,20 +356,21 @@ class ContentText(ColouredText):
     def OnKeyDown(self, ev):
         key = ev.GetKeyCode()
 
-        if key != 9:
-            if ev.ControlDown():
-                if   key == ord("B"):
-                    self.BoldRange()
-                elif key == ord("I"):
-                    self.ItalicRange()
-                else:
-                    ev.Skip()
+        if ev.ControlDown():
+            if   key == ord("B"):
+                self.BoldRange()
+            elif key == ord("I"):
+                self.ItalicRange()
+                
             else:
                 ev.Skip()
-
+                
         else:
-            # On TAB: instead of writing a "\t" char, let the card handle it
-            GetCardAncestor(self).OnTab(ev)
+            if key == 9:
+                # On TAB: instead of writing a "\t" char, let the card handle it
+                GetCardAncestor(self).OnTab(ev)
+            else:
+                ev.Skip()
 
 
 
