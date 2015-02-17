@@ -193,7 +193,7 @@ class Board(AutoSize):
         self.UnselectAll()
         new.SetFocus()
 
-    def NewCard(self, subclass, pos=wx.DefaultPosition, scroll=False, **kwargs):
+    def NewCard(self, subclass, pos=wx.DefaultPosition, scroll=False):
         """
         Create a new card of type subclass (string) at pos. If scroll
         is True, scroll the board so that the new card is in view.
@@ -300,7 +300,9 @@ class Board(AutoSize):
                     new_pos = pos
 
                 # copy all info and set focus to it
-                card = self.NewCard(d["class"], d)
+                card = self.NewCard(d["class"])
+                card.Load(d)
+                card.MoveBy(self.GetPadding(), self.GetPadding())
                 card.SetFocus()
 
             wx.TheClipboard.Close()
