@@ -197,7 +197,6 @@ class EditText(ColouredText):
     def OnLeftDown(self, ev):
         if self.GetBackgroundColour() == self.first_cl:
             self.ShowSecondColour()
-        # important
         ev.Skip()
 
     def OnSetFocus(self, ev):
