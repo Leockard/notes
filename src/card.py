@@ -95,6 +95,16 @@ class Card(wx.Panel):
         super(Card, self).SetPosition(pt)
         self.ResetFRect()
 
+    def Fit(self):
+        """Fits this Card to its contents. Overrides float coordinates."""
+        super(Card, self).Fit()
+        self.ResetFRect()
+
+    def SetSize(self, sz):
+        """Set size to this window. Overrides float coordinates."""
+        super(Card, self).SetSize(sz)
+        self.ResetFRect()
+
     def Move(self, pt):
         """Sets this Card's position to pt. Overrides float coordinates."""
         super(Card, self).SetMove(pt)
@@ -754,7 +764,6 @@ class Image(Card):
         # load the image
         bmp = wx.Bitmap(path)
         self.SetImage(bmp)
-        print "calling scale: ", self.scale
         self.Scale(self.scale)
 
         # hide the button
@@ -768,9 +777,6 @@ class Image(Card):
         self.GetParent().SetFocus()
 
     def SetImage(self, bmp):
-
-        print "SetImage: ", inspect.stack()[1][3]
-
         if not self.img:
             self.img = wx.StaticBitmap(self.main)
 
@@ -778,9 +784,7 @@ class Image(Card):
         self.img.SetSize(bmp.GetSize())
         self.GetCardSizer().Clear()
         self.GetCardSizer().Add(self.img, proportion=1, flag=wx.ALL|wx.EXPAND, border=self.BORDER_THICK)
-        
-        print "calling fit: ", self.GetSize(), self.img.GetSize()
-        
+
         self.Fit()
 
     def Scale(self, factor):
@@ -792,7 +796,7 @@ class Image(Card):
         
         self.scale = factor
 
-        # with the new rect, we only need resize the image to it
+        # having handled the new rect, we only need to resize the image to it
         if self.img:
             img = self.img.GetBitmap().ConvertToImage()
 
