@@ -290,20 +290,18 @@ class Board(AutoSize):
 
             # create new cards with the data
             for d in data:
-                # if we're using the default argument, place the card
-                # a step away from the original
-                if pos == wx.DefaultPosition:
-                    new_pos = [i + self.GetPadding() for i in d["pos"]]
-                # if not, we're probably pasting from the context menu:
-                # use the menu position!
-                else:
-                    new_pos = pos
-
                 # copy all info and set focus to it
                 card = self.NewCard(d["class"])
                 card.Load(d)
-                card.MoveBy(self.GetPadding(), self.GetPadding())
                 card.SetFocus()
+
+                # default position: a step away from the original
+                if pos == wx.DefaultPosition:
+                    new_pos = [i + self.GetPadding() for i in d["pos"]]
+                else:
+                    new_pos = pos
+                    
+                card.SetPosition(new_pos)
 
             wx.TheClipboard.Close()
 
@@ -939,8 +937,10 @@ class SelectionManager(wx.Window):
 
                 # restore selection
                 self.SelectGroup(CardGroup(members=cards), True)
+                
             elif key == ord("I"):
                 pass
+            
             else:
                 ev.Skip()
 
