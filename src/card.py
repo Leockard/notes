@@ -33,8 +33,7 @@ class Card(wx.Panel):
         self.InitBorder()
         self.label = label
         # frect stores the floating point coordinates of this card's rect
-        # in the usual order: [left, top, width, height]
-        # see Card.Scale()
+        # in the usual order: [left, top, width, height]. See Card.Scale()
         self.frect = []
 
         # create CardBar
@@ -104,6 +103,25 @@ class Card(wx.Panel):
         # we need to store our own coordinates!
         self.SetRect(wx.Rect(*self.frect))
 
+    def NavigateOut(self, forward):
+        bd = self.GetParent()
+
+        # try to get the nearest card
+        if forward:
+            nxt = bd.GetNextCard(self, "right")
+            if not nxt:
+                nxt = bd.GetNextCard(self, "down")
+        else:
+            nxt = bd.GetNextCard(self, "up")
+            if not nxt:
+                nxt = bd.GetNextCard(self, "left")
+
+        # and navigate!
+        if nxt:
+            nxt.SetFocus()
+        else:
+            self.GetParent().Navigate(forward)
+
                         
     ### Auxiliary functions
 
@@ -140,6 +158,20 @@ class Card(wx.Panel):
         ev.SetEventObject(self)
         ev.SetPosition(ev.GetPosition() + self.main.GetPosition())
         self.GetEventHandler().ProcessEvent(ev)
+
+    def OnTab(self, ev):
+        """Only called by children, not bound to any event. See Navigate()."""
+        ctrl = ev.GetEventObject()
+        forward = not ev.ShiftDown()
+        children = self.GetChildren()
+        index = children.index(ctrl)
+
+        if index == 0 and not forward:
+            self.NavigateOut(forward)
+        elif index == len(children)-1 and forward:
+            self.NavigateOut(forward)
+        else:
+            self.Navigate(forward)
 
         
     
@@ -245,7 +277,6 @@ class ContentText(ColouredText):
     def OnKeyDown(self, ev):
         key = ev.GetKeyCode()
         
-        # skip everything but tab
         if key != 9:
             if ev.ControlDown():
                 if   key == ord("B"):
@@ -256,9 +287,10 @@ class ContentText(ColouredText):
                     ev.Skip()
             else:
                 ev.Skip()
-        # on TAB: don't input a \t char and simulate a tab traversal
+                
         else:
-            self.GetParent().Navigate(not ev.ShiftDown())
+            # On TAB: instead of writing a "\t" char, let the card handle it
+            GetCardAncestor(self).OnTab(ev)
 
 
             

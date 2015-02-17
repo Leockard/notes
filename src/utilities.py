@@ -180,12 +180,10 @@ class EditText(ColouredText):
     ### Callbacks
 
     def OnKeyDown(self, ev):
-        # skip everything but tab
-        if ev.GetKeyCode() != 9:
-            ev.Skip()
-        # on TAB: don't input a \t char and simulate a tab traversal
+        if ev.GetKeyCode() == 9:
+            GetCardAncestor(self).OnTab(ev)
         else:
-            self.Navigate(not ev.ShiftDown())
+            ev.Skip()
 
     def OnEnter(self, ev):
         self.ToggleColours()
