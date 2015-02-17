@@ -489,9 +489,9 @@ class Board(AutoSize):
         """Called when a child card has been clicked."""
         card = ev.GetEventObject()
 
-        # bring to front and set focus
-        card.SetFocus()
+        # bring to front and select
         card.Raise()
+        self.selec.SelectCard(card)
 
         # initiate moving
         self.CaptureMouse()
@@ -786,9 +786,6 @@ class SelectionManager(wx.Window):
         self.SetFocus()
         self.active = True
 
-        for c in self.GetParent().GetCards():
-            c.Bind(wx.EVT_LEFT_DOWN, self.OnCardLeftDown)
-
     def Deactivate(self):
         # return focus to the last card
         if self.last:
@@ -800,8 +797,6 @@ class SelectionManager(wx.Window):
         # clean up
         self.UnselectAll()
         self.Unbind(wx.EVT_KEY_DOWN)
-        for c in self.GetParent().GetCards():
-            c.Unbind(wx.EVT_LEFT_DOWN)
         self.active = False
 
     def IsActive(self):
@@ -890,19 +885,20 @@ class SelectionManager(wx.Window):
 
     ### callbacks
 
-    def OnCardLeftDown(self, ev):
-        card = ev.GetEventObject()
+    # def OnCardLeftDown(self, ev):
+    #     print "Mgr.OnCardLeftDown"
+    #     card = ev.GetEventObject()
         
-        if not ev.ShiftDown():
-            # no shift: select only this card
-            self.SelectCard(card, new_sel = True)
-        else:                                      
-            if card in self.GetSelection():
-                # shift + click while selected: unselect
-                self.UnselectCard(card)
-            elif card not in self.GetSelection():
-                # shift + click while not selected: add select   
-                self.SelectCard(card, new_sel = False)
+    #     if not ev.ShiftDown():
+    #         # no shift: select only this card
+    #         self.SelectCard(card, new_sel = True)
+    #     else:                                      
+    #         if card in self.GetSelection():
+    #             # shift + click while selected: unselect
+    #             self.UnselectCard(card)
+    #         elif card not in self.GetSelection():
+    #             # shift + click while not selected: add select   
+    #             self.SelectCard(card, new_sel = False)
 
     def OnKeyDown(self, ev):
         if not self.IsActive():

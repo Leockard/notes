@@ -107,7 +107,7 @@ class Card(wx.Panel):
 
     def Move(self, pt):
         """Sets this Card's position to pt. Overrides float coordinates."""
-        super(Card, self).SetMove(pt)
+        super(Card, self).Move(pt)
         self.ResetFRect()
 
     def MoveBy(self, dx, dy):
@@ -214,6 +214,7 @@ class Card(wx.Panel):
     ### Callbacks
 
     def OnMouseEvent(self, ev):
+        # event = wx.MouseEvent(ev.GetEventType())
         ev.SetEventObject(self)
         ev.SetPosition(ev.GetPosition() + self.main.GetPosition())
         self.GetEventHandler().ProcessEvent(ev)
