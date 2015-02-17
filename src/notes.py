@@ -14,6 +14,7 @@ from board import *
 from cardinspect import *
 import wx.richtext as rt
 import json
+import re
 
 
 ######################
@@ -94,7 +95,7 @@ class MyFrame(wx.Frame):
         elif content == CardInspect:
             cards = self.GetCurrentPage().view_card.GetCards()
 
-        # gather all values in which to search
+        # gather all (lower case) values in which to search
         # including the control they appear in
         txt_ctrls = []
         for c in cards:
@@ -107,9 +108,9 @@ class MyFrame(wx.Frame):
         # do the actual searching
         finds = []
         for txt, ctrl in txt_ctrls:
-            pos = txt.find(s)
-            print pos
-            if pos > -1: finds.append((ctrl, pos))
+            pos = [m.start() for m in re.finditer(s, txt)]
+            for p in pos:
+                finds.append((ctrl, p))
 
         # if success: highlight and setup vars for cycling
         if finds:
