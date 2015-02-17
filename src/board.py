@@ -193,7 +193,7 @@ class Board(AutoSize):
         self.UnselectAll()
         new.SetFocus()
 
-    def NewCard(self, subclass, pos, label=-1, scroll=False, **kwargs):
+    def NewCard(self, subclass, pos=wx.DefaultPosition, label=-1, scroll=False, **kwargs):
         """
         Create a new card of type subclass (string) at pos. If scroll
         is True, scroll the board so that the new card is in view.
@@ -727,25 +727,12 @@ class Board(AutoSize):
     def Load(self, d):
         """Argument should be a dict returned by Dump."""
         if "cards" in d.keys():
-            # note we are not loading the id
-            # instead, as identifier, we use label
+            # note we are not loading the wx id of the windows
+            # instead, as identifier, we use label, which should
+            # be a value of the dict values
             for id, values in d["cards"].iteritems():
-                pos = values["pos"]
-                label = values["label"]
-                if values["class"] == "Content":
-                    new = self.NewCard(values["class"], pos=pos, label=label,
-                                  title   = str(values["title"]),
-                                  kind    = values["kind"],
-                                  content = values["content"],
-                                  rating  = values["rating"])
-                    if values["collapsed"]: new.Collapse()
-                elif values["class"] == "Header":
-                    self.NewCard(values["class"], pos=pos, label=label,
-                                  size = (values["width"], values["height"]),
-                                  txt = values["header"])
-                elif values["class"] == "Image":
-                    self.NewCard(values["class"], pos=pos, label=label,
-                                  path  = values["path"])
+                new = self.NewCard(values["class"])
+                new.Load(values)
                     
         if "groups" in d.keys():
             # here again we use the label as identifier
