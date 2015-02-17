@@ -228,9 +228,11 @@ class Board(AutoSize):
         event.SetEventObject(new)
         self.GetEventHandler().ProcessEvent(event)
 
-        # make sure the new card is visible
+        # make enough space and breathing room for the new card
         self.FitToChildren()
         self.ExpandVirtualSize(self.GetPadding() * 2, self.GetPadding() * 2)
+        
+        # make sure the new card is visible
         if scroll:
             rect = new.GetRect()
             board = self.GetRect()
@@ -397,7 +399,7 @@ class Board(AutoSize):
 
     def HArrangeSelectedCards(self):
         """
-        If there are any selected cards, arrange them in a horizontal grid,
+        If there are any selected cards, arrange them in a horizontal row,
         to the right of the left-most selected card.
         """
         if len(self.GetSelection()) < 1: return
@@ -417,29 +419,32 @@ class Board(AutoSize):
             left = c.GetRect().right + self.GetPadding()
 
         self.FitToChildren()
+        self.selec.SetFocus()
 
     def VArrangeSelectedCards(self):
         """
-        If there are any selected cards, arrange them in a vertical grid,
+        If there are any selected cards, arrange them in a vertical column,
         below of the top-most selected card.
         """
         if len(self.GetSelection()) < 1: return
 
-        # we unselect first so that we erase the selection rectangles correctly
+        # value-copy the list since we may do weird things to it
         arrange = self.GetSelection()[:]
-        self.UnselectAll()         
 
+        # compute the pivot
         tops = [c.GetRect().top for c in arrange]
         top = min(tops)
         card = arrange[tops.index(top)]
         left = card.GetRect().left
         arrange.sort(key=lambda x: x.GetRect().top)
 
+        # and align all to the pivot
         for c in arrange:
             c.SetPosition(wx.Point(left, top))
             top = c.GetRect().bottom + self.GetPadding()
 
         self.FitToChildren()
+        self.selec.SetFocus()
 
                     
     ### Callbacks
