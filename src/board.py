@@ -35,7 +35,7 @@ class Board(AutoSize):
         self.drag_select = False
         self.menu_position = (0, 0)
         self.scale = 1.0
-        self.selec = SelectionManager(self)        
+        self.selec = SelectionManager(self)
         self.InitAccels()
         self.InitMenu()
 
@@ -905,6 +905,10 @@ class SelectionManager(wx.Window):
                 self.SelectCard(card, new_sel = False)
 
     def OnKeyDown(self, ev):
+        if not self.IsActive():
+            ev.Skip()
+            return
+
         key = ev.GetKeyCode()
         bd = self.GetParent()
 
