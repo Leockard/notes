@@ -264,8 +264,7 @@ class Board(AutoSize):
         return new
 
     def MoveCard(self, card, dx, dy):
-        pos = card.GetPosition()
-        card.Move((pos.x + dx, pos.y + dy))
+        card.MoveBy(dx, dy)
 
     def GetSelection(self):
         return self.selec.GetSelection()
@@ -555,6 +554,8 @@ class Board(AutoSize):
             if self.moving_cards_pos:
                 for c, orig, pos in self.moving_cards_pos:
                     final_pos = ev.GetPosition() + orig - (Content.BORDER_WIDTH, Content.BORDER_WIDTH)
+                    # since we need to set absolute final position, we use
+                    # Card.Move instead of Card.MoveBy
                     c.Move(final_pos)
                     
         self.moving_cards_pos = []

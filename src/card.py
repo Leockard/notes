@@ -90,10 +90,42 @@ class Card(wx.Panel):
     def GetCardSizer(self):
         return self.main.GetSizer()
 
-    def Scale(self, factor):
-        # it this is the first time, get the integer coordinate rect
+    def SetPosition(self, pt):
+        """Sets this Card's position to pt. Overrides float coordinates."""
+        super(Card, self).SetPosition(pt)
+        self.ResetFRect()
+
+    def Move(self, pt):
+        """Sets this Card's position to pt. Overrides float coordinates."""
+        super(Card, self).SetMove(pt)
+        self.ResetFRect()
+
+    def MoveBy(self, dx, dy):
+        """
+        Moves the card by the offsets dx, dy. Unlike SetPosition() and Move(),
+        this method preserves the underlying float coordinates, if any. See Card.frect.
+        """
+        bd = self.GetParent()
         if not self.frect:
-            self.frect = self.GetRect()
+            self.ResetFRect()
+
+        # self.frect stores the aboslute coordinates
+        abs_left = self.frect[0] + dx
+        abs_top  = self.frect[1] + dy
+        
+        # but Move() is expecting coordinates relative to the start of the view port
+        start = self.GetParent().GetViewStartPixels()
+        rel_left = abs_left - start[0]
+        rel_top  = abs_top  - start[1]
+
+        self.frect = (abs_left, abs_top, self.frect[2], self.frect[3])
+        super(Card, self).Move((rel_left, rel_top))
+
+    def Scale(self, factor):
+        if isinstance(self, Content):
+        # if we haven't stored our float coordinates yet
+        if not self.frect:
+            self.ResetFRect()
 
         # compute and store our "real" rect in floating point coordinates
         self.frect = [f * factor for f in self.frect]
@@ -147,6 +179,17 @@ class Card(wx.Panel):
     def InitUI(self):
         """Override me!"""
         pass
+
+    def ResetFRect(self):
+        """Store our float-valued, absolute coordinates."""
+        start = self.GetParent().GetViewStartPixels()
+        self.frect = [float(x) for x in self.GetRect()]
+
+        # GetRect() returns coordinates relative to the current view point
+        # we have to manually add the start of the view point (in pixels)
+        # to store absolute coordinates
+        self.frect[0] += start[0]
+        self.frect[1] += start[1]
 
     def Dump(self):
         """Override me!"""

@@ -80,6 +80,11 @@ class AutoSize(wx.ScrolledWindow):
         self.SetVirtualSize(size)
         self.content_sz = size
 
+    def GetViewStartPixels(self):
+        """Return the point at which the current view starts, in pixels."""
+        view = self.GetViewStart()
+        return tuple([v * self.SCROLL_STEP for v in view])
+
 
     ### Callbacks
 

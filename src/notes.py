@@ -503,10 +503,11 @@ class MyFrame(wx.Frame):
 
     def OnDebug(self, ev):
         print "---DEBUG---"
-        print "focus: ", self.FindFocus()
-        print "selec: ", self.GetCurrentBoard().GetSelection()
-        print "state: ", self.GetCurrentBoard().selec.IsActive()
-        print "groups: ", self.GetCurrentBoard().GetGroups()
+        bd = self.GetCurrentBoard()
+        c = bd.GetSelection()[0]
+        print "scale: ", bd.scale
+        print "pos:   ", c.GetPosition()
+        print "frect: ", c.frect
 
     def Save(self, out_file):
         """Save the data in the out_file."""

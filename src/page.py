@@ -424,9 +424,6 @@ class Page(wx.Panel):
 
         # scale cards
         for c in self.board.GetCards():
-            rect = c.GetRect()
-            # revert to original coordinates
-            # and then calculate the actual new one
             c.Scale(new_scale / self.scale)
 
         # scale content size
