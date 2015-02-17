@@ -193,47 +193,26 @@ class Board(AutoSize):
         self.UnselectAll()
         new.SetFocus()
 
-    def NewCard(self, subclass, pos=wx.DefaultPosition, label=-1, scroll=False, **kwargs):
+    def NewCard(self, subclass, pos=wx.DefaultPosition, scroll=False, **kwargs):
         """
         Create a new card of type subclass (string) at pos. If scroll
         is True, scroll the board so that the new card is in view.
         """
         # never use labels, always let Board set its own
-        if label == -1: label = len(self.cards)
+        label = len(self.cards)
 
-        # unpack values and set bindings based on subclass
+        # create the new card with the unscaled position
+        # so that we can just call new.Scale() afterward
+        # to set both position and size
+        pos = [i / self.scale for i in pos]
+
         if subclass == "Content":
-            if "title" in kwargs.keys(): title = kwargs["title"]
-            else: title = Content.DEFAULT_TITLE
-            if "kind" in kwargs.keys(): kind = kwargs["kind"]
-            else: kind = Content.DEFAULT_KIND
-            if "content" in kwargs.keys(): content = kwargs["content"]
-            else: content = Content.DEFAULT_CONTENT
-            if "rating" in kwargs.keys(): rating = kwargs["rating"]
-            else: rating = 0
-                
-            sz = [i*self.scale for i in Content.DEFAULT_SZ]
-            new = Content(self, label, pos=pos, title=title, kind=kind, content=content, rating=rating, size=sz)
-            
+            new = Content(self, label, pos=pos)
         elif subclass == "Header":
-            if "txt" in kwargs.keys(): txt = kwargs["txt"]
-            else: txt = Header.DEFAULT_TITLE
-            if "size" in kwargs.keys():
-                w = kwargs["size"][0]
-                h = kwargs["size"][1]
-            else:
-                w = Header.DEFAULT_SZ[0]
-                h = Header.DEFAULT_SZ[1]
-
-            sz = [i*self.scale for i in (w, h)]
-            new = Header(self, label, pos=pos, header=txt, size=sz)
-            
+            new = Header(self, label, pos=pos)
         elif subclass == "Image":
-            if "path" in kwargs.keys(): path = kwargs["path"]
-            else: path = Image.DEFAULT_PATH
-
-            sz = [i*self.scale for i in Image.DEFAULT_SZ]
-            new = Image(self, label, pos=pos, path=path, size=sz)
+            new = Image(self, label, pos=pos)
+        new.Scale(self.scale)
 
         # set bindings for every card
         new.Bind(wx.EVT_LEFT_DOWN, self.OnCardLeftDown)
@@ -320,11 +299,8 @@ class Board(AutoSize):
                 else:
                     new_pos = pos
 
-                # copy all info, including collapsed state and set focus to it
-                card = self.NewCard("Content", pos=new_pos, title=d["title"],
-                                    kind=d["kind"], content=d["content"])
-                if "collapsed" in d.keys() and d["collapsed"]:
-                    card.Collapse()
+                # copy all info and set focus to it
+                card = self.NewCard(d["class"], d)
                 card.SetFocus()
 
             wx.TheClipboard.Close()

@@ -243,7 +243,7 @@ class Header(Card):
     DEFAULT_SZ = (150, 32)
     DEFAULT_TITLE = ""
 
-    def __init__(self, parent, label, id=wx.ID_ANY, pos=wx.DefaultPosition, header = "Header...", size=DEFAULT_SZ):
+    def __init__(self, parent, label, id=wx.ID_ANY, pos=wx.DefaultPosition, header = "", size=DEFAULT_SZ):
         super(Header, self).__init__(parent, label, id=id, pos=pos, size=size, style=wx.TAB_TRAVERSAL)
         self.InitUI()
         self.SetHeader(header)
