@@ -144,12 +144,10 @@ class Card(wx.Panel):
         # keep count of the scale after every stretch
         self.scale *= factor
 
-        # compute and store our "real" rect in floating point coordinates
-        self.frect = [f * factor for f in self.frect]
-
         # wx.Rect() converts everything to integers
         # since factor is always a float, this is why
         # we need to store our own coordinates!
+        self.frect = [f * factor for f in self.frect]
         self.SetRect(wx.Rect(*self.frect))
 
     def SetScale(self, new_scale):
@@ -768,7 +766,9 @@ class Image(Card):
         self.img = None
         self.path = path
         self.orig = None
-        self.resize = False
+        self.resizing = False
+        self.resize_w = False
+        self.resize_h = False
         self.InitUI(path)
 
         # bindings
@@ -878,13 +878,41 @@ class Image(Card):
         self.GetEventHandler().ProcessEvent(ev)
 
     def OnMouseOverBorder(self, ev):
-        self.SetCursor(wx.StockCursor(wx.CURSOR_CROSS))
+        self.Bind(wx.EVT_MOTION, self.OnMotionOverBorder)
+
+    def OnMotionOverBorder(self, ev):
+        x, y =  ev.GetPosition()
+        win_w, win_h = self.GetSize()
+        img_w, img_h = self.img.GetSize()
+        w_border = win_w - img_w
+        h_border = win_h - img_h
+
+        right  = abs(x - win_w) < w_border
+        bottom = abs(y - win_h) < h_border
+        top    = y < h_border
+        left   = x < w_border
+
+        if   (left and top) or (right and bottom):
+            self.resize_w = True
+            self.resize_h = True
+            self.SetCursor(wx.StockCursor(wx.CURSOR_SIZENWSE))
+        elif (right and top) or (left and bottom):
+            self.resize_w = True
+            self.resize_h = True
+            self.SetCursor(wx.StockCursor(wx.CURSOR_SIZENESW))
+        elif left or right:
+            self.resize_w = True
+            self.SetCursor(wx.StockCursor(wx.CURSOR_SIZEWE))
+        elif top or bottom:
+            self.resize_h = True
+            self.SetCursor(wx.StockCursor(wx.CURSOR_SIZENS))
 
     def OnMouseLeaveBorder(self, ev):
         self.SetCursor(wx.NullCursor)
 
     def OnBorderLeftDown(self, ev):
         self.CaptureMouse()                
+        self.Unbind(wx.EVT_MOTION)
         self.Bind(wx.EVT_MOTION, self.OnDragResize)
         self.Bind(wx.EVT_LEFT_UP, self.OnBorderLeftUp)
 
@@ -892,10 +920,21 @@ class Image(Card):
         # since we captured the mouse, ev.GetPosition() returns
         # coordinates relative to this card's top left corner
         # thus: the new position is our new size
-        if self.resize:
-            w, h = ev.GetPosition()
-            self.SetSize(wx.Size(w, h))
-            self.resize = False
+        if self.resizing:
+            ev_w, ev_h = ev.GetPosition()
+            cur_w, cur_h = self.GetSize()
+            new_w, new_h = cur_w, cur_h
+
+            if   self.resize_w and self.resize_h:
+                new_w, new_h = ev_w, ev_h
+            elif not self.resize_w and self.resize_h:
+                new_h = ev_h
+            elif self.resize_w and not self.resize_h:
+                new_w = ev_w
+            self.SetSize(wx.Size(new_w, new_h))
+            
+            self.resize_w = False
+            self.resize_h = False
         
         self.Unbind(wx.EVT_MOTION)
         self.Unbind(wx.EVT_LEFT_UP)
@@ -903,7 +942,7 @@ class Image(Card):
 
     def OnDragResize(self, ev):
         if ev.Dragging():
-            self.resize = True
+            self.resizing = True
             
 
 
@@ -1064,7 +1103,7 @@ class StarRating(wx.Button):
 ######################
 
 class CardGroup():
-    def __init__(self, label=-1, members=[]):
+    def __init__(self, members=[], label=-1):
         # save references to cards, not to the list
         self.members = members[:]
         self.label = label
