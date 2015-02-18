@@ -29,7 +29,6 @@ class MyFrame(wx.Frame):
     def __init__(self, parent, title="Board", size=DEFAULT_SZ, style=wx.DEFAULT_FRAME_STYLE|wx.NO_FULL_REPAINT_ON_RESIZE):
         super(MyFrame, self).__init__(parent, title=title, size=size, style=style)
 
-        self.accels = [] # will hold keyboard shortcuts aka accelerators
         self.SetTitle(self.DEFAULT_PAGE_NAME)
         self.cur_file = ""
         self.search_find = []
@@ -40,10 +39,6 @@ class MyFrame(wx.Frame):
                                    # when not searching, set to None
         self.ui_ready = False
         self.InitUI()              # sets up the sizer and the buttons' bindings
-
-        # keyboard shortcuts
-        # accels is populated in InitUI()
-        self.SetAcceleratorTable(wx.AcceleratorTable(self.accels))
 
         # Done.
         self.Show()
@@ -336,15 +331,17 @@ class MyFrame(wx.Frame):
         self.Bind(wx.EVT_MENU, self.OnDebug      , debug_it)
         
         ## shortcuts
-        self.accels.append(wx.AcceleratorEntry(wx.ACCEL_CTRL, ord("M"), tgmap_it.GetId()))
-        self.accels.append(wx.AcceleratorEntry(wx.ACCEL_CTRL, ord("A"), sela_it.GetId()))
-        self.accels.append(wx.AcceleratorEntry(wx.ACCEL_CTRL, ord("D"), debug_it.GetId()))
+        accels = [] # will hold keyboard shortcuts aka accelerators
+        
+        accels.append(wx.AcceleratorEntry(wx.ACCEL_CTRL, ord("M"), tgmap_it.GetId()))
+        accels.append(wx.AcceleratorEntry(wx.ACCEL_CTRL, ord("A"), sela_it.GetId()))
+        accels.append(wx.AcceleratorEntry(wx.ACCEL_CTRL, ord("D"), debug_it.GetId()))
 
-        self.accels.append(wx.AcceleratorEntry(wx.ACCEL_CTRL, ord("-"), zoomi_it.GetId()))
-        self.accels.append(wx.AcceleratorEntry(wx.ACCEL_CTRL, ord("+"), zoomo_it.GetId()))
+        accels.append(wx.AcceleratorEntry(wx.ACCEL_CTRL, ord("-"), zoomi_it.GetId()))
+        accels.append(wx.AcceleratorEntry(wx.ACCEL_CTRL, ord("+"), zoomo_it.GetId()))
 
-        self.accels.append(wx.AcceleratorEntry(wx.ACCEL_CTRL, ord("F"), search_it.GetId()))
-        self.accels.append(wx.AcceleratorEntry(wx.ACCEL_SHIFT|wx.ACCEL_CTRL , ord("G"), prev_it.GetId()))        
+        accels.append(wx.AcceleratorEntry(wx.ACCEL_CTRL, ord("F"), search_it.GetId()))
+        accels.append(wx.AcceleratorEntry(wx.ACCEL_SHIFT|wx.ACCEL_CTRL , ord("G"), prev_it.GetId()))        
         
         # finish up        
         bar.Append(file_menu, "&File")
@@ -371,8 +368,11 @@ class MyFrame(wx.Frame):
         
         self.Bind(wx.EVT_MENU, self.OnCtrlG, ctrlg)
         self.Bind(wx.EVT_MENU, self.OnEsc,   esc)
-        self.accels.append(wx.AcceleratorEntry(wx.ACCEL_CTRL, ord("G"), ctrlg.GetId()))
-        self.accels.append(wx.AcceleratorEntry(wx.ACCEL_NORMAL, 27, esc.GetId()))
+        accels.append(wx.AcceleratorEntry(wx.ACCEL_CTRL, ord("G"), ctrlg.GetId()))
+        accels.append(wx.AcceleratorEntry(wx.ACCEL_NORMAL, 27, esc.GetId()))
+
+        ## finally, create the table
+        self.SetAcceleratorTable(wx.AcceleratorTable(accels))
 
     def InitSearchBar(self):
         if not self.ui_ready:
@@ -517,17 +517,6 @@ class MyFrame(wx.Frame):
         with open(path, 'r') as f: d = pickle.load(f)
         self.notebook.Load(d)
         self.notebook.SetFocus()
-
-    def AddAccelerator(self, entry):
-        """entry should be a AcceleratorEntry()."""
-        self.accels.append()
-        self.SetAcceleratorTable(wx.AcceleratorTable(self.accels))
-
-    def RemoveAccelerator(self, entry):
-        """entry should be the same AcceleratorEntry object that was passed to AddAccelerator()."""
-        if entry in self.accels:
-            self.accels.remove(entry)
-        self.SetAcceleratorTable(wx.AcceleratorTable(self.accels))
                 
         
     ### Callbacks
