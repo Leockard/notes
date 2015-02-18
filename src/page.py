@@ -204,7 +204,7 @@ class Page(wx.Panel):
 
         # restore inspect view
         if inspecting:
-            self.InspectCards(cards)
+            self.InspectCards(inspecting)
 
         return di
 

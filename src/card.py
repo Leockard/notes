@@ -165,9 +165,9 @@ class Card(wx.Panel):
             if not nxt:
                 nxt = bd.GetNextCard(self, "down")
         else:
-            nxt = bd.GetNextCard(self, "up")
+            nxt = bd.GetNextCard(self, "left")
             if not nxt:
-                nxt = bd.GetNextCard(self, "left")
+                nxt = bd.GetNextCard(self, "up")
 
         # and navigate!
         if nxt:
