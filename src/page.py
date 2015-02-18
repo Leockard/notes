@@ -187,11 +187,12 @@ class Page(wx.Panel):
     
     def Dump(self):
         # if we're inspecting, restore the cards, dump and then return to the inspection view
-        cards = []
+        inspecting = []
         if self.GetCurrentContent() == CardInspect:
-            cards = self.view_card.GetCards()
+            inspecting = self.view_card.GetCards()
             self.view_card.Restore()
-            
+
+        # dump the real coordinates
         di = self.board.Dump()
         for id, card in di.iteritems():
             if "pos" in card.keys():
@@ -201,7 +202,8 @@ class Page(wx.Panel):
             if "height" in card.keys():
                 card["height"] = int(card["height"] / self.scale)
 
-        if cards:
+        # restore inspect view
+        if inspecting:
             self.InspectCards(cards)
 
         return di
@@ -515,8 +517,13 @@ class Book(wx.Notebook):
         close = wx.MenuItem(menu, wx.ID_CLOSE, "Close page")
         self.Bind(wx.EVT_MENU, self.OnClose, close)
 
+        # page ordering
+        pg_forward = wx.MenuItem(menu, wx.ID_ANY, "Move page forward")
+        self.Bind(wx.EVT_MENU, self.OnPageForward, pg_forward)
+
         # setup (order matters)
         menu.AppendItem(name)
+        menu.AppendItem(pg_forward)
         menu.AppendItem(close)
 
         # setup accelerators        
@@ -545,6 +552,19 @@ class Book(wx.Notebook):
 
 
     ### Callbacks
+
+    def OnPageForward(self, ev):
+        # if we're already on the last page, don't do anything
+        index = self.GetSelection()
+        if index == self.GetPageCount()-1:
+            return
+        
+        pg = self.GetCurrentPage()
+        print pg
+        self.DeletePage(index)
+        print pg
+        self.InsertPage(index + 1, pg, self.GetPageText(index), select=True)
+        print "OnPageForward: ", pg
 
     def OnClose(self, ev):
         cur = self.GetSelection()
