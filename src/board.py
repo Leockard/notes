@@ -202,7 +202,7 @@ class Board(AutoSize):
         label = len(self.cards)
 
         # create the new card with the unscaled position
-        # so that we can just call new.Scale() afterward
+        # so that we can just call new.Stretch() afterward
         # to set both position and size
         pos = [i / self.scale for i in pos]
 
@@ -212,7 +212,7 @@ class Board(AutoSize):
             new = Header(self, label, pos=pos)
         elif subclass == "Image":
             new = Image(self, label, pos=pos)
-        new.Scale(self.scale)
+        new.Stretch(self.scale)
 
         # set bindings for every card
         new.Bind(wx.EVT_LEFT_DOWN, self.OnCardLeftDown)

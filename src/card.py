@@ -32,8 +32,9 @@ class Card(wx.Panel):
         self.main = None
         self.InitBorder()
         self.label = label
+        self.scale = 1.0
         # frect stores the floating point coordinates of this card's rect
-        # in the usual order: [left, top, width, height]. See Card.Scale()
+        # in the usual order: [left, top, width, height]. See Card.Stretch()
         self.frect = []
 
         # create CardBar
@@ -131,7 +132,7 @@ class Card(wx.Panel):
         self.frect = (abs_left, abs_top, self.frect[2], self.frect[3])
         super(Card, self).Move((rel_left, rel_top))
 
-    def Scale(self, factor):
+    def Stretch(self, factor):
         # if we haven't stored our float coordinates yet
         if not self.frect:
             self.ResetFRect()
@@ -140,6 +141,9 @@ class Card(wx.Panel):
         if abs(factor - 1.0) < 0.001:
             return
 
+        # keep count of the scale after every stretch
+        self.scale *= factor
+
         # compute and store our "real" rect in floating point coordinates
         self.frect = [f * factor for f in self.frect]
 
@@ -147,6 +151,12 @@ class Card(wx.Panel):
         # since factor is always a float, this is why
         # we need to store our own coordinates!
         self.SetRect(wx.Rect(*self.frect))
+
+    def SetScale(self, new_scale):
+        self.Stretch(new_scale / self.scale)
+
+    def GetScale(self):
+        return self.scale
 
     def NavigateOut(self, forward):
         bd = self.GetParent()
@@ -214,7 +224,6 @@ class Card(wx.Panel):
     ### Callbacks
 
     def OnMouseEvent(self, ev):
-        # event = wx.MouseEvent(ev.GetEventType())
         ev.SetEventObject(self)
         ev.SetPosition(ev.GetPosition() + self.main.GetPosition())
         self.GetEventHandler().ProcessEvent(ev)
@@ -757,19 +766,24 @@ class Image(Card):
         super(Image, self).__init__(parent, label, id=id, pos=pos, size=size)
         self.btn = None
         self.img = None
-        self.scale = 1.0
         self.path = path
         self.orig = None
+        self.resize = False
         self.InitUI(path)
 
+        # bindings
+        self.Bind(wx.EVT_ENTER_WINDOW, self.OnMouseOverBorder)
+        self.Bind(wx.EVT_LEAVE_WINDOW, self.OnMouseLeaveBorder)
+        self.main.Bind(wx.EVT_LEFT_DOWN, self.OnBorderLeftDown)
 
+        
     ### Behavior funtions
 
     def LoadImage(self, path):
         # load the image
         bmp = wx.Bitmap(path)
         self.SetImage(bmp)
-        self.Scale(self.scale)
+        self.SetScale(self.GetScale())
 
         # hide the button
         if self.btn:
@@ -785,34 +799,38 @@ class Image(Card):
         if not self.img:
             self.img = wx.StaticBitmap(self.main)
 
+        # set the bitmap
         self.img.SetBitmap(bmp)
         self.img.SetSize(bmp.GetSize())
+        self.img.Bind(wx.EVT_LEFT_DOWN, self.OnImageLeftDown)
+
+        # setup the card sizer
         self.GetCardSizer().Clear()
         self.GetCardSizer().Add(self.img, proportion=1, flag=wx.ALL|wx.EXPAND, border=self.BORDER_THICK)
 
         self.Fit()
 
-    def Scale(self, factor):
-        # Card.Scale takes care of the new rect size
-        super(Image, self).Scale(factor)
-        
+    def Stretch(self, factor):
         if abs(factor - 1.0) < 0.001:
             return
-        
-        self.scale = factor
+
+        # Card.Stretch takes care of the new rect size
+        super(Image, self).Stretch(factor)
 
         # having handled the new rect, we only need to resize the image to it
         if self.img:
-            img = self.img.GetBitmap().ConvertToImage()
-
-            if self.orig and self.img.GetSize() == self.orig.GetSize():
-                # if we're returning to the original size, reload instead of resize,
-                # because an image after several resizes looks bad
+            # if we're returning to the original size, reload instead of resize,
+            # to cancel out scaling smoothing
+            if abs(self.GetScale() - 1.0) < 0.001:
                 bmp = self.orig
             else:
-                bmp = wx.BitmapFromImage(img.Scale(*self.GetSize(),
-                                    quality=wx.IMAGE_QUALITY_BILINEAR))
+                bmp = self.ResizeBitmap(*self.GetSize())
+
             self.SetImage(bmp)
+
+    def ResizeBitmap(self, w, h, quality=wx.IMAGE_QUALITY_BILINEAR):
+        img = self.img.GetBitmap().ConvertToImage()
+        return wx.BitmapFromImage(img.Scale(w, h, quality))
 
             
     ### Auxiliary functions
@@ -852,6 +870,41 @@ class Image(Card):
                            wx.FD_OPEN | wx.FD_FILE_MUST_EXIST)
         if fd.ShowModal() == wx.ID_CANCEL: return # user changed her mind
         self.LoadImage(fd.GetPath())
+
+    def OnImageLeftDown(self, ev):
+        """All mouse events from the StaticBitmap are redirected as coming from this card."""
+        ev.SetEventObject(self)
+        ev.SetPosition(ev.GetPosition() + self.img.GetPosition())
+        self.GetEventHandler().ProcessEvent(ev)
+
+    def OnMouseOverBorder(self, ev):
+        self.SetCursor(wx.StockCursor(wx.CURSOR_CROSS))
+
+    def OnMouseLeaveBorder(self, ev):
+        self.SetCursor(wx.NullCursor)
+
+    def OnBorderLeftDown(self, ev):
+        self.CaptureMouse()                
+        self.Bind(wx.EVT_MOTION, self.OnDragResize)
+        self.Bind(wx.EVT_LEFT_UP, self.OnBorderLeftUp)
+
+    def OnBorderLeftUp(self, ev):
+        # since we captured the mouse, ev.GetPosition() returns
+        # coordinates relative to this card's top left corner
+        # thus: the new position is our new size
+        if self.resize:
+            w, h = ev.GetPosition()
+            self.SetSize(wx.Size(w, h))
+            self.resize = False
+        
+        self.Unbind(wx.EVT_MOTION)
+        self.Unbind(wx.EVT_LEFT_UP)
+        self.ReleaseMouse()        
+
+    def OnDragResize(self, ev):
+        if ev.Dragging():
+            self.resize = True
+            
 
 
 

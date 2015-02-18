@@ -426,7 +426,7 @@ class Page(wx.Panel):
 
         # scale cards
         for c in self.board.GetCards():
-            c.Scale(new_scale / self.scale)
+            c.Stretch(new_scale / self.scale)
 
         # scale content size
         self.board.content_sz  = wx.Size(*[i / self.scale * new_scale for i in self.board.content_sz])
