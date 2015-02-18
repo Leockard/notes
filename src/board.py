@@ -580,12 +580,13 @@ class Board(AutoSize):
 
             # select cards
             selected = [c for c in self.GetCards() if c.GetRect().Intersects(final_rect)]
-            for c in selected: self.SelectCard(c)
-
+            self.SelectGroup(CardGroup(selected), new_sel=True)
+            
             # finish up
             self.Unbind(wx.EVT_MOTION)
             self.drag_select = False
             self.FitToChildren()
+            self.selec.SetFocus()
 
     def OnMouseCaptureLost(self, ev):
         self.ReleaseMouse()
