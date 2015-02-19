@@ -354,22 +354,32 @@ class MyFrame(wx.Frame):
 
         ## especial items
         # These are ghost items created for the purpose of associating
-        # an accelerator to them. The accelerator is a multifunctional
-        # one. For example, we couldn't set ctrl + g as the callback and
+        # an accelerator to them. Usually, the accelerator is multifunctional.
+        # For example, we couldn't set ctrl + g as the callback and
         # accelerator for next_it (next search result) because we also
         # want to use ctrl + g for grouping. So we bind ctrl + G to a
         # ghost item whose only task is to decide what action to take.
         esp_menu = wx.Menu()
         
         ctrlg = wx.MenuItem(esp_menu, wx.ID_ANY, "ctrlg")
-        esc   = wx.MenuItem(esp_menu, wx.ID_ANY, "esc")        
+        esc   = wx.MenuItem(esp_menu, wx.ID_ANY, "esc")
+        ctrlpgup = wx.MenuItem(esp_menu, wx.ID_ANY, "ctrl page up")
+        ctrlpgdw = wx.MenuItem(esp_menu, wx.ID_ANY, "ctrl page down")
+
         esp_menu.AppendItem(ctrlg)        
         esp_menu.AppendItem(esc)
+        esp_menu.AppendItem(ctrlpgup)
+        esp_menu.AppendItem(ctrlpgdw)
         
         self.Bind(wx.EVT_MENU, self.OnCtrlG, ctrlg)
         self.Bind(wx.EVT_MENU, self.OnEsc,   esc)
+        self.Bind(wx.EVT_MENU, self.OnCtrlPgUp, ctrlpgup)
+        self.Bind(wx.EVT_MENU, self.OnCtrlPgDw, ctrlpgdw)
+        
         accels.append(wx.AcceleratorEntry(wx.ACCEL_CTRL, ord("G"), ctrlg.GetId()))
         accels.append(wx.AcceleratorEntry(wx.ACCEL_NORMAL, 27, esc.GetId()))
+        accels.append(wx.AcceleratorEntry(wx.ACCEL_CTRL, wx.WXK_PAGEUP, ctrlpgup.GetId()))
+        accels.append(wx.AcceleratorEntry(wx.ACCEL_CTRL, wx.WXK_PAGEDOWN, ctrlpgdw.GetId()))
 
         ## finally, create the table
         self.SetAcceleratorTable(wx.AcceleratorTable(accels))
@@ -645,6 +655,18 @@ class MyFrame(wx.Frame):
                 ev.Skip()
         else:
             ev.Skip()
+
+    def OnCtrlPgUp(self, ev):
+        nb = self.notebook
+        sel = nb.GetSelection()
+        if sel > 0:
+            nb.SetSelection(nb.GetSelection()-1)
+
+    def OnCtrlPgDw(self, ev):
+        nb = self.notebook
+        sel = nb.GetSelection()
+        if sel < nb.GetPageCount() - 1:
+            nb.SetSelection(nb.GetSelection()+1)
 
     def OnHArrange(self, ev):
         self.GetCurrentBoard().ArrangeSelection(Board.HORIZONTAL)
