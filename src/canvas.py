@@ -96,12 +96,15 @@ class CanvasBase(wx.StaticBitmap):
             
             dc.SetPen(self.pen)
             new_pos = ev.GetPosition()
-            
-            # store the lines with absolute coordinates
+
+            # draw the lines with relative coordinates to the current view
+            coords = (self.pos.x, self.pos.y, new_pos.x, new_pos.y)
+            dc.DrawLine(*coords)
+
+            # but store them in absolute coordinates
             coords = (self.pos.x + self.offset.x, self.pos.y + self.offset.y,
                       new_pos.x  + self.offset.x,  new_pos.y + self.offset.y)
             self.curLine.append(coords)
-            dc.DrawLine(*coords)
             self.pos = new_pos
             
             dc.EndDrawing()
