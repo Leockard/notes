@@ -187,6 +187,9 @@ class Page(wx.Panel):
     ### Auxiliary functions
     
     def Dump(self):
+        # get the board dump dict and process it
+        board_di = self.board.Dump()
+        
         # if we're inspecting, restore the cards, dump and then return to the inspection view
         inspecting = []
         if self.GetCurrentContent() == CardInspect:
@@ -194,8 +197,7 @@ class Page(wx.Panel):
             self.view_card.Restore()
 
         # dump the real coordinates
-        di = self.board.Dump()
-        for id, card in di.iteritems():
+        for id, card in board_di.iteritems():
             if "pos" in card.keys():
                 card["pos"] = tuple([int(k / self.scale) for k in card["pos"]])
             if "width" in card.keys():
@@ -207,10 +209,17 @@ class Page(wx.Panel):
         if inspecting:
             self.InspectCards(inspecting)
 
+        # get the canvas dump dict
+        canvas_di = self.canvas.Dump()
+
+        # join the two
+        di = {"board": board_di, "canvas": canvas_di}
+
         return di
 
     def Load(self, di):
-        self.board.Load(di)
+        self.board.Load(di["board"])
+        self.canvas.Load(di["canvas"])
 
     def CleanUpUI(self):
         """Resets all control member values. Returns previous Board size."""

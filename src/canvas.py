@@ -50,6 +50,7 @@ class CanvasBase(wx.StaticBitmap):
             dc.SetPen(pen)
             for coords in line:
                 x1, y1, x2, y2 = coords
+                # draw the lines relative to the current offset
                 dc.DrawLine(x1 - self.offset.x, y1 - self.offset.y,
                             x2 - self.offset.x, y2 - self.offset.y)
         
@@ -95,6 +96,8 @@ class CanvasBase(wx.StaticBitmap):
             
             dc.SetPen(self.pen)
             new_pos = ev.GetPosition()
+            
+            # store the lines with absolute coordinates
             coords = (self.pos.x + self.offset.x, self.pos.y + self.offset.y,
                       new_pos.x  + self.offset.x,  new_pos.y + self.offset.y)
             self.curLine.append(coords)
@@ -142,6 +145,16 @@ class Canvas(AutoSize):
         if bmp:
             self.ctrl.SetBitmap(bmp)
             self.FitToChildren()
+
+    ### Auxiliary functions
+
+    def Dump(self):
+        """Unlike many other controls that dump a dict, we are dumping a list."""
+        return self.ctrl.lines
+
+    def Load(self, li):
+        """Load from a list got from Canvas.Dump()"""
+        self.ctrl.lines = li
 
 
     ### Callbacks
