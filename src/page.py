@@ -141,7 +141,7 @@ class Page(wx.Panel):
 
     def GetBoardBmp(self):
         # get the current board as a bitmap
-        sz = self.board.content_sz
+        sz = self.board.GetClientSize()
         bmp = None
 
         if sz.width > -1 and sz.height > -1:
@@ -166,7 +166,8 @@ class Page(wx.Panel):
         self.canvas.SetVirtualSize(sz)
         self.canvas.content_sz = sz
 
-        # pass the bitmap to canvas        
+        # pass the bitmap to canvas
+        self.canvas.SetOffset(self.board.GetViewStartPixels())
         self.canvas.SetBackground(self.GetBoardBmp())
 
     def ShowSidebar(self, show=True):
@@ -391,7 +392,6 @@ class Page(wx.Panel):
             self.view_card.GetCards()[-1].CancelInspect()
 
     def OnToggle(self, ev):
-        # now do the actual toggling replacing bd with self.canvas
         if self.GetCurrentContent() == Board:
             self.SetupCanvas()
             self.ShowCanvas()

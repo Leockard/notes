@@ -1,4 +1,5 @@
 #!/usr/bin/python
+# -*- coding: utf-8 -*-
 
 # canvas.py
 # drawing area class for notes.py
@@ -43,12 +44,14 @@ class CanvasBase(wx.StaticBitmap):
         """Redraws all the lines that have been drawn already."""
         dc = wx.MemoryDC(self.GetBitmap())
         dc.BeginDrawing()
-        
+
         for colour, thickness, line in self.lines:
             pen = wx.Pen(colour, thickness, wx.SOLID)
             dc.SetPen(pen)
             for coords in line:
-                dc.DrawLine(*coords)
+                x1, y1, x2, y2 = coords
+                dc.DrawLine(x1 - self.offset.x, y1 - self.offset.y,
+                            x2 - self.offset.x, y2 - self.offset.y)
         
         dc.EndDrawing()
         self.SetBitmap(dc.GetAsBitmap())
@@ -120,7 +123,6 @@ class Canvas(AutoSize):
         box.Add(ctrl, proportion=1)
 
         # bindings
-        self.Bind(wx.EVT_SCROLLWIN, self.OnScroll)
         self.Bind(wx.EVT_SHOW, self.OnShow)
 
         # finish up        
@@ -128,6 +130,12 @@ class Canvas(AutoSize):
 
                 
     ### Behavior functions
+
+    def SetOffset(self, pt):
+        self.ctrl.SetOffset(pt)
+
+    def GetOffset(self):
+        return self.ctrl.GetOffset()
 
     def SetBackground(self, bmp):
         """Call to show the part that will be seen."""
@@ -141,12 +149,3 @@ class Canvas(AutoSize):
     def OnShow(self, ev):
         if ev.IsShown():
             self.ctrl.DrawLines()
-
-    def OnScroll(self, ev):
-        pos = ev.GetPosition() * self.SCROLL_STEP
-        if ev.GetOrientation() == wx.VERTICAL:
-            self.ctrl.SetOffset(wx.Point(0, pos))
-            pt = wx.Point(0, pos)
-        elif ev.GetOrientation() == wx.HORIZONTAL:
-            self.ctrl.SetOffset(wx.Point(pos, 0))
-            pt = wx.Point(pos, 0)
