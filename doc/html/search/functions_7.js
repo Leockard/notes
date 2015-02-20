@@ -1,0 +1,20 @@
+var searchData=
+[
+  ['getcard',['GetCard',['../classboard_1_1Board.html#abe085f93294ed37530d5cb2441ecee2f',1,'board::Board']]],
+  ['getcards',['GetCards',['../classboard_1_1Board.html#add4fd6085b6f0563eeb34540f7347ba4',1,'board.Board.GetCards()'],['../classcardinspect_1_1CardInspect.html#add4fd6085b6f0563eeb34540f7347ba4',1,'cardinspect.CardInspect.GetCards()']]],
+  ['getcaretpos',['GetCaretPos',['../classcard_1_1Content.html#add5fd5862b45f5063c5701fe72cbe8dd',1,'card::Content']]],
+  ['getcontents',['GetContents',['../classboard_1_1Board.html#acf355fc25b390ade207b95e6d99857f2',1,'board::Board']]],
+  ['getcontentsbykind',['GetContentsByKind',['../classboard_1_1Board.html#a820bc3909b331622a4dc597dce5cc7c4',1,'board::Board']]],
+  ['getcurrentboard',['GetCurrentBoard',['../classnotes_1_1MyFrame.html#a11842a2105532dd0c67b3c40efcc96c7',1,'notes::MyFrame']]],
+  ['getcurrentcontent',['GetCurrentContent',['../classpage_1_1Page.html#a2cb2c60a13afe50442c4e239df25cf20',1,'page::Page']]],
+  ['getcurrentpage',['GetCurrentPage',['../classnotes_1_1MyFrame.html#a69b74d5fc1b7950bb887bb69e0ee7ae7',1,'notes::MyFrame']]],
+  ['getfocusedcard',['GetFocusedCard',['../classboard_1_1Board.html#aca69ff28e1b101ac151684412cb5a52e',1,'board::Board']]],
+  ['getheader',['GetHeader',['../classcard_1_1Header.html#a7fd8a8f1c77c56a62d8dfa04b6f67e9c',1,'card::Header']]],
+  ['getheaders',['GetHeaders',['../classboard_1_1Board.html#a557e4e0ff65bb97b2f1e7ececca951fa',1,'board::Board']]],
+  ['getkind',['GetKind',['../classcard_1_1KindButton.html#a6fa76258ef4f1a6f95ba7a3c4645860e',1,'card::KindButton']]],
+  ['getnextcard',['GetNextCard',['../classboard_1_1Board.html#a0c194198a676e207c664fac48b38e0ce',1,'board::Board']]],
+  ['getpadding',['GetPadding',['../classboard_1_1Board.html#a1e19a9abcf9767ef29fbb3e063e4c6e9',1,'board::Board']]],
+  ['getprevcard',['GetPrevCard',['../classboard_1_1Board.html#adc1243bfeb85ce64c96e9a2f7039138e',1,'board::Board']]],
+  ['getscalefromstr',['GetScaleFromStr',['../classpage_1_1Page.html#af2dac06061c42eab2677da792ab82b2f',1,'page::Page']]],
+  ['getviewstartpixels',['GetViewStartPixels',['../classutilities_1_1AutoSize.html#a1ef9ef17459133381b6fba1f6e87003b',1,'utilities::AutoSize']]]
+];
