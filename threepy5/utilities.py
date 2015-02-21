@@ -14,6 +14,15 @@ from math import sqrt
 ######################
 
 class AutoSize(wx.ScrolledWindow):
+    # __pdoc__ is the special variable from the automatic
+    # documentation generator pdoc
+    # By setting pdoc[class.method] to None, we are telling
+    # pdoc to not generate documentation for said mehthod
+    __pdoc__ = {}
+    for field in dir(wx.ScrolledWindow):
+        __pdoc__['AutoSize.%s' % field] = None
+
+        
     SCROLL_STEP = 10
     
     def __init__(self, parent, id=wx.ID_ANY, pos=wx.DefaultPosition, size=wx.DefaultSize, style=0):

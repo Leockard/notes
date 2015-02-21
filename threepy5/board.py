@@ -16,6 +16,15 @@ import ast
 ######################
 
 class Board(AutoSize):
+    # __pdoc__ is the special variable from the automatic
+    # documentation generator pdoc
+    # By setting pdoc[class.method] to None, we are telling
+    # pdoc to not generate documentation for said mehthod
+    __pdoc__ = {}
+    for field in AutoSize.__dict__.keys():
+        __pdoc__['Board.%s' % field] = None
+
+                
     MOVING_RECT_THICKNESS = 1
     BACKGROUND_CL = "#CCCCCC"
     CARD_PADDING = 15
