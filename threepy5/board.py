@@ -1,7 +1,9 @@
-# board.py
 # -*- coding: utf-8 -*-
-
-# board class for notes.py
+"""
+This module holds the Board and its helper SelectionManager.
+Board is the window that holds all Cards. Every Page has a Board.
+SelectionManager handles selection.
+"""
 
 import wx
 from utilities import *
@@ -16,6 +18,12 @@ import ast
 ######################
 
 class Board(AutoSize):
+    """
+    Board is the parent window of all Cards. It handles position, selection,
+    arrangement, and listens to individual Cards' events, so that Page
+    only needs to listen to Board events.
+    """
+    
     # __pdoc__ is the special variable from the automatic
     # documentation generator pdoc
     # By setting pdoc[class.method] to None, we are telling

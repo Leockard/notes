@@ -1,7 +1,10 @@
-# utilities.py
 # -*- coding: utf-8 -*-
-
-# some auxiliary classes for notes.py
+"""
+This module holds two types of objects:
+1. general-use functions, as regular functions, and
+2. classes derived from wx that would be usable outside
+of the threepy5 application.
+"""
 
 import wx
 import wx.lib.stattext as st
@@ -14,6 +17,14 @@ from math import sqrt
 ######################
 
 class AutoSize(wx.ScrolledWindow):
+    """
+    AutoSize is a wx.ScrolledWindow that automates the process of setting up
+    a window which has a "virtual size". In wx, virtual size is the size of
+    the underlying contents of the window, while size is the "real" size of
+    the window (ie, the screen real estate it occupies). AutoSize also holds
+    various methods that build on top of that functionality.
+    """
+
     # __pdoc__ is the special variable from the automatic
     # documentation generator pdoc
     # By setting pdoc[class.method] to None, we are telling
@@ -105,6 +116,20 @@ class AutoSize(wx.ScrolledWindow):
         
 
 class ColouredText(wx.TextCtrl):
+    """
+    ColouredText overrides TextCtrl.SetBackgroundColour, so that all chars'
+    background colours are changed correctly.
+    """
+    
+    # __pdoc__ is the special variable from the automatic
+    # documentation generator pdoc
+    # By setting pdoc[class.method] to None, we are telling
+    # pdoc to not generate documentation for said mehthod
+    __pdoc__ = {}
+    for field in dir(wx.TextCtrl):
+        __pdoc__['ColouredText.%s' % field] = None
+
+        
     def __init__(self, parent, value ="", size=wx.DefaultSize, pos=wx.DefaultPosition, style=0):
         super(ColouredText, self).__init__(parent, value=value, size=size, pos=pos, style=style)
 
@@ -139,6 +164,22 @@ class ColouredText(wx.TextCtrl):
 
 
 class EditText(ColouredText):
+    """
+    EditText is a TextCtrl that cahnges background colour when it has
+    focus. Basically, we want to make it look like a StaticText, except when
+    the user is editing its contents, in which case we want it to look like
+    a TextCtrl.
+    """
+    
+    # __pdoc__ is the special variable from the automatic
+    # documentation generator pdoc
+    # By setting pdoc[class.method] to None, we are telling
+    # pdoc to not generate documentation for said mehthod
+    __pdoc__ = {}
+    for field in dir(wx.TextCtrl):
+        __pdoc__['ColouredText.%s' % field] = None
+
+                
     DEFAULT_SZ = (200, 20)
     DEFAULT_STYLE = wx.BORDER_NONE|wx.TE_RICH|wx.TE_PROCESS_ENTER|wx.TE_MULTILINE|wx.TE_NO_VSCROLL
     DEFAULT_FONT = (12, wx.SWISS, wx.ITALIC, wx.BOLD)
