@@ -1052,7 +1052,7 @@ class TitleEditText(EditText):
 ######################
 
 class StarRating(wx.Button):
-    PATH = "/home/leo/code/notes/img/"
+    PATH = "../img/"
 
     # thanks openclipart.org for the stars!
     # https://openclipart.org/detail/117079/5-star-rating-system-by-jhnri4

@@ -1,6 +1,4 @@
-#!/usr/bin/python
 # -*- coding: utf-8 -*-
-
 # notes.py
 # main class and executable for note taking application
 
@@ -17,17 +15,13 @@ import json
 import re
 
 
-######################
-# Main Frame class
-######################
-
-class MyFrame(wx.Frame):
+class ThreePyFiveFrame(wx.Frame):
     DEFAULT_SZ = (800, 600)
     DEFAULT_PAGE_NAME = "Untitled Notes"
     CLEAN_STATUS_BAR_AFTER_MS = 5000
 
     def __init__(self, parent, title="Board", size=DEFAULT_SZ, style=wx.DEFAULT_FRAME_STYLE|wx.NO_FULL_REPAINT_ON_RESIZE):
-        super(MyFrame, self).__init__(parent, title=title, size=size, style=style)
+        super(ThreePyFiveFrame, self).__init__(parent, title=title, size=size, style=style)
 
         self.SetTitle(self.DEFAULT_PAGE_NAME)
         self.cur_file = ""
