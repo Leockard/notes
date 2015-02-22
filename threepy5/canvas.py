@@ -16,6 +16,7 @@ from utilities import AutoSize
 ######################
 
 class CanvasBase(wx.StaticBitmap):
+    """CanvasBase is a StaticBitmap over which the user can draw by free-hand."""
     def __init__(self, parent, bitmap=wx.NullBitmap):
         super(CanvasBase, self).__init__(parent, bitmap=bitmap, style=wx.BORDER_NONE)
         self.thickness = 1
@@ -118,6 +119,8 @@ class CanvasBase(wx.StaticBitmap):
 ######################
 
 class Canvas(AutoSize):
+    """An AutoSize object (which is a wx.Panel through wx.ScrolledWindow) which holds a Canvas as its only child."""
+    
     def __init__(self, parent, size=wx.DefaultSize, pos=wx.DefaultPosition):
         super(Canvas, self).__init__(parent)
 

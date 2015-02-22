@@ -16,6 +16,12 @@ from utilities import *
 ######################
 
 class Card(wx.Panel):
+    """
+    Card is "a virual 3x5 index card". As an abstract class, its inheritors
+    specialize in displaying text (Content cards, which visually resemble
+    index cards), titles or headers (Header), or images (Image).
+    """
+    
     BORDER_WIDTH = 2
     BORDER_THICK = 5
     SELECT_CL = (0, 0, 0, 0)
@@ -248,6 +254,7 @@ class Card(wx.Panel):
 ######################
 
 class Header(Card):
+    """Card that holds a title/header. Consists of a single EditText control."""
     MIN_WIDTH = 150
     DEFAULT_SZ = (150, 32)
     DEFAULT_TITLE = ""
@@ -344,6 +351,8 @@ class Header(Card):
 ############################################
 
 class ContentText(ColouredText):
+    """The main text field on a Content Card."""
+    
     def __init__(self, parent, size=wx.DefaultSize, style=wx.TE_RICH|wx.TE_MULTILINE|wx.TE_NO_VSCROLL):
         super(ContentText, self).__init__(parent, size=size, style=style)
         self.Bind(wx.EVT_KEY_DOWN, self.OnKeyDown)
@@ -384,6 +393,8 @@ class ContentText(ColouredText):
 
 
 class KindButton(wx.Button):
+    """The Button which selects the kind of a Content Card."""
+
     DEFAULT_SIZE = (33, 20)
     DEFAULT_FONT = (8, wx.FONTFAMILY_DEFAULT, wx.FONTSTYLE_ITALIC, wx.FONTWEIGHT_NORMAL, False)
 
@@ -425,6 +436,8 @@ class KindButton(wx.Button):
 
 
 class KindSelectMenu(wx.Menu):
+    """The Menu that pops up from a KindButton."""
+
     def __init__(self, card):
         super(KindSelectMenu, self).__init__()
         self.card = card
@@ -461,6 +474,26 @@ class KindSelectMenu(wx.Menu):
 ######################
 
 class Content(Card):
+    """
+    A Card which holds text Contents. Features: title, kind, rating, content.
+    
+    In its content text field, the user may input "tags". Any line of the form
+    ^my-tag: foo bar baz$
+    is considered to define the tag my-tag. Tag names (before the colon) must
+    be single words, and their content (after the colon) may be any string,
+    until a newline. They are parsed and shown by TagsInspect.
+    
+    A tag can be anything, though they usually describe facts about concepts:
+    
+    Content Card "Protein"
+    kind: concept
+    rating: 2 stars
+    content:
+        Proteins are chains of amino-acids which...
+        Number: there are x types of proteins.
+        Kinds: transmembrane proteins, integral membrane proteins.
+    """
+    
     # sizes
     DEFAULT_SZ   = (250, 150)
     COLLAPSED_SZ = (250, 30)
@@ -758,6 +791,8 @@ class Content(Card):
 ######################
 
 class Image(Card):
+    """A Card that holds a single image, loaded from disk."""
+    
     DEFAULT_SZ = (50, 50)
     DEFAULT_PATH = ""
 
@@ -953,6 +988,11 @@ class Image(Card):
 ######################
 
 class TitleEditText(EditText):
+    """
+    A EditText window that holds the title text in a Content
+    Card. Automatically sets its size and font size to fit its contents.
+    """
+
     # have to use own MAX length since wx.TextCtrl.SetMaxLength
     # is only implemented for single line text controls
     MAXLEN_PX = 175
@@ -1053,6 +1093,7 @@ class TitleEditText(EditText):
 ######################
 
 class StarRating(wx.Button):
+    """The Button that displays the rating on a Content Card."""
     PATH = "../img/"
 
     # thanks openclipart.org for the stars!
@@ -1104,6 +1145,8 @@ class StarRating(wx.Button):
 ######################
 
 class CardGroup():
+    """Basically, a list of Cards, used throughout the application."""
+    
     def __init__(self, members=[], label=-1):
         # save references to cards, not to the list
         self.members = members[:]

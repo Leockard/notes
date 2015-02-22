@@ -15,6 +15,8 @@ from utilities import *
 ######################
 
 class BoardInspect(AutoSize):
+    """Displays a "minimap" of the current Board."""
+
     DEFAULT_FACTOR  = 5
     BACKGROUND_CL   = (255, 255, 255, 255)
     DEFAULT_MINI_CL = (220, 218, 213, 255)
@@ -124,6 +126,8 @@ class BoardInspect(AutoSize):
 ######################        
 
 class CardInspect(wx.Panel):
+    """Displays a screen-sized Content Card to facilitate editing."""
+    
     CARD_PADDING = Board.CARD_PADDING
     BACKGROUND_CL = "#CCCCCC"
     
@@ -204,6 +208,8 @@ class CardInspect(wx.Panel):
 ######################        
 
 class MiniCard(wx.Window):
+    """The little cards shown in a BoardInspect"""
+    
     def __init__(self, parent, pos=wx.DefaultPosition, size=wx.DefaultSize):
         super(MiniCard, self).__init__(parent, pos=pos, size=size)
         
@@ -216,6 +222,8 @@ class MiniCard(wx.Window):
 ######################        
 
 class TagsInspect(wx.Panel):
+    """The sidebard that displays a Content Card's tags."""
+
     TAGS_REGEX = "^(\w+):(.*)$"
     
     def __init__(self, parent, board, pos=wx.DefaultPosition, size=wx.DefaultSize):

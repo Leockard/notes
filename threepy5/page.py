@@ -19,6 +19,8 @@ import wx.lib.agw.flatnotebook as fnb
 ######################
 
 class Page(wx.Panel):
+    """A Page holds all the main items to create, edit and visualize a collection of Cards."""
+    
     CARD_PADDING = Board.CARD_PADDING
     PIXELS_PER_SCROLL = 20
     DEFAULT_SZ = (20, 20)
@@ -484,6 +486,12 @@ class Page(wx.Panel):
 ######################            
 
 class Book(wx.Notebook):
+    """
+    A Book holds various Pages, and is the equivalent of a file at
+    application level: every Book is stored in one file and every file loads
+    one Book.
+    """
+
     NewPageEvent, EVT_BK_NEW_PAGE = ne.NewEvent()
 
     def __init__(self, parent, pos=wx.DefaultPosition, size=wx.DefaultSize):

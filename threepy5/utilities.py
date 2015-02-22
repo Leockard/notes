@@ -239,7 +239,12 @@ class EditText(ColouredText):
 #######################
 
 def GetAncestors(ctrl):
-    """Returns a list of ctrl's parent and its parent's parent and so on."""
+    """Returns a list of all of ctrl's wx.Window ancestors.
+    
+    * `ctrl: ` a wx object.
+    
+    `returns: ` a list of all wx ancestors of `ctrl`.
+    """
     ancestors = []
     while ctrl:
         ancestors.append(ctrl.GetParent())
@@ -249,7 +254,12 @@ def GetAncestors(ctrl):
     return ancestors
 
 def GetCardAncestor(ctrl):
-    """If the ctrl is inside a Card, return it. Otherwise, return None."""
+    """Returns the Card ancestor of its argument.
+
+    * `ctrl: ` a wx object.
+
+    `returns: ` The first `Card` ancestor of `ctrl`, or `None`.
+    """
     from card import Card
     cards = [p for p in GetAncestors(ctrl) if isinstance(p, Card)]
     if cards:
@@ -258,7 +268,16 @@ def GetCardAncestor(ctrl):
         return None
 
 def DumpSizerChildren(sizer, depth=1, full=False):
-    """Recursively prints all children."""
+    """Recursively prints all children of a wx.Sizer.
+
+    * `sizer: ` a `wx.Sizer`.
+    * `depth: ` the depth at which to start printing items. Should always
+    be `1` when called from outside itself.
+    * `full: ` set to `True` to print full object information, including
+    memory address.
+
+    `returns: ` `None`.
+    """
     # prepare the info string for the sizer
     # indentation
     sizer_info = str("    " * (depth - 1))
@@ -295,6 +314,11 @@ def MakeEncirclingRect(p1, p2):
     """
     Returns the wx.Rect with two opposite vertices at p1, p2.
     Width and height are guaranteed to be positive.
+
+    * `p1: ` any object with two fields addressable as `p1[0]` and `p1[1]`.
+    * `p2: ` idem.
+
+    `returns: ` a `wx.Rect` with top left corner at `p1`, bottom right corner at `p2` and positive width and height.
     """
     l = min(p1[0], p2[0])
     t = min(p1[1], p2[1])
@@ -303,6 +327,12 @@ def MakeEncirclingRect(p1, p2):
     return wx.Rect(l, t, w, h)
 
 def isnumber(s):
+    """Return True of the argument is a string representing a number.
+    
+    * `s: ` a string.
+    
+    `returns: ` `True` if `s` is a number, or `False`.
+    """
     try:
         float(s)
         return True
@@ -310,24 +340,34 @@ def isnumber(s):
         return False
 
 def dist2(p1, p2):
-    return sum([i**2 for i in p1 - p2])
+    """Returns the squared euclidean distance between two points.
+
+    * `p1: ` any object with two fields addressable as `p1[0]` and `p1[1]`.
+    * `p2: ` idem.
+
+    `returns: ` the squared distance, always a `float`.
+    """
+    return float(sum([i**2 for i in p1 - p2]))
 
 def dist(p1, p2):
-    return sqrt(dist2(p1, p2))
+    """Returns the euclidean distance betwen two points.
+
+    * `p1: ` any object with two fields addressable as `p1[0]` and `p1[1]`.
+    * `p2: ` idem.
+
+    `returns: ` the distance, always a `float`.
+    """
+    return float(sqrt(dist2(p1, p2)))
 
 def IsFunctionKey(key):
+    """Check if `key` is a function key.
+
+    * `key: ` a `wx.KeyCode`, eg, as returned by `wx.MouseEvent.GetKeyCode()`.
+
+    `returns: ` `True` if `key` is one of the 24 possible values of `wx.WXK_F*`, or `False`.
+    """
     fkeys = [wx.WXK_F1, wx.WXK_F2, wx.WXK_F3, wx.WXK_F4, wx.WXK_F5, wx.WXK_F6, wx.WXK_F7, wx.WXK_F8, wx.WXK_F9, wx.WXK_F10, wx.WXK_F11, wx.WXK_F12, wx.WXK_F13, wx.WXK_F14, wx.WXK_F15, wx.WXK_F16, wx.WXK_F17, wx.WXK_F18, wx.WXK_F19, wx.WXK_F20, wx.WXK_F21, wx.WXK_F22, wx.WXK_F23, wx.WXK_F24]
     return any([key == k for k in fkeys])
-
-def GetBases(cl):
-    if cl == []:
-        return None
-    bases = list(cl.__bases__)
-    for b in bases:
-        new = GetBases(b)
-        if new:
-            bases += new
-    return list(set(bases))
 
 
 
@@ -339,7 +379,7 @@ def GetBases(cl):
 # By setting pdoc[class.method] to None, we are telling
 # pdoc to not generate documentation for said method.
 __pdoc__ = {}
-__pdoc__["threepy5.utilities.field"] = None
+__pdoc__["field"] = None
 
 # Since we only want to generate documentation for our own
 # mehods, and not the ones coming from the base classes,

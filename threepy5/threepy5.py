@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Main frame for note taking application threepy5. A ThreePyFiveFrame
-holds a WelcomePage at startup, until a Book is loaded.
+Main frame object for note taking application threepy5.
 """
 
 import wx
@@ -18,6 +17,10 @@ import re
 
 
 class ThreePyFiveFrame(wx.Frame):
+    """
+    A ThreePyFiveFrame holds a WelcomePage at startup, until a Book is loaded.
+    """
+    
     DEFAULT_SZ = (800, 600)
     DEFAULT_PAGE_NAME = "Untitled Notes"
     CLEAN_STATUS_BAR_AFTER_MS = 5000
@@ -797,6 +800,10 @@ class ThreePyFiveFrame(wx.Frame):
 ######################            
 
 class WelcomePage(wx.Panel):
+    """
+    The panel that is displayed as soon as the user starts the
+    application. Gives options to load a file or start a new one.
+    """
     
     def __init__(self, parent):
         super(WelcomePage, self).__init__(parent)
