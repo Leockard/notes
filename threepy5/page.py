@@ -10,7 +10,6 @@ from utilities import *
 from board import *
 from cardinspect import *
 from canvas import Canvas
-import wx.lib.agw.flatnotebook as fnb
 
 
 ######################
@@ -44,7 +43,7 @@ class Box(wx.Panel):
     def __init__(self, parent, pos=wx.DefaultPosition, size = wx.DefaultSize):
         """Constructor.
 
-        * `parent: ` the parent `Book`.
+        * `parent: ` the parent `BoxSet`.
         * `pos: ` by default, is `wx.DefaultSize`.
         * `size: ` by default, is `wx.DefaultSize`.
         """
@@ -554,14 +553,14 @@ class Box(wx.Panel):
 
 
 ######################
-# Book class
+# BoxSet class
 ######################            
 
-class Book(wx.Notebook):
+class BoxSet(wx.Notebook):
     """
-    A `Book` holds various `Box`es, and is the equivalent of a file at
-    application level: every `Book` is stored in one file and every file loads
-    one `Book`. It is implemented as a `wx.Notebook`, showing every `Box`as
+    A `BoxSet` holds various `Box`es, and is the equivalent of a file at
+    application level: every `BoxSet` is stored in one file and every file loads
+    one `BoxSet`. It is implemented as a `wx.Notebook`, showing every `Box`as
     a 'page'.
     """
 
@@ -574,7 +573,7 @@ class Book(wx.Notebook):
         * `pos: ` by default, is `wx.DefaultSize`.
         * `size: ` by default, is `wx.DefaultSize`.
         """
-        super(Book, self).__init__(parent, pos=pos, size=size)
+        super(BoxSet, self).__init__(parent, pos=pos, size=size)
         self.InitMenu()
 
         
@@ -602,8 +601,8 @@ class Book(wx.Notebook):
             return False
 
     def AddBox(self, box, text, select=False, imageId=wx.Notebook.NO_IMAGE):
-        """Overridden from `wx.Book`. Raises the `Bool.EVT_NB_NEW_BOX` event."""
-        super(Book, self).AddPage(box, text, select, imageId)
+        """Overridden from `wx.Notebook`. Raises the `Bool.EVT_NB_NEW_BOX` event."""
+        super(BoxSet, self).AddPage(box, text, select, imageId)
         
         event = self.NewBoxEvent(id=wx.ID_ANY, box=box, title=text)
         event.SetEventObject(self)
@@ -613,7 +612,7 @@ class Book(wx.Notebook):
     ### Auxiliary functions
 
     def InitMenu(self):
-        """Initialize this `Book`'s context menu."""
+        """Initialize this `BoxSet`'s context menu."""
         # make menu items
         menu = wx.Menu()
         self.Bind(wx.EVT_RIGHT_DOWN, self.OnRightDown)
@@ -644,7 +643,7 @@ class Book(wx.Notebook):
         self.menu = menu
         
     def Dump(self):
-        """Return a `dict` holding all this `Book`'s data.
+        """Return a `dict` holding all this `BoxSet`'s data.
         
         `returns: ` a `dict` of the form `{"box title 1": data1, "box title 2": data2, ...}`,
         where `data*` are the objects returned by each `Box`'s `Dump`.
@@ -656,7 +655,7 @@ class Book(wx.Notebook):
         return di
 
     def Load(self, di):
-        """Read data from a `dict` and load it into this `Book` for displaying.
+        """Read data from a `dict` and load it into this `BoxSet` for displaying.
 
         * `di: ` must be a `dict`in the format returned by `Dump`.
         """
@@ -723,14 +722,14 @@ __pdoc__["field"] = None
 for field in dir(wx.Panel):
     __pdoc__['Box.%s' % field] = None
 for field in dir(wx.Notebook):
-    __pdoc__['Book.%s' % field] = None
+    __pdoc__['BoxSet.%s' % field] = None
 
 # Then, we have to add again the methods that we have
 # overriden. See https://github.com/BurntSushi/pdoc/issues/15.
 for field in Box.__dict__.keys():
     if 'Box.%s' % field in __pdoc__.keys():
         del __pdoc__['Box.%s' % field]
-for field in Book.__dict__.keys():
-    if 'Book.%s' % field in __pdoc__.keys():
-        del __pdoc__['Book.%s' % field]
+for field in BoxSet.__dict__.keys():
+    if 'BoxSet.%s' % field in __pdoc__.keys():
+        del __pdoc__['BoxSet.%s' % field]
         

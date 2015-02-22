@@ -18,7 +18,7 @@ import re
 
 class ThreePyFiveFrame(wx.Frame):
     """
-    A `ThreePyFiveFrame` holds a `WelcomePage` at startup, until a `Book` is loaded.
+    A `ThreePyFiveFrame` holds a `WelcomePage` at startup, until a `BoxSet` is loaded.
     """
     
     DEFAULT_SZ = (800, 600)
@@ -28,7 +28,7 @@ class ThreePyFiveFrame(wx.Frame):
     def __init__(self, parent, title="3py5", size=DEFAULT_SZ, style=wx.DEFAULT_FRAME_STYLE|wx.NO_FULL_REPAINT_ON_RESIZE):
         """Constructor.
 
-        * `parent: ` the parent `Book`.
+        * `parent: ` the parent window.
         * `title: ` the title of this `ThreePyFiveFrame`.
         * `size: ` by default, is `ThreePyFiveFrame.DEFAULT_SZ`.
         * `style: ` by default, is `wx.DEFAULT_FRAME_STYLE|wx.NO_FULL_REPAINT_ON_RESIZE`.
@@ -39,7 +39,7 @@ class ThreePyFiveFrame(wx.Frame):
         self.cur_file = ""
         self.search_find = []
         self.search_str = ""
-        self.notebook = None
+        self.boxset = None
         self.welcome = None
         self.search_head = None    # contains the current search index
                                    # when not searching, set to None
@@ -53,13 +53,13 @@ class ThreePyFiveFrame(wx.Frame):
     ### Behavior Functions
 
     def GetCurrentBox(self):
-        """Get the `Box` currently selected in the loaded `Book`.
+        """Get the `Box` currently selected in the loaded `BoxSet`.
 
         `returns: ` a `Box` or `None`.
         """
         result = None
-        if self.notebook:
-            result = self.notebook.GetCurrentBox()
+        if self.boxset:
+            result = self.boxset.GetCurrentBox()
         return result
 
     def GetCurrentDeck(self):
@@ -476,8 +476,8 @@ class ThreePyFiveFrame(wx.Frame):
         vbox.Add(panel, proportion=1, flag=wx.EXPAND)
         self.welcome = panel
 
-    def InitNotebook(self, size=wx.DefaultSize):
-        """Initialize the `Book` and delete the `WelcomePage`."""
+    def InitBoxset(self, size=wx.DefaultSize):
+        """Initialize the `BoxSet` and delete the `WelcomePage`."""
         # delete the welcome page
         # at this point, self.GetSizer() should only have the WelcomePage
         box = self.GetSizer()
@@ -486,11 +486,11 @@ class ThreePyFiveFrame(wx.Frame):
         box.Clear()
         self.welcome = None
 
-        # create and setup the notebook
-        nb = Book(self, size=size)
+        # create and setup the boxset
+        nb = BoxSet(self, size=size)
 
         # bindings: make sure to Bind EVT_BK_NEW_BOX before creating any boxes!
-        nb.Bind(Book.EVT_BK_NEW_BOX, self.OnNewBox)
+        nb.Bind(BoxSet.EVT_BK_NEW_BOX, self.OnNewBox)
 
         # UI setup
         nb_box = wx.BoxSizer(wx.HORIZONTAL)
@@ -499,7 +499,7 @@ class ThreePyFiveFrame(wx.Frame):
 
         # finish up
         box.Layout()
-        self.notebook = nb
+        self.boxset = nb
 
     def Log(self, s):
         """Log the string `s` into the status bar.
@@ -516,28 +516,28 @@ class ThreePyFiveFrame(wx.Frame):
         print self.GetCurrentBox().Dump()
 
     def Save(self, out_file):
-        """Save the current `Book` to disk.
+        """Save the current `BoxSet` to disk.
 
         * `out_file: ` path to the file.
         """
-        di =  self.notebook.Dump()
+        di =  self.boxset.Dump()
         with open(out_file, 'w') as out:
             pickle.dump(di, out)
 
     def Load(self, path):
-        """Load a `Book` from disk.
+        """Load a `BoxSet` from disk.
 
         * `path: ` path to the file.
         """
         with open(path, 'r') as f: d = pickle.load(f)
-        self.notebook.Load(d)
-        self.notebook.SetFocus()
+        self.boxset.Load(d)
+        self.boxset.SetFocus()
                 
         
     ### Callbacks
 
     def OnNewBox(self, ev):
-        """Listens to `Book.EVT_BK_NEW_BOX`."""
+        """Listens to `BoxSet.EVT_BK_NEW_BOX`."""
         ev.box.Bind(Box.EVT_BOX_INSPECT, self.OnInspect)
         ev.box.Bind(Box.EVT_BOX_CANCEL_INSPECT, self.OnCancelInspect)
         ev.box.deck.Bind(Deck.EVT_DECK_DEL_CARD, self.AfterDelete)
@@ -589,14 +589,14 @@ class ThreePyFiveFrame(wx.Frame):
             self.Log("Done inspecting.")
 
     def OnInspect(self, ev):
-        """Listens to `Box.EVT_BOX_INSPECT` from every `Box` in the `Book`."""
+        """Listens to `Box.EVT_BOX_INSPECT` from every `Box` in the `BoxSet`."""
         if ev.number == 1:
             self.Log("Inspecting \"" + ev.title + "\".")
         else:
             self.Log("Inspecting " + str(ev.number) + " cards.")
 
     def OnCancelInspect(self, ev):
-        """Listens to `Box.EVT_BOX_CANCEL_INSPECT` from every `Box` in the `Book`."""
+        """Listens to `Box.EVT_BOX_CANCEL_INSPECT` from every `Box` in the `BoxSet`."""
         self.Log("Done inspecting.")
 
     def OnSelectAll(self, ev):
@@ -670,14 +670,14 @@ class ThreePyFiveFrame(wx.Frame):
 
     def OnCtrlPgUp(self, ev):
         """Listens to "CTRL+PAGEUP."""
-        nb = self.notebook
+        nb = self.boxset
         sel = nb.GetSelection()
         if sel > 0:
             nb.SetSelection(nb.GetSelection()-1)
 
     def OnCtrlPgDw(self, ev):
         """Listens to "CTRL+PAGEDOWN."""
-        nb = self.notebook
+        nb = self.boxset
         sel = nb.GetSelection()
         if sel < nb.GetPageCount() - 1:
             nb.SetSelection(nb.GetSelection()+1)
@@ -772,7 +772,7 @@ class ThreePyFiveFrame(wx.Frame):
 
     def OnNew(self, ev):
         """Listens to `wx.EVT_TOOL` from "New" in the toolbar."""
-        self.notebook.NewBox()
+        self.boxset.NewBox()
 
     def OnSave(self, ev):
         """Listens to `wx.EVT_MENU` from "Save" in the "file" menu."""
@@ -813,8 +813,8 @@ class ThreePyFiveFrame(wx.Frame):
                            wx.FD_OPEN | wx.FD_FILE_MUST_EXIST)
         if fd.ShowModal() == wx.ID_CANCEL: return # user changed her mind
 
-        # delete the welcome page and create a new notebook
-        self.InitNotebook()
+        # delete the welcome page and create a new boxset
+        self.InitBoxset()
 
         # load the chosen file
         self.cur_file = fd.GetPath()        
@@ -852,8 +852,8 @@ class WelcomePage(wx.Panel):
     def InitUI(self):
         """Initialize the GUI and controls."""
         # controls
-        newb  = wx.Button(self, label="New book")
-        loadb = wx.Button(self, label="Load book")
+        newb  = wx.Button(self, label="New box set")
+        loadb = wx.Button(self, label="Load box set")
 
         # boxing
         box = wx.BoxSizer(wx.VERTICAL)
@@ -862,19 +862,19 @@ class WelcomePage(wx.Panel):
         box.Add(loadb, proportion=0)
         
         # bindings
-        newb.Bind(wx.EVT_BUTTON, self.OnNewBook)
-        loadb.Bind(wx.EVT_BUTTON, self.OnLoadBook)
+        newb.Bind(wx.EVT_BUTTON, self.OnNewBoxSet)
+        loadb.Bind(wx.EVT_BUTTON, self.OnLoadBoxSet)
 
 
     ### Callbacks
 
-    def OnNewBook(self, ev):
-        """Listens to `wx.EVT_BUTTON` from the "New book" button."""
-        self.GetParent().InitNotebook()
-        self.GetParent().notebook.NewBox()
+    def OnNewBoxSet(self, ev):
+        """Listens to `wx.EVT_BUTTON` from the "New box set" button."""
+        self.GetParent().InitBoxset()
+        self.GetParent().boxset.NewBox()
 
-    def OnLoadBook(self, ev):
-        """Listens to `wx.EVT_BUTTON` from the "Load book" button."""
+    def OnLoadBoxSet(self, ev):
+        """Listens to `wx.EVT_BUTTON` from the "Load box set" button."""
         self.GetParent().OnOpen(None)
 
 
