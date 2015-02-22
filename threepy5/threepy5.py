@@ -9,7 +9,7 @@ import pickle
 from page import *
 from card import *
 from canvas import *
-from board import *
+from deck import *
 from cardinspect import *
 import wx.richtext as rt
 import json

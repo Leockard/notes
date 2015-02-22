@@ -6,7 +6,7 @@ Inspect classes are used to take a closer look at certain objects.
 import wx
 import re
 from card import *
-from board import Deck
+from deck import Deck
 from utilities import *
 
 

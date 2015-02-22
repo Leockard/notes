@@ -7,7 +7,7 @@ It also has facilities for closer inspection of individual objects.
 import wx
 from utilities import AutoSize
 from utilities import *
-from board import *
+from deck import *
 from cardinspect import *
 from canvas import Canvas
 
