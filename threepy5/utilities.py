@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 """
 This module holds two types of objects:
-1. general-use functions, as regular functions, and
-2. classes derived from wx that would be usable outside
-of the threepy5 application.
+1. general-use functions, and
+2. classes derived from wx that could be usable outside
+of `threepy5`.
 """
 
 import wx
@@ -18,17 +18,24 @@ from math import sqrt
 
 class AutoSize(wx.ScrolledWindow):
     """
-    AutoSize is a wx.ScrolledWindow that automates the process of setting up
-    a window which has a "virtual size". In wx, virtual size is the size of
-    the underlying contents of the window, while size is the "real" size of
-    the window (ie, the screen real estate it occupies). AutoSize also holds
+    `AutoSize` is a `wx.ScrolledWindow` that automates the process of setting
+    up a window which has a "virtual size". In `wx`, "virtual size" is the size of
+    the underlying contents of the window, while "size" is the "real" size of
+    the window (ie, the screen real estate it occupies). `AutoSize` also holds
     various methods that build on top of that functionality.
     """
         
     SCROLL_STEP = 10
     
-    def __init__(self, parent, id=wx.ID_ANY, pos=wx.DefaultPosition, size=wx.DefaultSize, style=0):
-        super(AutoSize, self).__init__(parent, id=id, pos=pos, size=size, style=style)
+    def __init__(self, parent, pos=wx.DefaultPosition, size=wx.DefaultSize, style=0):
+        """Constructor.
+
+        * `parent: ` the parent `Board`.
+        * `pos: ` by default, is `wx.DefaultPosition`.
+        * `size: ` by default, is `wx.DefaultSize`.
+        * `style: ` the style for this window.
+        """
+        super(AutoSize, self).__init__(parent, pos=pos, size=size, style=style)
 
         self.content_sz = wx.Size(size[0], size[1])
         self.SetScrollRate(self.SCROLL_STEP, self.SCROLL_STEP)
@@ -38,9 +45,10 @@ class AutoSize(wx.ScrolledWindow):
 
         
     def UpdateContentSize(self, sz):
-        """
-        If sz contains a dimension that is bigger than the
-        current virtual size, change the virtual size.
+        """Recompute the virtual size.
+
+        * `sz: ` a `(width, height)` size tuple. If it contains a dimension that
+        is bigger than the current virtual size, change the virtual size.
         """
         flag = False
         virt_sz = self.content_sz
@@ -56,9 +64,8 @@ class AutoSize(wx.ScrolledWindow):
             self.SetVirtualSize(self.content_sz)
 
     def FitToChildren(self):
-        """
-        Call to set the virtual (content) size to tightyly fit the children.
-        If there are no children, keeps the virtual size as it is (don't shrink).
+        """Call to set the virtual size to tightly fit the children. If
+        there are no children, keeps the virtual size as it is (don't shrink).
         """
         children = self.GetChildren()
         if len(children) == 0: return
@@ -86,13 +93,19 @@ class AutoSize(wx.ScrolledWindow):
         if shown: self.Show()
 
     def ExpandVirtualSize(self, dx, dy):
-        """Enlarges the virtual size by dx, dy."""
+        """Enlarge the virtual size.
+        
+        * `dx: ` pixels to enlarge add in the X direction.
+        * `dy: ` pixels to enlarge add in the Y direction.
+        """
         size = wx.Size(self.content_sz.x + dx, self.content_sz.y + dy)
         self.SetVirtualSize(size)
         self.content_sz = size
 
     def GetViewStartPixels(self):
-        """Return the point at which the current view starts, in pixels."""
+        """Return the point at which the current view starts, ie, the absolute
+        coordinates of that, due to the scrollbars, currently lies at `(0,0)`.
+        """
         view = self.GetViewStart()
         return wx.Point(*[v * self.SCROLL_STEP for v in view])
 
@@ -100,6 +113,7 @@ class AutoSize(wx.ScrolledWindow):
     ### Callbacks
 
     def AutoSizeOnSize(self, ev):
+        """Listens to `wx.EVT_SIZE`."""
         self.UpdateContentSize(ev.GetSize())
         ev.Skip()
 
@@ -108,18 +122,31 @@ class AutoSize(wx.ScrolledWindow):
 
 class ColouredText(wx.TextCtrl):
     """
-    ColouredText overrides TextCtrl.SetBackgroundColour, so that all chars'
+    `ColouredText` overrides `TextCtrl.SetBackgroundColour`, so that all chars'
     background colours are changed correctly.
     """
 
     def __init__(self, parent, value ="", size=wx.DefaultSize, pos=wx.DefaultPosition, style=0):
+        """Constructor.
+
+        * `parent: ` the parent window.
+        * `value: ` the intial text for this control.
+        * `size: ` by default, is `wx.DefaultSize`.
+        * `pos: ` by default, is `wx.DefaultPosition`.
+        * `style: ` the style for this window.
+        """
         super(ColouredText, self).__init__(parent, value=value, size=size, pos=pos, style=style)
 
     def SetBackgroundColour(self, new_cl):
-        # If we change background colour from A to B, but a char in the text
-        # has background colour C, TextCtrl.SetBackgroundColour() won't change
-        # it correctly. Solution: store the bg colour (of those chars that have
-        # a different bg colour than the current one), change the bg for all
+        """Overridden from `wx.TextCtrl`. Changes the background colour respecting
+        each individual char's background, as set by `wx.TextCtrl.SetStyle`.
+
+        If we change background colour from A to B, but a char in the text
+        has background colour C, `TextCtrl.SetBackgroundColour` won't change
+        it correctly. This method solves that problem.
+        """
+        # Solution: store the bg colour of those chars that have
+        # a different bg colour than the current one, change the bg for all
         # and then restore the ones saved.
         text = self.GetValue()
         attr = wx.TextAttr()
@@ -147,10 +174,13 @@ class ColouredText(wx.TextCtrl):
 
 class EditText(ColouredText):
     """
-    EditText is a TextCtrl that cahnges background colour when it has
-    focus. Basically, we want to make it look like a StaticText, except when
+    `EditText` is a `wx.TextCtrl` that cahnges background colour when it has
+    focus. Basically, we want to make it look like a `wx.StaticText`, except when
     the user is editing its contents, in which case we want it to look like
-    a TextCtrl.
+    a `wx.TextCtrl`. The background colour `EditText` has when it looks like a
+    `wx.StaticText` (which is in most cases its parent's background colour) is
+    called "first colour". The colour it has when it looks like a regular `wx.TextCtrl`
+    is the "second colour". The second colour is usually whie.
     """
                 
     DEFAULT_SZ = (200, 20)
@@ -159,6 +189,14 @@ class EditText(ColouredText):
     DEFAULT_2_CL = (255, 255, 255, 255)
     
     def __init__(self, parent, value="", pos=wx.DefaultPosition, size=DEFAULT_SZ, style=DEFAULT_STYLE):
+        """Constructor.
+
+        * `parent: ` the parent window.
+        * `value: ` the intial text for this control.
+        * `pos: ` by default, is `wx.DefaultPosition`.
+        * `size: ` by default, is `wx.DefaultSize`.
+        * `style: ` by default, is `EditText.DEFAULT_STYLE`.
+        """
         super(EditText, self).__init__(parent, pos=pos, size=size, style=style, value=value)
 
         # colours
@@ -180,55 +218,71 @@ class EditText(ColouredText):
     ### Behavior functions
 
     def ToggleColours(self):
+        """Change between first and second colours."""
         if self.GetBackgroundColour() == self.first_cl:
             self.ShowSecondColour()
         else:
             self.ShowFirstColour()
     
     def ShowFirstColour(self):
+        """Set the background to the first colour."""
         self.SetBackgroundColour(self.first_cl)
 
     def ShowSecondColour(self):
+        """Set the background to the second colour."""
         self.SetBackgroundColour(self.second_cl)
 
     def SetSecondColour(self, cl):
+        """Sets the second colour."""
         self.second_cl = cl
 
     def GetSecondColour(self):
+        """Get the second colour.
+
+        `returns: ` a `(R, G, B, alpha)` tuple."""
         return self.second_cl
 
     def SetFirstColour(self, cl):
+        """Sets the first colour."""
         self.first_cl = cl
         self.SetBackgroundColour(self.first_cl)
 
     def GetFirstColour(self):
+        """Get the first colour.
+        
+        `returns: ` a `(R, G, B, alpha)` tuple."""
         return self.first_cl
 
 
     ### Callbacks
 
     def OnKeyDown(self, ev):
+        """Listens to `wx.EVT_KEY_DOWN`."""
         if ev.GetKeyCode() == 9:
             GetCardAncestor(self).OnTab(ev)
         else:
             ev.Skip()
 
     def OnEnter(self, ev):
+        """Listens to `wx.EVT_TEXT_ENTER`."""
         self.ToggleColours()
         self.Navigate(not wx.MouseState().ShiftDown())
     
     def OnLeftDown(self, ev):
+        """Listens to `wx.EVT_LEFT_DOWN`."""
         if self.GetBackgroundColour() == self.first_cl:
             self.ShowSecondColour()
         ev.Skip()
 
     def OnSetFocus(self, ev):
+        """Listens to `wx.EVT_SET_FOCUS`."""
         last = self.GetLastPosition()
         self.SetInsertionPoint(last)
         self.SetSelection(0, last)
         self.ShowSecondColour()
 
     def OnKillFocus(self, ev):
+        """Listens to `wx.EVT_KILL_FOCUS`."""
         self.SetSelection(0,0)
         self.ShowFirstColour()
         
@@ -275,8 +329,6 @@ def DumpSizerChildren(sizer, depth=1, full=False):
     be `1` when called from outside itself.
     * `full: ` set to `True` to print full object information, including
     memory address.
-
-    `returns: ` `None`.
     """
     # prepare the info string for the sizer
     # indentation

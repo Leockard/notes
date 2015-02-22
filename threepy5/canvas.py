@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 """
 A window that can be drawn over in a free-hand style, with a custom
-background. In threepy5, every Page has a Canvas, whose background is
-set as the current view in that Page's Board. The overall result is that
-the user can hand-draw "over" the Board. Some code copied from wxPython
+background. In threepy5, every `Page` has a `Canvas`, whose background is
+set as the current view in that `Page`'s `Board`. The overall result is that
+the user can hand-draw "over" the `Board`. Some code copied from wxPython
 demo code app doodle.py: http://www.wxpython.org/download.php.
 """
 
@@ -16,8 +16,14 @@ from utilities import AutoSize
 ######################
 
 class CanvasBase(wx.StaticBitmap):
-    """CanvasBase is a StaticBitmap over which the user can draw by free-hand."""
+    """`CanvasBase` is a `wx.StaticBitmap` over which the user can draw by free-hand."""
+    
     def __init__(self, parent, bitmap=wx.NullBitmap):
+        """Constructor.
+
+        * `parent: ` the parent `wx.Window`.
+        * `bitmap: ` the wx.Bitmap to set as background. By default is `wx.NullBitmap`.
+        """
         super(CanvasBase, self).__init__(parent, bitmap=bitmap, style=wx.BORDER_NONE)
         self.thickness = 1
         self.colour = "BLACK"
@@ -37,9 +43,17 @@ class CanvasBase(wx.StaticBitmap):
     ### Behavior functions
     
     def SetOffset(self, pt):
+        """Set the offset.
+
+        * `pt: ` a (x, y) point.
+        """
         self.offset = pt
 
     def GetOffset(self):
+        """Get the current offset.
+
+        `returns: ` a (x, y) point.
+        """
         return self.offset
 
     def DrawLines(self):
@@ -79,17 +93,17 @@ class CanvasBase(wx.StaticBitmap):
     ### Callbacks
 
     def OnLeftDown(self, ev):
-        """Called when the left mouse button is pressed"""
+        """Listens to `wx.EVT_LEFT_DOWN` events."""
         self.curLine = []
         self.pos = ev.GetPosition()
 
     def OnLeftUp(self, ev):
-        """Called when the left mouse button is released"""
-        "CanvasBase.LeftUp"
+        """Listens to `wx.EVT_LEFT_UP` events."""
         self.lines.append((self.colour, self.thickness, self.curLine))
         self.curLine = []
             
     def OnMotion(self, ev):
+        """Listens to `wx.EVT_MOTION` events."""
         if ev.Dragging() and ev.LeftIsDown():
             # BufferedDC will paint first over self.GetBitmap()
             # and then copy everything to ClientDC(self)
@@ -119,9 +133,15 @@ class CanvasBase(wx.StaticBitmap):
 ######################
 
 class Canvas(AutoSize):
-    """An AutoSize object (which is a wx.Panel through wx.ScrolledWindow) which holds a Canvas as its only child."""
+    """An `AutoSize` object which holds a `Canvas` as its only child."""
     
     def __init__(self, parent, size=wx.DefaultSize, pos=wx.DefaultPosition):
+        """Constructor.
+
+        * `parent: ` the parent `wx.Window`.
+        * `pos: ` by default, is `wx.DefaultSize`.
+        * `size: ` by default, is `wx.DefaultPosition`.
+        """
         super(Canvas, self).__init__(parent)
 
         # controls        
@@ -142,31 +162,47 @@ class Canvas(AutoSize):
     ### Behavior functions
 
     def SetOffset(self, pt):
+        """Set the offset.
+
+        * `pt: ` a (x, y) point.
+        """
         self.ctrl.SetOffset(pt)
 
     def GetOffset(self):
+        """Get the current offset.
+
+        `returns: ` a (x, y) point.
+        """
         return self.ctrl.GetOffset()
 
     def SetBackground(self, bmp):
-        """Call to show the part that will be seen."""
+        """Set the background over which to draw.
+
+        * `bmp: ` a `wx.Bitmap` to serve as background.
+        """
         if bmp:
             self.ctrl.SetBitmap(bmp)
             self.FitToChildren()
 
+            
     ### Auxiliary functions
 
     def Dump(self):
-        """Unlike many other controls that dump a dict, we are dumping a list."""
+        """Returns a `list` with all the info contained in this `Canvas`.
+
+        `returns: ` a `list` of the form [(colour1, thickness1, [pt11, pt12, ...]), (colour2, thickness2, [pt21, pt22, ...]), ...].
+        """
         return self.ctrl.lines
 
     def Load(self, li):
-        """Load from a list got from Canvas.Dump()"""
+        """Load from a `list` returned by `Canvas.Dump`."""
         self.ctrl.lines = li
 
 
     ### Callbacks
 
     def OnShow(self, ev):
+        """Listens to `wx.EVT_SHOW` events."""
         if ev.IsShown():
             self.ctrl.DrawLines()
 

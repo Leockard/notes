@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 """
-This module holds the Board and its helper SelectionManager.
-Board is the window that holds all Cards. Every Page has a Board.
-SelectionManager handles selection.
+This module holds the `Board` and its helper class `SelectionManager`.
+`Board` is the window that holds all `Card`s. Every `Page` has a `Board`.
+`SelectionManager` handles selection.
 """
 
 import wx
@@ -21,8 +21,8 @@ __pdoc__ = {}
 
 class Board(AutoSize):
     """
-    Board is the parent window of all Cards. It handles position, selection,
-    arrangement, and listens to individual Cards' events, so that Page
+    `Board` is the parent window of all `Card`s. It handles position, selection,
+    arrangement, and listens to individual Cards' events, so that `Page`
     only needs to listen to Board events.
     """
                 
@@ -284,8 +284,6 @@ class Board(AutoSize):
 
         `dx: ` the amount of pixels to move in the X direction.
         `dy: ` the amount of pixels to move in the Y direction.
-
-        `returns: ` `None`.
         """
         card.MoveBy(dx, dy)
 
@@ -301,8 +299,6 @@ class Board(AutoSize):
 
         * `card: ` the `Card` to select.
         * `new_sel: ` if `True`, unselects all other `Card`s before selecting `card`.
-
-        `returns: ` `None`.
         """
         self.selec.SelectCard(card, new_sel)
 
@@ -310,15 +306,11 @@ class Board(AutoSize):
         """Unselect the specified `Card`.
 
         * `card: ` the `Card` to unselect.
-
-        `returns: ` `None`.
         """
         self.selec.UnselectCard(card)
 
     def UnselectAll(self):
         """Unselect all `Card`s.
-
-        `returns: ` `None`.
         """
         self.selec.UnselectAll()
         self.selec.Deactivate()
@@ -328,22 +320,16 @@ class Board(AutoSize):
 
         * `group: ` a `CardGroup` to select.
         * `new_sel: ` if `True`, unselects all other `Card`s before selecting.
-
-        `returns: ` `None`.
         """
         self.selec.SelectGroup(group, new_sel)
 
     def DeleteSelected(self):
         """Deletes every `Card` currently selected.
-
-        `returns: ` `None`.
         """
         self.selec.DeleteSelected()
 
     def CopySelected(self):
         """Copies every `Card` currently selected to `wx.TheClipboard`.
-
-        `returns: ` `None`.
         """
         # get the data
         data = []
@@ -361,8 +347,6 @@ class Board(AutoSize):
 
     def PasteFromClipboard(self, pos=wx.DefaultPosition):
         """Pastes every `Card` currently in `wx.TheClipboard`.
-
-        `returns: ` `None`.
         """
         if wx.TheClipboard.Open():
             # get data
@@ -414,8 +398,6 @@ class Board(AutoSize):
 
     def GroupSelected(self):
         """Creates a new `CardGroup` with the selected `Card`s as members.
-
-        `returns: ` `None`.
         """
         sel = self.GetSelection()
         if sel: self.NewGroup(sel)
@@ -424,8 +406,6 @@ class Board(AutoSize):
         """Scroll in both direction so that `card` is fully in view.
 
         * `card: ` a `Card` to scroll to.
-        
-        `returns: ` `None`.
         """
         rect = card.GetRect()
         pt = rect.GetBottomRight()
@@ -443,8 +423,6 @@ class Board(AutoSize):
         this function twice, on a `Card`'s corner points.
 
         * `pt: ` a (x, y) point.
-
-        `returns: ` `None`.
         """
         step = self.SCROLL_STEP
 
@@ -490,8 +468,6 @@ class Board(AutoSize):
         """Arranges the selected cards according to `orient`.
 
         * `orient: ` must be one of `Board.HORIZONTAL` or `Board.VERTICAL`.
-
-        `returns: ` `None`.
         """
         if   orient == Board.HORIZONTAL:
             self.HArrangeSelectedCards()
@@ -501,8 +477,6 @@ class Board(AutoSize):
     def HArrangeSelectedCards(self):
         """Same as `Board.ArrangeSelection(Board.HORIZONTAL)`. Arranges `Card`s
         in a horizontal row, to the right of the left-most selected card.
-
-        `returns: ` `None`.
         """
         if len(self.GetSelection()) < 1: return
 
@@ -526,8 +500,6 @@ class Board(AutoSize):
     def VArrangeSelectedCards(self):
         """Same as `Board.ArrangeSelection(Board.VERTICAL)`. Arranges `Card`s
         in a vertical column, below of the top-most selected card.
-
-        `returns: ` `None`.
         """
         if len(self.GetSelection()) < 1: return
 
@@ -816,8 +788,6 @@ class Board(AutoSize):
         * `thick: ` line thickness. By default, is `Board.MOVING_RECT_THICKNESS`.
         * `style: ` a `dc.Pen` style. Use `wx.TRANSPARENT` to erase a rectangle.
         * `refresh: ` whether to call `Refresh` after the rectangle is painted.
-
-        `returns: ` `None`.
         """
         dc = wx.ClientDC(self)
         # Brush is for background, Pen is for foreground
@@ -834,8 +804,6 @@ class Board(AutoSize):
         * `thick: ` line thickness. By default, is `Board.MOVING_RECT_THICKNESS`.
         * `style: ` a `dc.Pen` style. Use `wx.TRANSPARENT` to erase a rectangle.
         * `refresh: ` whether to call `Refresh` after the rectangle is painted.
-
-        `returns: ` `None`.
         """
         x, y, w, h = card.GetRect()
         rect = wx.Rect(pos[0], pos[1], w, h)
@@ -849,8 +817,6 @@ class Board(AutoSize):
         * `pos: ` where to paint the rectangle.
         * `thick: ` line thickness. By default, is `Board.MOVING_RECT_THICKNESS`.
         * `refresh: ` whether to call `Refresh` after the rectangle is painted.
-
-        `returns: ` `None`.
         """
         # Brush is for background, Pen is for foreground
         x, y, w, h = card.GetRect()        
@@ -859,9 +825,9 @@ class Board(AutoSize):
         self.PaintRect(rect, thick=thick, style=wx.TRANSPARENT, refresh=refresh)
     
     def DumpCards(self):
-        """Dumps all the `Card`s' info in a dict.
+        """Dumps all the `Card`s' info in a `dict`.
 
-        `returns: ` a dict of the form {id1: data1, id2: data2, ...}.
+        `returns: ` a `dict` of the form {id1: data1, id2: data2, ...}.
         """
         carddict = {}
 
@@ -883,27 +849,25 @@ class Board(AutoSize):
         return carddict
 
     def DumpGroups(self):
-        """Dumps all the `CardGroup`s' info in a dict.
+        """Dumps all the `CardGroup`s' info in a `dict`.
 
-        `returns: ` a dict of the form {label1: data1, label2: data2, ...}.
+        `returns: ` a `dict` of the form {label1: data1, label2: data2, ...}.
         """
         d = {}
         for g in self.groups: d[g.GetLabel()] = g.Dump()
         return d
 
     def Dump(self):
-        """Returns a dict with all the info contained in this Board.
+        """Returns a `dict` with all the info contained in this `Board`.
 
-        `returns: ` a dict of the form {"cards": self.DumpCards(), "groups": self.DumpGroups()}.
+        `returns: ` a `dict` of the form {"cards": self.DumpCards(), "groups": self.DumpGroups()}.
         """
         return {"cards": self.DumpCards(), "groups": self.DumpGroups()}
 
     def Load(self, d):
-        """Read a dict and load all its data.
+        """Read a `dict` and load all its data.
 
-        * `d: ` a dict in the format returned by `Board.Dump`.
-
-        `returns: ` `None`.
+        * `d: ` a `dict` in the format returned by `Dump`.
         """
         if "cards" in d.keys():
             # note we are not loading the wx id of the windows
@@ -928,9 +892,9 @@ class Board(AutoSize):
                                 
 class SelectionManager(wx.Window):
     """
-    SelectionManager is an invisible window that positions itself on the top left corner of a Board
+    `SelectionManager` is an invisible window that positions itself on the top left corner of a `Board`
     and gets focus every time a card is (or many cards are) selected. This is done to hide carets
-    and selections from other controls while selection is active. SelectionManager also manages
+    and selections from other controls while selection is active. `SelectionManager` also manages
     card selection by managing key down events, such as arrow keys to move selection, shift + arrow
     keys to extend selection, etc.
     """
@@ -955,8 +919,6 @@ class SelectionManager(wx.Window):
 
     def Activate(self):
         """Prepare this object to manage selection.
-
-        `returns: ` `None`.
         """
         self.Bind(wx.EVT_KEY_DOWN, self.OnKeyDown)
         self.SetFocus()
@@ -965,8 +927,6 @@ class SelectionManager(wx.Window):
     def Deactivate(self):
         """Signal this object to stop managing selection. All `Card`s in the
         current selection are unselected.
-
-        `returns: ` `None`.
         """
         # return focus to the last card
         if self.last:
@@ -998,8 +958,6 @@ class SelectionManager(wx.Window):
         """Selects `card`.
 
         * `new_sel: ` if `True`, unselects all other `Card`s before selecting `card`.
-
-        `returns: ` `None`.
         """
         # if new_sel, select only this card
         if new_sel:
@@ -1023,8 +981,6 @@ class SelectionManager(wx.Window):
         """Removes `card` from the current selection.
 
         * `card: ` a `Card`.
-
-        `returns: ` `None`.
         """
         if card in self.cards:
             self.cards.remove(card)
@@ -1033,8 +989,6 @@ class SelectionManager(wx.Window):
     def UnselectAll(self):
         """Unselects all cards. Be sure to call this method instead of
         `Unselect` on every card for proper cleanup.
-
-        `returns: ` `None`.
         """
         while len(self.cards) > 0:
             c = self.cards[0]
@@ -1045,16 +999,12 @@ class SelectionManager(wx.Window):
 
         * `group: ` a `CardGroup` to select.
         * `new_sel: ` if `True`, unselects all other `Card`s before selecting.
-
-        `returns: ` `None`.
         """
         if new_sel: self.UnselectAll()
         for c in group.GetMembers(): self.SelectCard(c)
 
     def DeleteSelected(self):
         """Deletes every `Card` currently selected.
-
-        `returns: ` `None`.
         """
         # store the number of cards we're deleting to raise the event
         number = len(self.cards)
@@ -1081,8 +1031,6 @@ class SelectionManager(wx.Window):
         * `direc: ` direc should be one of `Board.LEFT`, `Board.RIGHT`, `Board.UP`, or `Board.DOWN`.
         * `new_sel: ` if `True`, unselect all others and select only the next card,
         if `False`, add it to current selection.
-
-        `returns: ` `None`.
         """
         nxt = self.GetParent().GetNextCard(self.last, direc)
         if nxt:
@@ -1093,8 +1041,6 @@ class SelectionManager(wx.Window):
 
         `dx: ` the amount of pixels to move in the X direction.
         `dy: ` the amount of pixels to move in the Y direction.
-
-        `returns: ` `None`.
         """
         for c in self.GetSelection():
             self.GetParent().MoveCard(c, dx, dy)

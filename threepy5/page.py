@@ -1,8 +1,7 @@
 # -*- coding: utf-8 -*-
 """
-A Page is a window that holds both a Board and a Canvas to draw over that Board.
-It also has classes for closer inspection of individual Cards or the whole Board:
-CardInspect, BoardInspect, TagsInspect.
+A `Page` is a window that holds both a `Board` and a `Canvas` to draw over that `Board`.
+It also has facilities for closer inspection of individual objects.
 """
 
 import wx
@@ -19,7 +18,17 @@ import wx.lib.agw.flatnotebook as fnb
 ######################
 
 class Page(wx.Panel):
-    """A Page holds all the main items to create, edit and visualize a collection of Cards."""
+    """A `Page` holds all the main items to create, edit and visualize a collection of `Card`s.
+    The window that takes center stage in a `Page` by default is a `Board`. Associated to it is
+    a `Canvas`, and one can toggle between the two with a button in the tool bar. `Page` also
+    handles the sidebars (`TagsInspect`), the "minimap" (`BoardInspect`), and the `Card` inspection
+    view (`CardInspect`).
+
+    The `Board`, `Canvas` and `CardInspect` (and possibly others) seemingly hold the same position
+    in the `Page`. This is achieved by having a sizer for them (`content_sizer`) and constantly
+    adding and deleting these objects from it. All the objects that can be shown in this main sizer
+    are stored in the attribute `contents`.
+    """
     
     CARD_PADDING = Board.CARD_PADDING
     PIXELS_PER_SCROLL = 20
@@ -32,8 +41,14 @@ class Page(wx.Panel):
     CancelInspectEvent, EVT_PAGE_CANCEL_INSPECT = ne.NewEvent()
     DeleteEvent, EVT_PAGE_DEL_CARD = ne.NewEvent()
 
-    def __init__(self, parent, id=wx.ID_ANY, pos=wx.DefaultPosition, size = wx.DefaultSize):
-        super(Page, self).__init__(parent, id=id, pos=pos, size=size)
+    def __init__(self, parent, pos=wx.DefaultPosition, size = wx.DefaultSize):
+        """Constructor.
+
+        * `parent: ` the parent `Book`.
+        * `pos: ` by default, is `wx.DefaultSize`.
+        * `size: ` by default, is `wx.DefaultSize`.
+        """
+        super(Page, self).__init__(parent, pos=pos, size=size)
 
         # members
         self.contents = []
@@ -53,11 +68,17 @@ class Page(wx.Panel):
     ### Behavior functions
 
     def GetCurrentContent(self):
-        """Returns the class of content currently showing in conten_sizer."""
+        """Get the class of the object currently residing in `content_sizer`.
+
+        `returns: ` the __class__ attribute of the object.
+        """
         return self.content_sizer.GetChildren()[0].GetWindow().__class__
 
     def ShowContent(self, ctrl):
-        """Shows the ctrl inside content_sizer."""
+        """Assings the object to show inside `content_sizer`.
+
+        * `ctrl: ` any element of self.contents.
+        """
         # remove all children and add only ctrl in the content area
         # ctrl should be a member of self.contents
         self.content_sizer.Clear()
@@ -69,6 +90,11 @@ class Page(wx.Panel):
         self.GetTopLevelParent().SetFocus()
 
     def InspectCards(self, cards):
+        """Set up the children to show the `CardInspect` inspecting `cards`.
+        Raises `Page.EVT_PAGE_INSPECT`.
+
+        * `cards: ` a list of `Card`s.
+        """
         toinspect = cards[:]
 
         # make sure to first SetCards() and then Deactivate()
@@ -90,6 +116,7 @@ class Page(wx.Panel):
         self.GetEventHandler().ProcessEvent(event)
 
     def CancelInspect(self):
+        """Cleans up after a `Card` inspection. Raises `Page.EVT_PAGE_CANCEL_INSPECT`."""
         # raise the event
         cards = self.view_card.GetCards()
         number = len(cards)
@@ -106,6 +133,7 @@ class Page(wx.Panel):
         self.inspect.SetLabel("Inspect")
 
     def ShowBoard(self):
+        """Show the `Board` in the `content_sizer`."""
         # remember that self.board is a Board
         # but we added the parent Board object to our Sizer
         self.ShowContent(self.board)
@@ -114,35 +142,45 @@ class Page(wx.Panel):
             cards[0].SetFocus()
 
     def ShowCanvas(self):
+        """Show the `Canvas` in the `content_sizer`."""
         self.ShowContent(self.canvas)
         view = self.board.GetViewStart()
         self.canvas.Scroll(view)
 
     def ShowMinimap(self):
-        """
-        Show the minimap. Note that the minimap is not considered
-        a "content".  Be sure to use this method and not inspect.Show(),
+        """Show the `BoardInspect`. Note that the minimap is not in `self.contents`, so it
+        isn't added to `content_sizer`. Be sure to use this method and not self.minimap.Show(),
         as we also calculate the position before showing.
         """
         self.minimap.Show()
 
     def HideMinimap(self):
-        """Hide the minimap. Note that the minimap is not considered a "content"."""
+        """Hide the `BoardInspect` minimap. Note that the minimap is not in `self.contents`."""
         self.minimap.Hide()
 
     def ToggleMinimap(self):
+        """Hide/Show the `BoardInspect` minimap. Note that the minimap is not in `self.contents`."""
         mp = self.minimap
         if mp.IsShown(): self.HideMinimap()
         else:            self.ShowMinimap()
 
     def ShowToolBar(self, show=True):
+        """Show the button bar at the bottom of the `Page`."""
         self.GetSizer().Show(self.GetToolBarSizer(), show=show, recursive=True)
         self.Layout()
 
     def GetToolBarSizer(self):
+        """Get the button bar sizer.
+
+        `returns: ` a `wx.Sizer`.
+        """
         return self.toolbar
 
     def GetBoardBmp(self):
+        """Get the currently visible part of the `Board` as a wx.Bitmap.
+
+        `returns: ` a `wx.Bitmap`.
+        """
         # get the current board as a bitmap
         sz = self.board.GetClientSize()
         bmp = None
@@ -162,7 +200,7 @@ class Page(wx.Panel):
         return bmp
 
     def SetupCanvas(self):
-        """Setup the canvas background. Call before showing the Canvas."""
+        """Setup the `Canvas` background. Always call before showing the `Canvas`."""
         # set sizes
         self.canvas.SetSize(self.board.GetSize())
         sz = self.board.content_sz
@@ -174,6 +212,10 @@ class Page(wx.Panel):
         self.canvas.SetBackground(self.GetBoardBmp())
 
     def ShowSidebar(self, show=True):
+        """Show/Hide the sidebar.
+
+        * `show: ` if `False`, hide the sidebar.
+        """
         self.sidebar_sizer.Clear()
         for c in self.sidebars: c.Hide()
 
@@ -184,12 +226,17 @@ class Page(wx.Panel):
         self.Layout()
 
     def HideSidebar(self):
+        """Same as ShowSidebar(False)."""
         self.ShowSidebar(False)
 
                         
     ### Auxiliary functions
     
     def Dump(self):
+        """Returns a `dict` with all the info contained in this `Page`.
+
+        `returns: ` a `dict` of the form {"board": Board.Dump(), "canvas": Canvas.Dump()}.
+        """
         # get the board dump dict and process it
         board_di = self.board.Dump()
         
@@ -221,11 +268,18 @@ class Page(wx.Panel):
         return di
 
     def Load(self, di):
+        """Read a `dict` and load all its data.
+
+        * `di: ` a `dict` in the format returned by `Dump`.
+        """
         self.board.Load(di["board"])
         self.canvas.Load(di["canvas"])
 
     def CleanUpUI(self):
-        """Resets all control member values. Returns previous Board size."""
+        """Helper function for `InitUI`. Resets all control members.
+
+        `returns: ` the previous `Board` size.
+        """
         sz = self.board.GetParent().GetSize()
         self.board.Hide() # important!
         self.board = None
@@ -237,6 +291,7 @@ class Page(wx.Panel):
         return sz
     
     def InitUI(self):
+        """Initialize this `Page`'s GUI and controls."""
         # cleanup the previous UI, if any
         if self.ui_ready:
             sz = self.CleanUpUI()
@@ -259,6 +314,7 @@ class Page(wx.Panel):
         self.ui_ready = True
 
     def InitAccels(self):
+        """Initializes the `wx.AcceleratorTable`."""
         # we create ghost menus so that we can
         # bind its items to some accelerators
         accels = []
@@ -272,6 +328,7 @@ class Page(wx.Panel):
         self.SetAcceleratorTable(wx.AcceleratorTable(accels))
 
     def InitSizers(self):
+        """Initializes `sidebar_sizer` and `content_sizer`."""
         # main sizer, with two main regions: data (dbox) and buttons (bbox)
         vbox = wx.BoxSizer(wx.VERTICAL)
         dbox = wx.BoxSizer(wx.HORIZONTAL)
@@ -293,6 +350,7 @@ class Page(wx.Panel):
         self.content_sizer = cbox
 
     def InitBoard(self, size=wx.DefaultSize):
+        """Initializes `Board`."""
         # make board
         bd = Board(self, size=size)
         
@@ -311,12 +369,14 @@ class Page(wx.Panel):
         self.contents.append(bd)        
 
     def InitCanvas(self, size=wx.DefaultSize):
+        """Initializes `Canvas`."""
         cv = Canvas(self, size=size)
         self.canvas = cv
         self.canvas.Hide()
         self.contents.append(cv)
 
     def InitInspect(self, size=wx.DefaultSize):
+        """Initializes `CardInspect`."""
         vw = CardInspect(self, size=size)
         self.view_card = vw
         self.view_card.Hide()
@@ -326,6 +386,7 @@ class Page(wx.Panel):
         vw.Bind(Card.EVT_CARD_CANCEL_INSPECT, self.OnCancelInspect)
 
     def InitSidebar(self, size=wx.DefaultSize):
+        """Initializes `TagsInspect`."""
         tg = TagsInspect(self, self.board)
         self.tags_sb = tg
         self.tags_sb.Hide()
@@ -336,6 +397,7 @@ class Page(wx.Panel):
         self.sidebars.append(tg)
 
     def InitButtonBar(self):
+        """Initializes the tool bar."""
         # controls
         self.inspect = wx.Button(self, label = "Inspect")
         self.inspect.Bind(wx.EVT_BUTTON, self.OnInspect)
@@ -371,27 +433,33 @@ class Page(wx.Panel):
     ### Callbacks
 
     def OnToggleSidebar(self, ev):
+        """Listens to `F9`."""
         self.ShowSidebar(not self.tags_sb.IsShown())
 
     def OnRequestInspect(self, ev):
+        """Listens to `Card.EVT_CARD_REQUEST_INSPECT` from `Board`."""
         card = ev.GetEventObject()
         self.board.SelectCard(card, True)
         self.InspectCards([card])
 
     def OnCancelInspect(self, ev):
+        """Listens to `Card.EVT_CARD_CANCEL_INSPECT` from `Card`s that are being inspected."""
         self.CancelInspect()
         ev.GetEventObject().SetFocus()
         
     def OnDelete(self, ev):
+        """Listens to `Board.EVT_BOARD_DEL_CARD`."""
         event = self.DeleteEvent(id=wx.ID_ANY, number=ev.number)
         event.SetEventObject(self)
         self.GetEventHandler().ProcessEvent(event)
 
     def OnSize(self, ev):
+        """Listens to `wx.EVT_SIZE`."""
         # important to skip the event for Sizers to work correctly
         ev.Skip()
 
     def OnInspect(self, ev):
+        """Listens to `wx.EVT_BUTTON` from the inspect button in the button bar."""
         content = self.GetCurrentContent()
         if content == Board:
             sel = self.board.GetSelection()
@@ -404,6 +472,7 @@ class Page(wx.Panel):
             self.view_card.GetCards()[-1].CancelInspect()
 
     def OnToggle(self, ev):
+        """Listents to `wx.EVT_BUTTON` from the `Board`/`Canvas` button in the button bar"""
         if self.GetCurrentContent() == Board:
             self.SetupCanvas()
             self.ShowCanvas()
@@ -414,7 +483,12 @@ class Page(wx.Panel):
         self.Layout()
 
     def GetScaleFromStr(self, s):
-        """s should be a string of the type \d\d\d%?. Returns the float corresponding to the scale s."""
+        """Parses a string to extract a scale.
+        
+        * `s: ` is be a string of the type "\d\d\d?%?" (eg, "100%" or "75").
+        
+        `returns: `the float corresponding to the scale.
+        """
         scale = 1.0
         if isnumber(s):
             scale = float(s)/100
@@ -423,14 +497,19 @@ class Page(wx.Panel):
         return scale
         
     def OnZoomCombo(self, ev):
-        """Called when an item in the zoom combo box is selected."""
+        """Listens to `wx.EVT_COMBOBOX` from the zoom combo box in the button bar."""
         self.Zoom(self.GetScaleFromStr(ev.GetString()))
 
     def OnZoomEnter(self, ev):
+        """Listens to `wx.EVT_TEXT_ENTER` from the zoom combo box in the button bar."""
         self.Zoom(self.GetScaleFromStr(ev.GetString()))
 
     def Zoom(self, new_scale):
-        """Zoom is actually a change of scale of all relevant coordinates."""
+        """Zoom in or out the current `Board`. Effectively changes the scale of all
+        relevant coordinates.
+
+        * `new_scale: ` the new scale for all `Card`s.
+        """
         # save the scroll position and go to origin
         # so that all the cards' coordinates are absolute
         scroll_pos = self.board.GetViewStart()
@@ -456,18 +535,21 @@ class Page(wx.Panel):
         self.scale = new_scale            
 
     def ZoomIn(self):
+        """Zoom in to the next greater scale in `self.ZOOM_CHOICES`."""
         chs = self.ZOOM_CHOICES
         new = chs.index(self.zoom.GetValue()) - 1
         if new > -1 and new < len(chs):
             self.Zoom(self.GetScaleFromStr(chs[new]))
 
     def ZoomOut(self):
+        """Zoom out to the next smaller scale in `self.ZOOM_CHOICES`."""
         chs = self.ZOOM_CHOICES
         new = chs.index(self.zoom.GetValue()) + 1
         if new > -1 and new < len(chs):
             self.Zoom(self.GetScaleFromStr(chs[new]))
 
     def OnView(self, ev):
+        """Listens to `wx.EVT_CHOICE` from the view contents by kind combo box in the button bar."""
         s = ev.GetString()
         if s == "All":
             show = self.board.GetCards()
@@ -487,14 +569,20 @@ class Page(wx.Panel):
 
 class Book(wx.Notebook):
     """
-    A Book holds various Pages, and is the equivalent of a file at
-    application level: every Book is stored in one file and every file loads
-    one Book.
+    A `Book` holds various `Page`s, and is the equivalent of a file at
+    application level: every `Book` is stored in one file and every file loads
+    one `Book`.
     """
 
     NewPageEvent, EVT_BK_NEW_PAGE = ne.NewEvent()
 
     def __init__(self, parent, pos=wx.DefaultPosition, size=wx.DefaultSize):
+        """Constructor.
+
+        * `parent: ` the parent `ThreePyFiveFrame`.
+        * `pos: ` by default, is `wx.DefaultSize`.
+        * `size: ` by default, is `wx.DefaultSize`.
+        """
         super(Book, self).__init__(parent, pos=pos, size=size)
         self.InitMenu()
 
@@ -502,6 +590,10 @@ class Book(wx.Notebook):
     ### Behavior functions
 
     def NewPage(self):
+        """Creates a new `Page`, by asking the user for the `Page` name.
+
+        `returns: ` `True` if a new `Page` was succesfully created.
+        """
         dlg = wx.TextEntryDialog(self, "New page title: ")
         if dlg.ShowModal() == wx.ID_OK:
             pg = Page(self)
@@ -512,7 +604,7 @@ class Book(wx.Notebook):
             return False
 
     def AddPage(self, page, text, select=False, imageId=wx.Notebook.NO_IMAGE):
-        """Call the usual wx.Notebook.AddPage, and also raise the EVT_NB_NEW_PAGE event."""
+        """Overridden from `wx.Book`. Raises the `Bool.EVT_NB_NEW_PAGE` event."""
         super(Book, self).AddPage(page, text, select, imageId)
         
         event = self.NewPageEvent(id=wx.ID_ANY, page=page, title=text)
@@ -523,6 +615,7 @@ class Book(wx.Notebook):
     ### Auxiliary functions
 
     def InitMenu(self):
+        """Initialize this `Book`'s context menu."""
         # make menu items
         menu = wx.Menu()
         self.Bind(wx.EVT_RIGHT_DOWN, self.OnRightDown)
@@ -553,6 +646,11 @@ class Book(wx.Notebook):
         self.menu = menu
         
     def Dump(self):
+        """Return a `dict` holding all this `Book`'s data.
+        
+        `returns: ` a `dict` of the form `{"page title 1": data1, "page title 2": data2, ...}`,
+        where `data*` are the objects returned by each `Page`'s `Dump`.
+        """
         di = {}
         for i in range(self.GetPageCount()):
             pg = self.GetPage(i)
@@ -560,6 +658,10 @@ class Book(wx.Notebook):
         return di
 
     def Load(self, di):
+        """Read data from a `dict` and load it into this `Book` for displaying.
+
+        * `di: ` must be a `dict`in the format returned by `Dump`.
+        """
         for title, page in di.iteritems():
             pg = Page(self)
             pg.Hide()        # hide while all data is loaded
@@ -572,6 +674,7 @@ class Book(wx.Notebook):
     ### Callbacks
 
     def OnPageForward(self, ev):
+        """Listens to `wx.EVT_MENU` from "Move page forward" from the context menu."""
         # if we're already on the last page, don't do anything
         index = self.GetSelection()
         if index == self.GetPageCount()-1:
@@ -585,6 +688,7 @@ class Book(wx.Notebook):
         print "OnPageForward: ", pg
 
     def OnClose(self, ev):
+        """Listens to `wx.EVT_MENU` from "Close page" from the context menu."""
         cur = self.GetSelection()
         title = self.GetPageText(cur)
         dlg = wx.MessageDialog(self, "Are you sure you want to delete " + title + " page?", style=wx.YES_NO)
@@ -592,12 +696,14 @@ class Book(wx.Notebook):
             self.DeletePage(cur)
 
     def OnNameChange(self, ev):
+        """Listens to `wx.EVT_MENU` from "Change current page name" from the context menu."""
         dlg = wx.TextEntryDialog(self, "New page title: ")
         if dlg.ShowModal() == wx.ID_OK:
             cur = self.GetSelection()
             self.SetPageText(cur, dlg.GetValue())            
             
     def OnRightDown(self, ev):
+        """Listens to `wx.wx.EVT_RIGHT_DOWN`."""
         self.menu_position = ev.GetPosition()
         self.PopupMenu(self.menu, ev.GetPosition())
 

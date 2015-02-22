@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Main frame object for note taking application threepy5.
+Main frame object for note taking application `threepy5`.
 """
 
 import wx
@@ -18,14 +18,21 @@ import re
 
 class ThreePyFiveFrame(wx.Frame):
     """
-    A ThreePyFiveFrame holds a `WelcomePage` at startup, until a `Book` is loaded.
+    A `ThreePyFiveFrame` holds a `WelcomePage` at startup, until a `Book` is loaded.
     """
     
     DEFAULT_SZ = (800, 600)
     DEFAULT_PAGE_NAME = "Untitled Notes"
     CLEAN_STATUS_BAR_AFTER_MS = 5000
 
-    def __init__(self, parent, title="Board", size=DEFAULT_SZ, style=wx.DEFAULT_FRAME_STYLE|wx.NO_FULL_REPAINT_ON_RESIZE):
+    def __init__(self, parent, title="3py5", size=DEFAULT_SZ, style=wx.DEFAULT_FRAME_STYLE|wx.NO_FULL_REPAINT_ON_RESIZE):
+        """Constructor.
+
+        * `parent: ` the parent `Book`.
+        * `title: ` the title of this `ThreePyFiveFrame`.
+        * `size: ` by default, is `ThreePyFiveFrame.DEFAULT_SZ`.
+        * `style: ` by default, is `wx.DEFAULT_FRAME_STYLE|wx.NO_FULL_REPAINT_ON_RESIZE`.
+        """
         super(ThreePyFiveFrame, self).__init__(parent, title=title, size=size, style=style)
 
         self.SetTitle(self.DEFAULT_PAGE_NAME)
@@ -46,14 +53,19 @@ class ThreePyFiveFrame(wx.Frame):
     ### Behavior Functions
 
     def GetCurrentPage(self):
-        """Returns the active page, or None."""
+        """Get the `Page` currently selected in the loaded `Book`.
+
+        `returns: ` a `Page` or `None`.
+        """
         result = None
         if self.notebook:
             result = self.notebook.GetCurrentPage()
         return result
 
     def GetCurrentBoard(self):
-        """Returns the active board, or None."""
+        """Get the `Board` from the `Page` currently selected.
+
+        `returns: ` a `Board`, or `None`."""
         result = None
         pg = self.GetCurrentPage()
         if pg and hasattr(pg, "board"):
@@ -61,9 +73,9 @@ class ThreePyFiveFrame(wx.Frame):
         return result
 
     def Search(self, ev):
-        """
-        Search the current text in the search bar in all of the Cards' texts.
-        Cycle through finds with ctrl + G.
+        """Listens to `wx.EVT_TEXT` in the search bar. Search the current text in
+        the search bar in all of the Cards' texts. Cycle through finds
+        with (SHUFT+)CTRL+G.
         """
         # search string in lower case
         s = self.search_ctrl.GetValue().lower()
@@ -124,10 +136,11 @@ class ThreePyFiveFrame(wx.Frame):
             self.search_head = None
 
     def OnCancelSearch(self, ev):
-        """Called when the cancel button in the search control is pressed."""
+        """Listens to `wx.EVT_SEARCHCTRL_CANCEL_BTN` from the search bar."""
         self.CancelSearch()
 
     def CancelSearch(self):
+        """Cancel the current search. Restores highliting  and hides the search bar."""
         if self.search_find:
             # erase all highlight
             for c, i in self.search_find:
@@ -156,6 +169,7 @@ class ThreePyFiveFrame(wx.Frame):
         self.search_ctrl.Hide()
 
     def PrevSearchResult(self):
+        """Highlights the previous search result."""
         if self.search_head != None:
             old = i = self.search_head
             new = i - 1
@@ -164,7 +178,7 @@ class ThreePyFiveFrame(wx.Frame):
             self.search_head = new
 
     def NextSearchResult(self):
-        """Add a strong highlight and scroll to the next search result."""
+        """Highlights the next search result with a strong highlight and scrolls it into view."""
         if self.search_head != None:
             old = i = self.search_head
             new = i + 1
@@ -173,11 +187,11 @@ class ThreePyFiveFrame(wx.Frame):
             self.search_head = new
 
     def JumpSearchResults(self, old, new):
-        """
-        Unhighlights the old search result and highlights the new one.
-        old and new must be valid indices in the internal search results list.
-        This is just a convenience function for Prev- and NextSearchResult.
-        Use those ones instead.
+        """Unhighlights the `old` search result and highlights the `new` one. Don't use this
+        method directly, instead use `PrevSearchResult` and `NextSearchResult`.
+
+        * `old: ` a valid index in the internal search result list (`self.search_find`).
+        * `new: ` idem.
         """
         s = self.search_ctrl.GetValue()
 
@@ -206,6 +220,7 @@ class ThreePyFiveFrame(wx.Frame):
     ### Auxiliary functions
 
     def InitMenuBar(self):
+        """Initialize the menu bar and also sets the `wx.AcceleratorTable`."""
         bar = wx.MenuBar()
 
         ## file menu
@@ -315,10 +330,10 @@ class ThreePyFiveFrame(wx.Frame):
         self.Bind(wx.EVT_MENU, self.OnMenuInspectCard , inspc_it)
         self.Bind(wx.EVT_MENU, self.OnToggleMinimap   , tgmap_it)
 
-        self.Bind(wx.EVT_MENU, self.OnInsertContent , contr_it)
-        self.Bind(wx.EVT_MENU, self.OnInsertHeader  , headr_it)
-        self.Bind(wx.EVT_MENU, self.OnInsertContent , contb_it)
-        self.Bind(wx.EVT_MENU, self.OnInsertHeader  , headb_it)        
+        self.Bind(wx.EVT_MENU, self.OnInsertContentRight , contr_it)
+        self.Bind(wx.EVT_MENU, self.OnInsertContentBelow , contb_it)        
+        self.Bind(wx.EVT_MENU, self.OnInsertHeaderRight  , headr_it)
+        self.Bind(wx.EVT_MENU, self.OnInsertHeaderBelow  , headb_it)        
         self.Bind(wx.EVT_MENU, self.OnInsertImage   , img_it)
 
         self.Bind(wx.EVT_MENU, self.OnCtrlF      , search_it)
@@ -384,6 +399,7 @@ class ThreePyFiveFrame(wx.Frame):
         self.SetAcceleratorTable(wx.AcceleratorTable(accels))
 
     def InitSearchBar(self):
+        """Initializes the search bar, `self.search_ctrl`."""
         if not self.ui_ready:
             # make new
             ctrl = wx.SearchCtrl(self, style=wx.TE_PROCESS_ENTER)
@@ -406,6 +422,7 @@ class ThreePyFiveFrame(wx.Frame):
         self.search_ctrl = ctrl
 
     def InitToolBar(self):
+        """Initializes the toolbar."""
         toolbar = self.CreateToolBar(style=wx.TB_VERTICAL)
 
         # notebook and tab tools
@@ -438,6 +455,7 @@ class ThreePyFiveFrame(wx.Frame):
         self.Bind(wx.EVT_TOOL, self.OnPaste, pas_it)
 
     def InitUI(self):
+        """Initialize the GUI and controls."""
         sz = (20, 20)
         # # cleanup the previous UI, if any
         if self.ui_ready:
@@ -462,12 +480,14 @@ class ThreePyFiveFrame(wx.Frame):
         self.ui_ready = True
 
     def InitWelcome(self):
+        """Initialize the `WelcomPage` shown at startup."""
         panel = WelcomePage(self)
         vbox = self.GetSizer()
         vbox.Add(panel, proportion=1, flag=wx.EXPAND)
         self.welcome = panel
 
-    def InitNotebook(self, size = wx.DefaultSize):
+    def InitNotebook(self, size=wx.DefaultSize):
+        """Initialize the `Book` and delete the `WelcomePage`."""
         # delete the welcome page
         # at this point, self.GetSizer() should only have the WelcomePage
         box = self.GetSizer()
@@ -491,37 +511,34 @@ class ThreePyFiveFrame(wx.Frame):
         box.Layout()
         self.notebook = nb
 
-    def CreateBitmap(self):
-        """Take a picture of the current card board."""
-        # Create a DC for the whole screen area
-        rect = self.GetCurrentBoard().GetScreenRect()
-        bmp = wx.EmptyBitmap(rect.width, rect.height)
-
-        dc = wx.MemoryDC() # MemoryDCs are for painting over BMPs
-        dc.SelectObject(bmp)
-        dc.Blit(0, 0, rect.width, rect.height, wx.ScreenDC(),
-                 rect.x, rect.y) # offset in the original DC
-        dc.SelectObject(wx.NullBitmap)
-
-        return bmp
-
     def Log(self, s):
-        """Log the string s into the status bar."""
+        """Log the string `s` into the status bar.
+
+        `s: ` a string.
+        """
         self.StatusBar.SetStatusText(s)
         wx.CallLater(self.CLEAN_STATUS_BAR_AFTER_MS,
                      self.StatusBar.SetStatusText, "")
 
     def OnDebug(self, ev):
+        """CTRL+D"""
         print "---DEBUG---"
         print self.GetCurrentPage().Dump()
 
     def Save(self, out_file):
-        """Save the data in the out_file."""
+        """Save the current `Book` to disk.
+
+        * `out_file: ` path to the file.
+        """
         di =  self.notebook.Dump()
         with open(out_file, 'w') as out:
             pickle.dump(di, out)
 
     def Load(self, path):
+        """Load a `Book` from disk.
+
+        * `path: ` path to the file.
+        """
         with open(path, 'r') as f: d = pickle.load(f)
         self.notebook.Load(d)
         self.notebook.SetFocus()
@@ -530,32 +547,39 @@ class ThreePyFiveFrame(wx.Frame):
     ### Callbacks
 
     def OnNewPage(self, ev):
+        """Listens to `Book.EVT_BK_NEW_PAGE`."""
         ev.page.Bind(Page.EVT_PAGE_INSPECT, self.OnInspect)
         ev.page.Bind(Page.EVT_PAGE_CANCEL_INSPECT, self.OnCancelInspect)
         ev.page.board.Bind(Board.EVT_BOARD_DEL_CARD, self.AfterDelete)
         ev.page.board.Bind(Board.EVT_NEW_CARD, self.AfterCardCreated)
 
     def OnZoomIn(self, ev):
+        """Listens to `wx.EVT_MENU` from the zoom controls in the view menu."""
         self.GetCurrentPage().ZoomIn()
 
     def OnZoomOut(self, ev):
+        """Listens to `wx.EVT_MENU` from the zoom controls in the view menu."""
         self.GetCurrentPage().ZoomOut()
 
     def OnGroupSelection(self, ev):
+        """Listens to `wx.EVT_MENU` from "Group selection" in the "selection" menu."""
         self.GetCurrentBoard().GroupSelected()
 
     def OnToggleMinimap(self, ev):
+        """Listens to `wx.EVT_MENU` from "Show map" in the "view" menu."""
         self.GetCurrentPage().ToggleMinimap()
 
     def OnToggleCollapse(self, ev):
+        """Listens to `wx.EVT_MENU` from "(Un)Collapse card" in the "view" menu."""
         for c in [t for t in self.GetCurrentBoard().GetSelection() if isinstance(t, Content)]:
             c.ToggleCollapse()
 
     def OnViewPageBar(self, ev):
+        """Listens to `wx.EVT_MENU` from "Hide Page tool bar" in the "view" menu."""
         self.GetCurrentPage().ShowToolBar(show=ev.IsChecked())
 
     def OnMenuInspectCard(self, ev):
-        """Called by the View menu item."""
+        """Listens to `wx.EVT_MENU` from "Inspect card" in the "view" menu."""
         pg = self.GetCurrentPage()
         cont = pg.GetCurrentContent()
 
@@ -575,21 +599,25 @@ class ThreePyFiveFrame(wx.Frame):
             self.Log("Done inspecting.")
 
     def OnInspect(self, ev):
+        """Listens to `Page.EVT_PAGE_INSPECT` from every `Page` in the `Book`."""
         if ev.number == 1:
             self.Log("Inspecting \"" + ev.title + "\".")
         else:
             self.Log("Inspecting " + str(ev.number) + " cards.")
 
     def OnCancelInspect(self, ev):
+        """Listens to `Page.EVT_PAGE_CANCEL_INSPECT` from every `Page` in the `Book`."""
         self.Log("Done inspecting.")
 
     def OnSelectAll(self, ev):
+        """Listens to `wx.EVT_MENU` from "Select All" in the "selection" menu."""
         board = self.GetCurrentBoard()
         board.UnselectAll()
         for c in board.GetCards():
             board.SelectCard(c)
 
     def OnSelectCurrent(self, ev):
+        """Listens to `wx.EVT_MENU` from "Select Current" in the "selection" menu."""
         ctrl = self.FindFocus()
         parent = ctrl.GetParent()
         if isinstance(parent, Card):
@@ -597,16 +625,12 @@ class ThreePyFiveFrame(wx.Frame):
             parent.SetFocusIgnoringChildren()
 
     def OnSelectNone(self, ev):
-        """Unselect all cards."""
+        """Listens to `wx.EVT_MENU` from "Select None" in the "selection" menu."""
         self.GetCurrentBoard().UnselectAll()
         self.GetCurrentBoard().SetFocusIgnoringChildren()
 
     def OnEsc(self, ev):
-        """
-        When in board: cycle selection through card, group, board.
-        When searching: cancel search.
-        When in CardInspect: don't do anything.
-        """
+        """Listens to ESC."""
         # if searching: cancel search
         if self.FindFocus() == self.search_ctrl:
             self.CancelSearch()
@@ -655,34 +679,42 @@ class ThreePyFiveFrame(wx.Frame):
             ev.Skip()
 
     def OnCtrlPgUp(self, ev):
+        """Listens to "CTRL+PAGEUP."""
         nb = self.notebook
         sel = nb.GetSelection()
         if sel > 0:
             nb.SetSelection(nb.GetSelection()-1)
 
     def OnCtrlPgDw(self, ev):
+        """Listens to "CTRL+PAGEDOWN."""
         nb = self.notebook
         sel = nb.GetSelection()
         if sel < nb.GetPageCount() - 1:
             nb.SetSelection(nb.GetSelection()+1)
 
     def OnHArrange(self, ev):
+        """Listens to `wx.EVT_MENU` from "Arrange Horizontally" in the "selection" menu."""
         self.GetCurrentBoard().ArrangeSelection(Board.HORIZONTAL)
         self.Log("Horizontal arrange.")
 
     def OnVArrange(self, ev):
+        """Listens to `wx.EVT_MENU` from "Arrange Vertically" in the "selection" menu."""
         self.GetCurrentBoard().ArrangeSelection(Board.VERTICAL)
         self.Log("Vertical arrange.")
 
     def OnCopy(self, ev):
-        """Copy selected cards."""
+        """Listens to `wx.EVT_MENU` from "Copy" in the "selection" menu and to
+        `wx.EVT_TOOL` from "Copy" in the toolbar.
+        """
         sel = self.GetCurrentBoard().GetSelection()
         if sel:
             self.GetCurrentBoard().CopySelected()
             self.Log("Copy " + str(len(sel)) + " Cards.")
 
     def OnPaste(self, ev):
-        """Copy cards in the clip board."""
+        """Listens to `wx.EVT_MENU` from "Paste" in the "selection" menu and to
+        `wx.EVT_TOOL` from "Paste" in the toolbar.
+        """
         self.GetCurrentBoard().PasteFromClipboard()
         self.Log("Paste " + str(len(self.GetCurrentBoard().GetSelection())) + " Cards.")
 
@@ -693,11 +725,11 @@ class ThreePyFiveFrame(wx.Frame):
         bd.DeleteSelected()
 
     def AfterDelete(self, ev):
-        """Called after a delete action on a board."""
+        """Listens to `Board.EVT_BOARD_DEL_CARD`."""
         self.Log("Delete " + str(ev.number) + " Cards.")
 
     def OnCtrlF(self, ev):
-        """Show/hide the search control."""
+        """Listens to CTRL+F."""
         if not self.search_ctrl.IsShown():
             self.InitSearchBar()
             self.search_ctrl.Show()
@@ -707,11 +739,11 @@ class ThreePyFiveFrame(wx.Frame):
             self.CancelSearch()
 
     def OnSearchEnter(self, ev):
-        """Go to next search find."""
+        """Listens to `wx.EVT_TEXT_ENTER` from the serach bar."""
         self.NextSearchResult()
 
     def OnCtrlG(self, ev):
-        """Special accel: if searching, Go to next search find. If not, group selection."""
+        """Listens to CTRL+G."""
         bd = self.GetCurrentBoard()
         if self.search_ctrl.IsShown():
             self.NextSearchResult()
@@ -721,28 +753,39 @@ class ThreePyFiveFrame(wx.Frame):
             self.Log("Grouped " + str(len(sel)) + " cards.")
 
     def OnCtrlShftG(self, ev):
-        """Go to previous search find."""
+        """Listens to SHIFT+CTRL+G."""
         self.PrevSearchResult()
 
-    def OnInsertContent(self, ev):
-        """Add a new content card to the board, to the right of the current card."""
+    def OnInsertContentRight(self, ev):
+        """Listens to `wx.EVT_MENU` from "New Card: Right" in the "insert" menu."""
         self.GetCurrentBoard().PlaceNewCard("Content", below=False)
 
-    def OnInsertHeader(self, ev):
-        """Add a new header to the board, to the right of the current card."""
+    def OnInsertContentBelow(self, ev):
+        """Listens to `wx.EVT_MENU` from "New Card: Below" in the "insert" menu."""
+        self.GetCurrentBoard().PlaceNewCard("Content", below=True)
+
+    def OnInsertHeaderRight(self, ev):
+        """Listens to `wx.EVT_MENU` from "New Header: Right" in the "insert" menu."""
         self.GetCurrentBoard().PlaceNewCard("Header", below=False)
 
+    def OnInsertHeaderBelow(self, ev):
+        """Listens to `wx.EVT_MENU` from "New Header: Below" in the "insert" menu."""
+        self.GetCurrentBoard().PlaceNewCard("Header", below=True)        
+        
     def OnInsertImage(self, ev):
+        """Listens to `wx.EVT_MENU` from "Insert image" in the "insert" menu."""
         self.GetCurrentBoard().PlaceNewCard("Image", below=False)
 
     def AfterCardCreated(self, ev):
+        """Listens to `Board.EVT_NEW_CARD` from the `Board` of every `Page`."""
         self.Log("Created new " + ev.subclass + " card.")
 
     def OnNew(self, ev):
+        """Listens to `wx.EVT_TOOL` from "New" in the toolbar."""
         self.notebook.NewPage()
 
     def OnSave(self, ev):
-        """Save file."""
+        """Listens to `wx.EVT_MENU` from "Save" in the "file" menu."""
         # return focus after saving
         focus = self.FindFocus()
         if isinstance(focus, wx.TextCtrl):
@@ -773,7 +816,7 @@ class ThreePyFiveFrame(wx.Frame):
         self.Log("Saved file" + self.cur_file)
 
     def OnOpen(self, ev):
-        """Open file."""
+        """Listens to `wx.EVT_MENU` from "Open" in the "file" menu."""
         # ask for a file name
         fd = wx.FileDialog(self, "Open", "/home/leo/research/reading_notes/Kandel - Principles of Neural Science",
                            "", "P files (*.p)|*.p|All files|*.*",
@@ -806,6 +849,10 @@ class WelcomePage(wx.Panel):
     """
     
     def __init__(self, parent):
+        """Constructor.
+
+        * `parent: ` the parent `ThreePyFiveFrame`.
+        """
         super(WelcomePage, self).__init__(parent)
         self.InitUI()
         
@@ -813,6 +860,7 @@ class WelcomePage(wx.Panel):
     ### Auxiliary functions
 
     def InitUI(self):
+        """Initialize the GUI and controls."""
         # controls
         newb  = wx.Button(self, label="New book")
         loadb = wx.Button(self, label="Load book")
@@ -831,10 +879,12 @@ class WelcomePage(wx.Panel):
     ### Callbacks
 
     def OnNewBook(self, ev):
+        """Listens to `wx.EVT_BUTTON` from the "New book" button."""
         self.GetParent().InitNotebook()
         self.GetParent().notebook.NewPage()
 
     def OnLoadBook(self, ev):
+        """Listens to `wx.EVT_BUTTON` from the "Load book" button."""
         self.GetParent().OnOpen(None)
 
 
