@@ -24,15 +24,6 @@ class AutoSize(wx.ScrolledWindow):
     the window (ie, the screen real estate it occupies). AutoSize also holds
     various methods that build on top of that functionality.
     """
-
-    # __pdoc__ is the special variable from the automatic
-    # documentation generator pdoc
-    # By setting pdoc[class.method] to None, we are telling
-    # pdoc to not generate documentation for said mehthod
-    __pdoc__ = {}
-    for field in dir(wx.ScrolledWindow):
-        __pdoc__['AutoSize.%s' % field] = None
-
         
     SCROLL_STEP = 10
     
@@ -120,16 +111,7 @@ class ColouredText(wx.TextCtrl):
     ColouredText overrides TextCtrl.SetBackgroundColour, so that all chars'
     background colours are changed correctly.
     """
-    
-    # __pdoc__ is the special variable from the automatic
-    # documentation generator pdoc
-    # By setting pdoc[class.method] to None, we are telling
-    # pdoc to not generate documentation for said mehthod
-    __pdoc__ = {}
-    for field in dir(wx.TextCtrl):
-        __pdoc__['ColouredText.%s' % field] = None
 
-        
     def __init__(self, parent, value ="", size=wx.DefaultSize, pos=wx.DefaultPosition, style=0):
         super(ColouredText, self).__init__(parent, value=value, size=size, pos=pos, style=style)
 
@@ -170,15 +152,6 @@ class EditText(ColouredText):
     the user is editing its contents, in which case we want it to look like
     a TextCtrl.
     """
-    
-    # __pdoc__ is the special variable from the automatic
-    # documentation generator pdoc
-    # By setting pdoc[class.method] to None, we are telling
-    # pdoc to not generate documentation for said mehthod
-    __pdoc__ = {}
-    for field in dir(wx.TextCtrl):
-        __pdoc__['ColouredText.%s' % field] = None
-
                 
     DEFAULT_SZ = (200, 20)
     DEFAULT_STYLE = wx.BORDER_NONE|wx.TE_RICH|wx.TE_PROCESS_ENTER|wx.TE_MULTILINE|wx.TE_NO_VSCROLL
@@ -261,9 +234,9 @@ class EditText(ColouredText):
         
         
 
-######################
-# Auxiliary functions
-######################
+#######################
+## Auxiliary functions
+#######################
 
 def GetAncestors(ctrl):
     """Returns a list of ctrl's parent and its parent's parent and so on."""
@@ -345,3 +318,47 @@ def dist(p1, p2):
 def IsFunctionKey(key):
     fkeys = [wx.WXK_F1, wx.WXK_F2, wx.WXK_F3, wx.WXK_F4, wx.WXK_F5, wx.WXK_F6, wx.WXK_F7, wx.WXK_F8, wx.WXK_F9, wx.WXK_F10, wx.WXK_F11, wx.WXK_F12, wx.WXK_F13, wx.WXK_F14, wx.WXK_F15, wx.WXK_F16, wx.WXK_F17, wx.WXK_F18, wx.WXK_F19, wx.WXK_F20, wx.WXK_F21, wx.WXK_F22, wx.WXK_F23, wx.WXK_F24]
     return any([key == k for k in fkeys])
+
+def GetBases(cl):
+    if cl == []:
+        return None
+    bases = list(cl.__bases__)
+    for b in bases:
+        new = GetBases(b)
+        if new:
+            bases += new
+    return list(set(bases))
+
+
+
+###########################
+# pdoc documentation setup
+###########################
+# __pdoc__ is the special variable from the automatic
+# documentation generator pdoc.
+# By setting pdoc[class.method] to None, we are telling
+# pdoc to not generate documentation for said method.
+__pdoc__ = {}
+__pdoc__["threepy5.utilities.field"] = None
+
+# Since we only want to generate documentation for our own
+# mehods, and not the ones coming from the base classes,
+# we first set to None every method in the base class.
+for field in dir(wx.ScrolledWindow):
+    __pdoc__['AutoSize.%s' % field] = None
+for field in dir(wx.TextCtrl):
+    __pdoc__['ColouredText.%s' % field] = None
+for field in dir(ColouredText):
+    __pdoc__['EditText.%s' % field] = None
+
+# Then, we have to add again the methods that we have
+# overriden. See https://github.com/BurntSushi/pdoc/issues/15.
+for field in AutoSize.__dict__.keys():
+    if 'AutoSize.%s' % field in __pdoc__.keys():
+        del __pdoc__['AutoSize.%s' % field]
+for field in ColouredText.__dict__.keys():
+    if 'ColouredText.%s' % field in __pdoc__.keys():
+        del __pdoc__['ColouredText.%s' % field]
+for field in EditText.__dict__.keys():
+    if 'EditText.%s' % field in __pdoc__.keys():
+        del __pdoc__['EditText.%s' % field]

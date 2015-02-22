@@ -12,7 +12,9 @@ from card import *
 import json
 import ast
 
+__pdoc__ = {}
 
+    
 ######################
 # Board Class
 ######################
@@ -23,15 +25,6 @@ class Board(AutoSize):
     arrangement, and listens to individual Cards' events, so that Page
     only needs to listen to Board events.
     """
-    
-    # __pdoc__ is the special variable from the automatic
-    # documentation generator pdoc
-    # By setting pdoc[class.method] to None, we are telling
-    # pdoc to not generate documentation for said mehthod
-    __pdoc__ = {}
-    for field in AutoSize.__dict__.keys():
-        __pdoc__['Board.%s' % field] = None
-
                 
     MOVING_RECT_THICKNESS = 1
     BACKGROUND_CL = "#CCCCCC"
@@ -1004,3 +997,31 @@ class SelectionManager(wx.Window):
             # all other keys cancel selection
             else:
                 self.Deactivate()
+
+
+###########################
+# pdoc documentation setup
+###########################
+# __pdoc__ is the special variable from the automatic
+# documentation generator pdoc.
+# By setting pdoc[class.method] to None, we are telling
+# pdoc to not generate documentation for said method.
+__pdoc__ = {}
+__pdoc__["field"] = None
+
+# Since we only want to generate documentation for our own
+# mehods, and not the ones coming from the base classes,
+# we first set to None every method in the base class.
+for field in dir(AutoSize):
+    __pdoc__['Board.%s' % field] = None
+for field in dir(wx.Window):
+    __pdoc__['SelectionManager.%s' % field] = None
+
+# Then, we have to add again the methods that we have
+# overriden. See https://github.com/BurntSushi/pdoc/issues/15.
+for field in Board.__dict__.keys():
+    if 'Board.%s' % field in __pdoc__.keys():
+        del __pdoc__['Board.%s' % field]
+for field in SelectionManager.__dict__.keys():
+    if 'SelectionManager.%s' % field in __pdoc__.keys():
+        del __pdoc__['SelectionManager.%s' % field]

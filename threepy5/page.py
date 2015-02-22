@@ -1,8 +1,9 @@
-#!/usr/bin/python
 # -*- coding: utf-8 -*-
-
-# page.py
-# Page class: contains a Board and a canvas, plus functionality to switch between the two
+"""
+A Page is a window that holds both a Board and a Canvas to draw over that Board.
+It also has classes for closer inspection of individual Cards or the whole Board:
+CardInspect, BoardInspect, TagsInspect.
+"""
 
 import wx
 from utilities import AutoSize
@@ -591,3 +592,33 @@ class Book(wx.Notebook):
     def OnRightDown(self, ev):
         self.menu_position = ev.GetPosition()
         self.PopupMenu(self.menu, ev.GetPosition())
+
+
+        
+###########################
+# pdoc documentation setup
+###########################
+# __pdoc__ is the special variable from the automatic
+# documentation generator pdoc.
+# By setting pdoc[class.method] to None, we are telling
+# pdoc to not generate documentation for said method.
+__pdoc__ = {}
+__pdoc__["field"] = None
+
+# Since we only want to generate documentation for our own
+# mehods, and not the ones coming from the base classes,
+# we first set to None every method in the base class.
+for field in dir(wx.Panel):
+    __pdoc__['Page.%s' % field] = None
+for field in dir(wx.Notebook):
+    __pdoc__['Book.%s' % field] = None
+
+# Then, we have to add again the methods that we have
+# overriden. See https://github.com/BurntSushi/pdoc/issues/15.
+for field in Page.__dict__.keys():
+    if 'Page.%s' % field in __pdoc__.keys():
+        del __pdoc__['Page.%s' % field]
+for field in Book.__dict__.keys():
+    if 'Book.%s' % field in __pdoc__.keys():
+        del __pdoc__['Book.%s' % field]
+        

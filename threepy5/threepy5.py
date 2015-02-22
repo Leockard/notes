@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
-# notes.py
-# main class and executable for note taking application
+"""
+Main frame for note taking application threepy5. A ThreePyFiveFrame
+holds a WelcomePage at startup, until a Book is loaded.
+"""
 
 import wx
 import os
@@ -828,6 +830,35 @@ class WelcomePage(wx.Panel):
     def OnLoadBook(self, ev):
         self.GetParent().OnOpen(None)
 
+
+
+###########################
+# pdoc documentation setup
+###########################
+# __pdoc__ is the special variable from the automatic
+# documentation generator pdoc.
+# By setting pdoc[class.method] to None, we are telling
+# pdoc to not generate documentation for said method.
+__pdoc__ = {}
+__pdoc__["field"] = None
+
+# Since we only want to generate documentation for our own
+# mehods, and not the ones coming from the base classes,
+# we first set to None every method in the base class.
+for field in dir(wx.Frame):
+    __pdoc__['ThreePyFiveFrame.%s' % field] = None
+for field in dir(wx.Panel):
+    __pdoc__['WelcomePage.%s' % field] = None
+
+# Then, we have to add again the methods that we have
+# overriden. See https://github.com/BurntSushi/pdoc/issues/15.
+for field in ThreePyFiveFrame.__dict__.keys():
+    if 'ThreePyFiveFrame.%s' % field in __pdoc__.keys():
+        del __pdoc__['ThreePyFiveFrame.%s' % field]
+for field in WelcomePage.__dict__.keys():
+    if 'WelcomePage.%s' % field in __pdoc__.keys():
+        del __pdoc__['WelcomePage.%s' % field]    
+        
 
 
 if __name__ == "__main__":

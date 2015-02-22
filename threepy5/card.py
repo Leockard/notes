@@ -1,7 +1,8 @@
-# card.py
 # -*- coding: utf-8 -*-
-
-# Card classes. The windows that go in a Board.
+"""
+A card is the "virutal index card"; it is a window that goes on the
+Board. It can hold text, images, etc.
+"""
 
 import wx
 import os
@@ -1122,3 +1123,71 @@ class CardGroup():
 
     def Dump(self):
         return [c.label for c in self.members]
+
+
+
+###########################
+# pdoc documentation setup
+###########################
+# __pdoc__ is the special variable from the automatic
+# documentation generator pdoc.
+# By setting pdoc[class.method] to None, we are telling
+# pdoc to not generate documentation for said method.
+__pdoc__ = {}
+__pdoc__["field"] = None
+
+# Since we only want to generate documentation for our own
+# mehods, and not the ones coming from the base classes,
+# we first set to None every method in the base class.
+for field in dir(wx.Panel):
+    __pdoc__['Card.%s' % field] = None
+for field in dir(Card):
+    __pdoc__['Header.%s' % field] = None
+for field in dir(ColouredText):
+    __pdoc__['ContentText.%s' % field] = None
+for field in dir(wx.Button):
+    __pdoc__['KindButton.%s' % field] = None
+for field in dir(wx.Menu):
+    __pdoc__['KindSelectMenu.%s' % field] = None
+for field in dir(Card):
+    __pdoc__['Content.%s' % field] = None
+for field in dir(Card):
+    __pdoc__['Image.%s' % field] = None
+for field in dir(EditText):
+    __pdoc__['TitleEditText.%s' % field] = None
+for field in dir(wx.Button):
+    __pdoc__['StarRating.%s' % field] = None
+# CardGroup has no ancestors!    
+# for field in dir():
+#     __pdoc__['CardGroup.%s' % field] = None
+
+
+# Then, we have to add again the methods that we have
+# overriden. See https://github.com/BurntSushi/pdoc/issues/15.
+for field in Card.__dict__.keys():
+    if 'Card.%s' % field in __pdoc__.keys():
+        del __pdoc__['Card.%s' % field]
+for field in Header.__dict__.keys():
+    if 'Header.%s' % field in __pdoc__.keys():
+        del __pdoc__['Header.%s' % field]
+for field in ContentText.__dict__.keys():
+    if 'ContentText.%s' % field in __pdoc__.keys():
+        del __pdoc__['ContentText.%s' % field]
+for field in KindButton.__dict__.keys():
+    if 'KindButton.%s' % field in __pdoc__.keys():
+        del __pdoc__['KindButton.%s' % field]
+for field in KindSelectMenu.__dict__.keys():
+    if 'KindSelectMenu.%s' % field in __pdoc__.keys():
+        del __pdoc__['KindSelectMenu.%s' % field]
+for field in Content.__dict__.keys():
+    if 'Content.%s' % field in __pdoc__.keys():
+        del __pdoc__['Content.%s' % field]
+for field in Image.__dict__.keys():
+    if 'Image.%s' % field in __pdoc__.keys():
+        del __pdoc__['Image.%s' % field]
+for field in TitleEditText.__dict__.keys():
+    if 'TitleEditText.%s' % field in __pdoc__.keys():
+        del __pdoc__['TitleEditText.%s' % field]
+for field in StarRating.__dict__.keys():
+    if 'StarRating.%s' % field in __pdoc__.keys():
+        del __pdoc__['StarRating.%s' % field]

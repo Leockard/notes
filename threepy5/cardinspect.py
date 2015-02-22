@@ -1,7 +1,7 @@
-# inspect.py
 # -*- coding: utf-8 -*-
-
-# Inspect classes: for editing a single card or viewing the whole board
+"""
+Inspect classes are used to take a closer look at certain objects.
+"""
 
 import wx
 import re
@@ -271,3 +271,42 @@ class TagsInspect(wx.Panel):
         if self.IsShown():
             self.ShowTags(card)
         ev.Skip()
+
+
+
+###########################
+# pdoc documentation setup
+###########################
+# __pdoc__ is the special variable from the automatic
+# documentation generator pdoc.
+# By setting pdoc[class.method] to None, we are telling
+# pdoc to not generate documentation for said method.
+__pdoc__ = {}
+__pdoc__["field"] = None
+
+# Since we only want to generate documentation for our own
+# mehods, and not the ones coming from the base classes,
+# we first set to None every method in the base class.
+for field in dir(AutoSize):
+    __pdoc__['BoardInspect.%s' % field] = None
+for field in dir(wx.Panel):
+    __pdoc__['CardInspect.%s' % field] = None
+for field in dir(wx.Window):
+    __pdoc__['MiniCard.%s' % field] = None
+for field in dir(wx.Panel):
+    __pdoc__['TagsInspect.%s' % field] = None
+
+# Then, we have to add again the methods that we have
+# overriden. See https://github.com/BurntSushi/pdoc/issues/15.
+for field in BoardInspect.__dict__.keys():
+    if 'BoardInspect.%s' % field in __pdoc__.keys():
+        del __pdoc__['BoardInspect.%s' % field]
+for field in CardInspect.__dict__.keys():
+    if 'CardInspect.%s' % field in __pdoc__.keys():
+        del __pdoc__['CardInspect.%s' % field]
+for field in MiniCard.__dict__.keys():
+    if 'MiniCard.%s' % field in __pdoc__.keys():
+        del __pdoc__['MiniCard.%s' % field]
+for field in TagsInspect.__dict__.keys():
+    if 'TagsInspect.%s' % field in __pdoc__.keys():
+        del __pdoc__['TagsInspect.%s' % field]

@@ -1,10 +1,11 @@
-#!/usr/bin/python
 # -*- coding: utf-8 -*-
-
-# canvas.py
-# drawing area class for notes.py
-# some code copied from wxPython demo code app doodle.py:
-# http://www.wxpython.org/download.php
+"""
+A window that can be drawn over in a free-hand style, with a custom
+background. In threepy5, every Page has a Canvas, whose background is
+set as the current view in that Page's Board. The overall result is that
+the user can hand-draw "over" the Board. Some code copied from wxPython
+demo code app doodle.py: http://www.wxpython.org/download.php.
+"""
 
 import wx
 from utilities import AutoSize
@@ -165,3 +166,31 @@ class Canvas(AutoSize):
     def OnShow(self, ev):
         if ev.IsShown():
             self.ctrl.DrawLines()
+
+
+###########################
+# pdoc documentation setup
+###########################
+# __pdoc__ is the special variable from the automatic
+# documentation generator pdoc.
+# By setting pdoc[class.method] to None, we are telling
+# pdoc to not generate documentation for said method.
+__pdoc__ = {}
+__pdoc__["field"] = None
+
+# Since we only want to generate documentation for our own
+# mehods, and not the ones coming from the base classes,
+# we first set to None every method in the base class.
+for field in dir(wx.StaticBitmap):
+    __pdoc__['CanvasBase.%s' % field] = None
+for field in dir(Canvas):
+    __pdoc__['Canvas.%s' % field] = None
+
+# Then, we have to add again the methods that we have
+# overriden. See https://github.com/BurntSushi/pdoc/issues/15.
+for field in CanvasBase.__dict__.keys():
+    if 'CanvasBase.%s' % field in __pdoc__.keys():
+        del __pdoc__['CanvasBase.%s' % field]
+for field in Canvas.__dict__.keys():
+    if 'Canvas.%s' % field in __pdoc__.keys():
+        del __pdoc__['Canvas.%s' % field]
