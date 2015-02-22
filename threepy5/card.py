@@ -460,12 +460,12 @@ class Header(Card):
 class ContentText(ColouredText):
     """The main text field on a `Content` `Card`."""
     
-    def __init__(self, parent, size=wx.DefaultSize, style=wx.TE_RICH|wx.TE_MULTILINE|wx.TE_NO_VSCROLL):
+    def __init__(self, parent, size=wx.DefaultSize, style=wx.TE_RICH|wx.TE_MULTILINE):
         """Constructor.
 
         * `parent: ` the parent `Content`.
         * `size: ` by default, is `wx.DefaultSize`.
-        * `style: ` by default is wx.TE_RICH|wx.TE_MULTILINE|wx.TE_NO_VSCROLL.
+        * `style: ` by default is wx.TE_RICH|wx.TE_MULTILINE.
         """
         super(ContentText, self).__init__(parent, size=size, style=style)
         self.Bind(wx.EVT_KEY_DOWN, self.OnKeyDown)
