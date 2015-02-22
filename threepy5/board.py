@@ -42,7 +42,8 @@ class Board(AutoSize):
 
     def __init__(self, parent, pos=wx.DefaultPosition, size=wx.DefaultSize, style=wx.BORDER_NONE):
         """Constructor.
-        
+
+        * `parent: ` the parent `wx.Window`.
         * `style: ` by default is `wx.BORDER_NONE`.
         """
         super(Board, self).__init__(parent, pos=pos, size=size, style=style)
@@ -809,7 +810,15 @@ class Board(AutoSize):
         self.SetAcceleratorTable(wx.AcceleratorTable(accels))
 
     def PaintRect(self, rect, thick=MOVING_RECT_THICKNESS, style=wx.SOLID, refresh=True):
-        """Paints a rectangle. Use style = wx.TRANSPARENT to erase a rectangle."""
+        """Paints a rectangle over this window. Used for click-dragging.
+
+        * `rect: ` a `wx.Rect`.
+        * `thick: ` line thickness. By default, is `Board.MOVING_RECT_THICKNESS`.
+        * `style: ` a `dc.Pen` style. Use `wx.TRANSPARENT` to erase a rectangle.
+        * `refresh: ` whether to call `Refresh` after the rectangle is painted.
+
+        `returns: ` `None`.
+        """
         dc = wx.ClientDC(self)
         # Brush is for background, Pen is for foreground
         dc.SetBrush(wx.Brush(self.GetBackgroundColour()))
@@ -817,15 +826,32 @@ class Board(AutoSize):
         dc.DrawRectangle(rect[0], rect[1], rect[2], rect[3])
         if refresh: self.RefreshRect(rect)
         
-    def PaintCardRect(self, card, pos, thick = MOVING_RECT_THICKNESS, style = wx.SOLID, refresh = True):
-        """Paints a rectangle just big enough to encircle card.GetRect(), at pos."""
+    def PaintCardRect(self, card, pos, thick=MOVING_RECT_THICKNESS, style=wx.SOLID, refresh=True):
+        """Paints a rectangle just big enough to encircle `card`.
+
+        * `card: ` a `Card`.
+        * `pos: ` where to paint the rectangle.
+        * `thick: ` line thickness. By default, is `Board.MOVING_RECT_THICKNESS`.
+        * `style: ` a `dc.Pen` style. Use `wx.TRANSPARENT` to erase a rectangle.
+        * `refresh: ` whether to call `Refresh` after the rectangle is painted.
+
+        `returns: ` `None`.
+        """
         x, y, w, h = card.GetRect()
         rect = wx.Rect(pos[0], pos[1], w, h)
         rect = rect.Inflate(2 * thick, 2 * thick)
         self.PaintRect(rect, thick=thick, style=style, refresh=refresh)
 
-    def EraseCardRect(self, card, pos, thick = MOVING_RECT_THICKNESS, refresh = True):
-        """Erases a rectangle drawn by PaintCardRect()."""
+    def EraseCardRect(self, card, pos, thick=MOVING_RECT_THICKNESS, refresh=True):
+        """Erases a rectangle drawn by PaintCardRect().
+
+        * `card: ` a `Card`.
+        * `pos: ` where to paint the rectangle.
+        * `thick: ` line thickness. By default, is `Board.MOVING_RECT_THICKNESS`.
+        * `refresh: ` whether to call `Refresh` after the rectangle is painted.
+
+        `returns: ` `None`.
+        """
         # Brush is for background, Pen is for foreground
         x, y, w, h = card.GetRect()        
         rect = wx.Rect(pos[0], pos[1], w, h)
@@ -833,7 +859,10 @@ class Board(AutoSize):
         self.PaintRect(rect, thick=thick, style=wx.TRANSPARENT, refresh=refresh)
     
     def DumpCards(self):
-        """Returns a dict with all the info in the current cards."""
+        """Dumps all the `Card`s' info in a dict.
+
+        `returns: ` a dict of the form {id1: data1, id2: data2, ...}.
+        """
         carddict = {}
 
         # we put the scrollbars at the origin, to get the real positions
@@ -854,16 +883,28 @@ class Board(AutoSize):
         return carddict
 
     def DumpGroups(self):
+        """Dumps all the `CardGroup`s' info in a dict.
+
+        `returns: ` a dict of the form {label1: data1, label2: data2, ...}.
+        """
         d = {}
         for g in self.groups: d[g.GetLabel()] = g.Dump()
         return d
 
     def Dump(self):
-        """Returns a dict with all the info contained in this Board."""
+        """Returns a dict with all the info contained in this Board.
+
+        `returns: ` a dict of the form {"cards": self.DumpCards(), "groups": self.DumpGroups()}.
+        """
         return {"cards": self.DumpCards(), "groups": self.DumpGroups()}
 
     def Load(self, d):
-        """Argument should be a dict returned by Dump."""
+        """Read a dict and load all its data.
+
+        * `d: ` a dict in the format returned by `Board.Dump`.
+
+        `returns: ` `None`.
+        """
         if "cards" in d.keys():
             # note we are not loading the wx id of the windows
             # instead, as identifier, we use label, which should
@@ -899,6 +940,10 @@ class SelectionManager(wx.Window):
     DeleteEvent, EVT_MGR_DELETE = ne.NewCommandEvent()
 
     def __init__(self, parent):
+        """Constructor.
+        
+        * `parent: ` the parent `wx.Window`, usually a `Board`.
+        """
         super(SelectionManager, self).__init__(parent, size=self.SIZE, pos=self.POS)
         self.cards = []
         self.last = None
@@ -909,11 +954,20 @@ class SelectionManager(wx.Window):
     ### behavior functions
 
     def Activate(self):
+        """Prepare this object to manage selection.
+
+        `returns: ` `None`.
+        """
         self.Bind(wx.EVT_KEY_DOWN, self.OnKeyDown)
         self.SetFocus()
         self.active = True
 
     def Deactivate(self):
+        """Signal this object to stop managing selection. All `Card`s in the
+        current selection are unselected.
+
+        `returns: ` `None`.
+        """
         # return focus to the last card
         if self.last:
             self.last.SetFocus()
@@ -927,15 +981,25 @@ class SelectionManager(wx.Window):
         self.active = False
 
     def IsActive(self):
+        """Check if this object is managing selection.
+
+        `returns: ` `True` if active, `False` otherwise.
+        """
         return self.active
 
     def GetSelection(self):
+        """Get the selected `Card`s.
+
+        `returns: ` a list of `Card`s.
+        """
         return self.cards
 
     def SelectCard(self, card, new_sel=False):
-        """
-        Selects the card. If new_sel is True, erase all other
-        selected cards and select only this one.
+        """Selects `card`.
+
+        * `new_sel: ` if `True`, unselects all other `Card`s before selecting `card`.
+
+        `returns: ` `None`.
         """
         # if new_sel, select only this card
         if new_sel:
@@ -956,29 +1020,47 @@ class SelectionManager(wx.Window):
                 self.last = card
 
     def UnselectCard(self, card):
+        """Removes `card` from the current selection.
+
+        * `card: ` a `Card`.
+
+        `returns: ` `None`.
+        """
         if card in self.cards:
             self.cards.remove(card)
             card.Unselect()
 
     def UnselectAll(self):
-        """
-        Unselects all cards. Be sure to call this method instead of
-        Unselect()ing every card for proper cleanup.
+        """Unselects all cards. Be sure to call this method instead of
+        `Unselect` on every card for proper cleanup.
+
+        `returns: ` `None`.
         """
         while len(self.cards) > 0:
             c = self.cards[0]
             self.UnselectCard(c)
 
     def SelectGroup(self, group, new_sel=True):
+        """Select every `Card` in `group`.
+
+        * `group: ` a `CardGroup` to select.
+        * `new_sel: ` if `True`, unselects all other `Card`s before selecting.
+
+        `returns: ` `None`.
+        """
         if new_sel: self.UnselectAll()
         for c in group.GetMembers(): self.SelectCard(c)
 
     def DeleteSelected(self):
-        # store the number of cards we're deleting to raise the event
+        """Deletes every `Card` currently selected.
 
+        `returns: ` `None`.
+        """
+        # store the number of cards we're deleting to raise the event
+        number = len(self.cards)
+        
         # remember to use while instead of for, since in every
         # iteration self.cards is growing shorter
-        number = len(self.cards)
         while len(self.cards) > 0:
             c = self.cards[-1]
             c.Delete()
@@ -994,18 +1076,26 @@ class SelectionManager(wx.Window):
         self.GetEventHandler().ProcessEvent(event)
 
     def SelectNext(self, direc, new_sel=False):
-        """
-        Selects next card in the specified direction. direc should
-        be one of Board.LEFT, Board.RIGHT, Board.UP, or Board.DOWN.
-        If new_sel is True, select only the next card, if False,
-        add it to current selection.
+        """Selects next `Card` in the specified direction.
+
+        * `direc: ` direc should be one of `Board.LEFT`, `Board.RIGHT`, `Board.UP`, or `Board.DOWN`.
+        * `new_sel: ` if `True`, unselect all others and select only the next card,
+        if `False`, add it to current selection.
+
+        `returns: ` `None`.
         """
         nxt = self.GetParent().GetNextCard(self.last, direc)
         if nxt:
             self.SelectCard(nxt, new_sel)
 
     def MoveSelected(self, dx, dy):
-        """Move all selected cards by dx, dy."""
+        """Move all selected `Card`s.
+
+        `dx: ` the amount of pixels to move in the X direction.
+        `dy: ` the amount of pixels to move in the Y direction.
+
+        `returns: ` `None`.
+        """
         for c in self.GetSelection():
             self.GetParent().MoveCard(c, dx, dy)
 
@@ -1028,6 +1118,7 @@ class SelectionManager(wx.Window):
     #             self.SelectCard(card, new_sel = False)
 
     def OnKeyDown(self, ev):
+        """Listens to `wx.EVT_KEY_DOWN`, only when activated."""
         if not self.IsActive():
             ev.Skip()
             return
@@ -1109,6 +1200,7 @@ class SelectionManager(wx.Window):
             else:
                 self.Deactivate()
 
+                
 
 ###########################
 # pdoc documentation setup
