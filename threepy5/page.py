@@ -62,7 +62,6 @@ class Page(wx.Panel):
         self.InitAccels()
 
         # bindings
-        self.Bind(wx.EVT_SIZE, self.OnSize)
 
         
     ### Behavior functions
@@ -452,11 +451,6 @@ class Page(wx.Panel):
         event = self.DeleteEvent(id=wx.ID_ANY, number=ev.number)
         event.SetEventObject(self)
         self.GetEventHandler().ProcessEvent(event)
-
-    def OnSize(self, ev):
-        """Listens to `wx.EVT_SIZE`."""
-        # important to skip the event for Sizers to work correctly
-        ev.Skip()
 
     def OnInspect(self, ev):
         """Listens to `wx.EVT_BUTTON` from the inspect button in the button bar."""
