@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 """
 A window that can be drawn over in a free-hand style, with a custom
-background. In threepy5, every `Page` has a `Canvas`, whose background
-is set as the current view in that `Page`'s `Deck`. The overall result
+background. In threepy5, every `Box` has a `Canvas`, whose background
+is set as the current view in that `Box`'s `Deck`. The overall result
 is that the user can hand-draw "over" the `Card`s of the `Deck`. Some
 code copied from wxPython demo code app doodle.py:
 http://www.wxpython.org/download.php.

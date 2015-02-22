@@ -22,7 +22,7 @@ class ThreePyFiveFrame(wx.Frame):
     """
     
     DEFAULT_SZ = (800, 600)
-    DEFAULT_PAGE_NAME = "Untitled Notes"
+    DEFAULT_BOX_NAME = "Untitled Notes"
     CLEAN_STATUS_BAR_AFTER_MS = 5000
 
     def __init__(self, parent, title="3py5", size=DEFAULT_SZ, style=wx.DEFAULT_FRAME_STYLE|wx.NO_FULL_REPAINT_ON_RESIZE):
@@ -35,7 +35,7 @@ class ThreePyFiveFrame(wx.Frame):
         """
         super(ThreePyFiveFrame, self).__init__(parent, title=title, size=size, style=style)
 
-        self.SetTitle(self.DEFAULT_PAGE_NAME)
+        self.SetTitle(self.DEFAULT_BOX_NAME)
         self.cur_file = ""
         self.search_find = []
         self.search_str = ""
@@ -52,22 +52,22 @@ class ThreePyFiveFrame(wx.Frame):
         
     ### Behavior Functions
 
-    def GetCurrentPage(self):
-        """Get the `Page` currently selected in the loaded `Book`.
+    def GetCurrentBox(self):
+        """Get the `Box` currently selected in the loaded `Book`.
 
-        `returns: ` a `Page` or `None`.
+        `returns: ` a `Box` or `None`.
         """
         result = None
         if self.notebook:
-            result = self.notebook.GetCurrentPage()
+            result = self.notebook.GetCurrentBox()
         return result
 
     def GetCurrentDeck(self):
-        """Get the `Deck` from the `Page` currently selected.
+        """Get the `Deck` from the `Box` currently selected.
 
         `returns: ` a `Deck`, or `None`."""
         result = None
-        pg = self.GetCurrentPage()
+        pg = self.GetCurrentBox()
         if pg and hasattr(pg, "deck"):
             result = pg.deck
         return result
@@ -95,11 +95,11 @@ class ThreePyFiveFrame(wx.Frame):
                 
         # where are we searching?
         cards = []
-        content = self.GetCurrentPage().GetCurrentContent()
+        content = self.GetCurrentBox().GetCurrentContent()
         if content == Deck:
             cards = self.GetCurrentDeck().GetCards()
         elif content == CardInspect:
-            cards = self.GetCurrentPage().view_card.GetCards()
+            cards = self.GetCurrentBox().view_card.GetCards()
 
         # gather all (lower case) values in which to search
         # including the control they appear in
@@ -284,7 +284,7 @@ class ThreePyFiveFrame(wx.Frame):
         tgmap_it = wx.MenuItem(view_menu, wx.ID_ANY, "Show map")
         zoomi_it = wx.MenuItem(view_menu, wx.ID_ANY, "Zoom in")
         zoomo_it = wx.MenuItem(view_menu, wx.ID_ANY, "Zoom out")
-        hideb_it = wx.MenuItem(view_menu, wx.ID_ANY, "Hide Page button bar", kind=wx.ITEM_CHECK)
+        hideb_it = wx.MenuItem(view_menu, wx.ID_ANY, "Hide Box button bar", kind=wx.ITEM_CHECK)
 
         view_menu.AppendItem(collp_it)
         view_menu.AppendItem(inspc_it)
@@ -324,7 +324,7 @@ class ThreePyFiveFrame(wx.Frame):
         self.Bind(wx.EVT_MENU, self.OnZoomIn  , zoomi_it)
         self.Bind(wx.EVT_MENU, self.OnZoomOut , zoomo_it)
         
-        self.Bind(wx.EVT_MENU, self.OnViewPageBar , hideb_it)
+        self.Bind(wx.EVT_MENU, self.OnViewBoxBar , hideb_it)
 
         self.Bind(wx.EVT_MENU, self.OnToggleCollapse  , collp_it)
         self.Bind(wx.EVT_MENU, self.OnMenuInspectCard , inspc_it)
@@ -449,7 +449,7 @@ class ThreePyFiveFrame(wx.Frame):
         sz = (20, 20)
         # # cleanup the previous UI, if any
         if self.ui_ready:
-            pg = self.GetCurrentPage()
+            pg = self.GetCurrentBox()
             sz = pg.GetSize()
             pg.Hide()
             self.sheet = None
@@ -489,8 +489,8 @@ class ThreePyFiveFrame(wx.Frame):
         # create and setup the notebook
         nb = Book(self, size=size)
 
-        # bindings: make sure to Bind EVT_BK_NEW_PAGE before creating any pages!
-        nb.Bind(Book.EVT_BK_NEW_PAGE, self.OnNewPage)
+        # bindings: make sure to Bind EVT_BK_NEW_BOX before creating any boxes!
+        nb.Bind(Book.EVT_BK_NEW_BOX, self.OnNewBox)
 
         # UI setup
         nb_box = wx.BoxSizer(wx.HORIZONTAL)
@@ -513,7 +513,7 @@ class ThreePyFiveFrame(wx.Frame):
     def OnDebug(self, ev):
         """CTRL+D"""
         print "---DEBUG---"
-        print self.GetCurrentPage().Dump()
+        print self.GetCurrentBox().Dump()
 
     def Save(self, out_file):
         """Save the current `Book` to disk.
@@ -536,20 +536,20 @@ class ThreePyFiveFrame(wx.Frame):
         
     ### Callbacks
 
-    def OnNewPage(self, ev):
-        """Listens to `Book.EVT_BK_NEW_PAGE`."""
-        ev.page.Bind(Page.EVT_PAGE_INSPECT, self.OnInspect)
-        ev.page.Bind(Page.EVT_PAGE_CANCEL_INSPECT, self.OnCancelInspect)
-        ev.page.deck.Bind(Deck.EVT_DECK_DEL_CARD, self.AfterDelete)
-        ev.page.deck.Bind(Deck.EVT_NEW_CARD, self.AfterCardCreated)
+    def OnNewBox(self, ev):
+        """Listens to `Book.EVT_BK_NEW_BOX`."""
+        ev.box.Bind(Box.EVT_BOX_INSPECT, self.OnInspect)
+        ev.box.Bind(Box.EVT_BOX_CANCEL_INSPECT, self.OnCancelInspect)
+        ev.box.deck.Bind(Deck.EVT_DECK_DEL_CARD, self.AfterDelete)
+        ev.box.deck.Bind(Deck.EVT_NEW_CARD, self.AfterCardCreated)
 
     def OnZoomIn(self, ev):
         """Listens to `wx.EVT_MENU` from the zoom controls in the view menu."""
-        self.GetCurrentPage().ZoomIn()
+        self.GetCurrentBox().ZoomIn()
 
     def OnZoomOut(self, ev):
         """Listens to `wx.EVT_MENU` from the zoom controls in the view menu."""
-        self.GetCurrentPage().ZoomOut()
+        self.GetCurrentBox().ZoomOut()
 
     def OnGroupSelection(self, ev):
         """Listens to `wx.EVT_MENU` from "Group selection" in the "selection" menu."""
@@ -557,20 +557,20 @@ class ThreePyFiveFrame(wx.Frame):
 
     def OnToggleMinimap(self, ev):
         """Listens to `wx.EVT_MENU` from "Show map" in the "view" menu."""
-        self.GetCurrentPage().ToggleMinimap()
+        self.GetCurrentBox().ToggleMinimap()
 
     def OnToggleCollapse(self, ev):
         """Listens to `wx.EVT_MENU` from "(Un)Collapse card" in the "view" menu."""
         for c in [t for t in self.GetCurrentDeck().GetSelection() if isinstance(t, Content)]:
             c.ToggleCollapse()
 
-    def OnViewPageBar(self, ev):
-        """Listens to `wx.EVT_MENU` from "Hide Page button bar" in the "view" menu."""
-        self.GetCurrentPage().ShowButtonBar(show=ev.IsChecked())
+    def OnViewBoxBar(self, ev):
+        """Listens to `wx.EVT_MENU` from "Hide Box button bar" in the "view" menu."""
+        self.GetCurrentBox().ShowButtonBar(show=ev.IsChecked())
 
     def OnMenuInspectCard(self, ev):
         """Listens to `wx.EVT_MENU` from "Inspect card" in the "view" menu."""
-        pg = self.GetCurrentPage()
+        pg = self.GetCurrentBox()
         cont = pg.GetCurrentContent()
 
         # toggle between Deck and Inspect modes        
@@ -589,14 +589,14 @@ class ThreePyFiveFrame(wx.Frame):
             self.Log("Done inspecting.")
 
     def OnInspect(self, ev):
-        """Listens to `Page.EVT_PAGE_INSPECT` from every `Page` in the `Book`."""
+        """Listens to `Box.EVT_BOX_INSPECT` from every `Box` in the `Book`."""
         if ev.number == 1:
             self.Log("Inspecting \"" + ev.title + "\".")
         else:
             self.Log("Inspecting " + str(ev.number) + " cards.")
 
     def OnCancelInspect(self, ev):
-        """Listens to `Page.EVT_PAGE_CANCEL_INSPECT` from every `Page` in the `Book`."""
+        """Listens to `Box.EVT_BOX_CANCEL_INSPECT` from every `Box` in the `Book`."""
         self.Log("Done inspecting.")
 
     def OnSelectAll(self, ev):
@@ -631,14 +631,14 @@ class ThreePyFiveFrame(wx.Frame):
             return
 
         # if inspecting: nil
-        pg = self.GetCurrentPage()
+        pg = self.GetCurrentBox()
         if pg:
             content = pg.GetCurrentContent()
             if content and content == CardInspect:
                 return
 
         # if on deck: cycle selection
-        # none (cursor inside a card) -> card -> group -> page title label -> none (cursor inside the same card)
+        # none (cursor inside a card) -> card -> group -> box title label -> none (cursor inside the same card)
         content = pg.GetCurrentContent()
         if content == Deck:
             bd = self.GetCurrentDeck()
@@ -767,12 +767,12 @@ class ThreePyFiveFrame(wx.Frame):
         self.GetCurrentDeck().PlaceNewCard("Image", below=False)
 
     def AfterCardCreated(self, ev):
-        """Listens to `Deck.EVT_NEW_CARD` from the `Deck` of every `Page`."""
+        """Listens to `Deck.EVT_NEW_CARD` from the `Deck` of every `Box`."""
         self.Log("Created new " + ev.subclass + " card.")
 
     def OnNew(self, ev):
         """Listens to `wx.EVT_TOOL` from "New" in the toolbar."""
-        self.notebook.NewPage()
+        self.notebook.NewBox()
 
     def OnSave(self, ev):
         """Listens to `wx.EVT_MENU` from "Save" in the "file" menu."""
@@ -871,7 +871,7 @@ class WelcomePage(wx.Panel):
     def OnNewBook(self, ev):
         """Listens to `wx.EVT_BUTTON` from the "New book" button."""
         self.GetParent().InitNotebook()
-        self.GetParent().notebook.NewPage()
+        self.GetParent().notebook.NewBox()
 
     def OnLoadBook(self, ev):
         """Listens to `wx.EVT_BUTTON` from the "Load book" button."""

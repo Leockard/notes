@@ -9,7 +9,7 @@ import os
 import wx.richtext as rt
 import wx.lib.newevent as ne
 from utilities import *
-from board import *
+import board
 
 
 ######################
@@ -239,17 +239,17 @@ class Card(wx.Panel):
         * `forward: ` if `True`, the focus will be set to the next `Card`, as
         decided by `Deck.GetNextCard`. If `False`, focus the previos `Card`.
         """
-        bd = self.GetParent()
+        deck = self.GetParent()
 
         # try to get the nearest card
         if forward:
-            nxt = bd.GetNextCard(self, Deck.RIGHT)
+            nxt = deck.GetNextCard(self, board.Deck.RIGHT)
             if not nxt:
-                nxt = bd.GetNextCard(self, Deck.DOWN)
+                nxt = deck.GetNextCard(self, board.Deck.DOWN)
         else:
-            nxt = bd.GetNextCard(self, Deck.LEFT)
+            nxt = deck.GetNextCard(self, board.Deck.LEFT)
             if not nxt:
-                nxt = bd.GetNextCard(self, Deck.UP)
+                nxt = deck.GetNextCard(self, board.Deck.UP)
 
         # and navigate!
         if nxt:

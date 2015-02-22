@@ -24,7 +24,7 @@ class DeckInspect(AutoSize):
     def __init__(self, parent, deck=None, pos=wx.DefaultPosition, size=wx.DefaultSize):
         """Constructor.
 
-        * `parent: ` the parent `Page`.
+        * `parent: ` the parent `Box`.
         * `deck: ` the `Deck` we are inspecting.
         * `pos: ` by default, is `wx.DefaultSize`.
         * `size: ` by default, is `wx.DefaultSize`.
@@ -159,7 +159,7 @@ class CardInspect(wx.Panel):
     def __init__(self, parent, cards=[], pos=wx.DefaultPosition, size=wx.DefaultSize):
         """Constructor.
 
-        * `parent: ` the parent `Page`.
+        * `parent: ` the parent `Box`.
         * `cards: ` the `Card`s we are inspecting.
         * `pos: ` by default, is `wx.DefaultSize`.
         * `size: ` by default, is `wx.DefaultSize`.
@@ -271,7 +271,7 @@ class TagsInspect(wx.Panel):
     def __init__(self, parent, deck, pos=wx.DefaultPosition, size=wx.DefaultSize):
         """Constructor.
 
-        * `parent: ` the parent `Page`.
+        * `parent: ` the parent `Box`.
         * `deck: ` the parent `Deck` of the `Card`s we are inspecting.
         * `pos: ` by default, is `wx.DefaultSize`.
         * `size: ` by default, is `wx.DefaultSize`.

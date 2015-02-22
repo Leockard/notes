@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-A `Page` is a window that holds both a `Deck` and a `Canvas` to draw over that `Deck`.
+A `Box` is a window that holds both a `Deck` and a `Canvas` to draw over that `Deck`.
 It also has facilities for closer inspection of individual objects.
 """
 
@@ -14,18 +14,18 @@ import wx.lib.agw.flatnotebook as fnb
 
 
 ######################
-# Page class
+# Box class
 ######################
 
-class Page(wx.Panel):
-    """A `Page` holds all the main items to create, edit and visualize a collection of `Card`s.
-    The window that takes center stage in a `Page` by default is a `Deck`. Associated to it is
-    a `Canvas`, and one can toggle between the two with a button in the button bar. `Page` also
+class Box(wx.Panel):
+    """A `Box` holds all the main items to create, edit and visualize a collection of `Card`s.
+    The window that takes center stage in a `Box` by default is a `Deck`. Associated to it is
+    a `Canvas`, and one can toggle between the two with a button in the button bar. `Box` also
     handles the sidebars (`TagsInspect`), the "minimap" (`DeckInspect`), and the `Card` inspection
     view (`CardInspect`).
 
     The `Deck`, `Canvas` and `CardInspect` (and possibly others) seemingly hold the same position
-    in the `Page`. This is achieved by having a sizer for them (`content_sizer`) and constantly
+    in the `Box`. This is achieved by having a sizer for them (`content_sizer`) and constantly
     adding and deleting these objects from it. All the objects that can be shown in this main sizer
     are stored in the attribute `contents`.
     """
@@ -37,9 +37,9 @@ class Page(wx.Panel):
     VIEW_CH_DEF = "View"
     VIEW_CHOICES = ("All", KindButton.CONCEPT_LBL_LONG, KindButton.ASSUMPTION_LBL_LONG, KindButton.RESEARCH_LBL_LONG, KindButton.FACT_LBL_LONG)
 
-    InspectEvent, EVT_PAGE_INSPECT = ne.NewEvent()
-    CancelInspectEvent, EVT_PAGE_CANCEL_INSPECT = ne.NewEvent()
-    DeleteEvent, EVT_PAGE_DEL_CARD = ne.NewEvent()
+    InspectEvent, EVT_BOX_INSPECT = ne.NewEvent()
+    CancelInspectEvent, EVT_BOX_CANCEL_INSPECT = ne.NewEvent()
+    DeleteEvent, EVT_BOX_DEL_CARD = ne.NewEvent()
 
     def __init__(self, parent, pos=wx.DefaultPosition, size = wx.DefaultSize):
         """Constructor.
@@ -48,7 +48,7 @@ class Page(wx.Panel):
         * `pos: ` by default, is `wx.DefaultSize`.
         * `size: ` by default, is `wx.DefaultSize`.
         """
-        super(Page, self).__init__(parent, pos=pos, size=size)
+        super(Box, self).__init__(parent, pos=pos, size=size)
 
         # members
         self.contents = []
@@ -90,7 +90,7 @@ class Page(wx.Panel):
 
     def InspectCards(self, cards):
         """Set up the children to show the `CardInspect` inspecting `cards`.
-        Raises `Page.EVT_PAGE_INSPECT`.
+        Raises `Box.EVT_BOX_INSPECT`.
 
         * `cards: ` a list of `Card`s.
         """
@@ -115,7 +115,7 @@ class Page(wx.Panel):
         self.GetEventHandler().ProcessEvent(event)
 
     def CancelInspect(self):
-        """Cleans up after a `Card` inspection. Raises `Page.EVT_PAGE_CANCEL_INSPECT`."""
+        """Cleans up after a `Card` inspection. Raises `Box.EVT_BOX_CANCEL_INSPECT`."""
         # raise the event
         cards = self.view_card.GetCards()
         number = len(cards)
@@ -164,7 +164,7 @@ class Page(wx.Panel):
         else:            self.ShowMinimap()
 
     def ShowButtonBar(self, show=True):
-        """Show the button bar at the bottom of the `Page`."""
+        """Show the button bar at the bottom of the `Box`."""
         self.GetSizer().Show(self.GetButtonBarSizer(), show=show, recursive=True)
         self.Layout()
 
@@ -232,7 +232,7 @@ class Page(wx.Panel):
     ### Auxiliary functions
     
     def Dump(self):
-        """Returns a `dict` with all the info contained in this `Page`.
+        """Returns a `dict` with all the info contained in this `Box`.
 
         `returns: ` a `dict` of the form {"deck": Deck.Dump(), "canvas": Canvas.Dump()}.
         """
@@ -290,7 +290,7 @@ class Page(wx.Panel):
         return sz
     
     def InitUI(self):
-        """Initialize this `Page`'s GUI and controls."""
+        """Initialize this `Box`'s GUI and controls."""
         # cleanup the previous UI, if any
         if self.ui_ready:
             sz = self.CleanUpUI()
@@ -404,7 +404,7 @@ class Page(wx.Panel):
         self.toggle = wx.Button(self, label = "Toggle")
         self.toggle.Bind(wx.EVT_BUTTON, self.OnToggle)
 
-        self.view = wx.Choice(self, choices=Page.VIEW_CHOICES)
+        self.view = wx.Choice(self, choices=Box.VIEW_CHOICES)
         self.view.SetSelection(0)
         self.view.Bind(wx.EVT_CHOICE, self.OnView)
                     
@@ -559,12 +559,13 @@ class Page(wx.Panel):
 
 class Book(wx.Notebook):
     """
-    A `Book` holds various `Page`s, and is the equivalent of a file at
+    A `Book` holds various `Box`es, and is the equivalent of a file at
     application level: every `Book` is stored in one file and every file loads
-    one `Book`.
+    one `Book`. It is implemented as a `wx.Notebook`, showing every `Box`as
+    a 'page'.
     """
 
-    NewPageEvent, EVT_BK_NEW_PAGE = ne.NewEvent()
+    NewBoxEvent, EVT_BK_NEW_BOX = ne.NewEvent()
 
     def __init__(self, parent, pos=wx.DefaultPosition, size=wx.DefaultSize):
         """Constructor.
@@ -579,25 +580,32 @@ class Book(wx.Notebook):
         
     ### Behavior functions
 
-    def NewPage(self):
-        """Creates a new `Page`, by asking the user for the `Page` name.
+    def GetCurrentBox(self):
+        """Get the `Box` currently in view.
 
-        `returns: ` `True` if a new `Page` was succesfully created.
+        `returns: ` a `Box`.
         """
-        dlg = wx.TextEntryDialog(self, "New page title: ")
+        return self.GetCurrentPage()
+
+    def NewBox(self):
+        """Creates a new `Box`, by asking the user for the `Box` name.
+
+        `returns: ` `True` if a new `Box` was succesfully created.
+        """
+        dlg = wx.TextEntryDialog(self, "New box title: ")
         if dlg.ShowModal() == wx.ID_OK:
-            pg = Page(self)
-            self.AddPage(pg, dlg.GetValue(), select=True)
+            pg = Box(self)
+            self.AddBox(pg, dlg.GetValue(), select=True)
             pg.SetFocus()
             return True
         else:
             return False
 
-    def AddPage(self, page, text, select=False, imageId=wx.Notebook.NO_IMAGE):
-        """Overridden from `wx.Book`. Raises the `Bool.EVT_NB_NEW_PAGE` event."""
-        super(Book, self).AddPage(page, text, select, imageId)
+    def AddBox(self, box, text, select=False, imageId=wx.Notebook.NO_IMAGE):
+        """Overridden from `wx.Book`. Raises the `Bool.EVT_NB_NEW_BOX` event."""
+        super(Book, self).AddPage(box, text, select, imageId)
         
-        event = self.NewPageEvent(id=wx.ID_ANY, page=page, title=text)
+        event = self.NewBoxEvent(id=wx.ID_ANY, box=box, title=text)
         event.SetEventObject(self)
         self.GetEventHandler().ProcessEvent(event)
 
@@ -610,17 +618,17 @@ class Book(wx.Notebook):
         menu = wx.Menu()
         self.Bind(wx.EVT_RIGHT_DOWN, self.OnRightDown)
         
-        # change page name
-        name = wx.MenuItem(menu, wx.ID_ANY, "Change current page name")
+        # change box name
+        name = wx.MenuItem(menu, wx.ID_ANY, "Change current box name")
         self.Bind(wx.EVT_MENU, self.OnNameChange, name)
 
-        # page close
-        close = wx.MenuItem(menu, wx.ID_CLOSE, "Close page")
+        # box close
+        close = wx.MenuItem(menu, wx.ID_CLOSE, "Close box")
         self.Bind(wx.EVT_MENU, self.OnClose, close)
 
-        # page ordering
-        pg_forward = wx.MenuItem(menu, wx.ID_ANY, "Move page forward")
-        self.Bind(wx.EVT_MENU, self.OnPageForward, pg_forward)
+        # box ordering
+        pg_forward = wx.MenuItem(menu, wx.ID_ANY, "Move box forward")
+        self.Bind(wx.EVT_MENU, self.OnBoxForward, pg_forward)
 
         # setup (order matters)
         menu.AppendItem(name)
@@ -638,8 +646,8 @@ class Book(wx.Notebook):
     def Dump(self):
         """Return a `dict` holding all this `Book`'s data.
         
-        `returns: ` a `dict` of the form `{"page title 1": data1, "page title 2": data2, ...}`,
-        where `data*` are the objects returned by each `Page`'s `Dump`.
+        `returns: ` a `dict` of the form `{"box title 1": data1, "box title 2": data2, ...}`,
+        where `data*` are the objects returned by each `Box`'s `Dump`.
         """
         di = {}
         for i in range(self.GetPageCount()):
@@ -652,20 +660,20 @@ class Book(wx.Notebook):
 
         * `di: ` must be a `dict`in the format returned by `Dump`.
         """
-        for title, page in di.iteritems():
-            pg = Page(self)
+        for title, box in di.iteritems():
+            pg = Box(self)
             pg.Hide()        # hide while all data is loaded
-            pg.Load(page)
+            pg.Load(box)
             pg.Show()        # then show everything at the same time
-            self.AddPage(pg, title, select=False)
+            self.AddBox(pg, title, select=False)
         self.SetSelection(0)
 
 
     ### Callbacks
 
-    def OnPageForward(self, ev):
-        """Listens to `wx.EVT_MENU` from "Move page forward" from the context menu."""
-        # if we're already on the last page, don't do anything
+    def OnBoxForward(self, ev):
+        """Listens to `wx.EVT_MENU` from "Move box forward" from the context menu."""
+        # if we're already on the last box, don't do anything
         index = self.GetSelection()
         if index == self.GetPageCount()-1:
             return
@@ -675,19 +683,19 @@ class Book(wx.Notebook):
         self.DeletePage(index)
         print pg
         self.InsertPage(index + 1, pg, self.GetPageText(index), select=True)
-        print "OnPageForward: ", pg
+        print "OnBoxForward: ", pg
 
     def OnClose(self, ev):
-        """Listens to `wx.EVT_MENU` from "Close page" from the context menu."""
+        """Listens to `wx.EVT_MENU` from "Close box" from the context menu."""
         cur = self.GetSelection()
         title = self.GetPageText(cur)
-        dlg = wx.MessageDialog(self, "Are you sure you want to delete " + title + " page?", style=wx.YES_NO)
+        dlg = wx.MessageDialog(self, "Are you sure you want to delete " + title + " box?", style=wx.YES_NO)
         if dlg.ShowModal() == wx.ID_YES:
             self.DeletePage(cur)
 
     def OnNameChange(self, ev):
-        """Listens to `wx.EVT_MENU` from "Change current page name" from the context menu."""
-        dlg = wx.TextEntryDialog(self, "New page title: ")
+        """Listens to `wx.EVT_MENU` from "Change current box name" from the context menu."""
+        dlg = wx.TextEntryDialog(self, "New box title: ")
         if dlg.ShowModal() == wx.ID_OK:
             cur = self.GetSelection()
             self.SetPageText(cur, dlg.GetValue())            
@@ -713,15 +721,15 @@ __pdoc__["field"] = None
 # mehods, and not the ones coming from the base classes,
 # we first set to None every method in the base class.
 for field in dir(wx.Panel):
-    __pdoc__['Page.%s' % field] = None
+    __pdoc__['Box.%s' % field] = None
 for field in dir(wx.Notebook):
     __pdoc__['Book.%s' % field] = None
 
 # Then, we have to add again the methods that we have
 # overriden. See https://github.com/BurntSushi/pdoc/issues/15.
-for field in Page.__dict__.keys():
-    if 'Page.%s' % field in __pdoc__.keys():
-        del __pdoc__['Page.%s' % field]
+for field in Box.__dict__.keys():
+    if 'Box.%s' % field in __pdoc__.keys():
+        del __pdoc__['Box.%s' % field]
 for field in Book.__dict__.keys():
     if 'Book.%s' % field in __pdoc__.keys():
         del __pdoc__['Book.%s' % field]

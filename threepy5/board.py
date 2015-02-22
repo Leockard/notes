@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
 This module holds the `Deck` and its helper class `SelectionManager`.
-`Deck` is the window that holds all `Card`s. Every `Page` has a `Deck`.
+`Deck` is the window that holds all `Card`s. Every `Box` has a `Deck`.
 `SelectionManager` handles selection.
 """
 
@@ -22,7 +22,7 @@ __pdoc__ = {}
 class Deck(AutoSize):
     """
     `Deck` is the parent window of all `Card`s. It handles position, selection,
-    arrangement, and listens to individual Cards' events, so that `Page`
+    arrangement, and listens to individual Cards' events, so that `Box`
     only needs to listen to `Deck` events.
     """
                 
@@ -550,7 +550,7 @@ class Deck(AutoSize):
 
     def OnCardRequest(self, ev):
         """Listens to `Card.EVT_CARD_REQUEST_INSPECT`. Raises the same event,
-        with the same card as event object. The difference is that now a `Page`
+        with the same card as event object. The difference is that now a `Box`
         can `Bind` only once to `EVT_CARD_REQUEST_INSPECT` events coming from
         this `Deck`, instead of having to bind to every individual card.
         """
