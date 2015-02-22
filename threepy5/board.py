@@ -29,14 +29,23 @@ class Board(AutoSize):
     MOVING_RECT_THICKNESS = 1
     BACKGROUND_CL = "#CCCCCC"
     CARD_PADDING = 15
-    HORIZONTAL = 1
-    VERTICAL   = 2
+    HORIZONTAL = 2
+    VERTICAL   = 4
+
+    LEFT   = 2
+    RIGHT  = 4
+    DOWN   = 8
+    UP     = 16
 
     NewCardEvent, EVT_NEW_CARD = ne.NewEvent()
     DeleteEvent,  EVT_BOARD_DEL_CARD = ne.NewEvent()
 
-    def __init__(self, parent, id=wx.ID_ANY, pos=(0,0), size=wx.DefaultSize):
-        super(Board, self).__init__(parent, id=id, pos=pos, size=size, style=wx.BORDER_NONE)
+    def __init__(self, parent, pos=wx.DefaultPosition, size=wx.DefaultSize, style=wx.BORDER_NONE):
+        """Constructor.
+        
+        * `style: ` by default is `wx.BORDER_NONE`.
+        """
+        super(Board, self).__init__(parent, pos=pos, size=size, style=style)
 
         # members
         self.cards = []
@@ -64,48 +73,71 @@ class Board(AutoSize):
     ### Behavior functions
     
     def GetCards(self):
-        """Returns a list of all cards held by the Board."""
+        """Returns a list of all `Card`s held by this object.
+
+        `returns: ` a list of `Card`s.
+        """
         return self.cards
 
     def GetHeaders(self):
-        """Returns a list of all Header cards."""
+        """Returns a list of all `Header` `Card`s.
+        
+        `returns: ` a list of `Header`.
+        """
         return [h for h in self.cards if isinstance(h, Header)]
 
     def GetContents(self):
-        """Returns a list of all Content cards."""
+        """Returns a list of all `Content` `Card`s.
+
+        `returns: ` a list of `Content`.
+        """
         return [h for h in self.cards if isinstance(h, Content)]
 
     def GetCard(self, label):
-        """Returns the card with the (internal) label, or None."""
+        """Returns the specified `Card`.
+
+        * `label: ` the label id of the `Card`. Labels are mostly used internally.
+
+        `returns: ` the requested `Card`, or None.
+        """
         li = [c for c in self.cards if c.label == label]
         if li: return li[0]
         else: return None
 
     def GetContentsByKind(self, kind):
-        """Returns a list of all Content cards of the kind. kind should be a Content.X_LBL constant."""
+        """Returns a list of all Content cards of the `kind`.
+
+        * `kind `: must be a `Content.*_LBL` constant.
+        
+        `returns: ` a list of `Content`s, all of the same `kind`.
+        """
         return [c for c in self.GetContents() if c.GetKind() == kind or c.GetKind(long=True) == kind]
 
     def GetNextCard(self, card, direc):
         """
-        Returns the nearest card to card in the direction direc, which must be one of
-        Board.LEFT, Board.RIGHT, Board.UP, or Board.DOWN.
+        Returns the nearest `Card` to `card` in the direction `direc`.
+
+        * `card: ` a `Card` held by this object.
+        * `direc: ` must be one of `Board.LEFT`, `Board.RIGHT`, `Board.UP`, or `Board.DOWN`.
+
+        `returns: ` the closest `Card` in the specified direction, or `None`.
         """
         # depending on the direction we compare a different side
         # of the cards, as well as get the points whose distance
         # we're going to calculate in a different way
-        if   direc == "left":
+        if   direc == Board.LEFT:
             side  = lambda x: x.right
             getp1 = lambda x: x.GetTopLeft()
             getp2 = lambda x: x.GetBottomLeft()
-        elif direc == "right":
+        elif direc == Board.RIGHT:
             side  = lambda x: x.left
             getp1 = lambda x: x.GetTopLeft()
             getp2 = lambda x: x.GetTopRight()
-        elif direc == "up":
+        elif direc == Board.UP:
             side  = lambda x: x.bottom
             getp1 = lambda x: x.GetTopLeft()
             getp2 = lambda x: x.GetBottomLeft()
-        elif direc == "down":
+        elif direc == Board.DOWN:
             side  = lambda x: x.top
             getp1 = lambda x: x.GetBottomLeft()
             getp2 = lambda x: x.GetTopLeft()
@@ -113,9 +145,9 @@ class Board(AutoSize):
         # get those cards whose "side" is in the desired position with respect to card
         rect = card.GetRect()
         nxt = []
-        if direc == "left" or direc == "up":
+        if direc == Board.LEFT or direc == Board.UP:
             nxt = [c for c in self.GetCards() if side(c.GetRect()) < side(rect)]
-        elif direc == "right" or direc == "down":
+        elif direc == Board.RIGHT or direc == Board.DOWN:
             nxt = [c for c in self.GetCards() if side(c.GetRect()) > side(rect)]
         else:
             return None
@@ -130,37 +162,23 @@ class Board(AutoSize):
         else:
             return None
 
-    def GetPrevCard(self, ctrl, cycle=True):
-        """Returns the card with label previous to that of the argument, or None.
-        If cycle=True, and card is the Card with the last label, return the Card with last label."""
-        card = ctrl.GetParent()
-        if not isinstance(card, Card):
-            card = card.GetParent()
-            if not isinstance(card, Card):
-                return
-
-        lesser_lbl = [c for c in self.cards if c.label < card.label]
-        lesser_lbl.sort(key = lambda x: x.label)
-        if lesser_lbl:
-            return lesser_lbl[-1]
-
-        if not cycle:
-            return None
-            
-        cards = self.cards[:]
-        cards.sort(key = lambda x: x.label)
-        return cards[-1]
-
     def GetPadding(self):
-        """Returns the correct padding width. Scales along with cards when zoom changes."""
+        """Returns `self.CARD_PADDING`, fixed for scale.
+
+        `returns: ` the current scaled padding width (float)."""
         return self.CARD_PADDING * self.scale
 
     def PlaceNewCard(self, subclass, pos=wx.DefaultPosition, below=False):
         """
-        Places a new Card on the board.
-        subclass should be the string with the name of the Card subclass to create.
-        below=False creates the new Card to the right of the currently selected
-        Card in the board, if any. below=True creates it below.
+        Places a new Card on this Board.
+
+        * `subclass: ` should be the string with the name of the `Card` subclass to create ("Content", "Header", "Image").
+        * `pos: ` the position where to put the new `Card`. If it is the default, use `below` to determine
+        where to put it.
+        * `below ` when `False`, creates the new `Card` to the right of the currently selected
+        `Card` in the board, if any; when `True` creates it below.
+
+        `returns: ` the new `Card`.
         """
         if pos == wx.DefaultPosition:
             pos = (0, 0)
@@ -203,10 +221,16 @@ class Board(AutoSize):
         self.UnselectAll()
         new.SetFocus()
 
+        return new
+
     def NewCard(self, subclass, pos=wx.DefaultPosition, scroll=False):
         """
-        Create a new card of type subclass (string) at pos. If scroll
-        is True, scroll the board so that the new card is in view.
+        Create a new `Card` of type `subclass` at `pos`.
+
+        * `pos: ` the position where to create the `Card`.
+        * `scroll: ` if True, scroll the `Board` so that the new `Card` is in view.
+
+        `returns: ` the new `Card`.
         """
         # never use labels, always let Board set its own
         label = len(self.cards)
@@ -255,28 +279,71 @@ class Board(AutoSize):
         return new
 
     def MoveCard(self, card, dx, dy):
+        """Move the `Card`.
+
+        `dx: ` the amount of pixels to move in the X direction.
+        `dy: ` the amount of pixels to move in the Y direction.
+
+        `returns: ` `None`.
+        """
         card.MoveBy(dx, dy)
 
     def GetSelection(self):
+        """Return the current selected `Card`s.
+
+        `returns: ` a list of `Card`s.
+        """
         return self.selec.GetSelection()
 
     def SelectCard(self, card, new_sel=False):
+        """Select the specified `Card`.
+
+        * `card: ` the `Card` to select.
+        * `new_sel: ` if `True`, unselects all other `Card`s before selecting `card`.
+
+        `returns: ` `None`.
+        """
         self.selec.SelectCard(card, new_sel)
 
     def UnselectCard(self, card):
+        """Unselect the specified `Card`.
+
+        * `card: ` the `Card` to unselect.
+
+        `returns: ` `None`.
+        """
         self.selec.UnselectCard(card)
 
     def UnselectAll(self):
+        """Unselect all `Card`s.
+
+        `returns: ` `None`.
+        """
         self.selec.UnselectAll()
         self.selec.Deactivate()
 
     def SelectGroup(self, group, new_sel=True):
+        """Select every `Card` in `group`.
+
+        * `group: ` a `CardGroup` to select.
+        * `new_sel: ` if `True`, unselects all other `Card`s before selecting.
+
+        `returns: ` `None`.
+        """
         self.selec.SelectGroup(group, new_sel)
 
     def DeleteSelected(self):
+        """Deletes every `Card` currently selected.
+
+        `returns: ` `None`.
+        """
         self.selec.DeleteSelected()
 
     def CopySelected(self):
+        """Copies every `Card` currently selected to `wx.TheClipboard`.
+
+        `returns: ` `None`.
+        """
         # get the data
         data = []
         for c in self.GetSelection():
@@ -292,6 +359,10 @@ class Board(AutoSize):
             wx.TheClipboard.Close()
 
     def PasteFromClipboard(self, pos=wx.DefaultPosition):
+        """Pastes every `Card` currently in `wx.TheClipboard`.
+
+        `returns: ` `None`.
+        """
         if wx.TheClipboard.Open():
             # get data
             obj = wx.CustomDataObject("CardList")
@@ -317,33 +388,44 @@ class Board(AutoSize):
 
             wx.TheClipboard.Close()
 
-    def GetFocusedCard(self):
-        """Returns the card currently in focus, or None."""
-        obj = self.FindFocus()
-        if isinstance(obj, Card):
-            return obj
-        elif isinstance(obj.GetParent(), EditText):
-            return obj.GetGrandParent()
-        elif isinstance(obj.GetParent(), Card):
-            return obj.GetParent()
-        else:
-            return None
-
     def GetGroups(self):
+        """Get the list of `CardGroup`s defined for this `Board`.
+
+        `returns: ` a list of `CardGroup`s.
+        """
         return self.groups
 
     def GetContainingGroups(self, card):
+        """Get a list of every `CardGroup` that contains `card`.
+
+        * `card: ` a `Card`.
+
+        `returns: ` a list of `CardGroup`s.
+        """
         return [g for g in self.groups if card in g.GetMembers()]
 
     def NewGroup(self, cards=[]):
+        """Create a new `CardGroup` with `cards` as members.
+
+        * `cards: ` a list of `Card`s.
+        """
         self.groups.append(CardGroup(label=len(self.groups), members=cards))
 
     def GroupSelected(self):
+        """Creates a new `CardGroup` with the selected `Card`s as members.
+
+        `returns: ` `None`.
+        """
         sel = self.GetSelection()
         if sel: self.NewGroup(sel)
 
     def ScrollToCard(self, card):
-        """If the card is in view, don't do anything. Otherwise, scroll it into view."""
+        """Scroll in both direction so that `card` is fully in view.
+
+        * `card: ` a `Card` to scroll to.
+        
+        `returns: ` `None`.
+        """
         rect = card.GetRect()
         pt = rect.GetBottomRight()
         pt = self.CalcUnscrolledPosition(pt)
@@ -356,9 +438,12 @@ class Board(AutoSize):
         self.ScrollToPoint(pt)
 
     def ScrollToPoint(self, pt):
-        """
-        If the point is in view, don't do anything. Otherwise, scroll it into view.
-        The point must be in absolute (content size) coordinates.
+        """Scroll in both direction so that `pt` is in view. `Board.ScrollToCard` basically just calls
+        this function twice, on a `Card`'s corner points.
+
+        * `pt: ` a (x, y) point.
+
+        `returns: ` `None`.
         """
         step = self.SCROLL_STEP
 
@@ -401,16 +486,22 @@ class Board(AutoSize):
             self.Scroll(xsc, ysc)
 
     def ArrangeSelection(self, orient):
-        """Use Board.HORIZONTAL or Board.VERTICAL."""
+        """Arranges the selected cards according to `orient`.
+
+        * `orient: ` must be one of `Board.HORIZONTAL` or `Board.VERTICAL`.
+
+        `returns: ` `None`.
+        """
         if   orient == Board.HORIZONTAL:
             self.HArrangeSelectedCards()
         elif orient == Board.VERTICAL:
             self.VArrangeSelectedCards()
 
     def HArrangeSelectedCards(self):
-        """
-        If there are any selected cards, arrange them in a horizontal row,
-        to the right of the left-most selected card.
+        """Same as `Board.ArrangeSelection(Board.HORIZONTAL)`. Arranges `Card`s
+        in a horizontal row, to the right of the left-most selected card.
+
+        `returns: ` `None`.
         """
         if len(self.GetSelection()) < 1: return
 
@@ -432,9 +523,10 @@ class Board(AutoSize):
         self.selec.SetFocus()
 
     def VArrangeSelectedCards(self):
-        """
-        If there are any selected cards, arrange them in a vertical column,
-        below of the top-most selected card.
+        """Same as `Board.ArrangeSelection(Board.VERTICAL)`. Arranges `Card`s
+        in a vertical column, below of the top-most selected card.
+
+        `returns: ` `None`.
         """
         if len(self.GetSelection()) < 1: return
 
@@ -459,22 +551,23 @@ class Board(AutoSize):
                     
     ### Callbacks
 
-    def __del__(self):
-        # don't forget to stop all timers!
-        pass
-
     def OnCardCollapse(self, ev):
+        """Listens to `Card.EVT_CARD_COLLAPSE`."""
         card = ev.GetEventObject()
         card.SetSize([i*self.scale for i in card.GetSize()])
         
     def OnCardDelete(self, ev):
-        """Listens to every deleted card."""
+        """Listens to every `Card.EVT_CARD_DELETE`."""
         card = ev.GetEventObject()
         self.cards.remove(card)
         self.UnselectCard(card)
 
     def OnMgrDelete(self, ev):
-        """Listens to every delete action on SelectionManager."""
+        """Listens to `SelectionManager.EVT_MGR_DELETE`, which is raised
+        on every delete action. `Board.DeleteSelected` calls every selected
+        `Card`'s `Delete` method, which raises many `Card.EVT_CARD_DELETE`,
+        and then raises only one `SelectionManager.EVT_MGR_DELETE` event.
+        """
         self.selec.Deactivate()
 
         # raise the event again, with event object = self
@@ -483,25 +576,27 @@ class Board(AutoSize):
         self.GetEventHandler().ProcessEvent(event)
 
     def OnCardRequest(self, ev):
-        """
-        Raises the event again, with the same card as event object. The difference
-        is that now a Page() can Bind() to EVT_CARD_REQUEST_INSPECT events coming from
-        this board, instead of having to bind to every individual card.
+        """Listens to `Card.EVT_CARD_REQUEST_INSPECT`. Raises the same event,
+        with the same card as event object. The difference is that now a `Page`
+        can `Bind` only once to `EVT_CARD_REQUEST_INSPECT` events coming from
+        this `Board`, instead of having to bind to every individual card.
         """
         event = Card.ReqInspectEvent(id=wx.ID_ANY)
         event.SetEventObject(ev.GetEventObject())
         self.GetEventHandler().ProcessEvent(event)
 
     def OnChildFocus(self, ev):
-        pass # important to avoid automatically scrolling to focused child
+        """Listens to `wx.EVT_CHILD_FOCUS`."""
+        # important to avoid automatically scrolling to focused child
+        pass 
 
     def OnCardChildLeftDown(self, ev):
-        """Called when a Card's child window is clicked."""
+        """Listens to `wx.EVT_LEFT_DOWN` events on every `Card`'s child window."""
         self.UnselectAll()
         ev.Skip()
 
     def OnCardLeftDown(self, ev):
-        """Called when a child card has been clicked."""
+        """Listens to `wx.EVT_LEFT_DOWN` events from every `Card`."""
         card = ev.GetEventObject()
 
         # bring to front and select
@@ -521,11 +616,12 @@ class Board(AutoSize):
             self.moving_cards_pos.append((c, c.GetPosition() - pos, c.GetPosition()))
 
     def OnCardChildFocus(self, ev):
-        """If a child of card is focused, unselect all (including parent)."""
+        """Listens to `wx.EVT_CHILD_FOCUS` from every `Card`."""
         self.UnselectAll()
         ev.Skip()
 
     def OnMovingCard(self, ev):
+        """Listens to `wx.EVT_MOTION` events from `Card`s only while a `Card` is being click-dragged."""
         if ev.Dragging() and self.moving_cards_pos:
             # draw a rectangle while moving
             # order is important
@@ -536,6 +632,7 @@ class Board(AutoSize):
                 self.PaintCardRect(c, pos)
 
     def OnCardLeftUp(self, ev):
+        """Listens to `wx.EVT_LEFT_UP` events from `Card`s only while a `Card` is being click-dragged."""
         # terminate moving
         if self.on_motion:
             self.on_motion = False
@@ -555,6 +652,7 @@ class Board(AutoSize):
         self.Unbind(wx.EVT_MOTION)
 
     def OnLeftDown(self, ev):
+        """Listens to `wx.EVT_LEFT_DOWN` from this object."""
         self.UnselectAll()
         self.selec.SetFocus()
 
@@ -564,6 +662,7 @@ class Board(AutoSize):
         self.Bind(wx.EVT_MOTION, self.OnDragSelect)
 
     def OnDragSelect(self, ev):
+        """Listens to `wx.EVT_MOTION` events from this object, only when the user is click-dragging."""
         if ev.Dragging() and not self.moving_cards_pos:
             self.drag_select = True
             
@@ -582,6 +681,7 @@ class Board(AutoSize):
             self.cur_pos = final_pos
 
     def OnLeftUp(self, ev):
+        """Listens to `wx.EVT_LEFT_UP` events from this object."""
         # terminate drag select
         if self.drag_select:
             # erase the last selection rect
@@ -599,15 +699,60 @@ class Board(AutoSize):
             self.selec.SetFocus()
 
     def OnMouseCaptureLost(self, ev):
+        """Listens to `wx.EVT_MOUSE_CAPTURE_LOST` events from this object."""
         self.ReleaseMouse()
 
     def OnLeftDClick(self, ev):
+        """Listens to `wx.EVT_LEFT_DCLICK` events from this object."""
         self.NewCard("Content", pos=ev.GetPosition())
+        
+    def OnCtrlRet(self, ev):
+        """Listens to CTRL+RET."""
+        self.PlaceNewCard("Content", below=False)
+
+    def OnCtrlShftRet(self, ev):
+        """Listens to CTRL+SHIFT+RET."""
+        self.PlaceNewCard("Content", below=True)
+
+    def OnAltRet(self, ev):
+        """Listens to ALT+RET."""
+        self.PlaceNewCard("Header", below=False)
+        
+    def OnAltShftRet(self, ev):
+        """Listens to ALT+SHIFT+RET."""
+        self.PlaceNewCard("Header", below=True)
+
+    def OnRightDown(self, ev):
+        """Listens to `wx.EVT_RIGHT_DOWN` events."""
+        self.menu_position = ev.GetPosition()
+        self.PopupMenu(self.menu, ev.GetPosition())
+
+    def OnPaste(self, ev):
+        """Listens to the "Paste" `wx.EVT_MENU` event from the context menu."""
+        self.PasteFromClipboard(self.menu_position)
+
+    def OnInsertContent(self, ev):
+        """Listens to the "Insert Content" `wx.EVT_MENU` event from the context menu."""
+        self.PlaceNewCard("Content", pos=self.menu_position)
+
+    def OnInsertHeader(self, ev):
+        """Listens to the "Insert Header" `wx.EVT_MENU` event from the context menu."""
+        self.PlaceNewCard("Header", pos=self.menu_position)
+
+    def OnInsertImg(self, ev):
+        """Listens to the "Insert Image" `wx.EVT_MENU` event from the context menu."""
+        self.PlaceNewCard("Image", pos=self.menu_position)
+
+    def OnClose(self, ev):
+        """Listens to the "Close" `wx.EVT_MENU` event from the context menu."""
+        # should close tab
+        pass
         
             
     ### Auxiliary functions
 
     def InitMenu(self):
+        """Initializes the `wx.Menu` to display on right click."""
         # make menu
         menu = wx.Menu()
         self.Bind(wx.EVT_RIGHT_DOWN, self.OnRightDown)
@@ -640,6 +785,7 @@ class Board(AutoSize):
         self.menu = menu
 
     def InitAccels(self):
+        """Initializes the `wx.AcceleratorTable`."""
         # we create ghost menus so that we can
         # bind its items to some accelerators
         accels = []
@@ -662,7 +808,7 @@ class Board(AutoSize):
 
         self.SetAcceleratorTable(wx.AcceleratorTable(accels))
 
-    def PaintRect(self, rect, thick = MOVING_RECT_THICKNESS, style = wx.SOLID, refresh = True):
+    def PaintRect(self, rect, thick=MOVING_RECT_THICKNESS, style=wx.SOLID, refresh=True):
         """Paints a rectangle. Use style = wx.TRANSPARENT to erase a rectangle."""
         dc = wx.ClientDC(self)
         # Brush is for background, Pen is for foreground
@@ -732,41 +878,6 @@ class Board(AutoSize):
             for label, members in d["groups"].iteritems():
                 cards = [self.GetCard(l) for l in members]
                 self.NewGroup(cards)
-
-
-    ### Callbacks
-
-    def OnCtrlRet(self, ev):
-        self.PlaceNewCard("Content", below=False)
-
-    def OnCtrlShftRet(self, ev):
-        self.PlaceNewCard("Content", below=True)
-
-    def OnAltRet(self, ev):
-        self.PlaceNewCard("Header", below=False)
-        
-    def OnAltShftRet(self, ev):
-        self.PlaceNewCard("Header", below=True)
-
-    def OnRightDown(self, ev):
-        self.menu_position = ev.GetPosition()
-        self.PopupMenu(self.menu, ev.GetPosition())
-
-    def OnPaste(self, ev):
-        self.PasteFromClipboard(self.menu_position)
-
-    def OnInsertContent(self, ev):
-        self.PlaceNewCard("Content", pos=self.menu_position)
-
-    def OnInsertHeader(self, ev):
-        self.PlaceNewCard("Header", pos=self.menu_position)
-
-    def OnInsertImg(self, ev):
-        self.PlaceNewCard("Image", pos=self.menu_position)
-
-    def OnClose(self, ev):
-        # should close tab
-        pass
 
 
                 
@@ -964,13 +1075,13 @@ class SelectionManager(wx.Window):
         # shift key
         elif ev.ShiftDown():
             if   key == wx.WXK_LEFT:
-                self.SelectNext("left", new_sel=False)
+                self.SelectNext(Board.LEFT, new_sel=False)
             elif key == wx.WXK_RIGHT:
-                self.SelectNext("right", new_sel=False)
+                self.SelectNext(Board.RIGHT, new_sel=False)
             elif key == wx.WXK_UP:
-                self.SelectNext("up", new_sel=False)
+                self.SelectNext(Board.UP, new_sel=False)
             elif key == wx.WXK_DOWN:
-                self.SelectNext("down", new_sel=False)
+                self.SelectNext(Board.DOWN, new_sel=False)
             else:
                 ev.Skip()
 
@@ -982,13 +1093,13 @@ class SelectionManager(wx.Window):
         else:
             # arrow keys: select next card    
             if   key == wx.WXK_LEFT:
-                self.SelectNext("left", new_sel=True)
+                self.SelectNext(Board.LEFT, new_sel=True)
             elif key == wx.WXK_RIGHT:
-                self.SelectNext("right", new_sel=True)
+                self.SelectNext(Board.RIGHT, new_sel=True)
             elif key == wx.WXK_UP:
-                self.SelectNext("up", new_sel=True)
+                self.SelectNext(Board.UP, new_sel=True)
             elif key == wx.WXK_DOWN:
-                self.SelectNext("down", new_sel=True)
+                self.SelectNext(Board.DOWN, new_sel=True)
 
             # DEL: delete all selection
             elif key == wx.WXK_DELETE:

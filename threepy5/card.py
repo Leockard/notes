@@ -168,13 +168,13 @@ class Card(wx.Panel):
 
         # try to get the nearest card
         if forward:
-            nxt = bd.GetNextCard(self, "right")
+            nxt = bd.GetNextCard(self, Board.RIGHT)
             if not nxt:
-                nxt = bd.GetNextCard(self, "down")
+                nxt = bd.GetNextCard(self, Board.DOWN)
         else:
-            nxt = bd.GetNextCard(self, "left")
+            nxt = bd.GetNextCard(self, Board.LEFT)
             if not nxt:
-                nxt = bd.GetNextCard(self, "up")
+                nxt = bd.GetNextCard(self, Board.UP)
 
         # and navigate!
         if nxt:

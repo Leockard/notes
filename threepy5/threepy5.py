@@ -18,7 +18,7 @@ import re
 
 class ThreePyFiveFrame(wx.Frame):
     """
-    A ThreePyFiveFrame holds a WelcomePage at startup, until a Book is loaded.
+    A ThreePyFiveFrame holds a `WelcomePage` at startup, until a `Book` is loaded.
     """
     
     DEFAULT_SZ = (800, 600)
