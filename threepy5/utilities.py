@@ -30,7 +30,7 @@ class AutoSize(wx.ScrolledWindow):
     def __init__(self, parent, pos=wx.DefaultPosition, size=wx.DefaultSize, style=0):
         """Constructor.
 
-        * `parent: ` the parent `Board`.
+        * `parent: ` the parent `Deck`.
         * `pos: ` by default, is `wx.DefaultPosition`.
         * `size: ` by default, is `wx.DefaultSize`.
         * `style: ` the style for this window.

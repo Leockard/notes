@@ -6,36 +6,36 @@ Inspect classes are used to take a closer look at certain objects.
 import wx
 import re
 from card import *
-from board import Board
+from board import Deck
 from utilities import *
 
 
 ######################
-# BoardInspect Class
+# DeckInspect Class
 ######################
 
-class BoardInspect(AutoSize):
-    """Displays a "minimap" of the current `Board`. Uses `MiniCard` to represent a `Card` on the `Board`."""
+class DeckInspect(AutoSize):
+    """Displays a "minimap" of the current `Deck`. Uses `MiniCard` to represent a `Card` on the `Deck`."""
 
     DEFAULT_FACTOR  = 5
     BACKGROUND_CL   = (255, 255, 255, 255)
     DEFAULT_MINI_CL = (220, 218, 213, 255)
     
-    def __init__(self, parent, board=None, pos=wx.DefaultPosition, size=wx.DefaultSize):
+    def __init__(self, parent, deck=None, pos=wx.DefaultPosition, size=wx.DefaultSize):
         """Constructor.
 
         * `parent: ` the parent `Page`.
-        * `board: ` the `Board` we are inspecting.
+        * `deck: ` the `Deck` we are inspecting.
         * `pos: ` by default, is `wx.DefaultSize`.
         * `size: ` by default, is `wx.DefaultSize`.
         """
-        super(BoardInspect, self).__init__(parent, pos=pos, size=size)
+        super(DeckInspect, self).__init__(parent, pos=pos, size=size)
 
         # members        
-        self.factor = BoardInspect.DEFAULT_FACTOR
+        self.factor = DeckInspect.DEFAULT_FACTOR
         self.cards = {}
         self.SetBackgroundColour(self.BACKGROUND_CL)
-        self.SetBoard(board)
+        self.SetDeck(deck)
 
         # bindings
         self.Bind(wx.EVT_SHOW, self.OnShow)
@@ -47,28 +47,30 @@ class BoardInspect(AutoSize):
         """Delete all `MiniCard`s from this view."""
         self.cards = {}
 
-    def SetBoard(self, board):
-        """Sets the `Board` we are going to inspect."""
+    def SetDeck(self, deck):
+        """Sets the `Deck` we are going to inspect.
+        * `deck: ` a `Deck`.
+        """
         # clean up and add every card already present
         self.Clear()
-        for c in board.GetCards():
+        for c in deck.GetCards():
             self.AddCard(c)
 
         # set sizes
-        sz = [i / self.factor for i in board.GetSize()]
+        sz = [i / self.factor for i in deck.GetSize()]
         self.SetSize(sz)
-        self.UpdateContentSize(board.content_sz)
+        self.UpdateContentSize(deck.content_sz)
 
         # set scroll
-        step = board.GetScrollPixelsPerUnit()
+        step = deck.GetScrollPixelsPerUnit()
         self.SetScrollRate(step[0] / self.factor, step[1] / self.factor)
 
         # listen to events
-        board.Bind(Board.EVT_NEW_CARD, self.OnNewCard)
-        board.Bind(wx.EVT_SIZE, self.OnBoardSize)
-        board.Bind(wx.EVT_SCROLLWIN, self.OnBoardScroll)
+        deck.Bind(Deck.EVT_NEW_CARD, self.OnNewCard)
+        deck.Bind(wx.EVT_SIZE, self.OnDeckSize)
+        deck.Bind(wx.EVT_SCROLLWIN, self.OnDeckScroll)
         
-        self.board = board
+        self.deck = deck
     
     def AddCard(self, card):
         """Adds a new `MiniCard`."""
@@ -99,9 +101,9 @@ class BoardInspect(AutoSize):
             del self.cards[card]
 
     def SetPosition(self):
-        """Calculates position relative to the `Board`."""
+        """Calculates position relative to the `Deck`."""
         w, h = self.GetSize()
-        rect = self.board.GetClientRect()
+        rect = self.deck.GetClientRect()
         pos = (rect.right - w, rect.bottom - h)
         self.Move(pos)
 
@@ -112,24 +114,24 @@ class BoardInspect(AutoSize):
         """Listens to `wx.EVT_SHOW`."""
         self.SetPosition()
 
-    def OnBoardScroll(self, ev):
-        """Listens to `wx.EVT_SCROLLWIN` from the underlying `Board`."""
+    def OnDeckScroll(self, ev):
+        """Listens to `wx.EVT_SCROLLWIN` from the underlying `Deck`."""
         view = ev.GetEventObject().GetViewStart()
         self.Scroll(view.x / self.factor, view.y / self.factor)
 
-    def OnBoardSize(self, ev):
-        """Listens to `wx.EVT_SIZE` from the underlying `Board`."""
-        self.SetSize([i / self.factor + 30 for i in self.board.GetSize()])
+    def OnDeckSize(self, ev):
+        """Listens to `wx.EVT_SIZE` from the underlying `Deck`."""
+        self.SetSize([i / self.factor + 30 for i in self.deck.GetSize()])
         self.SetPosition()
 
     def OnNewCard(self, ev):
-        """Listens to `Board.EVT_NEW_CARD`."""
+        """Listens to `Deck.EVT_NEW_CARD`."""
         self.AddCard(ev.GetEventObject())
 
     def OnDeleteCard(self, ev):
-        """Listens to `Card.EVT_CARD_DELETE` from each `Card` on the `Board`."""
+        """Listens to `Card.EVT_CARD_DELETE` from each `Card` on the `Deck`."""
         self.RemoveCard(ev.GetEventObject())
-        # dont' consume it! Board also needs it
+        # dont' consume it! Deck also needs it
         ev.Skip()
 
     def OnContentKind(self, ev):
@@ -148,7 +150,7 @@ class CardInspect(wx.Panel):
     inspecting, the `Card`s are `Reparent`ed to this window.
     """
     
-    CARD_PADDING = Board.CARD_PADDING
+    CARD_PADDING = Deck.CARD_PADDING
     BACKGROUND_CL = "#CCCCCC"
     
     TITLE_FONT   = (18, wx.SWISS, wx.ITALIC, wx.BOLD)
@@ -242,12 +244,12 @@ class CardInspect(wx.Panel):
 ######################        
 
 class MiniCard(wx.Window):
-    """The little cards shown in a `BoardInspect`"""
+    """The little cards shown in a `DeckInspect`"""
     
     def __init__(self, parent, pos=wx.DefaultPosition, size=wx.DefaultSize):
         """Constructor.
 
-        * `parent: ` the parent `BoardInspect`.
+        * `parent: ` the parent `DeckInspect`.
         * `pos: ` by default, is `wx.DefaultSize`.
         * `size: ` by default, is `wx.DefaultSize`.
         """
@@ -266,21 +268,21 @@ class TagsInspect(wx.Panel):
 
     TAGS_REGEX = "^(\w+):(.*)$"
     
-    def __init__(self, parent, board, pos=wx.DefaultPosition, size=wx.DefaultSize):
+    def __init__(self, parent, deck, pos=wx.DefaultPosition, size=wx.DefaultSize):
         """Constructor.
 
         * `parent: ` the parent `Page`.
-        * `board: ` the parent `Board` of the `Card`s we are inspecting.
+        * `deck: ` the parent `Deck` of the `Card`s we are inspecting.
         * `pos: ` by default, is `wx.DefaultSize`.
         * `size: ` by default, is `wx.DefaultSize`.
         """
         super(TagsInspect, self).__init__(parent, pos=pos, size=size)
-        self.board = board
+        self.deck = deck
         self.InitUI()
 
         # bindings
         self.Bind(wx.EVT_SHOW, self.OnShow)
-        board.Bind(Board.EVT_NEW_CARD, self.OnNewCard)
+        deck.Bind(Deck.EVT_NEW_CARD, self.OnNewCard)
 
 
     ### Behavior functions
@@ -329,7 +331,7 @@ class TagsInspect(wx.Panel):
                 self.ShowTags(card)
 
     def OnNewCard(self, ev):
-        """Listens to `Board.EVT_NEW_CARD`."""
+        """Listens to `Deck.EVT_NEW_CARD`."""
         card = ev.GetEventObject()
         for ch in card.GetChildren():
             ch.Bind(wx.EVT_SET_FOCUS, self.OnCardChildFocus)
@@ -357,7 +359,7 @@ __pdoc__["field"] = None
 # mehods, and not the ones coming from the base classes,
 # we first set to None every method in the base class.
 for field in dir(AutoSize):
-    __pdoc__['BoardInspect.%s' % field] = None
+    __pdoc__['DeckInspect.%s' % field] = None
 for field in dir(wx.Panel):
     __pdoc__['CardInspect.%s' % field] = None
 for field in dir(wx.Window):
@@ -367,9 +369,9 @@ for field in dir(wx.Panel):
 
 # Then, we have to add again the methods that we have
 # overriden. See https://github.com/BurntSushi/pdoc/issues/15.
-for field in BoardInspect.__dict__.keys():
-    if 'BoardInspect.%s' % field in __pdoc__.keys():
-        del __pdoc__['BoardInspect.%s' % field]
+for field in DeckInspect.__dict__.keys():
+    if 'DeckInspect.%s' % field in __pdoc__.keys():
+        del __pdoc__['DeckInspect.%s' % field]
 for field in CardInspect.__dict__.keys():
     if 'CardInspect.%s' % field in __pdoc__.keys():
         del __pdoc__['CardInspect.%s' % field]

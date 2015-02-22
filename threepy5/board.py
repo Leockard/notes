@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
-This module holds the `Board` and its helper class `SelectionManager`.
-`Board` is the window that holds all `Card`s. Every `Page` has a `Board`.
+This module holds the `Deck` and its helper class `SelectionManager`.
+`Deck` is the window that holds all `Card`s. Every `Page` has a `Deck`.
 `SelectionManager` handles selection.
 """
 
@@ -16,14 +16,14 @@ __pdoc__ = {}
 
     
 ######################
-# Board Class
+# Deck Class
 ######################
 
-class Board(AutoSize):
+class Deck(AutoSize):
     """
-    `Board` is the parent window of all `Card`s. It handles position, selection,
+    `Deck` is the parent window of all `Card`s. It handles position, selection,
     arrangement, and listens to individual Cards' events, so that `Page`
-    only needs to listen to Board events.
+    only needs to listen to `Deck` events.
     """
                 
     MOVING_RECT_THICKNESS = 1
@@ -38,7 +38,7 @@ class Board(AutoSize):
     UP     = 16
 
     NewCardEvent, EVT_NEW_CARD = ne.NewEvent()
-    DeleteEvent,  EVT_BOARD_DEL_CARD = ne.NewEvent()
+    DeleteEvent,  EVT_DECK_DEL_CARD = ne.NewEvent()
 
     def __init__(self, parent, pos=wx.DefaultPosition, size=wx.DefaultSize, style=wx.BORDER_NONE):
         """Constructor.
@@ -46,7 +46,7 @@ class Board(AutoSize):
         * `parent: ` the parent `wx.Window`.
         * `style: ` by default is `wx.BORDER_NONE`.
         """
-        super(Board, self).__init__(parent, pos=pos, size=size, style=style)
+        super(Deck, self).__init__(parent, pos=pos, size=size, style=style)
 
         # members
         self.cards = []
@@ -68,7 +68,7 @@ class Board(AutoSize):
         self.Bind(self.selec.EVT_MGR_DELETE, self.OnMgrDelete)
         
         # other gui setup
-        self.SetBackgroundColour(Board.BACKGROUND_CL)        
+        self.SetBackgroundColour(Deck.BACKGROUND_CL)        
 
 
     ### Behavior functions
@@ -119,26 +119,26 @@ class Board(AutoSize):
         Returns the nearest `Card` to `card` in the direction `direc`.
 
         * `card: ` a `Card` held by this object.
-        * `direc: ` must be one of `Board.LEFT`, `Board.RIGHT`, `Board.UP`, or `Board.DOWN`.
+        * `direc: ` must be one of `Deck.LEFT`, `Deck.RIGHT`, `Deck.UP`, or `Deck.DOWN`.
 
         `returns: ` the closest `Card` in the specified direction, or `None`.
         """
         # depending on the direction we compare a different side
         # of the cards, as well as get the points whose distance
         # we're going to calculate in a different way
-        if   direc == Board.LEFT:
+        if   direc == Deck.LEFT:
             side  = lambda x: x.right
             getp1 = lambda x: x.GetTopLeft()
             getp2 = lambda x: x.GetBottomLeft()
-        elif direc == Board.RIGHT:
+        elif direc == Deck.RIGHT:
             side  = lambda x: x.left
             getp1 = lambda x: x.GetTopLeft()
             getp2 = lambda x: x.GetTopRight()
-        elif direc == Board.UP:
+        elif direc == Deck.UP:
             side  = lambda x: x.bottom
             getp1 = lambda x: x.GetTopLeft()
             getp2 = lambda x: x.GetBottomLeft()
-        elif direc == Board.DOWN:
+        elif direc == Deck.DOWN:
             side  = lambda x: x.top
             getp1 = lambda x: x.GetBottomLeft()
             getp2 = lambda x: x.GetTopLeft()
@@ -146,9 +146,9 @@ class Board(AutoSize):
         # get those cards whose "side" is in the desired position with respect to card
         rect = card.GetRect()
         nxt = []
-        if direc == Board.LEFT or direc == Board.UP:
+        if direc == Deck.LEFT or direc == Deck.UP:
             nxt = [c for c in self.GetCards() if side(c.GetRect()) < side(rect)]
-        elif direc == Board.RIGHT or direc == Board.DOWN:
+        elif direc == Deck.RIGHT or direc == Deck.DOWN:
             nxt = [c for c in self.GetCards() if side(c.GetRect()) > side(rect)]
         else:
             return None
@@ -171,13 +171,13 @@ class Board(AutoSize):
 
     def PlaceNewCard(self, subclass, pos=wx.DefaultPosition, below=False):
         """
-        Places a new Card on this Board.
+        Places a new `Card` on this `Deck`.
 
         * `subclass: ` should be the string with the name of the `Card` subclass to create ("Content", "Header", "Image").
         * `pos: ` the position where to put the new `Card`. If it is the default, use `below` to determine
         where to put it.
         * `below ` when `False`, creates the new `Card` to the right of the currently selected
-        `Card` in the board, if any; when `True` creates it below.
+        `Card` in the `Deck`, if any; when `True` creates it below.
 
         `returns: ` the new `Card`.
         """
@@ -229,11 +229,11 @@ class Board(AutoSize):
         Create a new `Card` of type `subclass` at `pos`.
 
         * `pos: ` the position where to create the `Card`.
-        * `scroll: ` if True, scroll the `Board` so that the new `Card` is in view.
+        * `scroll: ` if True, scroll the `Deck` so that the new `Card` is in view.
 
         `returns: ` the new `Card`.
         """
-        # never use labels, always let Board set its own
+        # never use labels, always let Deck set its own
         label = len(self.cards)
 
         # create the new card with the unscaled position
@@ -270,8 +270,8 @@ class Board(AutoSize):
         # make sure the new card is visible
         if scroll:
             rect = new.GetRect()
-            board = self.GetRect()
-            if rect.bottom > board.bottom or rect.right > board.right or rect.left < 0 or rect.top < 0:
+            deck = self.GetRect()
+            if rect.bottom > deck.bottom or rect.right > deck.right or rect.left < 0 or rect.top < 0:
                 self.ScrollToCard(new)
 
         # finish up
@@ -374,7 +374,7 @@ class Board(AutoSize):
             wx.TheClipboard.Close()
 
     def GetGroups(self):
-        """Get the list of `CardGroup`s defined for this `Board`.
+        """Get the list of `CardGroup`s defined for this `Deck`.
 
         `returns: ` a list of `CardGroup`s.
         """
@@ -419,7 +419,7 @@ class Board(AutoSize):
         self.ScrollToPoint(pt)
 
     def ScrollToPoint(self, pt):
-        """Scroll in both direction so that `pt` is in view. `Board.ScrollToCard` basically just calls
+        """Scroll in both direction so that `pt` is in view. `Deck.ScrollToCard` basically just calls
         this function twice, on a `Card`'s corner points.
 
         * `pt: ` a (x, y) point.
@@ -467,15 +467,15 @@ class Board(AutoSize):
     def ArrangeSelection(self, orient):
         """Arranges the selected cards according to `orient`.
 
-        * `orient: ` must be one of `Board.HORIZONTAL` or `Board.VERTICAL`.
+        * `orient: ` must be one of `Deck.HORIZONTAL` or `Deck.VERTICAL`.
         """
-        if   orient == Board.HORIZONTAL:
+        if   orient == Deck.HORIZONTAL:
             self.HArrangeSelectedCards()
-        elif orient == Board.VERTICAL:
+        elif orient == Deck.VERTICAL:
             self.VArrangeSelectedCards()
 
     def HArrangeSelectedCards(self):
-        """Same as `Board.ArrangeSelection(Board.HORIZONTAL)`. Arranges `Card`s
+        """Same as `Deck.ArrangeSelection(Deck.HORIZONTAL)`. Arranges `Card`s
         in a horizontal row, to the right of the left-most selected card.
         """
         if len(self.GetSelection()) < 1: return
@@ -498,7 +498,7 @@ class Board(AutoSize):
         self.selec.SetFocus()
 
     def VArrangeSelectedCards(self):
-        """Same as `Board.ArrangeSelection(Board.VERTICAL)`. Arranges `Card`s
+        """Same as `Deck.ArrangeSelection(Deck.VERTICAL)`. Arranges `Card`s
         in a vertical column, below of the top-most selected card.
         """
         if len(self.GetSelection()) < 1: return
@@ -537,7 +537,7 @@ class Board(AutoSize):
 
     def OnMgrDelete(self, ev):
         """Listens to `SelectionManager.EVT_MGR_DELETE`, which is raised
-        on every delete action. `Board.DeleteSelected` calls every selected
+        on every delete action. `Deck.DeleteSelected` calls every selected
         `Card`'s `Delete` method, which raises many `Card.EVT_CARD_DELETE`,
         and then raises only one `SelectionManager.EVT_MGR_DELETE` event.
         """
@@ -552,7 +552,7 @@ class Board(AutoSize):
         """Listens to `Card.EVT_CARD_REQUEST_INSPECT`. Raises the same event,
         with the same card as event object. The difference is that now a `Page`
         can `Bind` only once to `EVT_CARD_REQUEST_INSPECT` events coming from
-        this `Board`, instead of having to bind to every individual card.
+        this `Deck`, instead of having to bind to every individual card.
         """
         event = Card.ReqInspectEvent(id=wx.ID_ANY)
         event.SetEventObject(ev.GetEventObject())
@@ -785,7 +785,7 @@ class Board(AutoSize):
         """Paints a rectangle over this window. Used for click-dragging.
 
         * `rect: ` a `wx.Rect`.
-        * `thick: ` line thickness. By default, is `Board.MOVING_RECT_THICKNESS`.
+        * `thick: ` line thickness. By default, is `Deck.MOVING_RECT_THICKNESS`.
         * `style: ` a `dc.Pen` style. Use `wx.TRANSPARENT` to erase a rectangle.
         * `refresh: ` whether to call `Refresh` after the rectangle is painted.
         """
@@ -801,7 +801,7 @@ class Board(AutoSize):
 
         * `card: ` a `Card`.
         * `pos: ` where to paint the rectangle.
-        * `thick: ` line thickness. By default, is `Board.MOVING_RECT_THICKNESS`.
+        * `thick: ` line thickness. By default, is `Deck.MOVING_RECT_THICKNESS`.
         * `style: ` a `dc.Pen` style. Use `wx.TRANSPARENT` to erase a rectangle.
         * `refresh: ` whether to call `Refresh` after the rectangle is painted.
         """
@@ -815,7 +815,7 @@ class Board(AutoSize):
 
         * `card: ` a `Card`.
         * `pos: ` where to paint the rectangle.
-        * `thick: ` line thickness. By default, is `Board.MOVING_RECT_THICKNESS`.
+        * `thick: ` line thickness. By default, is `Deck.MOVING_RECT_THICKNESS`.
         * `refresh: ` whether to call `Refresh` after the rectangle is painted.
         """
         # Brush is for background, Pen is for foreground
@@ -858,7 +858,7 @@ class Board(AutoSize):
         return d
 
     def Dump(self):
-        """Returns a `dict` with all the info contained in this `Board`.
+        """Returns a `dict` with all the info contained in this `Deck`.
 
         `returns: ` a `dict` of the form {"cards": self.DumpCards(), "groups": self.DumpGroups()}.
         """
@@ -892,7 +892,7 @@ class Board(AutoSize):
                                 
 class SelectionManager(wx.Window):
     """
-    `SelectionManager` is an invisible window that positions itself on the top left corner of a `Board`
+    `SelectionManager` is an invisible window that positions itself on the top left corner of a `Deck`
     and gets focus every time a card is (or many cards are) selected. This is done to hide carets
     and selections from other controls while selection is active. `SelectionManager` also manages
     card selection by managing key down events, such as arrow keys to move selection, shift + arrow
@@ -906,7 +906,7 @@ class SelectionManager(wx.Window):
     def __init__(self, parent):
         """Constructor.
         
-        * `parent: ` the parent `wx.Window`, usually a `Board`.
+        * `parent: ` the parent `wx.Window`, usually a `Deck`.
         """
         super(SelectionManager, self).__init__(parent, size=self.SIZE, pos=self.POS)
         self.cards = []
@@ -1028,7 +1028,7 @@ class SelectionManager(wx.Window):
     def SelectNext(self, direc, new_sel=False):
         """Selects next `Card` in the specified direction.
 
-        * `direc: ` direc should be one of `Board.LEFT`, `Board.RIGHT`, `Board.UP`, or `Board.DOWN`.
+        * `direc: ` direc should be one of `Deck.LEFT`, `Deck.RIGHT`, `Deck.UP`, or `Deck.DOWN`.
         * `new_sel: ` if `True`, unselect all others and select only the next card,
         if `False`, add it to current selection.
         """
@@ -1112,13 +1112,13 @@ class SelectionManager(wx.Window):
         # shift key
         elif ev.ShiftDown():
             if   key == wx.WXK_LEFT:
-                self.SelectNext(Board.LEFT, new_sel=False)
+                self.SelectNext(Deck.LEFT, new_sel=False)
             elif key == wx.WXK_RIGHT:
-                self.SelectNext(Board.RIGHT, new_sel=False)
+                self.SelectNext(Deck.RIGHT, new_sel=False)
             elif key == wx.WXK_UP:
-                self.SelectNext(Board.UP, new_sel=False)
+                self.SelectNext(Deck.UP, new_sel=False)
             elif key == wx.WXK_DOWN:
-                self.SelectNext(Board.DOWN, new_sel=False)
+                self.SelectNext(Deck.DOWN, new_sel=False)
             else:
                 ev.Skip()
 
@@ -1130,13 +1130,13 @@ class SelectionManager(wx.Window):
         else:
             # arrow keys: select next card    
             if   key == wx.WXK_LEFT:
-                self.SelectNext(Board.LEFT, new_sel=True)
+                self.SelectNext(Deck.LEFT, new_sel=True)
             elif key == wx.WXK_RIGHT:
-                self.SelectNext(Board.RIGHT, new_sel=True)
+                self.SelectNext(Deck.RIGHT, new_sel=True)
             elif key == wx.WXK_UP:
-                self.SelectNext(Board.UP, new_sel=True)
+                self.SelectNext(Deck.UP, new_sel=True)
             elif key == wx.WXK_DOWN:
-                self.SelectNext(Board.DOWN, new_sel=True)
+                self.SelectNext(Deck.DOWN, new_sel=True)
 
             # DEL: delete all selection
             elif key == wx.WXK_DELETE:
@@ -1162,15 +1162,15 @@ __pdoc__["field"] = None
 # mehods, and not the ones coming from the base classes,
 # we first set to None every method in the base class.
 for field in dir(AutoSize):
-    __pdoc__['Board.%s' % field] = None
+    __pdoc__['Deck.%s' % field] = None
 for field in dir(wx.Window):
     __pdoc__['SelectionManager.%s' % field] = None
 
 # Then, we have to add again the methods that we have
 # overriden. See https://github.com/BurntSushi/pdoc/issues/15.
-for field in Board.__dict__.keys():
-    if 'Board.%s' % field in __pdoc__.keys():
-        del __pdoc__['Board.%s' % field]
+for field in Deck.__dict__.keys():
+    if 'Deck.%s' % field in __pdoc__.keys():
+        del __pdoc__['Deck.%s' % field]
 for field in SelectionManager.__dict__.keys():
     if 'SelectionManager.%s' % field in __pdoc__.keys():
         del __pdoc__['SelectionManager.%s' % field]

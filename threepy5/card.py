@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
 A `Card` is the "virutal index card"; it is a window that goes on the
-`Board`. It can hold text, images, etc.
+`Deck`. It can hold text, images, etc.
 """
 
 import wx
@@ -9,6 +9,7 @@ import os
 import wx.richtext as rt
 import wx.lib.newevent as ne
 from utilities import *
+from board import *
 
 
 ######################
@@ -24,7 +25,7 @@ class Card(wx.Panel):
 
     An important feature of `Card` is that it consists of an
     underlying window, the "border" window which is the same colour of
-    the parent `Board` most of the time. When the `Card` is selected, the
+    the parent `Deck` most of the time. When the `Card` is selected, the
     border window changes colour to signal selection. The border window
     has only one child, the `Card`'s "main" window, which holds the actual
     controls shown to the user. The "main" window is what one would normally
@@ -50,7 +51,7 @@ class Card(wx.Panel):
     def __init__(self, parent, label, pos=wx.DefaultPosition, size=wx.DefaultSize, style=0):
         """Constructor.
 
-        * `parent: ` the parent `Board`.
+        * `parent: ` the parent `Deck`.
         * `label: ` the unique internal identifier of this `Card`.
         * `pos: ` by default, is `wx.DefaultPosition`.
         * `size: ` by default, is `wx.DefaultSize`.
@@ -236,19 +237,19 @@ class Card(wx.Panel):
         """Implement TAB navigation.
 
         * `forward: ` if `True`, the focus will be set to the next `Card`, as
-        decided by `Board.GetNextCard`. If `False`, focus the previos `Card`.
+        decided by `Deck.GetNextCard`. If `False`, focus the previos `Card`.
         """
         bd = self.GetParent()
 
         # try to get the nearest card
         if forward:
-            nxt = bd.GetNextCard(self, Board.RIGHT)
+            nxt = bd.GetNextCard(self, Deck.RIGHT)
             if not nxt:
-                nxt = bd.GetNextCard(self, Board.DOWN)
+                nxt = bd.GetNextCard(self, Deck.DOWN)
         else:
-            nxt = bd.GetNextCard(self, Board.LEFT)
+            nxt = bd.GetNextCard(self, Deck.LEFT)
             if not nxt:
-                nxt = bd.GetNextCard(self, Board.UP)
+                nxt = bd.GetNextCard(self, Deck.UP)
 
         # and navigate!
         if nxt:
@@ -875,7 +876,7 @@ class Content(Card):
                  title="", kind=KindButton.DEFAULT_LBL, content="", rating=0):
         """Constructor.
 
-        * `parent: ` the parent `Board`.
+        * `parent: ` the parent `Deck`.
         * `label: ` the unique internal identifier of this `Card`.
         * `pos: ` by default, is `wx.DefaultPosition`.
         * `size: ` by default, is `Content.DEFAULT_SZ`.
@@ -1207,7 +1208,7 @@ class Image(Card):
     def __init__(self, parent, label, path=None, pos=wx.DefaultPosition, size=DEFAULT_SZ):
         """Constructor.
 
-        * `parent: ` the parent `Board`.
+        * `parent: ` the parent `Deck`.
         * `label: ` the unique internal identifier of this `Image`.
         * `path: ` the path to load the image from. By default, is `None`.
         * `pos: ` by default, is `wx.DefaultPosition`.

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-A `Page` is a window that holds both a `Board` and a `Canvas` to draw over that `Board`.
+A `Page` is a window that holds both a `Deck` and a `Canvas` to draw over that `Deck`.
 It also has facilities for closer inspection of individual objects.
 """
 
@@ -19,18 +19,18 @@ import wx.lib.agw.flatnotebook as fnb
 
 class Page(wx.Panel):
     """A `Page` holds all the main items to create, edit and visualize a collection of `Card`s.
-    The window that takes center stage in a `Page` by default is a `Board`. Associated to it is
+    The window that takes center stage in a `Page` by default is a `Deck`. Associated to it is
     a `Canvas`, and one can toggle between the two with a button in the button bar. `Page` also
-    handles the sidebars (`TagsInspect`), the "minimap" (`BoardInspect`), and the `Card` inspection
+    handles the sidebars (`TagsInspect`), the "minimap" (`DeckInspect`), and the `Card` inspection
     view (`CardInspect`).
 
-    The `Board`, `Canvas` and `CardInspect` (and possibly others) seemingly hold the same position
+    The `Deck`, `Canvas` and `CardInspect` (and possibly others) seemingly hold the same position
     in the `Page`. This is achieved by having a sizer for them (`content_sizer`) and constantly
     adding and deleting these objects from it. All the objects that can be shown in this main sizer
     are stored in the attribute `contents`.
     """
     
-    CARD_PADDING = Board.CARD_PADDING
+    CARD_PADDING = Deck.CARD_PADDING
     PIXELS_PER_SCROLL = 20
     DEFAULT_SZ = (20, 20)
     ZOOM_CHOICES = ["50%", "100%", "150%", "200%"]
@@ -101,8 +101,8 @@ class Page(wx.Panel):
         self.view_card.SetCards(toinspect)
 
         # clean up
-        self.board.UnselectAll()
-        self.board.selec.Deactivate()
+        self.deck.UnselectAll()
+        self.deck.selec.Deactivate()
         self.inspect.SetLabel("Save and return")
         
         # raise the event
@@ -128,37 +128,37 @@ class Page(wx.Panel):
         self.GetEventHandler().ProcessEvent(event)
 
         # clean up
-        self.ShowBoard()
+        self.ShowDeck()
         self.inspect.SetLabel("Inspect")
 
-    def ShowBoard(self):
-        """Show the `Board` in the `content_sizer`."""
-        # remember that self.board is a Board
-        # but we added the parent Board object to our Sizer
-        self.ShowContent(self.board)
-        cards = self.board.GetCards()
+    def ShowDeck(self):
+        """Show the `Deck` in the `content_sizer`."""
+        # remember that self.deck is a Deck
+        # but we added the parent Deck object to our Sizer
+        self.ShowContent(self.deck)
+        cards = self.deck.GetCards()
         if cards:
             cards[0].SetFocus()
 
     def ShowCanvas(self):
         """Show the `Canvas` in the `content_sizer`."""
         self.ShowContent(self.canvas)
-        view = self.board.GetViewStart()
+        view = self.deck.GetViewStart()
         self.canvas.Scroll(view)
 
     def ShowMinimap(self):
-        """Show the `BoardInspect`. Note that the minimap is not in `self.contents`, so it
+        """Show the `DeckInspect`. Note that the minimap is not in `self.contents`, so it
         isn't added to `content_sizer`. Be sure to use this method and not self.minimap.Show(),
         as we also calculate the position before showing.
         """
         self.minimap.Show()
 
     def HideMinimap(self):
-        """Hide the `BoardInspect` minimap. Note that the minimap is not in `self.contents`."""
+        """Hide the `DeckInspect` minimap. Note that the minimap is not in `self.contents`."""
         self.minimap.Hide()
 
     def ToggleMinimap(self):
-        """Hide/Show the `BoardInspect` minimap. Note that the minimap is not in `self.contents`."""
+        """Hide/Show the `DeckInspect` minimap. Note that the minimap is not in `self.contents`."""
         mp = self.minimap
         if mp.IsShown(): self.HideMinimap()
         else:            self.ShowMinimap()
@@ -175,13 +175,13 @@ class Page(wx.Panel):
         """
         return self.buttonbar
 
-    def GetBoardBmp(self):
-        """Get the currently visible part of the `Board` as a wx.Bitmap.
+    def GetDeckBmp(self):
+        """Get the currently visible part of the `Deck` as a wx.Bitmap.
 
         `returns: ` a `wx.Bitmap`.
         """
-        # get the current board as a bitmap
-        sz = self.board.GetClientSize()
+        # get the current deck as a bitmap
+        sz = self.deck.GetClientSize()
         bmp = None
 
         if sz.width > -1 and sz.height > -1:
@@ -191,7 +191,7 @@ class Page(wx.Panel):
             dc.SelectObject(bmp)
             dc.Blit(0, 0,                         # pos
                     sz.x, sz.y,                   # size
-                    wx.ClientDC(self.board),      # src
+                    wx.ClientDC(self.deck),      # src
                     0, 0)                         # offset
             bmp = dc.GetAsBitmap()
             dc.SelectObject(wx.NullBitmap)
@@ -201,14 +201,14 @@ class Page(wx.Panel):
     def SetupCanvas(self):
         """Setup the `Canvas` background. Always call before showing the `Canvas`."""
         # set sizes
-        self.canvas.SetSize(self.board.GetSize())
-        sz = self.board.content_sz
+        self.canvas.SetSize(self.deck.GetSize())
+        sz = self.deck.content_sz
         self.canvas.SetVirtualSize(sz)
         self.canvas.content_sz = sz
 
         # pass the bitmap to canvas
-        self.canvas.SetOffset(self.board.GetViewStartPixels())
-        self.canvas.SetBackground(self.GetBoardBmp())
+        self.canvas.SetOffset(self.deck.GetViewStartPixels())
+        self.canvas.SetBackground(self.GetDeckBmp())
 
     def ShowSidebar(self, show=True):
         """Show/Hide the sidebar.
@@ -234,10 +234,10 @@ class Page(wx.Panel):
     def Dump(self):
         """Returns a `dict` with all the info contained in this `Page`.
 
-        `returns: ` a `dict` of the form {"board": Board.Dump(), "canvas": Canvas.Dump()}.
+        `returns: ` a `dict` of the form {"deck": Deck.Dump(), "canvas": Canvas.Dump()}.
         """
-        # get the board dump dict and process it
-        board_di = self.board.Dump()
+        # get the deck dump dict and process it
+        deck_di = self.deck.Dump()
         
         # if we're inspecting, restore the cards, dump and then return to the inspection view
         inspecting = []
@@ -246,7 +246,7 @@ class Page(wx.Panel):
             self.view_card.Restore()
 
         # dump the real coordinates
-        for id, card in board_di.iteritems():
+        for id, card in deck_di.iteritems():
             if "pos" in card.keys():
                 card["pos"] = tuple([int(k / self.scale) for k in card["pos"]])
             if "width" in card.keys():
@@ -262,7 +262,7 @@ class Page(wx.Panel):
         canvas_di = self.canvas.Dump()
 
         # join the two
-        di = {"board": board_di, "canvas": canvas_di}
+        di = {"deck": deck_di, "canvas": canvas_di}
 
         return di
 
@@ -271,18 +271,18 @@ class Page(wx.Panel):
 
         * `di: ` a `dict` in the format returned by `Dump`.
         """
-        self.board.Load(di["board"])
+        self.deck.Load(di["deck"])
         self.canvas.Load(di["canvas"])
 
     def CleanUpUI(self):
         """Helper function for `InitUI`. Resets all control members.
 
-        `returns: ` the previous `Board` size.
+        `returns: ` the previous `Deck` size.
         """
-        sz = self.board.GetParent().GetSize()
-        self.board.Hide() # important!
-        self.board = None
-        self.board_box = None
+        sz = self.deck.GetParent().GetSize()
+        self.deck.Hide() # important!
+        self.deck = None
+        self.deck_box = None
         self.bmp_ctrl = None
         self.bmp_box = None
         self.SetSizer(None)
@@ -299,7 +299,7 @@ class Page(wx.Panel):
 
         # make new UI
         self.InitSizers()
-        self.InitBoard(sz)
+        self.InitDeck(sz)
         self.InitCanvas()
         self.InitInspect()
         self.InitSidebar()
@@ -308,7 +308,7 @@ class Page(wx.Panel):
 
         # content sizer takes all available space for content
         # always use the individual ShowXXX() controls
-        self.ShowBoard()
+        self.ShowDeck()
         self.Layout()
         self.ui_ready = True
 
@@ -338,7 +338,7 @@ class Page(wx.Panel):
         self.buttonbar = bbox
 
         # the data sizer contains the sidebar (sbox) and the
-        # contents sizer (cbox), which in turn contains the board/canvas/inspect views.
+        # contents sizer (cbox), which in turn contains the deck/canvas/inspect views.
         # the contents sizer takes all available space for content
         # always use the individual ShowXXX() methods
         sbox = wx.BoxSizer(wx.VERTICAL)
@@ -348,22 +348,22 @@ class Page(wx.Panel):
         self.sidebar_sizer = sbox
         self.content_sizer = cbox
 
-    def InitBoard(self, size=wx.DefaultSize):
-        """Initializes `Board`."""
-        # make board
-        bd = Board(self, size=size)
+    def InitDeck(self, size=wx.DefaultSize):
+        """Initializes `Deck`."""
+        # make deck
+        bd = Deck(self, size=size)
         
         # bindings
         bd.Bind(Card.EVT_CARD_REQUEST_INSPECT, self.OnRequestInspect)
-        bd.Bind(bd.EVT_BOARD_DEL_CARD, self.OnDelete)
+        bd.Bind(bd.EVT_DECK_DEL_CARD, self.OnDelete)
 
         # init also the inspection view
-        ins = BoardInspect(self, bd)
+        ins = DeckInspect(self, bd)
         ins.Hide()
         self.minimap = ins
 
         # finish up
-        self.board = bd
+        self.deck = bd
         bd.Hide()
         self.contents.append(bd)        
 
@@ -386,11 +386,11 @@ class Page(wx.Panel):
 
     def InitSidebar(self, size=wx.DefaultSize):
         """Initializes `TagsInspect`."""
-        tg = TagsInspect(self, self.board)
+        tg = TagsInspect(self, self.deck)
         self.tags_sb = tg
         self.tags_sb.Hide()
         # doesn't go in contents since it can be shown
-        # alongside board and inspect
+        # alongside deck and inspect
         # self.contents.append(tg)
         self.sidebar_sizer.Add(tg, proportion=1, flag=wx.EXPAND)
         self.sidebars.append(tg)
@@ -432,9 +432,9 @@ class Page(wx.Panel):
         self.ShowSidebar(not self.tags_sb.IsShown())
 
     def OnRequestInspect(self, ev):
-        """Listens to `Card.EVT_CARD_REQUEST_INSPECT` from `Board`."""
+        """Listens to `Card.EVT_CARD_REQUEST_INSPECT` from `Deck`."""
         card = ev.GetEventObject()
-        self.board.SelectCard(card, True)
+        self.deck.SelectCard(card, True)
         self.InspectCards([card])
 
     def OnCancelInspect(self, ev):
@@ -443,7 +443,7 @@ class Page(wx.Panel):
         ev.GetEventObject().SetFocus()
         
     def OnDelete(self, ev):
-        """Listens to `Board.EVT_BOARD_DEL_CARD`."""
+        """Listens to `Deck.EVT_DECK_DEL_CARD`."""
         event = self.DeleteEvent(id=wx.ID_ANY, number=ev.number)
         event.SetEventObject(self)
         self.GetEventHandler().ProcessEvent(event)
@@ -451,8 +451,8 @@ class Page(wx.Panel):
     def OnInspect(self, ev):
         """Listens to `wx.EVT_BUTTON` from the inspect button in the button bar."""
         content = self.GetCurrentContent()
-        if content == Board:
-            sel = self.board.GetSelection()
+        if content == Deck:
+            sel = self.deck.GetSelection()
             if sel:
                 self.InspectCards(sel)
         elif content == CardInspect:
@@ -462,12 +462,12 @@ class Page(wx.Panel):
             self.view_card.GetCards()[-1].CancelInspect()
 
     def OnToggle(self, ev):
-        """Listents to `wx.EVT_BUTTON` from the `Board`/`Canvas` button in the button bar"""
-        if self.GetCurrentContent() == Board:
+        """Listents to `wx.EVT_BUTTON` from the `Deck`/`Canvas` button in the button bar"""
+        if self.GetCurrentContent() == Deck:
             self.SetupCanvas()
             self.ShowCanvas()
         else:
-            self.ShowBoard()
+            self.ShowDeck()
 
         # never forget to Layout after Sizer operations            
         self.Layout()
@@ -495,32 +495,32 @@ class Page(wx.Panel):
         self.Zoom(self.GetScaleFromStr(ev.GetString()))
 
     def Zoom(self, new_scale):
-        """Zoom in or out the current `Board`. Effectively changes the scale of all
+        """Zoom in or out the current `Deck`. Effectively changes the scale of all
         relevant coordinates.
 
         * `new_scale: ` the new scale for all `Card`s.
         """
         # save the scroll position and go to origin
         # so that all the cards' coordinates are absolute
-        scroll_pos = self.board.GetViewStart()
-        self.board.Scroll(0, 0)
+        scroll_pos = self.deck.GetViewStart()
+        self.deck.Scroll(0, 0)
 
         # scale cards
-        for c in self.board.GetCards():
+        for c in self.deck.GetCards():
             c.Stretch(new_scale / self.scale)
 
         # scale content size
-        self.board.content_sz  = wx.Size(*[i / self.scale * new_scale for i in self.board.content_sz])
-        self.board.SetVirtualSize(self.board.content_sz)
+        self.deck.content_sz  = wx.Size(*[i / self.scale * new_scale for i in self.deck.content_sz])
+        self.deck.SetVirtualSize(self.deck.content_sz)
 
         # return to previous scroll position
-        self.board.Scroll(*scroll_pos)
+        self.deck.Scroll(*scroll_pos)
 
         # make sure the combo text matches the new scale
         self.zoom.SetValue(str(int(new_scale * 100)) + "%")
 
         # setup members
-        self.board.scale = new_scale
+        self.deck.scale = new_scale
         self.canvas.scale = new_scale
         self.scale = new_scale            
 
@@ -542,12 +542,12 @@ class Page(wx.Panel):
         """Listens to `wx.EVT_CHOICE` from the view contents by kind combo box in the button bar."""
         s = ev.GetString()
         if s == "All":
-            show = self.board.GetCards()
+            show = self.deck.GetCards()
         else:
-            show = self.board.GetContentsByKind(s)
+            show = self.deck.GetContentsByKind(s)
             
-        show = list(set(show) | set(self.board.GetHeaders()))
-        hide = list(set(self.board.GetCards()) - set(show))
+        show = list(set(show) | set(self.deck.GetHeaders()))
+        hide = list(set(self.deck.GetCards()) - set(show))
         for c in show: c.Show()
         for c in hide: c.Hide()
 
