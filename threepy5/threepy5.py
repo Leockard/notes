@@ -6,7 +6,7 @@ Main frame object for note taking application `threepy5`.
 import wx
 import os
 import pickle
-from page import *
+from box import *
 from card import *
 from canvas import *
 from deck import *

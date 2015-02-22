@@ -561,7 +561,7 @@ class BoxSet(wx.Notebook):
     A `BoxSet` holds various `Box`es, and is the equivalent of a file at
     application level: every `BoxSet` is stored in one file and every file loads
     one `BoxSet`. It is implemented as a `wx.Notebook`, showing every `Box`as
-    a 'page'.
+    a "page".
     """
 
     NewBoxEvent, EVT_BK_NEW_BOX = ne.NewEvent()
