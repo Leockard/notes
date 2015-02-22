@@ -20,7 +20,7 @@ import wx.lib.agw.flatnotebook as fnb
 class Page(wx.Panel):
     """A `Page` holds all the main items to create, edit and visualize a collection of `Card`s.
     The window that takes center stage in a `Page` by default is a `Board`. Associated to it is
-    a `Canvas`, and one can toggle between the two with a button in the tool bar. `Page` also
+    a `Canvas`, and one can toggle between the two with a button in the button bar. `Page` also
     handles the sidebars (`TagsInspect`), the "minimap" (`BoardInspect`), and the `Card` inspection
     view (`CardInspect`).
 
@@ -163,17 +163,17 @@ class Page(wx.Panel):
         if mp.IsShown(): self.HideMinimap()
         else:            self.ShowMinimap()
 
-    def ShowToolBar(self, show=True):
+    def ShowButtonBar(self, show=True):
         """Show the button bar at the bottom of the `Page`."""
-        self.GetSizer().Show(self.GetToolBarSizer(), show=show, recursive=True)
+        self.GetSizer().Show(self.GetButtonBarSizer(), show=show, recursive=True)
         self.Layout()
 
-    def GetToolBarSizer(self):
+    def GetButtonBarSizer(self):
         """Get the button bar sizer.
 
         `returns: ` a `wx.Sizer`.
         """
-        return self.toolbar
+        return self.buttonbar
 
     def GetBoardBmp(self):
         """Get the currently visible part of the `Board` as a wx.Bitmap.
@@ -335,7 +335,7 @@ class Page(wx.Panel):
         vbox.Add(dbox, proportion=1, flag=wx.ALL|wx.EXPAND, border=1)
         vbox.Add(bbox, proportion=0, flag=wx.ALL|wx.EXPAND, border=1)
         self.SetSizer(vbox)
-        self.toolbar = bbox
+        self.buttonbar = bbox
 
         # the data sizer contains the sidebar (sbox) and the
         # contents sizer (cbox), which in turn contains the board/canvas/inspect views.
@@ -396,7 +396,7 @@ class Page(wx.Panel):
         self.sidebars.append(tg)
 
     def InitButtonBar(self):
-        """Initializes the tool bar."""
+        """Initializes the button bar."""
         # controls
         self.inspect = wx.Button(self, label = "Inspect")
         self.inspect.Bind(wx.EVT_BUTTON, self.OnInspect)
@@ -418,15 +418,11 @@ class Page(wx.Panel):
         zbox.Add(self.zoom, proportion=1, flag=wx.ALIGN_RIGHT, border=1)        
 
         # boxing
-        # box = wx.BoxSizer(wx.HORIZONTAL)
-        box = self.toolbar
+        box = self.buttonbar
         box.Add(self.inspect, proportion=0, flag=wx.LEFT|wx.EXPAND, border=1)
         box.Add(self.toggle,  proportion=0, flag=wx.LEFT|wx.EXPAND, border=1)
         box.Add(self.view,    proportion=0, flag=wx.LEFT|wx.EXPAND, border=1)
         box.Add(zbox,      proportion=1, flag=wx.ALIGN_RIGHT|wx.EXPAND, border=1)        
-
-        # self.GetSizer().Add(box, proportion=0, flag=wx.LEFT|wx.EXPAND, border=1)
-        # self.toolbar = box
 
 
     ### Callbacks

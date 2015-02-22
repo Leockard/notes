@@ -284,7 +284,7 @@ class ThreePyFiveFrame(wx.Frame):
         tgmap_it = wx.MenuItem(view_menu, wx.ID_ANY, "Show map")
         zoomi_it = wx.MenuItem(view_menu, wx.ID_ANY, "Zoom in")
         zoomo_it = wx.MenuItem(view_menu, wx.ID_ANY, "Zoom out")
-        hideb_it = wx.MenuItem(view_menu, wx.ID_ANY, "Hide Page tool bar", kind=wx.ITEM_CHECK)
+        hideb_it = wx.MenuItem(view_menu, wx.ID_ANY, "Hide Page button bar", kind=wx.ITEM_CHECK)
 
         view_menu.AppendItem(collp_it)
         view_menu.AppendItem(inspc_it)
@@ -424,32 +424,22 @@ class ThreePyFiveFrame(wx.Frame):
     def InitToolBar(self):
         """Initializes the toolbar."""
         toolbar = self.CreateToolBar(style=wx.TB_VERTICAL)
+        getBMP = wx.ArtProvider.GetBitmap
+        it_normal = wx.ITEM_NORMAL
 
         # notebook and tab tools
-        new_it = toolbar.AddLabelTool(wx.ID_NEW, "New",
-                                      wx.ArtProvider.GetBitmap(wx.ART_NEW),
-                                      kind=wx.ITEM_NORMAL)
+        new_it = toolbar.AddLabelTool(wx.ID_NEW, "New",   getBMP(wx.ART_NEW), kind=it_normal)
+        opn_it = toolbar.AddLabelTool(wx.ID_OPEN, "Open", getBMP(wx.ART_FOLDER_OPEN), kind=it_normal)
+        sav_it = toolbar.AddLabelTool(wx.ID_SAVE, "Save", getBMP(wx.ART_FILE_SAVE), kind=it_normal)
         self.Bind(wx.EVT_TOOL, self.OnNew, new_it)
-        opn_it = toolbar.AddLabelTool(wx.ID_OPEN, "Open",
-                                      wx.ArtProvider.GetBitmap(wx.ART_FOLDER_OPEN),
-                                      kind=wx.ITEM_NORMAL)
         self.Bind(wx.EVT_TOOL, self.OnOpen, opn_it)
-        sav_it = toolbar.AddLabelTool(wx.ID_SAVE, "Save",
-                                      wx.ArtProvider.GetBitmap(wx.ART_FILE_SAVE),
-                                      kind=wx.ITEM_NORMAL)
-        self.Bind(wx.EVT_TOOL, self.OnSave, sav_it)
+        self.Bind(wx.EVT_TOOL, self.OnSave, sav_it)                
         toolbar.AddSeparator()
 
         # card and board tools
-        del_it = toolbar.AddLabelTool(wx.ID_ANY, "Delete",
-                                      wx.ArtProvider.GetBitmap(wx.ART_DELETE),
-                                      kind=wx.ITEM_NORMAL)
-        cpy_it = toolbar.AddLabelTool(wx.ID_COPY, "Copy",
-                                      wx.ArtProvider.GetBitmap(wx.ART_COPY),
-                                      kind=wx.ITEM_NORMAL)
-        pas_it = toolbar.AddLabelTool(wx.ID_PASTE, "Paste",
-                                      wx.ArtProvider.GetBitmap(wx.ART_PASTE),
-                                      kind=wx.ITEM_NORMAL)
+        del_it = toolbar.AddLabelTool(wx.ID_ANY, "Delete",  getBMP(wx.ART_DELETE), kind=it_normal)
+        cpy_it = toolbar.AddLabelTool(wx.ID_COPY, "Copy",   getBMP(wx.ART_COPY), kind=it_normal)
+        pas_it = toolbar.AddLabelTool(wx.ID_PASTE, "Paste", getBMP(wx.ART_PASTE), kind=it_normal)
         self.Bind(wx.EVT_TOOL, self.OnDelete, del_it)
         self.Bind(wx.EVT_TOOL, self.OnCopy, cpy_it)
         self.Bind(wx.EVT_TOOL, self.OnPaste, pas_it)
@@ -575,8 +565,8 @@ class ThreePyFiveFrame(wx.Frame):
             c.ToggleCollapse()
 
     def OnViewPageBar(self, ev):
-        """Listens to `wx.EVT_MENU` from "Hide Page tool bar" in the "view" menu."""
-        self.GetCurrentPage().ShowToolBar(show=ev.IsChecked())
+        """Listens to `wx.EVT_MENU` from "Hide Page button bar" in the "view" menu."""
+        self.GetCurrentPage().ShowButtonBar(show=ev.IsChecked())
 
     def OnMenuInspectCard(self, ev):
         """Listens to `wx.EVT_MENU` from "Inspect card" in the "view" menu."""
