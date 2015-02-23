@@ -5,16 +5,16 @@ View classes are used to take a closer look at certain objects.
 
 import wx
 import re
-from card import *
+import card
 from deck import Deck
-from utilities import *
+import utilities
 
 
 ######################
 # DeckView Class
 ######################
 
-class DeckView(AutoSize):
+class DeckView(utilities.AutoSize):
     """Displays a "minimap" of the current `Deck`. Uses `MiniCard` to represent a `Card` on the `Deck`."""
 
     DEFAULT_FACTOR  = 5
@@ -85,7 +85,7 @@ class DeckView(AutoSize):
             mini.SetBackgroundColour(self.DEFAULT_MINI_CL)
 
         # listen to various actions that we want to reflect
-        card.Bind(Card.EVT_CARD_DELETE, self.OnDeleteCard)
+        card.Bind(Card.EVT_DELETE, self.OnDeleteCard)
         if isinstance(card, Content):
             card.Bind(Content.EVT_CONT_KIND, self.OnContentKind)
 
@@ -129,7 +129,7 @@ class DeckView(AutoSize):
         self.AddCard(ev.GetEventObject())
 
     def OnDeleteCard(self, ev):
-        """Listens to `Card.EVT_CARD_DELETE` from each `Card` on the `Deck`."""
+        """Listens to `Card.EVT_DELETE` from each `Card` on the `Deck`."""
         self.RemoveCard(ev.GetEventObject())
         # dont' consume it! Deck also needs it
         ev.Skip()
@@ -184,26 +184,26 @@ class CardView(wx.Panel):
         """
         return self.cards.keys()
 
-    def AddCard(self, card):
+    def AddCard(self, crd):
         """Adds one `Card` to the viewing control.
 
         * `card: ` a `Card`.
         """
         # setup and reparent: wil restore parent when done. See RestoreCards.
-        self.cards[card] = {}
-        self.cards[card]["parent"] = card.GetParent()
-        self.cards[card]["rect"] = card.GetRect()
-        card.Reparent(self)
-        card.SetViewing(True)
-        card.content.SetFocus()
+        self.cards[crd] = {}
+        self.cards[crd]["parent"] = crd.GetParent()
+        self.cards[crd]["rect"] = crd.GetRect()
+        crd.Reparent(self)
+        crd.SetViewing(True)
+        crd.content.SetFocus()
         
         # setup UI
         box = self.GetSizer()
-        box.Add(card, proportion=1, flag=wx.ALL|wx.EXPAND, border=self.CARD_PADDING)
+        box.Add(crd, proportion=1, flag=wx.ALL|wx.EXPAND, border=self.CARD_PADDING)
         box.Layout()
 
         # bindings
-        card.Bind(Card.EVT_CARD_CANCEL_VIEW, self.OnCancelView)
+        crd.Bind(card.Card.EVT_CANCEL_VIEW, self.OnCancelView)
 
     def SetCards(self, cards):
         """Clears previous `Card`s and views the new ones.
@@ -231,9 +231,9 @@ class CardView(wx.Panel):
     ### Callbacks
 
     def OnCancelView(self, ev):
-        """Listens to `Card.EVT_CARD_CANCEL_VIEW` on every viewed `Card`."""
+        """Listens to `Card.EVT_CANCEL_VIEW` on every viewed `Card`."""
         self.Restore()
-        event = Card.CancelViewEvent(id=wx.ID_ANY)
+        event = card.Card.CancelViewEvent(id=wx.ID_ANY)
         event.SetEventObject(ev.GetEventObject())
         self.GetEventHandler().ProcessEvent(event)
     
@@ -326,9 +326,9 @@ class TagView(wx.Panel):
     def OnShow(self, ev):
         """Listens to `wx.EVT_SHOW`."""
         if ev.IsShown():
-            card = GetCardAncestor(self.FindFocus())
-            if card and isinstance(card, Content):
-                self.ShowTags(card)
+            crd = utilities.GetCardAncestor(self.FindFocus())
+            if crd and isinstance(crd, card.Content):
+                self.ShowTags(crd)
 
     def OnNewCard(self, ev):
         """Listens to `Deck.EVT_NEW_CARD`."""
@@ -338,7 +338,7 @@ class TagView(wx.Panel):
 
     def OnCardChildFocus(self, ev):
         """Listens to `wx.EVT_SET_FOCUS` on every `Card`."""
-        card = GetCardAncestor(ev.GetEventObject())
+        card = utilities.GetCardAncestor(ev.GetEventObject())
         if self.IsShown():
             self.ShowTags(card)
         ev.Skip()
@@ -358,7 +358,7 @@ __pdoc__["field"] = None
 # Since we only want to generate documentation for our own
 # mehods, and not the ones coming from the base classes,
 # we first set to None every method in the base class.
-for field in dir(AutoSize):
+for field in dir(utilities.AutoSize):
     __pdoc__['DeckView.%s' % field] = None
 for field in dir(wx.Panel):
     __pdoc__['CardView.%s' % field] = None

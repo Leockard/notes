@@ -3,13 +3,12 @@
 A `Card` is the "virutal index card"; it is a window that goes on the
 `Deck`. It can hold text, images, etc.
 """
-
 import wx
 import os
+import utilities
+import deck
 import wx.richtext as rt
 import wx.lib.newevent as ne
-from utilities import *
-import deck
 
 
 ######################
@@ -43,10 +42,10 @@ class Card(wx.Panel):
 
     bar = None
 
-    DeleteEvent,   EVT_CARD_DELETE = ne.NewCommandEvent()
-    CollapseEvent, EVT_CARD_COLLAPSE = ne.NewCommandEvent()
-    ReqViewEvent,    EVT_CARD_REQUEST_VIEW = ne.NewEvent()
-    CancelViewEvent, EVT_CARD_CANCEL_VIEW = ne.NewEvent()
+    DeleteEvent,   EVT_DELETE = ne.NewCommandEvent()
+    CollapseEvent, EVT_COLLAPSE = ne.NewCommandEvent()
+    ReqViewEvent,    EVT_REQUEST_VIEW = ne.NewEvent()
+    CancelViewEvent, EVT_CANCEL_VIEW = ne.NewEvent()
 
     def __init__(self, parent, label, pos=wx.DefaultPosition, size=wx.DefaultSize, style=0):
         """Constructor.
@@ -101,7 +100,7 @@ class Card(wx.Panel):
         self.bar.Hide()
 
     def Delete(self):
-        """Delete this `Card`. Raises `Card.EVT_CARD_DELETE`."""
+        """Delete this `Card`. Raises `Card.EVT_DELETE`."""
         event = self.DeleteEvent(id=wx.ID_ANY)
         event.SetEventObject(self)
         self.GetEventHandler().ProcessEvent(event)
@@ -377,7 +376,7 @@ class Header(Card):
     def InitUI(self):
         """Overridden from `Card`."""
         # Controls
-        txt = EditText(self.main)
+        txt = utilities.EditText(self.main)
         txt.Bind(wx.EVT_KEY_UP, self.OnKeyUp)
 
         # Boxes
@@ -458,7 +457,7 @@ class Header(Card):
 # Classes for the controls in Content card
 ############################################
 
-class ContentText(ColouredText):
+class ContentText(utilities.ColouredText):
     """The main text field on a `Content` `Card`."""
     
     def __init__(self, parent, size=wx.DefaultSize, style=wx.TE_RICH|wx.TE_MULTILINE):
@@ -616,7 +615,7 @@ class KindSelectMenu(wx.Menu):
 
 
             
-class TitleEditText(EditText):
+class TitleEditText(utilities.EditText):
     """
     An `EditText` window that holds the title text in a `Content`
     `Card`. Automatically sets its size and font size to fit its contents.
@@ -625,14 +624,14 @@ class TitleEditText(EditText):
     # have to use own MAX length since wx.TextCtrl.SetMaxLength
     # is only implemented for single line text controls
     MAXLEN_PX = 175
-    HEIGHT_PX = EditText.DEFAULT_SZ[1]
+    HEIGHT_PX = utilities.EditText.DEFAULT_SZ[1]
 
-    DEFAULT_WIDTH = EditText.DEFAULT_SZ[0]
-    DEFAULT_HEIGHT = EditText.DEFAULT_SZ[1]
+    DEFAULT_WIDTH = utilities.EditText.DEFAULT_SZ[0]
+    DEFAULT_HEIGHT = utilities.EditText.DEFAULT_SZ[1]
     HEIGHTS = [DEFAULT_HEIGHT, DEFAULT_HEIGHT * 1.75, DEFAULT_HEIGHT * 2]
 
-    DEFAULT_FONT = EditText.DEFAULT_FONT
-    DEFAULT_FONT_SZ = EditText.DEFAULT_FONT[0]
+    DEFAULT_FONT = utilities.EditText.DEFAULT_FONT
+    DEFAULT_FONT_SZ = utilities.EditText.DEFAULT_FONT[0]
     FONT_SIZES = [DEFAULT_FONT_SZ, DEFAULT_FONT_SZ - 2, DEFAULT_FONT_SZ - 2 - 2]
 
 
@@ -1012,13 +1011,13 @@ class Content(Card):
         return not self.content.IsShown()
 
     def RequestView(self):
-        """Request an viewion. Raises `Card.EVT_CARD_REQUEST_VIEW`."""
+        """Request an viewion. Raises `Card.EVT_REQUEST_VIEW`."""
         event = self.ReqViewEvent(id=wx.ID_ANY)
         event.SetEventObject(self)
         self.GetEventHandler().ProcessEvent(event)
 
     def CancelView(self):
-        """Request to stop being viewed. Raises `Card.EVT_CARD_CANCEL_VIEW`."""
+        """Request to stop being viewed. Raises `Card.EVT_CANCEL_VIEW`."""
         event = self.CancelViewEvent(id=wx.ID_ANY)
         event.SetEventObject(self)
         self.GetEventHandler().ProcessEvent(event)
@@ -1505,7 +1504,7 @@ for field in dir(wx.Panel):
     __pdoc__['Card.%s' % field] = None
 for field in dir(Card):
     __pdoc__['Header.%s' % field] = None
-for field in dir(ColouredText):
+for field in dir(utilities.ColouredText):
     __pdoc__['ContentText.%s' % field] = None
 for field in dir(wx.Button):
     __pdoc__['KindButton.%s' % field] = None
@@ -1515,7 +1514,7 @@ for field in dir(Card):
     __pdoc__['Content.%s' % field] = None
 for field in dir(Card):
     __pdoc__['Image.%s' % field] = None
-for field in dir(EditText):
+for field in dir(utilities.EditText):
     __pdoc__['TitleEditText.%s' % field] = None
 for field in dir(wx.Button):
     __pdoc__['StarRating.%s' % field] = None

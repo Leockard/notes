@@ -6,14 +6,14 @@ Main frame object for note taking application `threepy5`.
 import wx
 import os
 import pickle
+import json
+import re
+import wx.richtext as rt
 from box import *
 from card import *
 from canvas import *
 from deck import *
 from view import *
-import wx.richtext as rt
-import json
-import re
 
 
 class ThreePyFiveFrame(wx.Frame):
@@ -538,9 +538,9 @@ class ThreePyFiveFrame(wx.Frame):
 
     def OnNewBox(self, ev):
         """Listens to `BoxSet.EVT_BK_NEW_BOX`."""
-        ev.box.Bind(Box.EVT_BOX_VIEW, self.OnView)
-        ev.box.Bind(Box.EVT_BOX_CANCEL_VIEW, self.OnCancelView)
-        ev.box.deck.Bind(Deck.EVT_DECK_DEL_CARD, self.AfterDelete)
+        ev.box.Bind(Box.EVT_VIEW, self.OnView)
+        ev.box.Bind(Box.EVT_CANCEL_VIEW, self.OnCancelView)
+        ev.box.deck.Bind(Deck.EVT_DEL_CARD, self.AfterDelete)
         ev.box.deck.Bind(Deck.EVT_NEW_CARD, self.AfterCardCreated)
 
     def OnZoomIn(self, ev):
@@ -589,14 +589,14 @@ class ThreePyFiveFrame(wx.Frame):
             self.Log("Done viewing.")
 
     def OnView(self, ev):
-        """Listens to `Box.EVT_BOX_VIEW` from every `Box` in the `BoxSet`."""
+        """Listens to `Box.EVT_VIEW` from every `Box` in the `BoxSet`."""
         if ev.number == 1:
             self.Log("Viewing \"" + ev.title + "\".")
         else:
             self.Log("Viewing " + str(ev.number) + " cards.")
 
     def OnCancelView(self, ev):
-        """Listens to `Box.EVT_BOX_CANCEL_VIEW` from every `Box` in the `BoxSet`."""
+        """Listens to `Box.EVT_CANCEL_VIEW` from every `Box` in the `BoxSet`."""
         self.Log("Done viewing.")
 
     def OnSelectAll(self, ev):
@@ -658,9 +658,9 @@ class ThreePyFiveFrame(wx.Frame):
                 # if no group, cancel selection
                 else:
                     bd.UnselectAll()
-            elif GetCardAncestor(self.FindFocus()):
+            elif utilities.GetCardAncestor(self.FindFocus()):
                 # inside a card: select the card
-                card = GetCardAncestor(self.FindFocus())
+                card = utilities.GetCardAncestor(self.FindFocus())
                 bd.SelectCard(card, True)
                 bd.SetFocus()
             else:
@@ -715,7 +715,7 @@ class ThreePyFiveFrame(wx.Frame):
         bd.DeleteSelected()
 
     def AfterDelete(self, ev):
-        """Listens to `Deck.EVT_DECK_DEL_CARD`."""
+        """Listens to `Deck.EVT_DEL_CARD`."""
         self.Log("Delete " + str(ev.number) + " Cards.")
 
     def OnCtrlF(self, ev):

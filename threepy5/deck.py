@@ -6,20 +6,18 @@ This module holds the `Deck` and its helper class `SelectionManager`.
 """
 
 import wx
-from utilities import *
-import wx.lib.newevent as ne
-from card import *
 import json
 import ast
-
-__pdoc__ = {}
+import card
+import wx.lib.newevent as ne
+import utilities
 
     
 ######################
 # Deck Class
 ######################
 
-class Deck(AutoSize):
+class Deck(utilities.AutoSize):
     """
     `Deck` is the parent window of all `Card`s. It handles position, selection,
     arrangement, and listens to individual Cards' events, so that `Box`
@@ -38,7 +36,7 @@ class Deck(AutoSize):
     UP     = 16
 
     NewCardEvent, EVT_NEW_CARD = ne.NewEvent()
-    DeleteEvent,  EVT_DECK_DEL_CARD = ne.NewEvent()
+    DeleteEvent,  EVT_DEL_CARD = ne.NewEvent()
 
     def __init__(self, parent, pos=wx.DefaultPosition, size=wx.DefaultSize, style=wx.BORDER_NONE):
         """Constructor.
@@ -157,7 +155,7 @@ class Deck(AutoSize):
         # it to the point got by getp2 on all the cards in nxt
         if nxt:
             # order them by distance
-            nxt.sort(key=lambda x: dist2(getp1(x.GetRect()), getp2(rect)))
+            nxt.sort(key=lambda x: utilities.dist2(getp1(x.GetRect()), getp2(rect)))
             # and return the nearest one
             return nxt[0]
         else:
@@ -201,8 +199,8 @@ class Deck(AutoSize):
                 pos = (left, top)
 
             # if cursor is inside a card, place it next to it
-            elif GetCardAncestor(self.FindFocus()):
-                rect = GetCardAncestor(self.FindFocus()).GetRect()
+            elif utilities.GetCardAncestor(self.FindFocus()):
+                rect = utilities.GetCardAncestor(self.FindFocus()).GetRect()
                 if below:
                     top = rect.bottom + pad
                     left = rect.left
@@ -242,19 +240,19 @@ class Deck(AutoSize):
         pos = [i / self.scale for i in pos]
 
         if subclass == "Content":
-            new = Content(self, label, pos=pos)
+            new = card.Content(self, label, pos=pos)
         elif subclass == "Header":
-            new = Header(self, label, pos=pos)
+            new = card.Header(self, label, pos=pos)
         elif subclass == "Image":
-            new = Image(self, label, pos=pos)
+            new = card.Image(self, label, pos=pos)
         new.Stretch(self.scale)
 
         # set bindings for every card
         new.Bind(wx.EVT_LEFT_DOWN, self.OnCardLeftDown)
         new.Bind(wx.EVT_CHILD_FOCUS, self.OnCardChildFocus)
-        new.Bind(Card.EVT_CARD_DELETE, self.OnCardDelete)
-        new.Bind(Card.EVT_CARD_COLLAPSE, self.OnCardCollapse)
-        new.Bind(Card.EVT_CARD_REQUEST_VIEW, self.OnCardRequest)
+        new.Bind(card.Card.EVT_DELETE, self.OnCardDelete)
+        new.Bind(card.Card.EVT_COLLAPSE, self.OnCardCollapse)
+        new.Bind(card.Card.EVT_REQUEST_VIEW, self.OnCardRequest)
         for ch in new.GetChildren():
             ch.Bind(wx.EVT_LEFT_DOWN, self.OnCardChildLeftDown)
 
@@ -394,7 +392,7 @@ class Deck(AutoSize):
 
         * `cards: ` a list of `Card`s.
         """
-        self.groups.append(CardGroup(label=len(self.groups), members=cards))
+        self.groups.append(card.CardGroup(label=len(self.groups), members=cards))
 
     def GroupSelected(self):
         """Creates a new `CardGroup` with the selected `Card`s as members.
@@ -525,12 +523,12 @@ class Deck(AutoSize):
     ### Callbacks
 
     def OnCardCollapse(self, ev):
-        """Listens to `Card.EVT_CARD_COLLAPSE`."""
+        """Listens to `Card.EVT_COLLAPSE`."""
         card = ev.GetEventObject()
         card.SetSize([i*self.scale for i in card.GetSize()])
         
     def OnCardDelete(self, ev):
-        """Listens to every `Card.EVT_CARD_DELETE`."""
+        """Listens to every `Card.EVT_DELETE`."""
         card = ev.GetEventObject()
         self.cards.remove(card)
         self.UnselectCard(card)
@@ -538,7 +536,7 @@ class Deck(AutoSize):
     def OnMgrDelete(self, ev):
         """Listens to `SelectionManager.EVT_MGR_DELETE`, which is raised
         on every delete action. `Deck.DeleteSelected` calls every selected
-        `Card`'s `Delete` method, which raises many `Card.EVT_CARD_DELETE`,
+        `Card`'s `Delete` method, which raises many `Card.EVT_DELETE`,
         and then raises only one `SelectionManager.EVT_MGR_DELETE` event.
         """
         self.selec.Deactivate()
@@ -549,12 +547,12 @@ class Deck(AutoSize):
         self.GetEventHandler().ProcessEvent(event)
 
     def OnCardRequest(self, ev):
-        """Listens to `Card.EVT_CARD_REQUEST_VIEW`. Raises the same event,
+        """Listens to `Card.EVT_REQUEST_VIEW`. Raises the same event,
         with the same card as event object. The difference is that now a `Box`
-        can `Bind` only once to `EVT_CARD_REQUEST_VIEW` events coming from
+        can `Bind` only once to `EVT_REQUEST_VIEW` events coming from
         this `Deck`, instead of having to bind to every individual card.
         """
-        event = Card.ReqViewEvent(id=wx.ID_ANY)
+        event = card.Card.ReqViewEvent(id=wx.ID_ANY)
         event.SetEventObject(ev.GetEventObject())
         self.GetEventHandler().ProcessEvent(event)
 
@@ -658,12 +656,12 @@ class Deck(AutoSize):
         # terminate drag select
         if self.drag_select:
             # erase the last selection rect
-            final_rect = MakeEncirclingRect(self.init_pos, self.init_pos + self.cur_pos)                        
+            final_rect = utilities.MakeEncirclingRect(self.init_pos, self.init_pos + self.cur_pos)                        
             self.PaintRect(final_rect, style = wx.TRANSPARENT)
 
             # select cards
             selected = [c for c in self.GetCards() if c.GetRect().Intersects(final_rect)]
-            self.SelectGroup(CardGroup(selected), new_sel=True)
+            self.SelectGroup(card.CardGroup(selected), new_sel=True)
             
             # finish up
             self.Unbind(wx.EVT_MOTION)
@@ -1097,7 +1095,7 @@ class SelectionManager(wx.Window):
                         c.ToggleCollapse()
 
                 # restore selection
-                self.SelectGroup(CardGroup(members=cards), True)
+                self.SelectGroup(card.CardGroup(members=cards), True)
                 
             elif key == ord("I"):
                 pass
@@ -1123,7 +1121,7 @@ class SelectionManager(wx.Window):
                 ev.Skip()
 
         # function keys
-        elif IsFunctionKey(key):
+        elif utilities.IsFunctionKey(key):
             ev.Skip()
 
         # no modifiers
@@ -1161,7 +1159,7 @@ __pdoc__["field"] = None
 # Since we only want to generate documentation for our own
 # mehods, and not the ones coming from the base classes,
 # we first set to None every method in the base class.
-for field in dir(AutoSize):
+for field in dir(utilities.AutoSize):
     __pdoc__['Deck.%s' % field] = None
 for field in dir(wx.Window):
     __pdoc__['SelectionManager.%s' % field] = None

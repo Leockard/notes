@@ -9,7 +9,7 @@ http://www.wxpython.org/download.php.
 """
 
 import wx
-from utilities import AutoSize
+import utilities
 
 
 ######################
@@ -133,7 +133,7 @@ class CanvasBase(wx.StaticBitmap):
 # Canvas Class
 ######################
 
-class Canvas(AutoSize):
+class Canvas(utilities.AutoSize):
     """An `AutoSize` object which holds a `Canvas` as its only child."""
     
     def __init__(self, parent, size=wx.DefaultSize, pos=wx.DefaultPosition):
