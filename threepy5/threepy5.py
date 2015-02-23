@@ -72,10 +72,9 @@ class ThreePyFiveFrame(wx.Frame):
             result = pg.deck
         return result
 
-    def Search(self, ev):
-        """Listens to `wx.EVT_TEXT` in the search bar. Search the current text in
-        the search bar in all of the Cards' texts. Cycle through finds
-        with (SHUFT+)CTRL+G.
+    def Search(self):
+        """Search the current text in the search bar in all of the Cards'
+        texts (titles, contents, etc). Cycle through finds with (SHIFT+)CTRL+G.
         """
         # search string in lower case
         s = self.search_ctrl.GetValue().lower()
@@ -134,6 +133,10 @@ class ThreePyFiveFrame(wx.Frame):
             self.search_find = []
             self.search_str = ""
             self.search_head = None
+
+    def OnSearchText(self, ev):
+        """Listens to `wx.EVT_TEXT` from the search bar."""
+        self.Search()
 
     def OnCancelSearch(self, ev):
         """Listens to `wx.EVT_SEARCHCTRL_CANCEL_BTN` from the search bar."""
@@ -208,7 +211,7 @@ class ThreePyFiveFrame(wx.Frame):
         ctrl.SetStyle(pos, pos + len(s), wx.TextAttr(None, wx.RED))
 
         # make sure the find is visible            
-        card = GetCardAncestor(ctrl)
+        card = utilities.GetCardAncestor(ctrl)
         if card:
             self.GetCurrentDeck().ScrollToCard(card)
             if isinstance(card, Content):
@@ -403,7 +406,7 @@ class ThreePyFiveFrame(wx.Frame):
         if not self.ui_ready:
             # make new
             ctrl = wx.SearchCtrl(self, style=wx.TE_PROCESS_ENTER)
-            ctrl.Bind(wx.EVT_TEXT, self.Search)
+            ctrl.Bind(wx.EVT_TEXT, self.OnSearchText)
             ctrl.Bind(wx.EVT_SEARCHCTRL_CANCEL_BTN, self.OnCancelSearch)
             ctrl.Bind(wx.EVT_TEXT_ENTER, self.OnSearchEnter)
         else:

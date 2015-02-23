@@ -42,8 +42,8 @@ class Card(wx.Panel):
 
     bar = None
 
-    DeleteEvent,   EVT_DELETE = ne.NewCommandEvent()
-    CollapseEvent, EVT_COLLAPSE = ne.NewCommandEvent()
+    DeleteEvent,   EVT_DELETE = ne.NewEvent()
+    CollapseEvent, EVT_COLLAPSE = ne.NewEvent()
     ReqViewEvent,    EVT_REQUEST_VIEW = ne.NewEvent()
     CancelViewEvent, EVT_CANCEL_VIEW = ne.NewEvent()
 
@@ -1437,7 +1437,7 @@ class Image(Card):
 # Class CardGroup
 ######################
 
-class CardGroup():
+class CardGroup(object):
     """Basically, a list of Cards, used throughout the application."""
     
     def __init__(self, members=[], label=-1):
