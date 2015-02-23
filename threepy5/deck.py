@@ -1092,7 +1092,7 @@ class SelectionManager(wx.Window):
 
                 # for the same reason, don't iterate over self.GetSelection
                 for c in cards:
-                    if isinstance(c, Content):
+                    if isinstance(c, card.Content):
                         c.ToggleCollapse()
 
                 # restore selection

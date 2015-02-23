@@ -282,7 +282,7 @@ class ThreePyFiveFrame(wx.Frame):
 
         ## view menu
         view_menu = wx.Menu()
-        collp_it = wx.MenuItem(view_menu, wx.ID_ANY, "(Un)Collapse card")
+        collp_it = wx.MenuItem(view_menu, wx.ID_ANY, "Toggle collapse")
         inspc_it = wx.MenuItem(view_menu, wx.ID_ANY, "View card")
         tgmap_it = wx.MenuItem(view_menu, wx.ID_ANY, "Show map")
         zoomi_it = wx.MenuItem(view_menu, wx.ID_ANY, "Zoom in")
@@ -431,21 +431,23 @@ class ThreePyFiveFrame(wx.Frame):
         it_normal = wx.ITEM_NORMAL
 
         # notebook and tab tools
-        new_it = toolbar.AddLabelTool(wx.ID_NEW, "New",   getBMP(wx.ART_NEW), kind=it_normal)
+        new_it = toolbar.AddLabelTool(wx.ID_NEW, "New",   getBMP(wx.ART_NEW),         kind=it_normal)
         opn_it = toolbar.AddLabelTool(wx.ID_OPEN, "Open", getBMP(wx.ART_FOLDER_OPEN), kind=it_normal)
-        sav_it = toolbar.AddLabelTool(wx.ID_SAVE, "Save", getBMP(wx.ART_FILE_SAVE), kind=it_normal)
+        sav_it = toolbar.AddLabelTool(wx.ID_SAVE, "Save", getBMP(wx.ART_FILE_SAVE),   kind=it_normal)
         self.Bind(wx.EVT_TOOL, self.OnNew, new_it)
         self.Bind(wx.EVT_TOOL, self.OnOpen, opn_it)
         self.Bind(wx.EVT_TOOL, self.OnSave, sav_it)                
         toolbar.AddSeparator()
 
         # card and deck tools
-        del_it = toolbar.AddLabelTool(wx.ID_ANY, "Delete",  getBMP(wx.ART_DELETE), kind=it_normal)
-        cpy_it = toolbar.AddLabelTool(wx.ID_COPY, "Copy",   getBMP(wx.ART_COPY), kind=it_normal)
-        pas_it = toolbar.AddLabelTool(wx.ID_PASTE, "Paste", getBMP(wx.ART_PASTE), kind=it_normal)
-        self.Bind(wx.EVT_TOOL, self.OnDelete, del_it)
+        col_it = toolbar.AddLabelTool(wx.ID_ANY,   "Collapse", getBMP(wx.ART_MINUS),  kind=it_normal)
+        cpy_it = toolbar.AddLabelTool(wx.ID_COPY,  "Copy",     getBMP(wx.ART_COPY),   kind=it_normal)
+        pas_it = toolbar.AddLabelTool(wx.ID_PASTE, "Paste",    getBMP(wx.ART_PASTE),  kind=it_normal)
+        del_it = toolbar.AddLabelTool(wx.ID_ANY,   "Delete",   getBMP(wx.ART_DELETE), kind=it_normal)
+        self.Bind(wx.EVT_TOOL, self.OnToggleCollapse, col_it)
         self.Bind(wx.EVT_TOOL, self.OnCopy, cpy_it)
         self.Bind(wx.EVT_TOOL, self.OnPaste, pas_it)
+        self.Bind(wx.EVT_TOOL, self.OnDelete, del_it)        
 
     def InitUI(self):
         """Initialize the GUI and controls."""
@@ -563,7 +565,8 @@ class ThreePyFiveFrame(wx.Frame):
         self.GetCurrentBox().ToggleMinimap()
 
     def OnToggleCollapse(self, ev):
-        """Listens to `wx.EVT_MENU` from "(Un)Collapse card" in the "view" menu."""
+        """Listens to `wx.EVT_MENU` from "Toggle collapse" in the "view" menu and to
+        "Toggle collapse" tool in the tool bar.."""
         for c in [t for t in self.GetCurrentDeck().GetSelection() if isinstance(t, Content)]:
             c.ToggleCollapse()
 

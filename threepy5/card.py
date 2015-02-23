@@ -84,7 +84,7 @@ class Card(wx.Panel):
         return self.main.GetChildren()
 
     def GetLabel(self):
-        """Get this `Card`'s identifier.
+        """Get this `Card`'s identifier. Overrides `wx.Window.GetLabel`.
 
         `returns: ` an `int`.
         """
