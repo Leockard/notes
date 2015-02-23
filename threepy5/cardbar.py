@@ -70,7 +70,7 @@ def OnCollapse(ev):
 
 def OnMaximize(ev):
     global ASSOC_CARD
-    ASSOC_CARD.RequestInspect()
+    ASSOC_CARD.RequestView()
 
 def OnClose(ev):
     global ASSOC_CARD

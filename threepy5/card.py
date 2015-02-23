@@ -45,8 +45,8 @@ class Card(wx.Panel):
 
     DeleteEvent,   EVT_CARD_DELETE = ne.NewCommandEvent()
     CollapseEvent, EVT_CARD_COLLAPSE = ne.NewCommandEvent()
-    ReqInspectEvent,    EVT_CARD_REQUEST_INSPECT = ne.NewEvent()
-    CancelInspectEvent, EVT_CARD_CANCEL_INSPECT = ne.NewEvent()
+    ReqViewEvent,    EVT_CARD_REQUEST_VIEW = ne.NewEvent()
+    CancelViewEvent, EVT_CARD_CANCEL_VIEW = ne.NewEvent()
 
     def __init__(self, parent, label, pos=wx.DefaultPosition, size=wx.DefaultSize, style=0):
         """Constructor.
@@ -818,7 +818,7 @@ class Content(Card):
     ^my-tag: foo bar baz$
     is considered to define the tag "my-tag". Tag names (before the colon) must
     be single words, and their content (after the colon) may be any string,
-    until a newline. They are parsed and shown by `TagsInspect`.
+    until a newline. They are parsed and shown by `TagView`.
     
     A tag can be anything, though they usually describe facts about concepts:
 
@@ -890,7 +890,7 @@ class Content(Card):
         self.InitUI()
         self.InitAccels()
 
-        self.inspecting = False
+        self.viewing = False
         self.collapse_enabled = True
 
         if title:   self.title.SetValue(title)
@@ -901,19 +901,19 @@ class Content(Card):
 
     ### Behavior functions
 
-    def SetInspecting(self, val):
-        """Sets the inspecting condition for this `Card`.
+    def SetViewing(self, val):
+        """Sets the viewing condition for this `Card`.
 
-        * `val: ` if `True`, this `Card` is being inspected.
+        * `val: ` if `True`, this `Card` is being viewed.
         """
-        self.inspecting = val
+        self.viewing = val
 
-    def GetInspecting(self):
-        """Get the inspecting condition for this `Card`.
+    def GetViewing(self):
+        """Get the viewing condition for this `Card`.
 
-        `returns: ` `True` if this `Card` is being inspected.
+        `returns: ` `True` if this `Card` is being viewed.
         """
-        return self.inspecting
+        return self.viewing
 
     def SetRating(self, n):
         """Sets the star rating for this `Card`.
@@ -1011,15 +1011,15 @@ class Content(Card):
         """
         return not self.content.IsShown()
 
-    def RequestInspect(self):
-        """Request an inspection. Raises `Card.EVT_CARD_REQUEST_INSPECT`."""
-        event = self.ReqInspectEvent(id=wx.ID_ANY)
+    def RequestView(self):
+        """Request an viewion. Raises `Card.EVT_CARD_REQUEST_VIEW`."""
+        event = self.ReqViewEvent(id=wx.ID_ANY)
         event.SetEventObject(self)
         self.GetEventHandler().ProcessEvent(event)
 
-    def CancelInspect(self):
-        """Request to stop being inspected. Raises `Card.EVT_CARD_CANCEL_INSPECT`."""
-        event = self.CancelInspectEvent(id=wx.ID_ANY)
+    def CancelView(self):
+        """Request to stop being viewed. Raises `Card.EVT_CARD_CANCEL_VIEW`."""
+        event = self.CancelViewEvent(id=wx.ID_ANY)
         event.SetEventObject(self)
         self.GetEventHandler().ProcessEvent(event)
 
@@ -1113,7 +1113,7 @@ class Content(Card):
 
         # view
         coll = wx.MenuItem(ghost, wx.ID_ANY, "Toggle collapse")
-        insp = wx.MenuItem(ghost, wx.ID_ANY, "Request inspection")
+        insp = wx.MenuItem(ghost, wx.ID_ANY, "Request view")
         self.Bind(wx.EVT_MENU, self.OnCtrlU, coll)
         self.Bind(wx.EVT_MENU, self.OnCtrlI, insp)
         accels.append(wx.AcceleratorEntry(wx.ACCEL_CTRL, ord("U"), coll.GetId()))
@@ -1183,11 +1183,11 @@ class Content(Card):
             ev.Skip()
             return
 
-        # if not, then handle inspection
-        if not self.inspecting:
-            self.RequestInspect()
-        elif self.inspecting:
-            self.CancelInspect()
+        # if not, then handle viewing
+        if not self.viewing:
+            self.RequestView()
+        elif self.viewing:
+            self.CancelView()
 
     def OnCtrlU(self, ev):
         """Listens to CTRL+U."""

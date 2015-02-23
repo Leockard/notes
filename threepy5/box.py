@@ -1,14 +1,14 @@
 # -*- coding: utf-8 -*-
 """
 A `Box` is a window that holds both a `Deck` and a `Canvas` to draw over that `Deck`.
-It also has facilities for closer inspection of individual objects.
+It also has facilities for closer inspection of individual objects (from the module view).
 """
 
 import wx
 from utilities import AutoSize
 from utilities import *
 from deck import *
-from cardinspect import *
+from view import *
 from canvas import Canvas
 
 
@@ -20,10 +20,10 @@ class Box(wx.Panel):
     """A `Box` holds all the main items to create, edit and visualize a collection of `Card`s.
     The window that takes center stage in a `Box` by default is a `Deck`. Associated to it is
     a `Canvas`, and one can toggle between the two with a button in the button bar. `Box` also
-    handles the sidebars (`TagsInspect`), the "minimap" (`DeckInspect`), and the `Card` inspection
-    view (`CardInspect`).
+    handles the sidebars (`TagView`), the "minimap" (`DeckView`), and the `Card` inspection
+    view (`CardView`).
 
-    The `Deck`, `Canvas` and `CardInspect` (and possibly others) seemingly hold the same position
+    The `Deck`, `Canvas` and `CardView` (and possibly others) seemingly hold the same position
     in the `Box`. This is achieved by having a sizer for them (`content_sizer`) and constantly
     adding and deleting these objects from it. All the objects that can be shown in this main sizer
     are stored in the attribute `contents`.
@@ -36,8 +36,8 @@ class Box(wx.Panel):
     VIEW_CH_DEF = "View"
     VIEW_CHOICES = ("All", KindButton.CONCEPT_LBL_LONG, KindButton.ASSUMPTION_LBL_LONG, KindButton.RESEARCH_LBL_LONG, KindButton.FACT_LBL_LONG)
 
-    InspectEvent, EVT_BOX_INSPECT = ne.NewEvent()
-    CancelInspectEvent, EVT_BOX_CANCEL_INSPECT = ne.NewEvent()
+    ViewEvent, EVT_BOX_VIEW = ne.NewEvent()
+    CancelViewEvent, EVT_BOX_CANCEL_VIEW = ne.NewEvent()
     DeleteEvent, EVT_BOX_DEL_CARD = ne.NewEvent()
 
     def __init__(self, parent, pos=wx.DefaultPosition, size = wx.DefaultSize):
@@ -87,34 +87,34 @@ class Box(wx.Panel):
         self.Layout()
         self.GetTopLevelParent().SetFocus()
 
-    def InspectCards(self, cards):
-        """Set up the children to show the `CardInspect` inspecting `cards`.
-        Raises `Box.EVT_BOX_INSPECT`.
+    def ViewCards(self, cards):
+        """Set up the children to show the `CardView`.
+        Raises `Box.EVT_BOX_VIEW`.
 
         * `cards: ` a list of `Card`s.
         """
-        toinspect = cards[:]
+        toview = cards[:]
 
         # make sure to first SetCards() and then Deactivate()
         self.ShowContent(self.view_card)
-        self.view_card.SetCards(toinspect)
+        self.view_card.SetCards(toview)
 
         # clean up
         self.deck.UnselectAll()
         self.deck.selec.Deactivate()
-        self.inspect.SetLabel("Save and return")
+        self.view.SetLabel("Save and return")
         
         # raise the event
-        number = len(toinspect)
+        number = len(toview)
         title = ""
         if number == 1:
-            title = toinspect[0].GetTitle()
-        event = self.InspectEvent(id=wx.ID_ANY, number=number, title=title)
+            title = toview[0].GetTitle()
+        event = self.ViewEvent(id=wx.ID_ANY, number=number, title=title)
         event.SetEventObject(self)
         self.GetEventHandler().ProcessEvent(event)
 
-    def CancelInspect(self):
-        """Cleans up after a `Card` inspection. Raises `Box.EVT_BOX_CANCEL_INSPECT`."""
+    def CancelView(self):
+        """Cleans up after a `Card` viewing. Raises `Box.EVT_BOX_CANCEL_VIEW`."""
         # raise the event
         cards = self.view_card.GetCards()
         number = len(cards)
@@ -122,13 +122,13 @@ class Box(wx.Panel):
             title = cards[0].GetTitle()
         else:
             title = ""
-        event = self.CancelInspectEvent(id=wx.ID_ANY, number=number, title=title)
+        event = self.CancelViewEvent(id=wx.ID_ANY, number=number, title=title)
         event.SetEventObject(self)
         self.GetEventHandler().ProcessEvent(event)
 
         # clean up
         self.ShowDeck()
-        self.inspect.SetLabel("Inspect")
+        self.view.SetLabel("View")
 
     def ShowDeck(self):
         """Show the `Deck` in the `content_sizer`."""
@@ -146,18 +146,18 @@ class Box(wx.Panel):
         self.canvas.Scroll(view)
 
     def ShowMinimap(self):
-        """Show the `DeckInspect`. Note that the minimap is not in `self.contents`, so it
+        """Show the `DeckView`. Note that the minimap is not in `self.contents`, so it
         isn't added to `content_sizer`. Be sure to use this method and not self.minimap.Show(),
         as we also calculate the position before showing.
         """
         self.minimap.Show()
 
     def HideMinimap(self):
-        """Hide the `DeckInspect` minimap. Note that the minimap is not in `self.contents`."""
+        """Hide the `DeckView` minimap. Note that the minimap is not in `self.contents`."""
         self.minimap.Hide()
 
     def ToggleMinimap(self):
-        """Hide/Show the `DeckInspect` minimap. Note that the minimap is not in `self.contents`."""
+        """Hide/Show the `DeckView` minimap. Note that the minimap is not in `self.contents`."""
         mp = self.minimap
         if mp.IsShown(): self.HideMinimap()
         else:            self.ShowMinimap()
@@ -238,10 +238,10 @@ class Box(wx.Panel):
         # get the deck dump dict and process it
         deck_di = self.deck.Dump()
         
-        # if we're inspecting, restore the cards, dump and then return to the inspection view
-        inspecting = []
-        if self.GetCurrentContent() == CardInspect:
-            inspecting = self.view_card.GetCards()
+        # if we're viewing, restore the cards, dump and then return to the view
+        viewing = []
+        if self.GetCurrentContent() == CardView:
+            viewing = self.view_card.GetCards()
             self.view_card.Restore()
 
         # dump the real coordinates
@@ -253,9 +253,9 @@ class Box(wx.Panel):
             if "height" in card.keys():
                 card["height"] = int(card["height"] / self.scale)
 
-        # restore inspect view
-        if inspecting:
-            self.InspectCards(inspecting)
+        # restore view
+        if viewing:
+            self.ViewCards(viewing)
 
         # get the canvas dump dict
         canvas_di = self.canvas.Dump()
@@ -300,7 +300,7 @@ class Box(wx.Panel):
         self.InitSizers()
         self.InitDeck(sz)
         self.InitCanvas()
-        self.InitInspect()
+        self.InitView()
         self.InitSidebar()
         # execute only the first time
         if not self.ui_ready: self.InitButtonBar()
@@ -337,7 +337,7 @@ class Box(wx.Panel):
         self.buttonbar = bbox
 
         # the data sizer contains the sidebar (sbox) and the
-        # contents sizer (cbox), which in turn contains the deck/canvas/inspect views.
+        # contents sizer (cbox), which in turn contains the deck/canvas/view controls.
         # the contents sizer takes all available space for content
         # always use the individual ShowXXX() methods
         sbox = wx.BoxSizer(wx.VERTICAL)
@@ -353,11 +353,11 @@ class Box(wx.Panel):
         bd = Deck(self, size=size)
         
         # bindings
-        bd.Bind(Card.EVT_CARD_REQUEST_INSPECT, self.OnRequestInspect)
+        bd.Bind(Card.EVT_CARD_REQUEST_VIEW, self.OnRequestView)
         bd.Bind(bd.EVT_DECK_DEL_CARD, self.OnDelete)
 
-        # init also the inspection view
-        ins = DeckInspect(self, bd)
+        # init also the viewing control
+        ins = DeckView(self, bd)
         ins.Hide()
         self.minimap = ins
 
@@ -373,23 +373,23 @@ class Box(wx.Panel):
         self.canvas.Hide()
         self.contents.append(cv)
 
-    def InitInspect(self, size=wx.DefaultSize):
-        """Initializes `CardInspect`."""
-        vw = CardInspect(self, size=size)
+    def InitView(self, size=wx.DefaultSize):
+        """Initializes `CardView`."""
+        vw = CardView(self, size=size)
         self.view_card = vw
         self.view_card.Hide()
         self.contents.append(vw)
 
         # bindings
-        vw.Bind(Card.EVT_CARD_CANCEL_INSPECT, self.OnCancelInspect)
+        vw.Bind(Card.EVT_CARD_CANCEL_VIEW, self.OnCancelView)
 
     def InitSidebar(self, size=wx.DefaultSize):
-        """Initializes `TagsInspect`."""
-        tg = TagsInspect(self, self.deck)
+        """Initializes `TagView`."""
+        tg = TagView(self, self.deck)
         self.tags_sb = tg
         self.tags_sb.Hide()
         # doesn't go in contents since it can be shown
-        # alongside deck and inspect
+        # alongside deck and view
         # self.contents.append(tg)
         self.sidebar_sizer.Add(tg, proportion=1, flag=wx.EXPAND)
         self.sidebars.append(tg)
@@ -397,17 +397,16 @@ class Box(wx.Panel):
     def InitButtonBar(self):
         """Initializes the button bar."""
         # controls
-        self.inspect = wx.Button(self, label = "Inspect")
-        self.inspect.Bind(wx.EVT_BUTTON, self.OnInspect)
+        self.view = wx.Button(self, label = "View")
+        self.view.Bind(wx.EVT_BUTTON, self.OnView)
 
         self.toggle = wx.Button(self, label = "Toggle")
         self.toggle.Bind(wx.EVT_BUTTON, self.OnToggle)
 
-        self.view = wx.Choice(self, choices=Box.VIEW_CHOICES)
-        self.view.SetSelection(0)
-        self.view.Bind(wx.EVT_CHOICE, self.OnView)
+        self.bykind = wx.Choice(self, choices=Box.VIEW_CHOICES)
+        self.bykind.SetSelection(0)
+        self.bykind.Bind(wx.EVT_CHOICE, self.OnView)
                     
-        # chs = ["50%", "100%", "150%", "200%"]
         chs = self.ZOOM_CHOICES
         self.zoom = wx.ComboBox(self, value=chs[1], choices=chs, style=wx.TE_PROCESS_ENTER)
         self.zoom.SetSelection(1)
@@ -418,9 +417,9 @@ class Box(wx.Panel):
 
         # boxing
         box = self.buttonbar
-        box.Add(self.inspect, proportion=0, flag=wx.LEFT|wx.EXPAND, border=1)
-        box.Add(self.toggle,  proportion=0, flag=wx.LEFT|wx.EXPAND, border=1)
-        box.Add(self.view,    proportion=0, flag=wx.LEFT|wx.EXPAND, border=1)
+        box.Add(self.view,   proportion=0, flag=wx.LEFT|wx.EXPAND, border=1)
+        box.Add(self.toggle, proportion=0, flag=wx.LEFT|wx.EXPAND, border=1)
+        box.Add(self.bykind, proportion=0, flag=wx.LEFT|wx.EXPAND, border=1)
         box.Add(zbox,      proportion=1, flag=wx.ALIGN_RIGHT|wx.EXPAND, border=1)        
 
 
@@ -430,15 +429,15 @@ class Box(wx.Panel):
         """Listens to `F9`."""
         self.ShowSidebar(not self.tags_sb.IsShown())
 
-    def OnRequestInspect(self, ev):
-        """Listens to `Card.EVT_CARD_REQUEST_INSPECT` from `Deck`."""
+    def OnRequestView(self, ev):
+        """Listens to `Card.EVT_CARD_REQUEST_VIEW` from `Deck`."""
         card = ev.GetEventObject()
         self.deck.SelectCard(card, True)
-        self.InspectCards([card])
+        self.ViewCards([card])
 
-    def OnCancelInspect(self, ev):
-        """Listens to `Card.EVT_CARD_CANCEL_INSPECT` from `Card`s that are being inspected."""
-        self.CancelInspect()
+    def OnCancelView(self, ev):
+        """Listens to `Card.EVT_CARD_CANCEL_VIEW` from `Card`s that are being viewed."""
+        self.CancelView()
         ev.GetEventObject().SetFocus()
         
     def OnDelete(self, ev):
@@ -447,18 +446,18 @@ class Box(wx.Panel):
         event.SetEventObject(self)
         self.GetEventHandler().ProcessEvent(event)
 
-    def OnInspect(self, ev):
-        """Listens to `wx.EVT_BUTTON` from the inspect button in the button bar."""
+    def OnView(self, ev):
+        """Listens to `wx.EVT_BUTTON` from the view button in the button bar."""
         content = self.GetCurrentContent()
         if content == Deck:
             sel = self.deck.GetSelection()
             if sel:
-                self.InspectCards(sel)
-        elif content == CardInspect:
-            # don't call self.CancelInspect()
-            # instead, tell the inspected cards that they should request
+                self.ViewCards(sel)
+        elif content == CardView:
+            # don't call self.CancelView()
+            # instead, tell the viewed cards that they should request
             # a cancelation
-            self.view_card.GetCards()[-1].CancelInspect()
+            self.view_card.GetCards()[-1].CancelView()
 
     def OnToggle(self, ev):
         """Listents to `wx.EVT_BUTTON` from the `Deck`/`Canvas` button in the button bar"""

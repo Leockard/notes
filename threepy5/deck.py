@@ -254,7 +254,7 @@ class Deck(AutoSize):
         new.Bind(wx.EVT_CHILD_FOCUS, self.OnCardChildFocus)
         new.Bind(Card.EVT_CARD_DELETE, self.OnCardDelete)
         new.Bind(Card.EVT_CARD_COLLAPSE, self.OnCardCollapse)
-        new.Bind(Card.EVT_CARD_REQUEST_INSPECT, self.OnCardRequest)
+        new.Bind(Card.EVT_CARD_REQUEST_VIEW, self.OnCardRequest)
         for ch in new.GetChildren():
             ch.Bind(wx.EVT_LEFT_DOWN, self.OnCardChildLeftDown)
 
@@ -549,12 +549,12 @@ class Deck(AutoSize):
         self.GetEventHandler().ProcessEvent(event)
 
     def OnCardRequest(self, ev):
-        """Listens to `Card.EVT_CARD_REQUEST_INSPECT`. Raises the same event,
+        """Listens to `Card.EVT_CARD_REQUEST_VIEW`. Raises the same event,
         with the same card as event object. The difference is that now a `Box`
-        can `Bind` only once to `EVT_CARD_REQUEST_INSPECT` events coming from
+        can `Bind` only once to `EVT_CARD_REQUEST_VIEW` events coming from
         this `Deck`, instead of having to bind to every individual card.
         """
-        event = Card.ReqInspectEvent(id=wx.ID_ANY)
+        event = Card.ReqViewEvent(id=wx.ID_ANY)
         event.SetEventObject(ev.GetEventObject())
         self.GetEventHandler().ProcessEvent(event)
 

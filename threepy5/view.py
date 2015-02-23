@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Inspect classes are used to take a closer look at certain objects.
+View classes are used to take a closer look at certain objects.
 """
 
 import wx
@@ -11,10 +11,10 @@ from utilities import *
 
 
 ######################
-# DeckInspect Class
+# DeckView Class
 ######################
 
-class DeckInspect(AutoSize):
+class DeckView(AutoSize):
     """Displays a "minimap" of the current `Deck`. Uses `MiniCard` to represent a `Card` on the `Deck`."""
 
     DEFAULT_FACTOR  = 5
@@ -25,14 +25,14 @@ class DeckInspect(AutoSize):
         """Constructor.
 
         * `parent: ` the parent `Box`.
-        * `deck: ` the `Deck` we are inspecting.
+        * `deck: ` the `Deck` we are viewing.
         * `pos: ` by default, is `wx.DefaultSize`.
         * `size: ` by default, is `wx.DefaultSize`.
         """
-        super(DeckInspect, self).__init__(parent, pos=pos, size=size)
+        super(DeckView, self).__init__(parent, pos=pos, size=size)
 
         # members        
-        self.factor = DeckInspect.DEFAULT_FACTOR
+        self.factor = DeckView.DEFAULT_FACTOR
         self.cards = {}
         self.SetBackgroundColour(self.BACKGROUND_CL)
         self.SetDeck(deck)
@@ -48,7 +48,7 @@ class DeckInspect(AutoSize):
         self.cards = {}
 
     def SetDeck(self, deck):
-        """Sets the `Deck` we are going to inspect.
+        """Sets the `Deck` we are going to view.
         * `deck: ` a `Deck`.
         """
         # clean up and add every card already present
@@ -142,12 +142,12 @@ class DeckInspect(AutoSize):
 
 
 ######################
-# CardInspect Class
+# CardView Class
 ######################        
 
-class CardInspect(wx.Panel):
+class CardView(wx.Panel):
     """Displays a screen-sized `Content` `Card` to facilitate editing. While
-    inspecting, the `Card`s are `Reparent`ed to this window.
+    viewing, the `Card`s are `Reparent`ed to this window.
     """
     
     CARD_PADDING = Deck.CARD_PADDING
@@ -160,11 +160,11 @@ class CardInspect(wx.Panel):
         """Constructor.
 
         * `parent: ` the parent `Box`.
-        * `cards: ` the `Card`s we are inspecting.
+        * `cards: ` the `Card`s we are viewing.
         * `pos: ` by default, is `wx.DefaultSize`.
         * `size: ` by default, is `wx.DefaultSize`.
         """
-        super(CardInspect, self).__init__(parent, size=size)
+        super(CardView, self).__init__(parent, size=size)
         
         # GUI
         self.SetBackgroundColour(self.BACKGROUND_CL)
@@ -178,14 +178,14 @@ class CardInspect(wx.Panel):
     ### Behavior functions
 
     def GetCards(self):
-        """Returns the `Card`s currently under inspection.
+        """Returns the `Card`s currently under viewing.
 
         `returns: ` a `list` of `Card`s.
         """
         return self.cards.keys()
 
     def AddCard(self, card):
-        """Adds one `Card`s to the inspection view.
+        """Adds one `Card` to the viewing control.
 
         * `card: ` a `Card`.
         """
@@ -194,7 +194,7 @@ class CardInspect(wx.Panel):
         self.cards[card]["parent"] = card.GetParent()
         self.cards[card]["rect"] = card.GetRect()
         card.Reparent(self)
-        card.SetInspecting(True)
+        card.SetViewing(True)
         card.content.SetFocus()
         
         # setup UI
@@ -203,10 +203,10 @@ class CardInspect(wx.Panel):
         box.Layout()
 
         # bindings
-        card.Bind(Card.EVT_CARD_CANCEL_INSPECT, self.OnCancelInspect)
+        card.Bind(Card.EVT_CARD_CANCEL_VIEW, self.OnCancelView)
 
     def SetCards(self, cards):
-        """Clears previous `Card`s and inspects the new ones.
+        """Clears previous `Card`s and views the new ones.
 
         * `cards: ` a `list` of `Card`s.
         """
@@ -214,26 +214,26 @@ class CardInspect(wx.Panel):
         for c in cards: self.AddCard(c)
 
     def Restore(self):
-        """Restores the `Card`s under inspection to their original parents and positions."""
+        """Restores the viewed `Card`s to their original parents and positions."""
         for c in self.cards:
             c.Reparent(self.cards[c]["parent"])
             c.SetRect(self.cards[c]["rect"])
         self.Clear()
 
     def Clear(self):
-        """Clear all `Card`s under inspection."""
+        """Clear all viewed `Card`s."""
         self.GetSizer().Clear()
         for c in self.cards.keys():
-            c.SetInspecting(False)
+            c.SetViewing(False)
         self.cards = {}
 
 
     ### Callbacks
 
-    def OnCancelInspect(self, ev):
-        """Listens to `Card.EVT_CARD_CANCEL_INSPECT` on every `Card` under inspection."""
+    def OnCancelView(self, ev):
+        """Listens to `Card.EVT_CARD_CANCEL_VIEW` on every viewed `Card`."""
         self.Restore()
-        event = Card.CancelInspectEvent(id=wx.ID_ANY)
+        event = Card.CancelViewEvent(id=wx.ID_ANY)
         event.SetEventObject(ev.GetEventObject())
         self.GetEventHandler().ProcessEvent(event)
     
@@ -244,12 +244,12 @@ class CardInspect(wx.Panel):
 ######################        
 
 class MiniCard(wx.Window):
-    """The little cards shown in a `DeckInspect`"""
+    """The little cards shown in a `DeckView`"""
     
     def __init__(self, parent, pos=wx.DefaultPosition, size=wx.DefaultSize):
         """Constructor.
 
-        * `parent: ` the parent `DeckInspect`.
+        * `parent: ` the parent `DeckView`.
         * `pos: ` by default, is `wx.DefaultSize`.
         * `size: ` by default, is `wx.DefaultSize`.
         """
@@ -260,10 +260,10 @@ class MiniCard(wx.Window):
 
 
 ######################
-# TagsInspect Class
+# TagView Class
 ######################        
 
-class TagsInspect(wx.Panel):
+class TagView(wx.Panel):
     """The sidebard that displays a `Content` `Card`'s tags."""
 
     TAGS_REGEX = "^(\w+):(.*)$"
@@ -272,11 +272,11 @@ class TagsInspect(wx.Panel):
         """Constructor.
 
         * `parent: ` the parent `Box`.
-        * `deck: ` the parent `Deck` of the `Card`s we are inspecting.
+        * `deck: ` the parent `Deck` of the `Card`s we are viewing.
         * `pos: ` by default, is `wx.DefaultSize`.
         * `size: ` by default, is `wx.DefaultSize`.
         """
-        super(TagsInspect, self).__init__(parent, pos=pos, size=size)
+        super(TagView, self).__init__(parent, pos=pos, size=size)
         self.deck = deck
         self.InitUI()
 
@@ -292,7 +292,7 @@ class TagsInspect(wx.Panel):
 
         * `txt: ` a string, the contents of a `Content`.
 
-        `returns: ` a string to display in the `TagsInspect` view, representing the tags found in `text`.
+        `returns: ` a string to display in the `TagView` view, representing the tags found in `text`.
         """
         string = ""
         results = re.findall(self.TAGS_REGEX, txt, re.MULTILINE)
@@ -359,25 +359,25 @@ __pdoc__["field"] = None
 # mehods, and not the ones coming from the base classes,
 # we first set to None every method in the base class.
 for field in dir(AutoSize):
-    __pdoc__['DeckInspect.%s' % field] = None
+    __pdoc__['DeckView.%s' % field] = None
 for field in dir(wx.Panel):
-    __pdoc__['CardInspect.%s' % field] = None
+    __pdoc__['CardView.%s' % field] = None
 for field in dir(wx.Window):
     __pdoc__['MiniCard.%s' % field] = None
 for field in dir(wx.Panel):
-    __pdoc__['TagsInspect.%s' % field] = None
+    __pdoc__['TagView.%s' % field] = None
 
 # Then, we have to add again the methods that we have
 # overriden. See https://github.com/BurntSushi/pdoc/issues/15.
-for field in DeckInspect.__dict__.keys():
-    if 'DeckInspect.%s' % field in __pdoc__.keys():
-        del __pdoc__['DeckInspect.%s' % field]
-for field in CardInspect.__dict__.keys():
-    if 'CardInspect.%s' % field in __pdoc__.keys():
-        del __pdoc__['CardInspect.%s' % field]
+for field in DeckView.__dict__.keys():
+    if 'DeckView.%s' % field in __pdoc__.keys():
+        del __pdoc__['DeckView.%s' % field]
+for field in CardView.__dict__.keys():
+    if 'CardView.%s' % field in __pdoc__.keys():
+        del __pdoc__['CardView.%s' % field]
 for field in MiniCard.__dict__.keys():
     if 'MiniCard.%s' % field in __pdoc__.keys():
         del __pdoc__['MiniCard.%s' % field]
-for field in TagsInspect.__dict__.keys():
-    if 'TagsInspect.%s' % field in __pdoc__.keys():
-        del __pdoc__['TagsInspect.%s' % field]
+for field in TagView.__dict__.keys():
+    if 'TagView.%s' % field in __pdoc__.keys():
+        del __pdoc__['TagView.%s' % field]

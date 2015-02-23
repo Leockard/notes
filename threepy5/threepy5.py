@@ -10,7 +10,7 @@ from box import *
 from card import *
 from canvas import *
 from deck import *
-from cardinspect import *
+from view import *
 import wx.richtext as rt
 import json
 import re
@@ -98,7 +98,7 @@ class ThreePyFiveFrame(wx.Frame):
         content = self.GetCurrentBox().GetCurrentContent()
         if content == Deck:
             cards = self.GetCurrentDeck().GetCards()
-        elif content == CardInspect:
+        elif content == CardView:
             cards = self.GetCurrentBox().view_card.GetCards()
 
         # gather all (lower case) values in which to search
@@ -280,7 +280,7 @@ class ThreePyFiveFrame(wx.Frame):
         ## view menu
         view_menu = wx.Menu()
         collp_it = wx.MenuItem(view_menu, wx.ID_ANY, "(Un)Collapse card")
-        inspc_it = wx.MenuItem(view_menu, wx.ID_ANY, "Inspect card")
+        inspc_it = wx.MenuItem(view_menu, wx.ID_ANY, "View card")
         tgmap_it = wx.MenuItem(view_menu, wx.ID_ANY, "Show map")
         zoomi_it = wx.MenuItem(view_menu, wx.ID_ANY, "Zoom in")
         zoomo_it = wx.MenuItem(view_menu, wx.ID_ANY, "Zoom out")
@@ -327,7 +327,7 @@ class ThreePyFiveFrame(wx.Frame):
         self.Bind(wx.EVT_MENU, self.OnViewBoxBar , hideb_it)
 
         self.Bind(wx.EVT_MENU, self.OnToggleCollapse  , collp_it)
-        self.Bind(wx.EVT_MENU, self.OnMenuInspectCard , inspc_it)
+        self.Bind(wx.EVT_MENU, self.OnMenuViewCard , inspc_it)
         self.Bind(wx.EVT_MENU, self.OnToggleMinimap   , tgmap_it)
 
         self.Bind(wx.EVT_MENU, self.OnInsertContentRight , contr_it)
@@ -538,8 +538,8 @@ class ThreePyFiveFrame(wx.Frame):
 
     def OnNewBox(self, ev):
         """Listens to `BoxSet.EVT_BK_NEW_BOX`."""
-        ev.box.Bind(Box.EVT_BOX_INSPECT, self.OnInspect)
-        ev.box.Bind(Box.EVT_BOX_CANCEL_INSPECT, self.OnCancelInspect)
+        ev.box.Bind(Box.EVT_BOX_VIEW, self.OnView)
+        ev.box.Bind(Box.EVT_BOX_CANCEL_VIEW, self.OnCancelView)
         ev.box.deck.Bind(Deck.EVT_DECK_DEL_CARD, self.AfterDelete)
         ev.box.deck.Bind(Deck.EVT_NEW_CARD, self.AfterCardCreated)
 
@@ -568,36 +568,36 @@ class ThreePyFiveFrame(wx.Frame):
         """Listens to `wx.EVT_MENU` from "Hide Box button bar" in the "view" menu."""
         self.GetCurrentBox().ShowButtonBar(show=ev.IsChecked())
 
-    def OnMenuInspectCard(self, ev):
-        """Listens to `wx.EVT_MENU` from "Inspect card" in the "view" menu."""
+    def OnMenuViewCard(self, ev):
+        """Listens to `wx.EVT_MENU` from "View card" in the "view" menu."""
         pg = self.GetCurrentBox()
         cont = pg.GetCurrentContent()
 
-        # toggle between Deck and Inspect modes        
+        # toggle between Deck and View modes        
         if cont == Deck:
             sel = pg.deck.GetSelection()
             if len(sel) > 0:
                 cards = [c for c in sel if isinstance(c, Content)]
                 if cards:
-                    pg.InspectCards(cards)
+                    pg.ViewCards(cards)
                     if len(cards) == 1:
-                        self.Log("Inspecting \"" + cards[0].GetTitle() + "\".")
+                        self.Log("Viewing \"" + cards[0].GetTitle() + "\".")
                     else:
-                        self.Log("Inspecting " + str(len(cards)) + " cards.")
-        elif cont == CardInspect:
-            pg.CancelInspect()
-            self.Log("Done inspecting.")
+                        self.Log("Viewing " + str(len(cards)) + " cards.")
+        elif cont == CardView:
+            pg.CancelView()
+            self.Log("Done viewing.")
 
-    def OnInspect(self, ev):
-        """Listens to `Box.EVT_BOX_INSPECT` from every `Box` in the `BoxSet`."""
+    def OnView(self, ev):
+        """Listens to `Box.EVT_BOX_VIEW` from every `Box` in the `BoxSet`."""
         if ev.number == 1:
-            self.Log("Inspecting \"" + ev.title + "\".")
+            self.Log("Viewing \"" + ev.title + "\".")
         else:
-            self.Log("Inspecting " + str(ev.number) + " cards.")
+            self.Log("Viewing " + str(ev.number) + " cards.")
 
-    def OnCancelInspect(self, ev):
-        """Listens to `Box.EVT_BOX_CANCEL_INSPECT` from every `Box` in the `BoxSet`."""
-        self.Log("Done inspecting.")
+    def OnCancelView(self, ev):
+        """Listens to `Box.EVT_BOX_CANCEL_VIEW` from every `Box` in the `BoxSet`."""
+        self.Log("Done viewing.")
 
     def OnSelectAll(self, ev):
         """Listens to `wx.EVT_MENU` from "Select All" in the "selection" menu."""
@@ -630,11 +630,11 @@ class ThreePyFiveFrame(wx.Frame):
         if self.welcome:
             return
 
-        # if inspecting: nil
+        # if viewing: nil
         pg = self.GetCurrentBox()
         if pg:
             content = pg.GetCurrentContent()
-            if content and content == CardInspect:
+            if content and content == CardView:
                 return
 
         # if on deck: cycle selection
