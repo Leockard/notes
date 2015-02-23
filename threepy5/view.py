@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-View classes are used to take a closer look at certain objects.
+`*View` classes are used to take a closer look at certain objects.
 """
 
 import wx
@@ -49,23 +49,21 @@ class DeckView(utilities.AutoSize):
 
     def SetDeck(self, deck):
         """Sets the `Deck` we are going to view.
+        
         * `deck: ` a `Deck`.
         """
-        # clean up and add every card already present
         self.Clear()
         for c in deck.GetCards():
             self.AddCard(c)
 
-        # set sizes
+        # set size, fixed for scale/zoom
         sz = [i / self.factor for i in deck.GetSize()]
         self.SetSize(sz)
         self.UpdateContentSize(deck.content_sz)
 
-        # set scroll
         step = deck.GetScrollPixelsPerUnit()
         self.SetScrollRate(step[0] / self.factor, step[1] / self.factor)
 
-        # listen to events
         deck.Bind(Deck.EVT_NEW_CARD, self.OnNewCard)
         deck.Bind(wx.EVT_SIZE, self.OnDeckSize)
         deck.Bind(wx.EVT_SCROLLWIN, self.OnDeckScroll)
@@ -74,17 +72,14 @@ class DeckView(utilities.AutoSize):
     
     def AddCard(self, card):
         """Adds a new `MiniCard`."""
-        # resize and create
         r = wx.Rect(*[i / self.factor for i in card.GetRect()])
         mini = MiniCard(self, pos=(r.left, r.top), size=(r.width, r.height))
 
-        # if it's a content card, also mimic its colour
         if isinstance(card, Content):
             mini.SetBackgroundColour(card.GetBackgroundColour())
         else:
             mini.SetBackgroundColour(self.DEFAULT_MINI_CL)
 
-        # listen to various actions that we want to reflect
         card.Bind(Card.EVT_DELETE, self.OnDeleteCard)
         if isinstance(card, Content):
             card.Bind(Content.EVT_CONT_KIND, self.OnContentKind)

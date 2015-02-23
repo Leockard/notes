@@ -999,12 +999,20 @@ class SelectionManager(wx.Window):
         * `group: ` a `CardGroup` to select.
         * `new_sel: ` if `True`, unselects all other `Card`s before selecting.
         """
+        # in case we are coming from a card that's inside the group,
+        # we may want to return to that card after selection ends
+        # so we select the group but restore the last card after
+        if self.last and self.last in group.GetMembers():
+            crd = self.last
+
         if new_sel: self.UnselectAll()
         for c in group.GetMembers(): self.SelectCard(c)
 
+        if crd:
+            self.last = crd
+
     def DeleteSelected(self):
-        """Deletes every `Card` currently selected.
-        """
+        """Deletes every `Card` currently selected."""
         # store the number of cards we're deleting to raise the event
         number = len(self.cards)
         
