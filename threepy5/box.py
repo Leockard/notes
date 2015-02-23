@@ -354,7 +354,7 @@ class Box(wx.Panel):
         dk = Deck(self, size=size)
         
         # bindings
-        dk.Bind(card.Card.EVT_REQUEST_VIEW, self.OnRequestView)
+        dk.Bind(Deck.EVT_REQUEST_VIEW, self.OnRequestView)
         dk.Bind(Deck.EVT_DEL_CARD, self.OnDelete)
 
         # init also the viewing control
@@ -431,7 +431,7 @@ class Box(wx.Panel):
         self.ShowSidebar(not self.tags_sb.IsShown())
 
     def OnRequestView(self, ev):
-        """Listens to `Card.EVT_REQUEST_VIEW` from `Deck`."""
+        """Listens to `Deck.EVT_REQUEST_VIEW` from `Deck`."""
         card = ev.GetEventObject()
         self.deck.SelectCard(card, True)
         self.ViewCards([card])

@@ -37,6 +37,7 @@ class Deck(utilities.AutoSize):
 
     NewCardEvent, EVT_NEW_CARD = ne.NewEvent()
     DeleteEvent,  EVT_DEL_CARD = ne.NewEvent()
+    ReqViewEvent, EVT_REQUEST_VIEW = ne.NewEvent()
 
     def __init__(self, parent, pos=wx.DefaultPosition, size=wx.DefaultSize, style=wx.BORDER_NONE):
         """Constructor.
@@ -547,12 +548,12 @@ class Deck(utilities.AutoSize):
         self.GetEventHandler().ProcessEvent(event)
 
     def OnCardRequest(self, ev):
-        """Listens to `Card.EVT_REQUEST_VIEW`. Raises the same event,
-        with the same card as event object. The difference is that now a `Box`
-        can `Bind` only once to `EVT_REQUEST_VIEW` events coming from
-        this `Deck`, instead of having to bind to every individual card.
+        """Listens to `Card.EVT_REQUEST_VIEW` and raises `Deck.EVT_REQUEST_VIEW`
+        with the same card as event object. The difference is that now a
+        `Box` can `Bind` only once to `EVT_REQUEST_VIEW` events coming
+        from this `Deck`, instead of having to bind to every individual card.
         """
-        event = card.Card.ReqViewEvent(id=wx.ID_ANY)
+        event = Deck.ReqViewEvent(id=wx.ID_ANY)
         event.SetEventObject(ev.GetEventObject())
         self.GetEventHandler().ProcessEvent(event)
 
