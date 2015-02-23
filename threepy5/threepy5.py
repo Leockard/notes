@@ -287,7 +287,7 @@ class ThreePyFiveFrame(wx.Frame):
         tgmap_it = wx.MenuItem(view_menu, wx.ID_ANY, "Show map")
         zoomi_it = wx.MenuItem(view_menu, wx.ID_ANY, "Zoom in")
         zoomo_it = wx.MenuItem(view_menu, wx.ID_ANY, "Zoom out")
-        hideb_it = wx.MenuItem(view_menu, wx.ID_ANY, "Hide Box button bar", kind=wx.ITEM_CHECK)
+        hideb_it = wx.MenuItem(view_menu, wx.ID_ANY, "Show Box button bar", kind=wx.ITEM_CHECK)
 
         view_menu.AppendItem(collp_it)
         view_menu.AppendItem(inspc_it)
@@ -441,10 +441,12 @@ class ThreePyFiveFrame(wx.Frame):
 
         # card and deck tools
         col_it = toolbar.AddLabelTool(wx.ID_ANY,   "Collapse", getBMP(wx.ART_MINUS),  kind=it_normal)
+        viw_it = toolbar.AddLabelTool(wx.ID_ANY,   "View"    , getBMP(wx.ART_PLUS),   kind=it_normal)
         cpy_it = toolbar.AddLabelTool(wx.ID_COPY,  "Copy",     getBMP(wx.ART_COPY),   kind=it_normal)
         pas_it = toolbar.AddLabelTool(wx.ID_PASTE, "Paste",    getBMP(wx.ART_PASTE),  kind=it_normal)
         del_it = toolbar.AddLabelTool(wx.ID_ANY,   "Delete",   getBMP(wx.ART_DELETE), kind=it_normal)
         self.Bind(wx.EVT_TOOL, self.OnToggleCollapse, col_it)
+        self.Bind(wx.EVT_TOOL, self.OnMenuViewCard, viw_it)
         self.Bind(wx.EVT_TOOL, self.OnCopy, cpy_it)
         self.Bind(wx.EVT_TOOL, self.OnPaste, pas_it)
         self.Bind(wx.EVT_TOOL, self.OnDelete, del_it)        
@@ -571,7 +573,7 @@ class ThreePyFiveFrame(wx.Frame):
             c.ToggleCollapse()
 
     def OnViewBoxBar(self, ev):
-        """Listens to `wx.EVT_MENU` from "Hide Box button bar" in the "view" menu."""
+        """Listens to `wx.EVT_MENU` from "Show Box button bar" in the "view" menu."""
         self.GetCurrentBox().ShowButtonBar(show=ev.IsChecked())
 
     def OnMenuViewCard(self, ev):
