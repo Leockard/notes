@@ -4,13 +4,15 @@ Data model for note taking application `threepy5`.
 """
 
 from wx.lib.pubsub import pub
+import classfactory as fac
 
 
 ######################
 # Card classes
 ######################
 
-class Card(object):
+CardBase = fac.class_prop_creator("CardBase", base=object, id=-1, rect=(0,0,-1,-1))
+class Card(CardBase):
     """`Card` is a "virtual 3x5 index card". They are assumed to lie on a
     surface and relative position to one another is very important.
 
@@ -20,34 +22,24 @@ class Card(object):
     DEFAULT_ID = -1
     DEFAULT_RECT = (0,0,-1,-1)
 
-    UPDATE_RECT = "rect updated"
-    
-    def __init__(self, id=DEFAULT_ID, rect=DEFAULT_RECT):
+    def __init__(self, **kwargs):
         """Constructor.
-
-        * `idn: ` this `Card`'s identification number.
+        
+        * `id: ` this `Card`'s identification number.
         * `rect: ` (x, y, w, h), accepts floats.
         """
-        self._id = id
-        self._rect = rect
-
-    @property
-    def rect(self):
-        return self._rect
-
-    @rect.setter
-    def rect(self, new_rect):
-        self._rect = new_rect
-        pub.sendMessage(self.UPDATE_RECT)
+        super(Card, self).__init__(**kwargs)
+Card = fac.pub_class(Card, pub)
 
 
-        
-class Content(Card):
+
+ContentBase = fac.class_prop_creator("ContentBase", base=Card, title="", kind="kind", rating=0, content="", collapsed=False)
+class Content(ContentBase):
     """
     A `Card` which holds text contents. Features: title, kind, rating, content.
     
     In its content text field, the user may input "tags". Any line of the form
-    ^my-tag: foo bar baz$
+        ^my-tag: foo bar baz$
     is considered to define the tag "my-tag". Tag names (before the colon) must
     be single words, and their content (after the colon) may be any string,
     until a newline.
@@ -79,10 +71,9 @@ class Content(Card):
     UPDATE_CONTENT   = "content updated"
     UPDATE_RATING    = "rating updated"
     UPDATE_COLLAPSED =  "collapsed updated"
-    
-    
-    def __init__(self, id=Card.DEFAULT_ID, rect=Card.DEFAULT_RECT, title="",
-                 kind=KIND_DEFAULT, content="", rating=0, collapsed=False):
+
+        
+    def __init__(self, **kwargs):
         """Constructor.
 
         * `id: ` identification number. 
@@ -94,57 +85,112 @@ class Content(Card):
         * `collapsed: ` if `True`, we ignore the contents. In that case, this
         `Content` would funtion sort of like a `Header` with a kind and a rating.
         """
-        super(Content, self).__init__(id, rect)
-        self._title = title
-        self._kind = kind
-        self._content = content
-        self._rating = rating
-        self._collapsed = collapsed
+        super(Content, self).__init__(**kwargs)
+Content = fac.pub_class(Content, pub)
 
-    @property
-    def title(self):
-        return self._title
+# class Content(Card):
+#     """
+#     A `Card` which holds text contents. Features: title, kind, rating, content.
+    
+#     In its content text field, the user may input "tags". Any line of the form
+#     ^my-tag: foo bar baz$
+#     is considered to define the tag "my-tag". Tag names (before the colon) must
+#     be single words, and their content (after the colon) may be any string,
+#     until a newline.
+    
+#     A tag can be anything, though they usually describe facts about concepts:
 
-    @title.setter
-    def title(self, val):
-        pub.sendMessage(self.UPDATE_TITLE)
-        self._title = val
+#         Content Card "Protein"
+#         kind: concept
+#         rating: 2 stars
+#             Proteins are chains of amino-acids which...
+#             Number: there are x types of proteins.
+#             Kinds: transmembrane proteins, integral membrane proteins.
 
-    @property
-    def kind(self):
-        return self._kind
+#     This `Content` has two tags: "number" and "kinds".
 
-    @kind.setter
-    def kind(self, val):
-        pub.sendMessage(self.UPDATE_KIND)
-        self._kind = val
+#     A `Content` can be "collapsed". This means that its content text is hidden
+#     and we only wish to display its title.
+#     """
+#     KIND_DEFAULT    = "kind"
+#     KIND_CONCEPT    = "C"
+#     KIND_RESEARCH   = "R"
+#     KIND_ASSUMPTION = "A"
+#     KIND_FACT       = "F"
 
-    @property
-    def content(self):
-        return self._content
+#     RATING_MAX = 3
 
-    @content.setter
-    def content(self, val):
-        pub.sendMessage(self.UPDATE_CONTENT)
-        self._content = val
+#     UPDATE_TITLE     = "title updated"
+#     UPDATE_KIND      = "kind updated"
+#     UPDATE_CONTENT   = "content updated"
+#     UPDATE_RATING    = "rating updated"
+#     UPDATE_COLLAPSED =  "collapsed updated"
+    
+    
+#     def __init__(self, id=Card.DEFAULT_ID, rect=Card.DEFAULT_RECT, title="",
+#                  kind=KIND_DEFAULT, content="", rating=0, collapsed=False):
+#         """Constructor.
 
-    @property
-    def rating(self):
-        return self._rating
+#         * `id: ` identification number. 
+#         * `rect: ` (x, y, w, h), accepts floats.
+#         * `kind: ` one of `Content.KIND_*`.
+#         * `content: ` the content text.
+#         * `rating: ` a measure of the importance of this `Content`. Must be an
+#         int from 0 to `RATING_MAX`, inclusive.
+#         * `collapsed: ` if `True`, we ignore the contents. In that case, this
+#         `Content` would funtion sort of like a `Header` with a kind and a rating.
+#         """
+#         super(Content, self).__init__(id, rect)
+#         self._title = title
+#         self._kind = kind
+#         self._content = content
+#         self._rating = rating
+#         self._collapsed = collapsed
 
-    @rating.setter
-    def rating(self, val):
-        pub.sendMessage(self.UPDATE_RATING)
-        self._rating = val
+#     @property
+#     def title(self):
+#         return self._title
 
-    @property
-    def collapsed(self):
-        return self._collapsed
+#     @title.setter
+#     def title(self, val):
+#         pub.sendMessage(self.UPDATE_TITLE)
+#         self._title = val
 
-    @collapsed.setter
-    def collapsed(self, val):
-        pub.sendMessage(self.UPDATE_COLLAPSED)
-        self._collapsed = val
+#     @property
+#     def kind(self):
+#         return self._kind
+
+#     @kind.setter
+#     def kind(self, val):
+#         pub.sendMessage(self.UPDATE_KIND)
+#         self._kind = val
+
+#     @property
+#     def content(self):
+#         return self._content
+
+#     @content.setter
+#     def content(self, val):
+#         pub.sendMessage(self.UPDATE_CONTENT)
+#         self._content = val
+
+#     @property
+#     def rating(self):
+#         return self._rating
+
+#     @rating.setter
+#     def rating(self, val):
+#         pub.sendMessage(self.UPDATE_RATING)
+#         self._rating = val
+
+#     @property
+#     def collapsed(self):
+#         return self._collapsed
+
+#     @collapsed.setter
+#     def collapsed(self, val):
+#         pub.sendMessage(self.UPDATE_COLLAPSED)
+#         self._collapsed = val
 
         
                 
@@ -198,7 +244,7 @@ class Image(Card):
     def path(self):
         return self._path
 
-    @header.setter
+    @path.setter
     def path(self, val):
         pub.sendMessage(self.UPDATE_PATH)
         self._path = val
@@ -207,7 +253,7 @@ class Image(Card):
     def scale(self):
         return self._scale
 
-    @header.setter
+    @scale.setter
     def scale(self, val):
         pub.sendMessage(self.UPDATE_SCALE)
         self._scale = val
