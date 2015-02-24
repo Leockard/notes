@@ -314,7 +314,7 @@ def GetCardAncestor(ctrl):
 
     `returns: ` The first `Card` ancestor of `ctrl`, or `None`.
     """
-    from card import Card
+    from gui.card import Card
     cards = [p for p in GetAncestors(ctrl) if isinstance(p, Card)]
     if cards:
         return cards[0]

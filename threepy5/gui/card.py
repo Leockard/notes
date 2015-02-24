@@ -5,7 +5,7 @@ A `Card` is the "virutal index card"; it is a window that goes on the
 """
 import wx
 import os
-import utilities
+import wxutils
 import deck
 import wx.richtext as rt
 import wx.lib.newevent as ne
@@ -376,7 +376,7 @@ class Header(Card):
     def InitUI(self):
         """Overridden from `Card`."""
         # Controls
-        txt = utilities.EditText(self.main)
+        txt = wxutils.EditText(self.main)
         txt.Bind(wx.EVT_KEY_UP, self.OnKeyUp)
 
         # Boxes
@@ -457,7 +457,7 @@ class Header(Card):
 # Classes for the controls in Content card
 ############################################
 
-class ContentText(utilities.ColouredText):
+class ContentText(wxutils.ColouredText):
     """The main text field on a `Content` `Card`."""
     
     def __init__(self, parent, size=wx.DefaultSize, style=wx.TE_RICH|wx.TE_MULTILINE):
@@ -615,7 +615,7 @@ class KindSelectMenu(wx.Menu):
 
 
             
-class TitleEditText(utilities.EditText):
+class TitleEditText(wxutils.EditText):
     """
     An `EditText` window that holds the title text in a `Content`
     `Card`. Automatically sets its size and font size to fit its contents.
@@ -624,14 +624,14 @@ class TitleEditText(utilities.EditText):
     # have to use own MAX length since wx.TextCtrl.SetMaxLength
     # is only implemented for single line text controls
     MAXLEN_PX = 175
-    HEIGHT_PX = utilities.EditText.DEFAULT_SZ[1]
+    HEIGHT_PX = wxutils.EditText.DEFAULT_SZ[1]
 
-    DEFAULT_WIDTH = utilities.EditText.DEFAULT_SZ[0]
-    DEFAULT_HEIGHT = utilities.EditText.DEFAULT_SZ[1]
+    DEFAULT_WIDTH = wxutils.EditText.DEFAULT_SZ[0]
+    DEFAULT_HEIGHT = wxutils.EditText.DEFAULT_SZ[1]
     HEIGHTS = [DEFAULT_HEIGHT, DEFAULT_HEIGHT * 1.75, DEFAULT_HEIGHT * 2]
 
-    DEFAULT_FONT = utilities.EditText.DEFAULT_FONT
-    DEFAULT_FONT_SZ = utilities.EditText.DEFAULT_FONT[0]
+    DEFAULT_FONT = wxutils.EditText.DEFAULT_FONT
+    DEFAULT_FONT_SZ = wxutils.EditText.DEFAULT_FONT[0]
     FONT_SIZES = [DEFAULT_FONT_SZ, DEFAULT_FONT_SZ - 2, DEFAULT_FONT_SZ - 2 - 2]
 
 
@@ -738,7 +738,7 @@ class TitleEditText(utilities.EditText):
 
 class StarRating(wx.Button):
     """The `wx.Button` that displays the rating on a `Content` `Card`."""
-    PATH = "../img/"
+    PATH = "/home/leo/code/threepy5/threepy5/img/"
 
     # thanks openclipart.org for the stars!
     # https://openclipart.org/detail/117079/5-star-rating-system-by-jhnri4
@@ -1504,7 +1504,7 @@ for field in dir(wx.Panel):
     __pdoc__['Card.%s' % field] = None
 for field in dir(Card):
     __pdoc__['Header.%s' % field] = None
-for field in dir(utilities.ColouredText):
+for field in dir(wxutils.ColouredText):
     __pdoc__['ContentText.%s' % field] = None
 for field in dir(wx.Button):
     __pdoc__['KindButton.%s' % field] = None
@@ -1514,7 +1514,7 @@ for field in dir(Card):
     __pdoc__['Content.%s' % field] = None
 for field in dir(Card):
     __pdoc__['Image.%s' % field] = None
-for field in dir(utilities.EditText):
+for field in dir(wxutils.EditText):
     __pdoc__['TitleEditText.%s' % field] = None
 for field in dir(wx.Button):
     __pdoc__['StarRating.%s' % field] = None

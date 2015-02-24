@@ -479,7 +479,7 @@ class Box(wx.Panel):
         `returns: `the float corresponding to the scale.
         """
         scale = 1.0
-        if isnumber(s):
+        if wxutils.isnumber(s):
             scale = float(s)/100
         elif isnumber(s[:-1]) and s[-1] == "%":
             scale = float(s[:-1])/100

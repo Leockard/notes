@@ -10,14 +10,14 @@ import json
 import ast
 import card
 import wx.lib.newevent as ne
-import utilities
+import wxutils
 
     
 ######################
 # Deck Class
 ######################
 
-class Deck(utilities.AutoSize):
+class Deck(wxutils.AutoSize):
     """
     `Deck` is the parent window of all `Card`s. It handles position, selection,
     arrangement, and listens to individual Cards' events, so that `Box`
@@ -156,7 +156,7 @@ class Deck(utilities.AutoSize):
         # it to the point got by getp2 on all the cards in nxt
         if nxt:
             # order them by distance
-            nxt.sort(key=lambda x: utilities.dist2(getp1(x.GetRect()), getp2(rect)))
+            nxt.sort(key=lambda x: wxutils.dist2(getp1(x.GetRect()), getp2(rect)))
             # and return the nearest one
             return nxt[0]
         else:
@@ -200,8 +200,8 @@ class Deck(utilities.AutoSize):
                 pos = (left, top)
 
             # if cursor is inside a card, place it next to it
-            elif utilities.GetCardAncestor(self.FindFocus()):
-                rect = utilities.GetCardAncestor(self.FindFocus()).GetRect()
+            elif wxutils.GetCardAncestor(self.FindFocus()):
+                rect = wxutils.GetCardAncestor(self.FindFocus()).GetRect()
                 if below:
                     top = rect.bottom + pad
                     left = rect.left
@@ -657,7 +657,7 @@ class Deck(utilities.AutoSize):
         # terminate drag select
         if self.drag_select:
             # erase the last selection rect
-            final_rect = utilities.MakeEncirclingRect(self.init_pos, self.init_pos + self.cur_pos)                        
+            final_rect = wxutils.MakeEncirclingRect(self.init_pos, self.init_pos + self.cur_pos)                        
             self.PaintRect(final_rect, style = wx.TRANSPARENT)
 
             # select cards
@@ -1130,7 +1130,7 @@ class SelectionManager(wx.Window):
                 ev.Skip()
 
         # function keys
-        elif utilities.IsFunctionKey(key):
+        elif wxutils.IsFunctionKey(key):
             ev.Skip()
 
         # no modifiers
@@ -1168,7 +1168,7 @@ __pdoc__["field"] = None
 # Since we only want to generate documentation for our own
 # mehods, and not the ones coming from the base classes,
 # we first set to None every method in the base class.
-for field in dir(utilities.AutoSize):
+for field in dir(wxutils.AutoSize):
     __pdoc__['Deck.%s' % field] = None
 for field in dir(wx.Window):
     __pdoc__['SelectionManager.%s' % field] = None

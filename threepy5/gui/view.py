@@ -7,14 +7,14 @@ import wx
 import re
 import card
 from deck import Deck
-import utilities
+import wxutils
 
 
 ######################
 # DeckView Class
 ######################
 
-class DeckView(utilities.AutoSize):
+class DeckView(wxutils.AutoSize):
     """Displays a "minimap" of the current `Deck`. Uses `MiniCard` to represent a `Card` on the `Deck`."""
 
     DEFAULT_FACTOR  = 5
@@ -321,7 +321,7 @@ class TagView(wx.Panel):
     def OnShow(self, ev):
         """Listens to `wx.EVT_SHOW`."""
         if ev.IsShown():
-            crd = utilities.GetCardAncestor(self.FindFocus())
+            crd = wxutils.GetCardAncestor(self.FindFocus())
             if crd and isinstance(crd, card.Content):
                 self.ShowTags(crd)
 
@@ -333,7 +333,7 @@ class TagView(wx.Panel):
 
     def OnCardChildFocus(self, ev):
         """Listens to `wx.EVT_SET_FOCUS` on every `Card`."""
-        card = utilities.GetCardAncestor(ev.GetEventObject())
+        card = wxutils.GetCardAncestor(ev.GetEventObject())
         if self.IsShown():
             self.ShowTags(card)
         ev.Skip()
@@ -353,7 +353,7 @@ __pdoc__["field"] = None
 # Since we only want to generate documentation for our own
 # mehods, and not the ones coming from the base classes,
 # we first set to None every method in the base class.
-for field in dir(utilities.AutoSize):
+for field in dir(wxutils.AutoSize):
     __pdoc__['DeckView.%s' % field] = None
 for field in dir(wx.Panel):
     __pdoc__['CardView.%s' % field] = None

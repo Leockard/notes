@@ -1,11 +1,12 @@
 #!/usr/bin/python
-
 import wx
+import gui
 import threepy5
 
-__all__ = ["threepy5", "deck", "canvas", "card", "view", "box", "utilities"]
+__all__ = ["threepy5", "gui"]
 
 if __name__ == "__main__":
+    print dir(gui)
     app = wx.App()
-    frame = threepy5.ThreePyFiveFrame(None)
+    frame = gui.threepy5GUI.ThreePyFiveFrame(None)
     app.MainLoop()
