@@ -19,6 +19,8 @@ class Card(object):
     """
     DEFAULT_ID = -1
     DEFAULT_RECT = (0,0,-1,-1)
+
+    UPDATE_RECT = "rect updated"
     
     def __init__(self, id=DEFAULT_ID, rect=DEFAULT_RECT):
         """Constructor.
@@ -26,8 +28,17 @@ class Card(object):
         * `idn: ` this `Card`'s identification number.
         * `rect: ` (x, y, w, h), accepts floats.
         """
-        self.id = id
-        self.rect = rect
+        self._id = id
+        self._rect = rect
+
+    @property
+    def rect(self):
+        return self._rect
+
+    @rect.setter
+    def rect(self, new_rect):
+        self._rect = new_rect
+        pub.sendMessage(self.UPDATE_RECT)
 
 
         
@@ -62,6 +73,12 @@ class Content(Card):
     KIND_FACT       = "F"
 
     RATING_MAX = 3
+
+    UPDATE_TITLE     = "title updated"
+    UPDATE_KIND      = "kind updated"
+    UPDATE_CONTENT   = "content updated"
+    UPDATE_RATING    = "rating updated"
+    UPDATE_COLLAPSED =  "collapsed updated"
     
     
     def __init__(self, id=Card.DEFAULT_ID, rect=Card.DEFAULT_RECT, title="",
@@ -78,16 +95,63 @@ class Content(Card):
         `Content` would funtion sort of like a `Header` with a kind and a rating.
         """
         super(Content, self).__init__(id, rect)
-        self.title = title
-        self.kind = kind
-        self.content = content
-        self.rating = rating
-        self.collapsed = collapsed
+        self._title = title
+        self._kind = kind
+        self._content = content
+        self._rating = rating
+        self._collapsed = collapsed
 
+    @property
+    def title(self):
+        return self._title
 
+    @title.setter
+    def title(self, val):
+        pub.sendMessage(self.UPDATE_TITLE)
+        self._title = val
+
+    @property
+    def kind(self):
+        return self._kind
+
+    @kind.setter
+    def kind(self, val):
+        pub.sendMessage(self.UPDATE_KIND)
+        self._kind = val
+
+    @property
+    def content(self):
+        return self._content
+
+    @content.setter
+    def content(self, val):
+        pub.sendMessage(self.UPDATE_CONTENT)
+        self._content = val
+
+    @property
+    def rating(self):
+        return self._rating
+
+    @rating.setter
+    def rating(self, val):
+        pub.sendMessage(self.UPDATE_RATING)
+        self._rating = val
+
+    @property
+    def collapsed(self):
+        return self._collapsed
+
+    @collapsed.setter
+    def collapsed(self, val):
+        pub.sendMessage(self.UPDATE_COLLAPSED)
+        self._collapsed = val
+
+        
                 
 class Header(Card):
     """`Card` that holds a title or header."""
+
+    UPDATE_HEADER = "header updated"
 
     def __init__(self, id=Card.DEFAULT_ID, rect=Card.DEFAULT_RECT, header=""):
         """Constructor.
@@ -97,8 +161,16 @@ class Header(Card):
         * `header: ` the title or header.
         """
         super(Header, self).__init__(id, rect)
-        self.header = header
+        self._header = header
 
+    @property
+    def header(self):
+        return self._collapsed
+
+    @header.setter
+    def header(self, val):
+        pub.sendMessage(self.UPDATE_HEADER)
+        self._header = val
 
         
 class Image(Card):
@@ -106,6 +178,8 @@ class Image(Card):
     actually load the image from disk. If the application needs to display
     the image, it must load it by itself.
     """
+
+    UPDATE_PATH = "updated path"
 
     def __init__(self, id=Card.DEFAULT_ID, rect=Card.DEFAULT_RECT, path="", scale=1.0):
         """Constructor.
@@ -116,9 +190,27 @@ class Image(Card):
         * `scale: ` the scale at which we show the image. This is the float by which we need
         to resize the original image so that it fits in `self.rect`.
         """
-        super(Header, self).__init__(id, rect)
-        self.path = path
-        self.scale = scale
+        super(Image, self).__init__(id, rect)
+        self._path = path
+        self._scale = scale
+
+    @property
+    def path(self):
+        return self._path
+
+    @header.setter
+    def path(self, val):
+        pub.sendMessage(self.UPDATE_PATH)
+        self._path = val
+
+    @property
+    def scale(self):
+        return self._scale
+
+    @header.setter
+    def scale(self, val):
+        pub.sendMessage(self.UPDATE_SCALE)
+        self._scale = val
 
 
 
@@ -133,6 +225,10 @@ class Line(object):
     DEFAULT_COLOUR = (0,0,0,0)
     DEFAULT_THICKNESS = 1
 
+    UPDATE_COLOUR = "updated colour"
+    UPDATE_THICKNESS = "updated thickness"
+    UPDATE_POINTS = "updated points"
+
     def __init__(self, colour=DEFAULT_COLOUR, thickness=DEFAULT_THICKNESS, pts=[]):
         """Constructor.
 
@@ -140,21 +236,67 @@ class Line(object):
         * `thickness: ` an int representing the thickness of this stroke.
         * `pts: ` the points defining this polyline.
         """
-        self.colour = colour
-        self.thickness = thickness
-        self.pts = pts
-        
+        self._colour = colour
+        self._thickness = thickness
+        self._pts = pts
+
+    @property
+    def colour(self):
+        return self._colour
+
+    @colour.setter
+    def colour(self, val):
+        self._colour = val
+        pub.sendMessage(self.UPDATE_COLOUR)
+
+    @property
+    def thickness(self):
+        return self._thickness
+
+    @thickness.setter
+    def thickness(self, val):
+        self._thickness = val
+        pub.sendMessage(self.UPDATE_THICKNESS)
+
+    @property
+    def pts(self):
+        return self._pts
+
+    @pts.setter
+    def pts(self, val):
+        self._pts = val
+        pub.sendMessage(self.UPDATE_POINTS)
+
+    def AddPoint(self, pt):
+        self._pts.append(pt)
+        pub.sendMessage(self.UPDATE_POINTS)
+
     
 
 class Annotation(object):
     """`Annotation` is the set of all `Line`s over an `AnnotatedDeck` of `Card`s."""
+
+    UPDATE_LINES = "updated lines"
 
     def __init__(self, lines = []):
         """Constructor.
 
         * `lines: ` a list of `Line`s.
         """
-        self.lines = lines
+        self._lines = lines
+
+    @property
+    def lines(self):
+        return self._lines
+
+    @lines.setter
+    def lines(self, val):
+        self._lines = val
+        pub.sendMessage(self.UPDATE_LINES)
+
+    def AddLine(self, line):
+        self._lines.append(line)
+        pub.sendMessage(self.UPDATE_LINES)
 
 
 
@@ -168,13 +310,34 @@ class CardGroup(object):
     another group, the smaller group is considered nested in the larger one.
     """
 
+    UPDATE_MEMBERS = "updated members"
+
     def __init__(self, id=-1, members=[]):
         """Constructor.
 
         * `id: ` idenfitication number.
         * `members: ` a list of identification numbers from `Card`s.
         """
-        self.members = []
+        self._id = id
+        self._members = []
+
+    @property
+    def members(self):
+        return self._members
+
+    @members.setter
+    def members(self, val):
+        self._members = val
+        pub.sendMessage(self.UPDATE_MEMBERS)
+
+    def AddCard(self, card):
+        self._members.append(card)
+        pub.sendMessage(self.UPDATE_MEMBERS)
+
+    def RemoveCard(self, card):
+        if card in self._members:
+            self._members.remove(card)
+        pub.sendMessage(self.UPDATE_MEMBERS)
 
 
 
