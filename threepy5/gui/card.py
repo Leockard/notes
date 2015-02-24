@@ -16,26 +16,20 @@ import wx.lib.newevent as ne
 ######################
 
 class Card(wx.Panel):
-    """`
-    Card` is "a virual 3x5 index card". As an abstract class, its
-    inheritors specialize in displaying text (`Content`, which visually
-    resemble index cards), titles or headers (`Header`), or images
-    (`Image`).
+    """The window for a `Card`. Just as `Card` itself, this is an abstract class.
 
-    An important feature of `Card` is that it consists of an
-    underlying window, the "border" window which is the same colour of
-    the parent `Deck` most of the time. When the `Card` is selected, the
-    border window changes colour to signal selection. The border window
-    has only one child, the `Card`'s "main" window, which holds the actual
-    controls shown to the user. The "main" window is what one would normally
-    assume is the real `Card`.
-
-    We must take care to make the `Card` object behave appropriately according
-    to its border and main windows. For example, we override `GetChildren` to
-    return the main window's children, when it would normally return the main
-    window (since it is the only child of the border window).
-    """
+    An important feature of `Card` is that it consists of an underlying window, the
+    "border" window which is the same colour of the parent `Deck` most of the time. When
+    the `Card` is selected, the border window changes colour to signal selection. The
+    border window has only one child, the `Card`'s "main" window, which holds the actual
+    controls shown to the user. The "main" window is what one would normally assume is
+    the real `Card`.
     
+    We must take care to make the `Card` object behave appropriately
+    according to its border and main windows. For example, we override `GetChildren` to
+    return the main window's children, when it would normally return the main window
+    (since it is the only child of the border window).
+    """
     BORDER_WIDTH = 2
     BORDER_THICK = 5
     SELECT_CL = (0, 0, 0, 0)
@@ -810,27 +804,10 @@ class StarRating(wx.Button):
 ######################
 
 class Content(Card):
+    """A `Card` which holds text contents. Features: `TitleEditText`, `KindButton`,
+    `StarRating`, `ContentText`. Tags are not handled, since they are parsed
+    and shown by `TagView`.
     """
-    A `Card` which holds text contents. Features: title, kind, rating, content.
-    
-    In its content text field, the user may input "tags". Any line of the form
-    ^my-tag: foo bar baz$
-    is considered to define the tag "my-tag". Tag names (before the colon) must
-    be single words, and their content (after the colon) may be any string,
-    until a newline. They are parsed and shown by `TagView`.
-    
-    A tag can be anything, though they usually describe facts about concepts:
-
-        Content Card "Protein"
-        kind: concept
-        rating: 2 stars
-            Proteins are chains of amino-acids which...
-            Number: there are x types of proteins.
-            Kinds: transmembrane proteins, integral membrane proteins.
-
-    This `Content` has two tags: "number" and "kinds".
-    """
-    
     # sizes
     DEFAULT_SZ   = (250, 150)
     COLLAPSED_SZ = (250, 30)
