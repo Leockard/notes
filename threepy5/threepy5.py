@@ -30,7 +30,7 @@ DEFAULT_THICKNESS = 1
 
 
 ######################
-# Descriptors classes
+# Publisher classes
 ######################
 
 class Publisher(object):
@@ -38,31 +38,120 @@ class Publisher(object):
 
     The topic name we publish is based on the first word of the name of the
     derived class. If the class is called `FooPublisher`, the topic will be named
-    "UPDATE_FOO"."""
-
+    "UPDATE_FOO".
+    """
     def __init__(self, default):
+        """Constructor.
+
+        * `default: ` the default value returned the first time x.prop is referenced.
+        """
         self.default = default
         self.data = weakdict()
 
     def __get__(self, instance, owner):
+        """Get method.
+
+        * `instance: ` the object referencing this descriptor.
+        * `owner: ` the `instance`'s class.
+
+        `returns: ` the data value of `instance` corresponding to this descriptor."""
         # print "getting"
-        return self.data.get(instance, self.default)
+        if instance is None:
+            return self
+        else:
+            return self.data.get(instance, self.default)
 
     def __set__(self, instance, value):
+        """Set method.
+
+        * `instance: ` the instance whose data we're setting.
+        * `value: ` the new value to set.
+        """
         # print "setting %s for: %s" % (str(value), str(instance))
         self.data[instance] = value
         name = self.__class__.__name__[:-9]
         pub.sendMessage("UPDATE_" + name.upper())
 
 
-        
-class AddPublisher(object):
+def makePublisher(name, default):
+    """Function that creates a `Publisher` class. The new class will
+    be called "'Name'Publisher", and it will publish its calls with the
+    message "UPDATE_'NAME'". All derived `*Publisher` classed in this module
+    are created with this function.
+    """
+    class newPublisher(Publisher):
+        def __init__(self, default=default):
+            super(newPublisher, self).__init__(default=default)
+    newPublisher.__name__ = name + "Publisher"
+    return newPublisher
 
+IDPublisher        = makePublisher("ID", DEFAULT_ID)
+RectPublisher      = makePublisher("Rect", DEFAULT_RECT)
+HeaderPublisher    = makePublisher("Header", "")
+TitlePublisher     = makePublisher("Title", "")
+KindPublisher      = makePublisher("Kind", DEFAULT_KIND)
+RatingPublisher    = makePublisher("Rating", DEFAULT_RATING)
+ContentPublisher   = makePublisher("Content", "")
+CollapsedPublisher = makePublisher("Collapsed", False)
+PathPublisher      = makePublisher("Path", "")
+ScalePublisher     = makePublisher("Scale", DEFAULT_SCALE)
+ColourPublisher    = makePublisher("Colour", DEFAULT_COLOUR)
+ThicknessPublisher = makePublisher("Thickness", DEFAULT_THICKNESS)
+PtsPublisher       = makePublisher("Pts", [])
+LinesPublisher     = makePublisher("Lines", [])
+MembersPublisher   = makePublisher("Members", [])
+NamePublisher      = makePublisher("Name", "")
+CardsPublisher     = makePublisher("Cards", [])
+GroupsPublisher    = makePublisher("Groups", [])
+DecksPublisher     = makePublisher("Decks", [])
+        
+
+
+#########################
+# Add/Remove descriptors
+#########################
+
+class AddDesc(object):
+    """A descriptor that adds a member to a list.
+
+    For example, if a class `foo` is created as:
+
+        class foo(object):
+            addThing = AddDesc("thing")
+            removeThing = RemoveDesc("thing")
+            def __init__(...):
+                self.things = []
+                ...
+
+    then an instance `x` of class `foo` will be able to do
+
+        >>> x = foo()
+        >>> x.things            -> []
+        >>> x.addThing(1)
+        >>> x.things            -> [1]
+        >>> x.removeThing(1)
+        >>> x.things            -> []
+    """
     def __init__(self, name):
+        """Constructor.
+
+        * `name: ` the name of the attribute we are going to append to.
+        """
         self.name = name
 
     def __get__(self, instance, owner):
+        """Set method.
+
+        * `instance: ` the object whose attribute we will append to.
+        * `owner: ` the `instance`'s class.
+
+        `returns: ` a method called `Add'Thing'` that takes one argument
+        which it appends to instance.'name'.
+        """
         def func(new_val):
+            if instance is None:
+                return self
+
             li = getattr(instance, self.name)[:]
             li.append(new_val)
             setattr(instance, self.name, li)
@@ -70,13 +159,44 @@ class AddPublisher(object):
         return func
 
 
-    
-class RemovePublisher(object):
 
+class RemoveDesc(object):
+    """A descriptor that removes a member from a list.
+
+    For example, if a class `foo` is created as:
+
+        class foo(object):
+            addThing = AddDesc("thing")
+            removeThing = RemoveDesc("thing")
+            def __init__(...):
+                self.things = []
+                ...
+
+    then an instance `x` of class `foo` will be able to do
+
+        >>> x = foo()
+        >>> x.things            -> []
+        >>> x.addThing(1)
+        >>> x.things            -> [1]
+        >>> x.removeThing(1)
+        >>> x.things            -> []
+    """
     def __init__(self, name):
+        """Constructor.
+
+        * `name: ` the name of the attribute we are going to append to.
+        """
         self.name = name
 
     def __get__(self, instance, owner):
+        """Get method.
+
+        * `instance: ` the object whose attribute we will remove from.
+        * `owner: ` the `instance`'s class.
+
+        `returns: ` a method called `Remove'Thing'` that takes one argument
+        which it removes from instance.'name'.
+        """
         def func(val):
             li = getattr(instance, self.name)[:]
             if val in li:
@@ -85,83 +205,6 @@ class RemovePublisher(object):
         func.__name__ = "Remove" + self.name.capitalize()
         return func
 
-
-                    
-class IDPublisher(Publisher):
-    def __init__(self, default=DEFAULT_ID):
-        super(IDPublisher, self).__init__(default=default)
-
-class RectPublisher(Publisher):
-    def __init__(self, default=DEFAULT_RECT):
-        super(RectPublisher, self).__init__(default=default)
-
-class HeaderPublisher(Publisher):
-    def __init__(self, default=""):
-        super(HeaderPublisher, self).__init__(default=default)
-
-class TitlePublisher(Publisher):
-    def __init__(self, default=""):
-        super(TitlePublisher, self).__init__(default=default)
-
-class KindPublisher(Publisher):
-    def __init__(self, default=DEFAULT_KIND):
-        super(KindPublisher, self).__init__(default=default)
-
-class RatingPublisher(Publisher):
-    def __init__(self, default=DEFAULT_RATING):
-        super(RatingPublisher, self).__init__(default=default)
-
-class ContentPublisher(Publisher):
-    def __init__(self, default=""):
-        super(ContentPublisher, self).__init__(default=default)
-
-class CollapsedPublisher(Publisher):
-    def __init__(self, default=False):
-        super(CollapsedPublisher, self).__init__(default=default)
-
-class PathPublisher(Publisher):
-    def __init__(self, default=""):
-        super(PathPublisher, self).__init__(default=default)
-
-class ScalePublisher(Publisher):
-    def __init__(self, default=DEFAULT_SCALE):
-        super(ScalePublisher, self).__init__(default=default)
-
-class ColourPublisher(Publisher):
-    def __init__(self, default=DEFAULT_COLOUR):
-        super(ColourPublisher, self).__init__(default=default)
-
-class ThicknessPublisher(Publisher):
-    def __init__(self, default=DEFAULT_THICKNESS):
-        super(ThicknessPublisher, self).__init__(default=default)
-
-class PtsPublisher(Publisher):
-    def __init__(self, default=[]):
-        super(PtsPublisher, self).__init__(default=default)
-
-class LinesPublisher(Publisher):
-    def __init__(self, default=[]):
-        super(LinesPublisher, self).__init__(default=default)
-
-class MembersPublisher(Publisher):
-    def __init__(self, default=[]):
-        super(MembersPublisher, self).__init__(default=default)
-
-class NamePublisher(Publisher):
-    def __init__(self, default=""):
-        super(NamePublisher, self).__init__(default=default)
-
-class CardsPublisher(Publisher):
-    def __init__(self, default=[]):
-        super(CardsPublisher, self).__init__(default=default)
-
-class GroupsPublisher(Publisher):
-    def __init__(self, default=[]):
-        super(GroupsPublisher, self).__init__(default=default)
-
-class DecksPublisher(Publisher):
-    def __init__(self, default=[]):
-        super(DecksPublisher, self).__init__(default=default)
 
 
 ######################
@@ -301,8 +344,8 @@ class Line(object):
     thickness = ThicknessPublisher()
     pts = PtsPublisher()
 
-    Add = AddPublisher("pts")
-    Remove = RemovePublisher("pts")
+    Add = AddDesc("pts")
+    Remove = RemoveDesc("pts")
 
     def __init__(self, colour=DEFAULT_COLOUR, thickness=DEFAULT_THICKNESS, pts=[]):
         """Constructor.
@@ -322,8 +365,8 @@ class Annotation(object):
 
     lines = LinesPublisher()
 
-    Add = AddPublisher("lines")
-    Remove = RemovePublisher("lines")
+    Add = AddDesc("lines")
+    Remove = RemoveDesc("lines")
 
     def __init__(self, lines=[]):
         """Constructor.
@@ -347,8 +390,8 @@ class CardGroup(object):
     id = IDPublisher()
     members = MembersPublisher()
 
-    Add = AddPublisher("members")
-    Remove = RemovePublisher("members")
+    Add = AddDesc("members")
+    Remove = RemoveDesc("members")
 
     def __init__(self, id=DEFAULT_ID, members=[]):
         """Constructor.
@@ -372,10 +415,10 @@ class Deck(object):
     cards = CardsPublisher()
     groups = GroupsPublisher()
 
-    AddCard = AddPublisher("cards")
-    RemoveCard = RemovePublisher("cards")
-    AddGroup = AddPublisher("groups")
-    RemoveGroup = RemovePublisher("groups")
+    AddCard = AddDesc("cards")
+    RemoveCard = RemoveDesc("cards")
+    AddGroup = AddDesc("groups")
+    RemoveGroup = RemoveDesc("groups")
 
     def __init__(self, id=DEFAULT_ID, name="", cards=[], groups=[]):
         """Constructor.
@@ -424,8 +467,8 @@ class Box(object):
     path = PathPublisher()
     decks = DecksPublisher()
 
-    AddDeck = AddPublisher("decks")
-    RemoveDeck = RemovePublisher("decks")    
+    AddDeck = AddDesc("decks")
+    RemoveDeck = RemoveDesc("decks")
 
     def __init__(self, name="", path="", decks=[]):
         """Constructor.
