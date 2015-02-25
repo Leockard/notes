@@ -5,8 +5,6 @@ Data model for note taking application `threepy5`.
 
 from wx.lib.pubsub import pub
 from weakref import WeakKeyDictionary as weakdict
-import classfactory as fac
-
 
 
 ######################
@@ -47,6 +45,7 @@ class Publisher(object):
         self.data = weakdict()
 
     def __get__(self, instance, owner):
+        # print "getting"
         return self.data.get(instance, self.default)
 
     def __set__(self, instance, value):
@@ -55,7 +54,39 @@ class Publisher(object):
         name = self.__class__.__name__[:-9]
         pub.sendMessage("UPDATE_" + name.upper())
 
-            
+
+        
+class AddPublisher(object):
+
+    def __init__(self, name):
+        self.name = name
+
+    def __get__(self, instance, owner):
+        def func(new_val):
+            li = getattr(instance, self.name)[:]
+            li.append(new_val)
+            setattr(instance, self.name, li)
+        func.__name__ = "Add" + self.name.capitalize()
+        return func
+
+
+    
+class RemovePublisher(object):
+
+    def __init__(self, name):
+        self.name = name
+
+    def __get__(self, instance, owner):
+        def func(val):
+            li = getattr(instance, self.name)[:]
+            if val in li:
+                li.remove(val)
+            setattr(instance, self.name, li)
+        func.__name__ = "Remove" + self.name.capitalize()
+        return func
+
+
+                    
 class IDPublisher(Publisher):
     def __init__(self, default=DEFAULT_ID):
         super(IDPublisher, self).__init__(default=default)
@@ -270,6 +301,9 @@ class Line(object):
     thickness = ThicknessPublisher()
     pts = PtsPublisher()
 
+    Add = AddPublisher("pts")
+    Remove = RemovePublisher("pts")
+
     def __init__(self, colour=DEFAULT_COLOUR, thickness=DEFAULT_THICKNESS, pts=[]):
         """Constructor.
 
@@ -287,6 +321,9 @@ class Annotation(object):
     """`Annotation` is the set of all `Line`s over an `AnnotatedDeck` of `Card`s."""
 
     lines = LinesPublisher()
+
+    Add = AddPublisher("lines")
+    Remove = RemovePublisher("lines")
 
     def __init__(self, lines=[]):
         """Constructor.
@@ -310,6 +347,9 @@ class CardGroup(object):
     id = IDPublisher()
     members = MembersPublisher()
 
+    Add = AddPublisher("members")
+    Remove = RemovePublisher("members")
+
     def __init__(self, id=DEFAULT_ID, members=[]):
         """Constructor.
 
@@ -321,7 +361,6 @@ class CardGroup(object):
 
 
 
-# DeckBase = fac.class_prop_creator("DeckBase", id=DEFAULT_ID, name="", cards=[], groups=[])
 class Deck(object):
     """It's a collection of `Card`s that share a common topic. It can also hold
     many `CardGroup`s. A `Card` from a `Deck` may have the same id as a `CardGroup`
@@ -332,6 +371,11 @@ class Deck(object):
     name = NamePublisher()
     cards = CardsPublisher()
     groups = GroupsPublisher()
+
+    AddCard = AddPublisher("cards")
+    RemoveCard = RemovePublisher("cards")
+    AddGroup = AddPublisher("groups")
+    RemoveGroup = RemovePublisher("groups")
 
     def __init__(self, id=DEFAULT_ID, name="", cards=[], groups=[]):
         """Constructor.
@@ -352,13 +396,8 @@ class Deck(object):
 # Collections of mixed objects
 ##################################
 
-class AnnotatedDeck(object):
+class AnnotatedDeck(Deck):
     """A collection of `Card`s that can be annotated on."""
-
-    id = IDPublisher()
-    name = NamePublisher()
-    cards = CardsPublisher()
-    groups = GroupsPublisher()
 
     def __init__(self, id=DEFAULT_ID, name="", cards=[], groups=[], lines=[]):
         """Constructor.
@@ -369,16 +408,12 @@ class AnnotatedDeck(object):
         * `groups: ` a list of `CardGroup`s.
         * `lines: ` a list of `Line`s.
         """
-        self.id = id
-        self.name = name
-        self.cards = cards
-        self.groups = groups
+        super(AnnotatedDeck, self).__init__(id=id, name=name, cards=cards, groups=groups)
         self.annotation = Annotation(lines=lines)
 
 
 
 
-# BoxBase = fac.class_prop_creator("BoxBase", name="", path="", decks=[])
 class Box(object):
     """A `Box` holds various `Deck`s. It is the equivalent of a file at
     application level: every `Box` is stored in one file and every file
@@ -388,6 +423,9 @@ class Box(object):
     name = NamePublisher()
     path = PathPublisher()
     decks = DecksPublisher()
+
+    AddDeck = AddPublisher("decks")
+    RemoveDeck = RemovePublisher("decks")    
 
     def __init__(self, name="", path="", decks=[]):
         """Constructor.
