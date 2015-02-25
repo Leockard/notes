@@ -24,6 +24,7 @@ def setter_creator(arg):
     `returns: ` a function with name "set_'arg'".
     """
     def set_template(self, new_val):
+        print "setter ", arg, " : ", new_val
         setattr(self, "_"+ arg, new_val)
     set_template.__name__ = "set_" + arg
     return set_template
@@ -85,8 +86,8 @@ def pub_func(func, pub, msg):
     `returns: ` a decorated function.
     """
     def decorated(self, *args, **kwargs):
-        print "decorated ", func.__name__
-        pub.sendMessage(msg, data=args[0])
+        print func.__name__, args
+        # pub.sendMessage(msg, data=args[0])
         return func(self, *args, **kwargs)
     setattr(decorated, "__name__", func.__name__)
     return decorated
@@ -108,8 +109,8 @@ def pub_class(class_, pub):
     `returns: ` a decorated class.
     """
     to_decorate = {attr_name: getattr(class_, attr_name)
-                for attr_name in dir(class_)
-                if type(getattr(class_, attr_name)) is property}
+                   for attr_name in dir(class_)
+                   if type(getattr(class_, attr_name)) is property}
 
     # remove the previously decorated properties
     if hasattr(class_, "__decorated__"):
@@ -122,5 +123,8 @@ def pub_class(class_, pub):
         setter = pub_func(prop.fset, pub, "UPDATE_" + name.upper())
         setattr(class_, name, property(prop.fget, setter))
         decorated.append(name)
+        
+    if hasattr(class_, "__decorated__"):
+        decorated.extend(class_.__decorated__)
     setattr(class_, "__decorated__", decorated)
     return class_
