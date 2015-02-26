@@ -48,6 +48,7 @@ class Publisher(object):
 
         * `default: ` the default value returned the first time x.prop is referenced.
         """
+        self._publish = True
         self.default = default
         self.data = weakdict()
 
@@ -70,11 +71,18 @@ class Publisher(object):
         * `instance: ` the instance whose data we're setting.
         * `value: ` the new value to set.
         """
-        # print "setting %s for: %s" % (str(value), str(instance))
+        # print "publishing %s for: %s" % (str(value), str(instance))
         self.data[instance] = value
         name = self.__class__.__name__[:-9]
-        pub.sendMessage("UPDATE_" + name.upper(), val=value)
+        if self._publish:
+            pub.sendMessage("UPDATE_" + name.upper(), val=value)
 
+    def silent(self, instance, value):
+        self._publish = False
+        self.__set__(instance, value)
+        self._publish = True
+
+        
 
 def makePublisher(name, default):
     """Function that creates a `Publisher` class. The new class will
@@ -260,10 +268,12 @@ class Content(Card):
     A `Content` can be "collapsed". This means that its content text is hidden
     and we only wish to display its title.
     """
-    KIND_CONCEPT    = "C"
-    KIND_RESEARCH   = "R"
-    KIND_ASSUMPTION = "A"
-    KIND_FACT       = "F"
+    KIND_LBL_CONCEPT    = "Concept"
+    KIND_LBL_RESEARCH   = "Research"
+    KIND_LBL_ASSUMPTION = "Assumption"
+    KIND_LBL_FACT       = "Fact"
+    KIND_LBLS = [KIND_LBL_CONCEPT, KIND_LBL_RESEARCH, KIND_LBL_ASSUMPTION, KIND_LBL_FACT]
+    
     RATING_MAX = 3
 
     title = TitlePublisher()
@@ -290,6 +300,19 @@ class Content(Card):
         self.rating = rating
         self.content = content
         self.collapsed = collapsed
+
+    def IncreaseRating(self, wrap=True):
+        """Set the rating to be one more than its current value.
+        
+        * `wrap: ` if `True`, and we increase to more than the maximum rating, we set it to zero.
+        if `False` and the new rating is more than `self.MAX`, don't do anything."""
+        new = self.rating + 1
+        if wrap and new > self.RATING_MAX:
+            new = 0
+        elif new > self.RATING_MAX:
+            return
+        
+        self.rating = new
 
 
 

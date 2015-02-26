@@ -351,7 +351,7 @@ def DumpSizerChildren(sizer, depth=1, full=False):
             msg = str("    " * depth)
 
             if full: msg = msg + str(c.GetWindow())
-            else:    msg = msg + str(c.GetWindow().__class__)
+            else:    msg = msg + str(c.GetWindow().__class__.__name__)
 
             if c.IsShown(): msg = msg + ", shown"
             else:           msg = msg + ", hidden"                

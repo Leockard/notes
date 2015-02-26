@@ -250,7 +250,6 @@ class Card(wx.Panel):
         else:
             self.GetParent().Navigate(forward)
 
-
     ### Auxiliary functions
 
     def InitBorder(self):
