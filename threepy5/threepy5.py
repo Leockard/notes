@@ -11,9 +11,12 @@ from weakref import WeakKeyDictionary as weakdict
 # Default values
 ######################
 
-# Card defaults
-DEFAULT_ID   = -1
-DEFAULT_RECT = (0,0,-1,-1)
+# General defaults
+NO_ID   = -1
+NO_RECT = (0,0,-1,-1)
+
+# Card and its children defaults
+DEFAULT_RECT_CONT = (0,0,250,150)
 
 # Content defaults
 DEFAULT_KIND      = "kind"
@@ -70,7 +73,7 @@ class Publisher(object):
         # print "setting %s for: %s" % (str(value), str(instance))
         self.data[instance] = value
         name = self.__class__.__name__[:-9]
-        pub.sendMessage("UPDATE_" + name.upper())
+        pub.sendMessage("UPDATE_" + name.upper(), val=value)
 
 
 def makePublisher(name, default):
@@ -85,8 +88,8 @@ def makePublisher(name, default):
     newPublisher.__name__ = name + "Publisher"
     return newPublisher
 
-IDPublisher        = makePublisher("ID", DEFAULT_ID)
-RectPublisher      = makePublisher("Rect", DEFAULT_RECT)
+IDPublisher        = makePublisher("ID", NO_ID)
+RectPublisher      = makePublisher("Rect", NO_RECT)
 HeaderPublisher    = makePublisher("Header", "")
 TitlePublisher     = makePublisher("Title", "")
 KindPublisher      = makePublisher("Kind", DEFAULT_KIND)
@@ -222,7 +225,7 @@ class Card(object):
     id = IDPublisher()
     rect = RectPublisher()
 
-    def __init__(self, id=DEFAULT_ID, rect=DEFAULT_RECT):
+    def __init__(self, id=NO_ID, rect=NO_RECT):
         """Constructor.
 
         * `id: ` this `Card`'s identification number.
@@ -269,7 +272,7 @@ class Content(Card):
     content = ContentPublisher()
     collapsed = CollapsedPublisher()
 
-    def __init__(self, id=DEFAULT_ID, rect=DEFAULT_RECT, title="", kind=DEFAULT_KIND, rating=DEFAULT_RATING, content="", collapsed=DEFAULT_COLLAPSED):
+    def __init__(self, id=NO_ID, rect=DEFAULT_RECT_CONT, title="", kind=DEFAULT_KIND, rating=DEFAULT_RATING, content="", collapsed=DEFAULT_COLLAPSED):
         """Constructor.
 
         * `id: ` identification number.
@@ -295,7 +298,7 @@ class Header(Card):
 
     header = HeaderPublisher()
 
-    def __init__(self, id=DEFAULT_ID, rect=DEFAULT_RECT, header=""):
+    def __init__(self, id=NO_ID, rect=NO_RECT, header=""):
         """Constructor.
 
         * `id: ` identification number.
@@ -316,7 +319,7 @@ class Image(Card):
     path = PathPublisher()
     scale = ScalePublisher()
 
-    def __init__(self, id=DEFAULT_ID, rect=DEFAULT_RECT, path="", scale=DEFAULT_SCALE):
+    def __init__(self, id=NO_ID, rect=NO_RECT, path="", scale=DEFAULT_SCALE):
         """Constructor.
 
         * `id: ` identification number.
@@ -393,7 +396,7 @@ class CardGroup(object):
     Add = AddDesc("members")
     Remove = RemoveDesc("members")
 
-    def __init__(self, id=DEFAULT_ID, members=[]):
+    def __init__(self, id=NO_ID, members=[]):
         """Constructor.
 
         * `id: ` idenfitication number.
@@ -420,7 +423,7 @@ class Deck(object):
     AddGroup = AddDesc("groups")
     RemoveGroup = RemoveDesc("groups")
 
-    def __init__(self, id=DEFAULT_ID, name="", cards=[], groups=[]):
+    def __init__(self, id=NO_ID, name="", cards=[], groups=[]):
         """Constructor.
 
         * `id: ` identification number.
@@ -442,7 +445,7 @@ class Deck(object):
 class AnnotatedDeck(Deck):
     """A collection of `Card`s that can be annotated on."""
 
-    def __init__(self, id=DEFAULT_ID, name="", cards=[], groups=[], lines=[]):
+    def __init__(self, id=NO_ID, name="", cards=[], groups=[], lines=[]):
         """Constructor.
 
         * `id: ` identification number.
