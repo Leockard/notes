@@ -142,16 +142,16 @@ class Card(utils.Publisher):
         """Return a dict holding all this `Card`'s data. When overriding,
         call this method and append all adittional data to the object returned.
         
-        `returns: ` an object holding data. Generally, a `dict`.
+        `returns: ` a dict holding data.
         """
-        return {"id": self.id, "rect": self.rect}
+        return {"id": self._id, "rect": self.rect}
 
     def Load(self, data):
         """Read data from an object and load it into this `Card`.
 
         * `obj: ` must be a dict in the format returned by `Card.Dump`.
         """
-        self.id = data["id"]
+        self._id = data["id"]
         self.rect = data["rect"]
 
 
@@ -212,6 +212,9 @@ class Content(Card):
         self.content = content
         self.collapsed = collapsed
 
+
+    ### methods
+    
     def IncreaseRating(self, wrap=True):
         """Set the rating to be one more than its current value.
         
@@ -224,6 +227,32 @@ class Content(Card):
             return
         
         self.rating = new
+
+    def Dump(self):
+        """Return a dict holding all this `Content`'s data.
+        
+        `returns: ` a dict holding data.
+        """
+        data = super(Content, self).Dump()
+        data["title"]     = self.title
+        data["kind"]      = self.kind
+        data["rating"]    = self.rating
+        data["content"]   = self.content
+        data["collapsed"] = self.collapsed
+        return data
+
+    def Load(self, data):
+        """Read data from an object and load it into this `Content`.
+
+        * `obj: ` must be a dict in the format returned by `Content.Dump`.
+        """
+        super(Content, self).Load(data)
+        self.title     = data["title"]
+        self.kind      = data["kind"]
+        self.rating    = data["rating"]
+        self.content   = data["content"]
+        self.collapsed = data["collapsed"]
+
 
 
 
@@ -240,6 +269,26 @@ class Header(Card):
         super(Header, self).__init__(rect=rect)
         self.header = header
 
+
+    ### methods
+    
+    def Dump(self):
+        """Return a dict holding all this `Header`'s data.
+        
+        `returns: ` a dict holding data.
+        """
+        data = super(Header, self).Dump()
+        data["header"] = self.header
+        return data
+
+    def Load(self, data):
+        """Read data from an object and load it into this `Header`.
+
+        * `obj: ` must be a dict in the format returned by `Header.Dump`.
+        """
+        super(Header, self).Load(data)
+        self.header = data["header"]
+        
 
 
 class Image(Card):
@@ -261,6 +310,25 @@ class Image(Card):
         super(Image, self).__init__(rect=rect)
         self.path = path
         self.scale = scale
+
+    def Dump(self):
+        """Return a dict holding all this `Image`'s data.
+        
+        `returns: ` a dict holding data.
+        """
+        data = super(Image, self).Dump()
+        data["path"] = self.path
+        data["scale"] = self.scale
+        return data
+
+    def Load(self, data):
+        """Read data from an object and load it into this `Image`.
+
+        * `obj: ` must be a dict in the format returned by `Image.Dump`.
+        """
+        super(Image, self).Load(data)
+        data["path"] = self.path
+        data["scale"] = self.scale
 
 
 
