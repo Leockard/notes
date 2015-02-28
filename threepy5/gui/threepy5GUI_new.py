@@ -807,7 +807,7 @@ class ContentWin(CardWin):
     def _on_content_entry(self, ev): py5.Content.content.silent(self.Card, self._content.Value)
 
 
-        
+
 ######################
 # Class Board
 ######################
@@ -820,6 +820,7 @@ class Board(wxutils.AutoSize):
     """
     WIN_PADDING = 15
     BACKGROUND_CL = "#CCCCCC"
+    MOVING_RECT_THICKNESS = 1
 
 
     ################################
@@ -844,27 +845,96 @@ class Board(wxutils.AutoSize):
         """
         SIZE = (1,1)
         POS  = (0,0)
-    
+
         def __init__(self, parent):
             """Constructor.
-            
+
             * `parent: ` the parent `wx.Window`, usually a `Deck`.
             """
             super(Board.SelectionManager, self).__init__(parent, size=self.SIZE, pos=self.POS)
-            # self.cards = []
-            # self.last = None
-            # self.active = False
-            # self.SetBackgroundColour(self.GetParent().GetBackgroundColour())
+            self.BackgroundColour = self.Parent.BackgroundColour
+
+            self.Selection = []
+            """The currently selected `Card`s"""
+
+            self._last = None
+            """The last `Card` added to the current selection."""
+
+            # self.Active = False
+            # """If False, the `Select*` will not work."""
 
 
-                        
+        ### methods
+
+        def Select(self, card, new_sel=False):
+            """Selects `card`.
+
+            * `card: ` a `Card`.
+            * `new_sel: ` if `True`, unselects all other `Card`s before selecting `card`.
+            If `False`, adds `card` to the current selection.
+            """
+            # if new_sel, select only this card
+            if new_sel:
+                # self.Activate()
+                self.UnselectAll()
+                self.Selection = [card]
+                card.Select()
+                self._last = card
+
+            # else, select card only if it was not already selected
+            elif card not in self.Selection:
+                # if not self.IsActive():
+                #     self.ACtive = True
+                self.Selection.append(card)
+                card.Selected = True
+                self._last = card
+
+        def SelectGroup(self, group, new_sel=True):
+            """Select every `Card` in `group`.
+
+            * `group: ` a `CardGroup`.
+            * `new_sel: ` if `True`, unselects all other `Card`s before selecting.
+            """
+            # in case we are coming from a card that's inside the group,
+            # we may want to return to that card after selection ends
+            # so we select the group but restore the last card after
+            crd = None
+            if self._last and self._last in group.members:
+                crd = self._last
+
+            if new_sel: self.UnselectAll()
+            for c in group.members:
+                self.Select(c)
+
+            if crd:
+                self.last = crd
+
+        def Unselect(self, card):
+            """Removes `card` from the current selection.
+            
+            * `card: ` a `Card`.
+            """
+            if card in self.Selection:
+                self.Selection.remove(card)
+                card.Selected = False
+
+        def UnselectAll(self):
+            """Unselects all cards. Be sure to call this method instead of calilng
+            `Unselect` on every card for proper cleanup.
+            """
+            while len(self.Selection) > 0:
+                c = self.Selection[0]
+                self.Unselect(c)
+
+
+
     ##############
     # Board
     ##############
 
     def __init__(self, parent, style=wx.BORDER_NONE):
         """Constructor.
-        
+
         * `parent: ` the parent window.
         * `style: ` by default is `wx.BORDER_NONE`.
         """
@@ -872,27 +942,46 @@ class Board(wxutils.AutoSize):
         self.BackgroundColour = Board.BACKGROUND_CL
         self._init_accels()
         self._init_menu()
-        
+
+        self.Selector = Board.SelectionManager(self)
+        """The `SelectionManager`."""
+
         self.Deck = py5.Deck()
+        """The tracked `Deck`."""
+
+        self.Scale = 1.0
+        """The current zoom scale."""
+
         self.Cards = []
         self.Groups = []
-        self.Scale = 1.0
-        self.Selector = Board.SelectionManager(self)
-        # self._moving_cards_pos = []
-        # self._drag_select = False
 
-        self.Bind(wx.EVT_LEFT_DCLICK, self._on_left_dclick)
 
-        
+        self._drag_init_pos = None
+        """The position where we started dragging the mouse."""
+
+        self._drag_cur_pos = None
+        """The current position of the mouse, while dragging."""
+
+        self._dragging = False
+        """True when the user is dragging the mouse."""
+
+        self._moving = False
+        """True when the user is moving cards with the mouse."""
+
+        self.Bind(wx.EVT_LEFT_DCLICK, self._on_left_double)
+        self.Bind(wx.EVT_LEFT_DOWN, self._on_left_down)
+        self.Bind(wx.EVT_LEFT_UP, self._on_left_up)
+
+
     ### init methods
 
     def _init_accels(self):
         accels = []
-    
+
     def _init_menu(self):
         self._menu_pos = (0, 0)
 
-    
+
     ### properties
 
     @property
@@ -918,7 +1007,7 @@ class Board(wxutils.AutoSize):
         """The `Card`s currently selected."""
         return self.Selector.Selection
 
-    
+
     ### methods
 
     def AddCard(self, subclass, pos=wx.DefaultPosition, scroll=False):
@@ -935,9 +1024,9 @@ class Board(wxutils.AutoSize):
         pos = [i / self.Scale for i in pos]
         winclass = globals()[subclass + "Win"]
         sz = winclass.DEFAULT_SZ
-        
+
         win = winclass(self, cardclass(rect=(pos[0], pos[1], sz[0], sz[1])))
-        
+
         #win.Stretch(self.scale)
 
         # set bindings for every card
@@ -951,7 +1040,7 @@ class Board(wxutils.AutoSize):
 
         # make enough space and breathing room for the new card
         self.FitToChildren(pad=self.Padding * 2)
-        
+
         # make sure the new card is visible
         # if scroll:
         #     rect = win.Rect
@@ -961,17 +1050,84 @@ class Board(wxutils.AutoSize):
 
         win.SetFocus()
         self.Cards.append(win)
-        
+
         return win
-        
+
+    def _paint_rect(self, rect, thick=MOVING_RECT_THICKNESS, style=wx.SOLID, refresh=True):
+        """Paints a rectangle over this window. Used for click-dragging.
+
+        * `rect: ` a `wx.Rect`.
+        * `thick: ` line thickness. By default, is `Deck.MOVING_RECT_THICKNESS`.
+        * `style: ` a `dc.Pen` style. Use `wx.TRANSPARENT` to erase a rectangle.
+        * `refresh: ` whether to call `Refresh` after the rectangle is painted.
+        """
+        dc = wx.ClientDC(self)
+        dc.SetBrush(wx.Brush(self.GetBackgroundColour()))      # background
+        dc.SetPen(wx.Pen("BLACK", thick, style))               # foreground
+        dc.DrawRectangle(rect[0], rect[1], rect[2], rect[3])
+        if refresh: self.RefreshRect(rect)
+
+    def _init_drag_select(self, pos):
+        """Drag selection setup."""
+        self._drag_init_pos = pos
+        self._drag_cur_pos = pos
+        # note we don't set self._dragging to True until the user actually drags the
+        # mouse, this is done in self._on_drag_select
+        self.Bind(wx.EVT_MOTION, self._on_drag_select)
+
+    def _end_drag_select(self, pos):
+        # erase the last selection rect
+        final_rect = wxutils.MakeEncirclingRect(self._drag_init_pos, self._drag_init_pos + self._drag_cur_pos)
+        self._paint_rect(final_rect, style=wx.TRANSPARENT)
+
+        self.Unbind(wx.EVT_MOTION)
+        self._dragging = False
+        self._drag_init_pos = None
+        self._drag_cur_pos = None
+        self.FitToChildren()
+        self.Selector.SetFocus()
+
+        # select cards
+        selected = [c for c in self.Cards if c.Rect.Intersects(final_rect)]
+        self.Selector.SelectGroup(py5.CardGroup(selected), new_sel=True)
+
 
     ### callbacks
 
-    def _on_left_dclick(self, ev):
+    def _on_left_double(self, ev):
         self.AddCard("Content", pos=ev.GetPosition())
 
+    def _on_left_down(self, ev):
+        self.Selector.UnselectAll()
+        self.Selector.SetFocus()
+        self._init_drag_select(ev.Position)
 
-                
+    def _on_drag_select(self, ev):
+        """Listens to `wx.EVT_MOTION` events from this object, only when the user is click-dragging."""
+        if ev.Dragging() and not self._moving:
+            self._dragging = True
+
+            # erase the last one selection rect
+            self._paint_rect(wx.Rect(self._drag_init_pos[0], self._drag_init_pos[1],
+                                     self._drag_cur_pos[0],  self._drag_cur_pos[1]),
+                             style = wx.TRANSPARENT,
+                             refresh = False)
+
+            # and draw the current one
+            final_pos = ev.GetPosition() - self._drag_init_pos
+            self._paint_rect(wx.Rect(self._drag_init_pos[0], self._drag_init_pos[1],
+                                     final_pos[0], final_pos[1]),
+                             refresh = False)
+
+            self._drag_cur_pos = final_pos
+
+    def _on_left_up(self, ev):
+        if self._dragging:
+            self._end_drag_select(ev.Position)
+
+
+
+
 
 
 ###########################

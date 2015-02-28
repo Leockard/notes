@@ -780,20 +780,20 @@ class Deck(wxutils.AutoSize):
 
     #     self.SetAcceleratorTable(wx.AcceleratorTable(accels))
 
-    def PaintRect(self, rect, thick=MOVING_RECT_THICKNESS, style=wx.SOLID, refresh=True):
-        """Paints a rectangle over this window. Used for click-dragging.
+    # def PaintRect(self, rect, thick=MOVING_RECT_THICKNESS, style=wx.SOLID, refresh=True):
+    #     """Paints a rectangle over this window. Used for click-dragging.
 
-        * `rect: ` a `wx.Rect`.
-        * `thick: ` line thickness. By default, is `Deck.MOVING_RECT_THICKNESS`.
-        * `style: ` a `dc.Pen` style. Use `wx.TRANSPARENT` to erase a rectangle.
-        * `refresh: ` whether to call `Refresh` after the rectangle is painted.
-        """
-        dc = wx.ClientDC(self)
-        # Brush is for background, Pen is for foreground
-        dc.SetBrush(wx.Brush(self.GetBackgroundColour()))
-        dc.SetPen(wx.Pen("BLACK", thick, style))
-        dc.DrawRectangle(rect[0], rect[1], rect[2], rect[3])
-        if refresh: self.RefreshRect(rect)
+    #     * `rect: ` a `wx.Rect`.
+    #     * `thick: ` line thickness. By default, is `Deck.MOVING_RECT_THICKNESS`.
+    #     * `style: ` a `dc.Pen` style. Use `wx.TRANSPARENT` to erase a rectangle.
+    #     * `refresh: ` whether to call `Refresh` after the rectangle is painted.
+    #     """
+    #     dc = wx.ClientDC(self)
+    #     # Brush is for background, Pen is for foreground
+    #     dc.SetBrush(wx.Brush(self.GetBackgroundColour()))
+    #     dc.SetPen(wx.Pen("BLACK", thick, style))
+    #     dc.DrawRectangle(rect[0], rect[1], rect[2], rect[3])
+    #     if refresh: self.RefreshRect(rect)
         
     def PaintCardRect(self, card, pos, thick=MOVING_RECT_THICKNESS, style=wx.SOLID, refresh=True):
         """Paints a rectangle just big enough to encircle `card`.
