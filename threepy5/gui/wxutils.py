@@ -6,7 +6,6 @@ used outside of `threepy5`.
 import wx
 import wx.lib.stattext as st
 import wx.lib.newevent as ne
-from math import sqrt
 
 
 ######################
@@ -21,7 +20,6 @@ class AutoSize(wx.ScrolledWindow):
     the window (ie, the screen real estate it occupies). `AutoSize` also holds
     various methods that build on top of that functionality.
     """
-        
     SCROLL_STEP = 10
     
     def __init__(self, parent, pos=wx.DefaultPosition, size=wx.DefaultSize, style=0):
