@@ -933,11 +933,10 @@ class Board(wxutils.AutoSize):
         # create the new card with the unscaled position
         cardclass = getattr(py5, subclass)
         pos = [i / self.Scale for i in pos]
+        winclass = globals()[subclass + "Win"]
         sz = winclass.DEFAULT_SZ
-        card = cardclass(rect=(pos[0], pos[1], sz[0], sz[1]))
         
-        winclass  = globals()[subclass + "Win"]
-        win = winclass(self, card)
+        win = winclass(self, cardclass(rect=(pos[0], pos[1], sz[0], sz[1])))
         
         #win.Stretch(self.scale)
 
