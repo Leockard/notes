@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-
 import wx
 import wxutils
 from os import getcwd as oscwd
@@ -808,119 +807,12 @@ class ContentWin(CardWin):
     def _on_content_entry(self, ev): py5.Content.content.silent(self.Card, self._content.Value)
 
 
-
-######################
-# Class AutoSize
-######################
-
-class AutoSize(wx.ScrolledWindow):
-    """`AutoSize` is a `wx.ScrolledWindow` that automates the process of setting
-    up a window which has a "virtual size". In `wx`, "virtual size" is the size of
-    the underlying contents of the window, while "size" is the screen real estate
-    it occupies). `AutoSize` also holds various methods to facilitate the management
-    of virtual size.
-    """
-    SCROLL_STEP = 10
-
-    def __init__(self, *args, **kwargs):
-        """Constructor."""
-        super(AutoSize, self).__init__(*args, **kwargs)
-        self.Bind(wx.EVT_SIZE, self.__on_size)
-        self.SetScrollRate(self.SCROLL_STEP, self.SCROLL_STEP)
-
-        self._virtual_sz = wx.Size(0, 0)
-        if "size" in kwargs.keys():
-            sz = kwargs["size"]
-            self._virtual_sz = wx.Size(sz[0], sz[1])
-
-
-    ### methods
-
-    def UpdateVirtualSize(self, sz):
-        """Recompute the virtual size.
-
-        * `sz: ` a `(width, height)` size tuple. If it contains a dimension that
-        is bigger than the current virtual size, change the virtual size.
-        """
-        flag = False
-        virt_sz = self._virtual_sz
-
-        if sz.x > virt_sz.x:
-            flag = True
-            self._virtual_sz = wx.Size(sz.x, self._virtual_sz.y)
-        if sz.y > virt_sz.y:
-            flag = True
-            self._virtual_sz = wx.Size(self._virtual_sz.x, sz.y)
-
-        if flag:
-            self.VirtualSize = self._virtual_sz
-
-    def FitToChildren(self, pad=0):
-        """Call to set the virtual size to fit the children. If there are
-        no children, keeps the virtual size as it is (don't shrink). If the
-        window is resized, the new size will be enough to fit all children,
-        plus a padding.
-
-        * `pad: ` additional padding in case the window is resized.
-        """
-        if len(self.Children) == 0:
-            return
-
-        # set view start at (0,0) to get absolute cordinates
-        shown = self.IsShown()
-        if shown: self.Hide()
-        view = self.GetViewStart()
-        self.Scroll(0, 0)
-
-        # calculate children extension
-        rects = [c.Rect for c in self.Children]
-        right  = max(rects, key=lambda r: r.right).right
-        bottom = max(rects, key=lambda r: r.bottom).bottom
-
-        # compare and update
-        sz = self._virtual_sz
-        if right  > sz.x: sz = wx.Size(right + pad, sz.y)
-        if bottom > sz.y: sz = wx.Size(sz.x, bottom + pad)
-        self._virtual_sz = sz
-        self.VirtualSize = self._virtual_sz
-
-        # return to the previous scroll position
-        self.Scroll(view[0], view[1])
-        if shown: self.Show()
-
-    def ExpandVirtualSize(self, dx, dy):
-        """Enlarge the virtual size.
-
-        * `dx: ` pixels to add in the X direction.
-        * `dy: ` pixels to add in the Y direction.
-        """
-        size = wx.Size(self._virtual_sz.x + dx, self._virtual_sz.y + dy)
-        self._virtual_sz = size
-        self.VirtualSize = size
-
-    def GetViewStartPixels(self):
-        """Return the point at which the current view starts, ie, the absolute
-        coordinates of the point that, due to the scrollbars, currently lies at `(0,0)`.
-        """
-        view = self.GetViewStart()
-        return wx.Point(*[v * self.SCROLL_STEP for v in view])
-
-
-    ### Callbacks
-
-    def __on_size(self, ev):
-        """Listens to `wx.EVT_SIZE`."""
-        self.UpdateVirtualSize(ev.GetSize())
-        ev.Skip()
-
-
-
-
+        
 ######################
 # Class Board
 ######################
 
-class Board(AutoSize):
+class Board(wxutils.AutoSize):
     """`Board` holds a `Deck` and is the parent window of all `CardWin`s that
     track `Card`s from that `Deck`. It handles position, selection, arrangement,
     and listens to individual Cards' events, so that `Box` only needs to listen
@@ -1039,17 +931,12 @@ class Board(AutoSize):
         `returns: ` the new `CardWin`.
         """
         # create the new card with the unscaled position
-        pos = [i / self.Scale for i in pos]
-
-        # if   subclass == "Content" : new = card.Content(self, pos=pos)
-        # elif subclass == "Header"  : new = card.Header(self, pos=pos)
-        # elif subclass == "Image"   : new = card.Image(self, pos=pos)
-
         cardclass = getattr(py5, subclass)
-        winclass  = globals()[subclass + "Win"]
+        pos = [i / self.Scale for i in pos]
         sz = winclass.DEFAULT_SZ
-        
         card = cardclass(rect=(pos[0], pos[1], sz[0], sz[1]))
+        
+        winclass  = globals()[subclass + "Win"]
         win = winclass(self, card)
         
         #win.Stretch(self.scale)

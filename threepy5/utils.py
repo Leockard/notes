@@ -8,7 +8,7 @@ used outside of `threepy5`.
 #####################################################
 
 ###########################
-# Counter class
+# WithId class
 ###########################
 
 import itertools

@@ -8,62 +8,66 @@ import wx.lib.stattext as st
 import wx.lib.newevent as ne
 
 
+#####################################################
+#             Reusable wx classes                   #
+#####################################################
+
 ######################
-# Auxiliary classes
+# Class AutoSize
 ######################
 
 class AutoSize(wx.ScrolledWindow):
-    """
-    `AutoSize` is a `wx.ScrolledWindow` that automates the process of setting
+    """`AutoSize` is a `wx.ScrolledWindow` that automates the process of setting
     up a window which has a "virtual size". In `wx`, "virtual size" is the size of
-    the underlying contents of the window, while "size" is the "real" size of
-    the window (ie, the screen real estate it occupies). `AutoSize` also holds
-    various methods that build on top of that functionality.
+    the underlying contents of the window, while "size" is the screen real estate
+    it occupies). `AutoSize` also holds various methods to facilitate the management
+    of virtual size.
     """
     SCROLL_STEP = 10
-    
-    def __init__(self, parent, pos=wx.DefaultPosition, size=wx.DefaultSize, style=0):
-        """Constructor.
 
-        * `parent: ` the parent `wx.Window`.
-        * `pos: ` by default, is `wx.DefaultPosition`.
-        * `size: ` by default, is `wx.DefaultSize`.
-        * `style: ` the style for this window.
-        """
-        super(AutoSize, self).__init__(parent, pos=pos, size=size, style=style)
-
-        self.content_sz = wx.Size(size[0], size[1])
+    def __init__(self, *args, **kwargs):
+        """Constructor."""
+        super(AutoSize, self).__init__(*args, **kwargs)
+        self.Bind(wx.EVT_SIZE, self.__on_size)
         self.SetScrollRate(self.SCROLL_STEP, self.SCROLL_STEP)
 
-        # bindings
-        self.Bind(wx.EVT_SIZE, self.AutoSizeOnSize)
+        self._virtual_sz = wx.Size(0, 0)
+        if "size" in kwargs.keys():
+            sz = kwargs["size"]
+            self._virtual_sz = wx.Size(sz[0], sz[1])
 
-        
-    def UpdateContentSize(self, sz):
+
+    ### methods
+
+    def UpdateVirtualSize(self, sz):
         """Recompute the virtual size.
 
         * `sz: ` a `(width, height)` size tuple. If it contains a dimension that
         is bigger than the current virtual size, change the virtual size.
         """
         flag = False
-        virt_sz = self.content_sz
-        
+        virt_sz = self._virtual_sz
+
         if sz.x > virt_sz.x:
             flag = True
-            self.content_sz = wx.Size(sz.x, self.content_sz.y)
+            self._virtual_sz = wx.Size(sz.x, self._virtual_sz.y)
         if sz.y > virt_sz.y:
             flag = True
-            self.content_sz = wx.Size(self.content_sz.x, sz.y)
-            
-        if flag:
-            self.SetVirtualSize(self.content_sz)
+            self._virtual_sz = wx.Size(self._virtual_sz.x, sz.y)
 
-    def FitToChildren(self):
-        """Call to set the virtual size to tightly fit the children. If
-        there are no children, keeps the virtual size as it is (don't shrink).
+        if flag:
+            self.VirtualSize = self._virtual_sz
+
+    def FitToChildren(self, pad=0):
+        """Call to set the virtual size to fit the children. If there are
+        no children, keeps the virtual size as it is (don't shrink). If the
+        window is resized, the new size will be enough to fit all children,
+        plus a padding.
+
+        * `pad: ` additional padding in case the window is resized.
         """
-        children = self.GetChildren()
-        if len(children) == 0: return
+        if len(self.Children) == 0:
+            return
 
         # set view start at (0,0) to get absolute cordinates
         shown = self.IsShown()
@@ -72,16 +76,16 @@ class AutoSize(wx.ScrolledWindow):
         self.Scroll(0, 0)
 
         # calculate children extension
-        rects = [c.GetRect() for c in self.GetChildren()]
+        rects = [c.Rect for c in self.Children]
         right  = max(rects, key=lambda r: r.right).right
         bottom = max(rects, key=lambda r: r.bottom).bottom
 
         # compare and update
-        sz = self.content_sz
-        if right  > sz.x: sz = wx.Size(right, sz.y)
-        if bottom > sz.y: sz = wx.Size(sz.x, bottom)
-        self.content_sz = sz
-        self.SetVirtualSize(self.content_sz)
+        sz = self._virtual_sz
+        if right  > sz.x: sz = wx.Size(right + pad, sz.y)
+        if bottom > sz.y: sz = wx.Size(sz.x, bottom + pad)
+        self._virtual_sz = sz
+        self.VirtualSize = self._virtual_sz
 
         # return to the previous scroll position
         self.Scroll(view[0], view[1])
@@ -89,17 +93,17 @@ class AutoSize(wx.ScrolledWindow):
 
     def ExpandVirtualSize(self, dx, dy):
         """Enlarge the virtual size.
-        
-        * `dx: ` pixels to enlarge add in the X direction.
-        * `dy: ` pixels to enlarge add in the Y direction.
+
+        * `dx: ` pixels to add in the X direction.
+        * `dy: ` pixels to add in the Y direction.
         """
-        size = wx.Size(self.content_sz.x + dx, self.content_sz.y + dy)
-        self.SetVirtualSize(size)
-        self.content_sz = size
+        size = wx.Size(self._virtual_sz.x + dx, self._virtual_sz.y + dy)
+        self._virtual_sz = size
+        self.VirtualSize = size
 
     def GetViewStartPixels(self):
         """Return the point at which the current view starts, ie, the absolute
-        coordinates of that, due to the scrollbars, currently lies at `(0,0)`.
+        coordinates of the point that, due to the scrollbars, currently lies at `(0,0)`.
         """
         view = self.GetViewStart()
         return wx.Point(*[v * self.SCROLL_STEP for v in view])
@@ -107,9 +111,9 @@ class AutoSize(wx.ScrolledWindow):
 
     ### Callbacks
 
-    def AutoSizeOnSize(self, ev):
+    def __on_size(self, ev):
         """Listens to `wx.EVT_SIZE`."""
-        self.UpdateContentSize(ev.GetSize())
+        self.UpdateVirtualSize(ev.GetSize())
         ev.Skip()
 
 
@@ -282,9 +286,9 @@ class EditText(ColouredText):
         
         
 
-#######################
-## Auxiliary functions
-#######################
+#####################################################
+#             Reusable wx functions                 #
+#####################################################
 
 def GetAncestors(ctrl):
     """Returns a list of all of ctrl's wx.Window ancestors.
