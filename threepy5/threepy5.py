@@ -29,12 +29,12 @@ DEFAULT_RATING    = 0
 DEFAULT_SCALE = 1.0
 """Default scale for an `Image`."""
 
-# # Line defaults
-# DEFAULT_COLOUR    = (0,0,0,0)
-# """Default colour for a `Line`"""
+# Line defaults
+DEFAULT_COLOUR    = (0,0,0,0)
+"""Default colour for a `Line`"""
 
-# DEFAULT_THICKNESS = 1
-# """Default thickness for a `Line`"""
+DEFAULT_THICKNESS = 1
+"""Default thickness for a `Line`"""
 
 
         
