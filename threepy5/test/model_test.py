@@ -839,21 +839,99 @@ class CardMethods(unittest.TestCase):
         card.MoveBy(*p2)
         self.assertEqual(card.Position, (p2[0] + 2*p1[0] + orig[0], p2[1] + 2*p1[1] + orig[1]))
 
-    # def testDump(self):
-
-    # deg testLoad(self):
-
-
-
-# class HeaderMethods(unittest.TestCase):
-    # def testDump(self):
-    # deg testLoad(self):
+    def testDumpLoad(self):
+        """Card.Dump and Load should correctly give and read all info."""
+        card = py5.Card()
         
-# class ContentMethods(unittest.TestCase):
-    # def testDump(self):
-    # deg testLoad(self):    
+        data = card.Dump()
+        self.assertEqual(data["id"], card._id)
+        self.assertEqual(data["rect"], card.rect)
+
+        data["id"] = 3
+        data["rect"] = (1,2,3,4)
+
+        card.Load(data)
+        self.assertEqual(data["id"], card._id)
+        self.assertEqual(data["rect"], card.rect)
 
 
+
+        
+class HeaderMethods(unittest.TestCase):
+    
+    def testDumpLoad(self):
+        """Header.Dump and Load should correctly give and read all info."""
+        head = py5.Header()
+        
+        data = head.Dump()
+        self.assertEqual(data["id"], head._id)
+        self.assertEqual(data["rect"], head.rect)
+        self.assertEqual(data["header"], head.header)
+        
+        data["id"] = 3
+        data["rect"] = (1,2,3,4)
+        data["header"] = (1,2,3,4)
+
+        head.Load(data)
+        self.assertEqual(data["id"], head._id)
+        self.assertEqual(data["rect"], head.rect)
+        self.assertEqual(data["header"], head.header)
+
+
+                        
+class ContentMethods(unittest.TestCase):
+    
+    def testDumpLoad(self):
+        """Content.Dump and Load should correctly give and read all info."""
+        cont = py5.Content()
+        
+        data = cont.Dump()
+        self.assertEqual(data["id"], cont._id)
+        self.assertEqual(data["rect"], cont.rect)
+        self.assertEqual(data["title"], cont.title)
+        self.assertEqual(data["kind"], cont.kind)
+        self.assertEqual(data["rating"], cont.rating)
+        self.assertEqual(data["content"], cont.content)
+        self.assertEqual(data["collapsed"], cont.collapsed)
+        
+        data["id"] = 3
+        data["rect"] = (1,2,3,4)
+
+        cont.Load(data)
+        self.assertEqual(data["id"], cont._id)
+        self.assertEqual(data["rect"], cont.rect)
+        self.assertEqual(data["title"], cont.title)
+        self.assertEqual(data["kind"], cont.kind)
+        self.assertEqual(data["rating"], cont.rating)
+        self.assertEqual(data["content"], cont.content)
+        self.assertEqual(data["collapsed"], cont.collapsed)
+
+        
+
+
+class ImageMethods(unittest.TestCase):
+    
+    def testDumpLoad(self):
+        """Image.Dump and Load should correctly give and read all info."""
+        img = py5.Image()
+        
+        data = img.Dump()
+        self.assertEqual(data["id"], img._id)
+        self.assertEqual(data["rect"], img.rect)
+        self.assertEqual(data["path"], img.path)
+        self.assertEqual(data["scale"], img.scale)
+        
+        data["id"] = 3
+        data["rect"] = (1,2,3,4)
+        data["path"] = "/foo/bar/baz"
+        data["scale"] = 2.0
+        
+        img.Load(data)
+        self.assertEqual(data["id"], img._id)
+        self.assertEqual(data["rect"], img.rect)
+        self.assertEqual(data["path"], img.path)
+        self.assertEqual(data["scale"], img.scale)
+        
 
 
 
