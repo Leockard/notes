@@ -1,35 +1,40 @@
 # -*- coding: utf-8 -*-
-"""
-Data model for note taking application `threepy5`.
-"""
+"""Data model for note taking application `threepy5`."""
 
 from wx.lib.pubsub import pub
 from weakref import WeakKeyDictionary as weakdict
+from collections import namedtuple
 
 
 ######################
 # Default values
 ######################
 
-# General defaults
-NO_ID   = -1
-NO_RECT = (0,0,-1,-1)
+# There are global constants because we need to set the default value
+# for the *Publisher classes before creating the classes themselves.
 
-# Card and its children defaults
-DEFAULT_RECT_CONT = (0,0,250,150)
+NO_ID = -1
+"""Default ID for a `Card`."""
+
+NO_RECT = [0,0,-1,-1]
+"""Default rect for a `Card`."""
 
 # Content defaults
 DEFAULT_KIND      = "kind"
-DEFAULT_RATING    = 0
-DEFAULT_COLLAPSED = False
+"""Default kind name for a `Content`."""
 
-# Image defaults
+DEFAULT_RATING    = 0
+"""Default rating for a `Content`."""
+
 DEFAULT_SCALE = 1.0
+"""Default scale for an `Image`."""
 
 # Line defaults
 DEFAULT_COLOUR    = (0,0,0,0)
-DEFAULT_THICKNESS = 1
+"""Default colour for a `Line`"""
 
+DEFAULT_THICKNESS = 1
+"""Default thickness for a `Line`"""
 
 
 ######################
@@ -37,20 +42,30 @@ DEFAULT_THICKNESS = 1
 ######################
 
 class Publisher(object):
-    """A descriptor that publishes its updates.
+    """A descriptor that publishes its updates, by calling `pub.sendMessage`
+    every time `__set__` is called.  Child classes *must* contain the word
+    "Publisher" at the end of their name.
 
-    The topic name we publish is based on the first word of the name of the
-    derived class. If the class is called `FooPublisher`, the topic will be named
-    "UPDATE_FOO".
+    The topic name we publish with is based on the first word of the name of the
+    derived class. By default, if the class is called `FooPublisher`, the topic
+    will be named "UPDATE_FOO".
+
+    However, `Publisher` also provides a method to specify the root topic for
+    the message. If an instance with a `FooPublisher` descriptor calls
+    `FooPublisher.setTopic(instance, owner, topic)`, the new topic name will be
+    `topic.UPDATE_FOO`.
     """
     def __init__(self, default):
         """Constructor.
 
         * `default: ` the default value returned the first time x.prop is referenced.
+        * `topic_path: ` the path to the topic that we will send messages with.
         """
         self._publish = True
-        self.default = default
-        self.data = weakdict()
+        self._default = default
+        self._data = weakdict()
+        self._topics = weakdict()
+        self._subtopic = "UPDATE_" + self.__class__.__name__[:-9].upper()
 
     def __get__(self, instance, owner):
         """Get method.
@@ -63,7 +78,7 @@ class Publisher(object):
         if instance is None:
             return self
         else:
-            return self.data.get(instance, self.default)
+            return self._data.get(instance, self._default)
 
     def __set__(self, instance, value):
         """Set method.
@@ -71,13 +86,24 @@ class Publisher(object):
         * `instance: ` the instance whose data we're setting.
         * `value: ` the new value to set.
         """
-        # print "publishing %s for: %s" % (str(value), str(instance))
-        self.data[instance] = value
-        name = self.__class__.__name__[:-9]
+        topic = self._topics.get(instance, _make_topic_name(instance))
+        topic += "." + self._subtopic
+        # print "publishing %s for %s with topic: %s" % (str(value), str(instance), topic)
+        
+        self._data[instance] = value
         if self._publish:
-            pub.sendMessage("UPDATE_" + name.upper(), val=value)
+            pub.sendMessage(topic, val=value)
+
+    def setTopic(self, instance, topic):
+        """Set the root topic to send messages with.
+
+        * `instance: ` the instance whose topic root is being set.
+        * `topic: ` the string to prepended to the default subtopic.
+        """
+        self._topics[instance] = topic
 
     def silent(self, instance, value):
+        """Calls __set__ without publishing."""
         self._publish = False
         self.__set__(instance, value)
         self._publish = True
@@ -217,6 +243,26 @@ class RemoveDesc(object):
         return func
 
 
+        
+###################################
+# Publisher convinience functions
+###################################
+
+def _make_topic_name(obj):
+    """Returns the root topic name for all messages coming from `obj`."""
+    return ".".join([obj.__class__.__name__, str(obj.id)])
+
+def subscribe(attr, call, obj):
+    """Call to tell `threpy5` to call `call` when `obj` changes its `attr`.
+
+    * `attr: ` the name of the attribute to listen to (a string).
+    * `call: ` a callable object to call when `attr` is updated.
+    * `obj: ` the object whose attribute `attr` we want to track.
+    """
+    topic = ".".join([_make_topic_name(obj), "UPDATE_" + attr.upper()])
+    pub.subscribe(call, topic)
+
+
 
 ######################
 # Card classes
@@ -228,6 +274,10 @@ class Card(object):
 
     As an abstract class, its inheritors specialize in handling text
     (`Content`), titles (`Header`), or images (`Image`).
+
+    Always create a `Card` with its final id (don't use the default id) and
+    never change it. Weird things happend when you change ids, though it
+    could be possible if done carefully.
     """
 
     id = IDPublisher()
@@ -239,8 +289,87 @@ class Card(object):
         * `id: ` this `Card`'s identification number.
         * `rect: ` (x, y, w, h), accepts floats.
         """
+        Card.id.setTopic(self, _make_topic_name(self))
+        subscribe("id", self._on_set_id, self)
         self.id = id
+        
         self.rect = rect
+
+        
+    ### properties
+
+    @property
+    def Position(self):
+        """The position of this `Card`.
+
+        `returns: ` a (x, y) tuple of floats.
+        """
+        return namedtuple("Point", "x y")(self.rect[0], self.rect[1])
+
+    @Position.setter
+    def Position(self, pt):
+        """Set the position of this `Card`."""
+        self.rect[0], self.rect[1] = pt[0], pt[1]
+
+    @property
+    def Size(self):
+        """The size of this `Card`.
+
+        `returns: ` a (x, y) tuple of floats.
+        """
+        return namedtuple("Size", "w h")(self.rect[2], self.rect[3])
+
+    @Size.setter
+    def Size(self, sz):
+        """Set the position of this `Card`."""
+        self.rect[2], self.rect[3] = sz[0], sz[1]
+
+        
+    ### methods
+
+    def _register_topic(self):
+        """Sets the topic name with which this `Card` will publish its property
+        updates. The topic name for a property "foo" is "id.UPDATE_FOO".
+        
+        Called automatically in __init__ for all properties, including the ones
+        defined in child classes, so there's no need to register again. Called
+        automatically every time the id is set.
+        """
+        for attr in dir(self.__class__):
+            if isinstance(getattr(self.__class__, attr), Publisher):
+                getattr(self.__class__, attr).setTopic(self, str(self.id))
+    
+    def MoveBy(self, dx, dy):
+        """Move the card relateive to its current position.
+
+        * `dx: ` amount to move in the horizontal direction.
+        * `dy: ` amount to move in the vertical direction.
+        """
+        self.Position = (self.rect[0] + dx, self.rect[1] + dy)
+
+    def Dump(self):
+        """Return a dict holding all this `Card`'s data. When overriding,
+        call this method and append all adittional data to the object returned.
+        
+        `returns: ` an object holding data. Generally, a `dict`.
+        """
+        return {"id": self.id, "rect": self.rect}
+
+    def Load(self, data):
+        """Read data from an object and load it into this `Card`.
+
+        * `obj: ` must be a dict in the format returned by `Card.Dump`.
+        """
+        self.id = data["id"]
+        self.rect = data["rect"]
+
+        
+    ### subscribers
+
+    def _on_set_id(self, val):
+        for attr in dir(self.__class__):
+            if isinstance(getattr(self.__class__, attr), Publisher):
+                getattr(self.__class__, attr).setTopic(self, _make_topic_name(self))
 
 
 
@@ -275,6 +404,7 @@ class Content(Card):
     KIND_LBLS = [KIND_LBL_CONCEPT, KIND_LBL_RESEARCH, KIND_LBL_ASSUMPTION, KIND_LBL_FACT]
     
     RATING_MAX = 3
+    DEFAULT_RECT_CONT = (0,0,250,150)
 
     title = TitlePublisher()
     kind = KindPublisher()
@@ -282,7 +412,7 @@ class Content(Card):
     content = ContentPublisher()
     collapsed = CollapsedPublisher()
 
-    def __init__(self, id=NO_ID, rect=DEFAULT_RECT_CONT, title="", kind=DEFAULT_KIND, rating=DEFAULT_RATING, content="", collapsed=DEFAULT_COLLAPSED):
+    def __init__(self, id=NO_ID, rect=DEFAULT_RECT_CONT, title="", kind=DEFAULT_KIND, rating=DEFAULT_RATING, content="", collapsed=False):
         """Constructor.
 
         * `id: ` identification number.

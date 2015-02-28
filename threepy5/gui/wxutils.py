@@ -30,7 +30,7 @@ class AutoSize(wx.ScrolledWindow):
     def __init__(self, parent, pos=wx.DefaultPosition, size=wx.DefaultSize, style=0):
         """Constructor.
 
-        * `parent: ` the parent `Deck`.
+        * `parent: ` the parent `wx.Window`.
         * `pos: ` by default, is `wx.DefaultPosition`.
         * `size: ` by default, is `wx.DefaultSize`.
         * `style: ` the style for this window.
@@ -258,10 +258,10 @@ class EditText(ColouredText):
 
     def OnKeyDown(self, ev):
         """Listens to `wx.EVT_KEY_DOWN`."""
-        if ev.GetKeyCode() == 9:
-            GetCardAncestor(self).OnTab(ev)
-        else:
-            ev.Skip()
+        # if ev.GetKeyCode() == 9:
+        #     GetCardAncestor(self).OnTab(ev)
+        # else:
+        ev.Skip()
 
     def OnEnter(self, ev):
         """Listens to `wx.EVT_TEXT_ENTER`."""

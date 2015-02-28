@@ -72,26 +72,26 @@ class Deck(wxutils.AutoSize):
 
     ### Behavior functions
     
-    def GetCards(self):
-        """Returns a list of all `Card`s held by this object.
+    # def GetCards(self):
+    #     """Returns a list of all `Card`s held by this object.
 
-        `returns: ` a list of `Card`s.
-        """
-        return self.cards
+    #     `returns: ` a list of `Card`s.
+    #     """
+    #     return self.cards
 
-    def GetHeaders(self):
-        """Returns a list of all `Header` `Card`s.
+    # def GetHeaders(self):
+    #     """Returns a list of all `Header` `Card`s.
         
-        `returns: ` a list of `Header`.
-        """
-        return [h for h in self.cards if isinstance(h, Header)]
+    #     `returns: ` a list of `Header`.
+    #     """
+    #     return [h for h in self.cards if isinstance(h, Header)]
 
-    def GetContents(self):
-        """Returns a list of all `Content` `Card`s.
+    # def GetContents(self):
+    #     """Returns a list of all `Content` `Card`s.
 
-        `returns: ` a list of `Content`.
-        """
-        return [h for h in self.cards if isinstance(h, Content)]
+    #     `returns: ` a list of `Content`.
+    #     """
+    #     return [h for h in self.cards if isinstance(h, Content)]
 
     def GetCard(self, label):
         """Returns the specified `Card`.
@@ -162,11 +162,11 @@ class Deck(wxutils.AutoSize):
         else:
             return None
 
-    def GetPadding(self):
-        """Returns `self.CARD_PADDING`, fixed for scale.
+    # def GetPadding(self):
+    #     """Returns `self.CARD_PADDING`, fixed for scale.
 
-        `returns: ` the current scaled padding width (float)."""
-        return self.CARD_PADDING * self.scale
+    #     `returns: ` the current scaled padding width (float)."""
+    #     return self.CARD_PADDING * self.scale
 
     def PlaceNewCard(self, subclass, pos=wx.DefaultPosition, below=False):
         """
@@ -278,54 +278,54 @@ class Deck(wxutils.AutoSize):
         self.cards.append(new)
         return new
 
-    def MoveCard(self, card, dx, dy):
-        """Move the `Card`.
+    # def MoveCard(self, card, dx, dy):
+    #     """Move the `Card`.
 
-        `dx: ` the amount of pixels to move in the X direction.
-        `dy: ` the amount of pixels to move in the Y direction.
-        """
-        card.MoveBy(dx, dy)
+    #     `dx: ` the amount of pixels to move in the X direction.
+    #     `dy: ` the amount of pixels to move in the Y direction.
+    #     """
+    #     card.MoveBy(dx, dy)
 
-    def GetSelection(self):
-        """Return the current selected `Card`s.
+    # def GetSelection(self):
+    #     """Return the current selected `Card`s.
 
-        `returns: ` a list of `Card`s.
-        """
-        return self.selec.GetSelection()
+    #     `returns: ` a list of `Card`s.
+    #     """
+    #     return self.selec.GetSelection()
 
-    def SelectCard(self, card, new_sel=False):
-        """Select the specified `Card`.
+    # def SelectCard(self, card, new_sel=False):
+    #     """Select the specified `Card`.
 
-        * `card: ` the `Card` to select.
-        * `new_sel: ` if `True`, unselects all other `Card`s before selecting `card`.
-        """
-        self.selec.SelectCard(card, new_sel)
+    #     * `card: ` the `Card` to select.
+    #     * `new_sel: ` if `True`, unselects all other `Card`s before selecting `card`.
+    #     """
+    #     self.selec.SelectCard(card, new_sel)
 
-    def UnselectCard(self, card):
-        """Unselect the specified `Card`.
+    # def UnselectCard(self, card):
+    #     """Unselect the specified `Card`.
 
-        * `card: ` the `Card` to unselect.
-        """
-        self.selec.UnselectCard(card)
+    #     * `card: ` the `Card` to unselect.
+    #     """
+    #     self.selec.UnselectCard(card)
 
-    def UnselectAll(self):
-        """Unselect all `Card`s.
-        """
-        self.selec.UnselectAll()
-        self.selec.Deactivate()
+    # def UnselectAll(self):
+    #     """Unselect all `Card`s.
+    #     """
+    #     self.selec.UnselectAll()
+    #     self.selec.Deactivate()
 
-    def SelectGroup(self, group, new_sel=True):
-        """Select every `Card` in `group`.
+    # def SelectGroup(self, group, new_sel=True):
+    #     """Select every `Card` in `group`.
 
-        * `group: ` a `CardGroup` to select.
-        * `new_sel: ` if `True`, unselects all other `Card`s before selecting.
-        """
-        self.selec.SelectGroup(group, new_sel)
+    #     * `group: ` a `CardGroup` to select.
+    #     * `new_sel: ` if `True`, unselects all other `Card`s before selecting.
+    #     """
+    #     self.selec.SelectGroup(group, new_sel)
 
-    def DeleteSelected(self):
-        """Deletes every `Card` currently selected.
-        """
-        self.selec.DeleteSelected()
+    # def DeleteSelected(self):
+    #     """Deletes every `Card` currently selected.
+    #     """
+    #     self.selec.DeleteSelected()
 
     def CopySelected(self):
         """Copies every `Card` currently selected to `wx.TheClipboard`.
@@ -372,12 +372,12 @@ class Deck(wxutils.AutoSize):
 
             wx.TheClipboard.Close()
 
-    def GetGroups(self):
-        """Get the list of `CardGroup`s defined for this `Deck`.
+    # def GetGroups(self):
+    #     """Get the list of `CardGroup`s defined for this `Deck`.
 
-        `returns: ` a list of `CardGroup`s.
-        """
-        return self.groups
+    #     `returns: ` a list of `CardGroup`s.
+    #     """
+    #     return self.groups
 
     def GetContainingGroups(self, card):
         """Get a list of every `CardGroup` that contains `card`.
@@ -388,12 +388,12 @@ class Deck(wxutils.AutoSize):
         """
         return [g for g in self.groups if card in g.GetMembers()]
 
-    def NewGroup(self, cards=[]):
-        """Create a new `CardGroup` with `cards` as members.
+    # def NewGroup(self, cards=[]):
+    #     """Create a new `CardGroup` with `cards` as members.
 
-        * `cards: ` a list of `Card`s.
-        """
-        self.groups.append(card.CardGroup(label=len(self.groups), members=cards))
+    #     * `cards: ` a list of `Card`s.
+    #     """
+    #     self.groups.append(card.CardGroup(label=len(self.groups), members=cards))
 
     def GroupSelected(self):
         """Creates a new `CardGroup` with the selected `Card`s as members.
@@ -523,262 +523,262 @@ class Deck(wxutils.AutoSize):
                     
     ### Callbacks
 
-    def OnCardCollapse(self, ev):
-        """Listens to `Card.EVT_COLLAPSE`."""
-        card = ev.GetEventObject()
-        card.SetSize([i*self.scale for i in card.GetSize()])
+    # def OnCardCollapse(self, ev):
+    #     """Listens to `Card.EVT_COLLAPSE`."""
+    #     card = ev.GetEventObject()
+    #     card.SetSize([i*self.scale for i in card.GetSize()])
         
-    def OnCardDelete(self, ev):
-        """Listens to every `Card.EVT_DELETE`."""
-        card = ev.GetEventObject()
-        self.cards.remove(card)
-        self.UnselectCard(card)
+    # def OnCardDelete(self, ev):
+    #     """Listens to every `Card.EVT_DELETE`."""
+    #     card = ev.GetEventObject()
+    #     self.cards.remove(card)
+    #     self.UnselectCard(card)
 
-    def OnMgrDelete(self, ev):
-        """Listens to `SelectionManager.EVT_MGR_DELETE`, which is raised
-        on every delete action. `Deck.DeleteSelected` calls every selected
-        `Card`'s `Delete` method, which raises many `Card.EVT_DELETE`,
-        and then raises only one `SelectionManager.EVT_MGR_DELETE` event.
-        """
-        self.selec.Deactivate()
+    # def OnMgrDelete(self, ev):
+    #     """Listens to `SelectionManager.EVT_MGR_DELETE`, which is raised
+    #     on every delete action. `Deck.DeleteSelected` calls every selected
+    #     `Card`'s `Delete` method, which raises many `Card.EVT_DELETE`,
+    #     and then raises only one `SelectionManager.EVT_MGR_DELETE` event.
+    #     """
+    #     self.selec.Deactivate()
 
-        # raise the event again, with event object = self
-        event = self.DeleteEvent(id=wx.ID_ANY, number=ev.number)
-        event.SetEventObject(self)
-        self.GetEventHandler().ProcessEvent(event)
+    #     # raise the event again, with event object = self
+    #     event = self.DeleteEvent(id=wx.ID_ANY, number=ev.number)
+    #     event.SetEventObject(self)
+    #     self.GetEventHandler().ProcessEvent(event)
 
-    def OnCardRequest(self, ev):
-        """Listens to `Card.EVT_REQUEST_VIEW` and raises `Deck.EVT_REQUEST_VIEW`
-        with the same card as event object. The difference is that now a
-        `Box` can `Bind` only once to `EVT_REQUEST_VIEW` events coming
-        from this `Deck`, instead of having to bind to every individual card.
-        """
-        event = Deck.ReqViewEvent(id=wx.ID_ANY)
-        event.SetEventObject(ev.GetEventObject())
-        self.GetEventHandler().ProcessEvent(event)
+    # def OnCardRequest(self, ev):
+    #     """Listens to `Card.EVT_REQUEST_VIEW` and raises `Deck.EVT_REQUEST_VIEW`
+    #     with the same card as event object. The difference is that now a
+    #     `Box` can `Bind` only once to `EVT_REQUEST_VIEW` events coming
+    #     from this `Deck`, instead of having to bind to every individual card.
+    #     """
+    #     event = Deck.ReqViewEvent(id=wx.ID_ANY)
+    #     event.SetEventObject(ev.GetEventObject())
+    #     self.GetEventHandler().ProcessEvent(event)
 
-    def OnChildFocus(self, ev):
-        """Listens to `wx.EVT_CHILD_FOCUS`."""
-        # important to avoid automatically scrolling to focused child
-        pass 
+    # def OnChildFocus(self, ev):
+    #     """Listens to `wx.EVT_CHILD_FOCUS`."""
+    #     # important to avoid automatically scrolling to focused child
+    #     pass 
 
-    def OnCardChildLeftDown(self, ev):
-        """Listens to `wx.EVT_LEFT_DOWN` events on every `Card`'s child window."""
-        self.UnselectAll()
-        ev.Skip()
+    # def OnCardChildLeftDown(self, ev):
+    #     """Listens to `wx.EVT_LEFT_DOWN` events on every `Card`'s child window."""
+    #     self.UnselectAll()
+    #     ev.Skip()
 
-    def OnCardLeftDown(self, ev):
-        """Listens to `wx.EVT_LEFT_DOWN` events from every `Card`."""
-        card = ev.GetEventObject()
+    # def OnCardLeftDown(self, ev):
+    #     """Listens to `wx.EVT_LEFT_DOWN` events from every `Card`."""
+    #     card = ev.GetEventObject()
 
-        # bring to front and select
-        card.Raise()
-        self.selec.SelectCard(card)
+    #     # bring to front and select
+    #     card.Raise()
+    #     self.selec.SelectCard(card)
 
-        # initiate moving
-        self.CaptureMouse()
-        self.Bind(wx.EVT_LEFT_UP, self.OnCardLeftUp)
-        self.Bind(wx.EVT_MOTION, self.OnMovingCard)
+    #     # initiate moving
+    #     self.CaptureMouse()
+    #     self.Bind(wx.EVT_LEFT_UP, self.OnCardLeftUp)
+    #     self.Bind(wx.EVT_MOTION, self.OnMovingCard)
 
-        self.on_motion = False
-        pos = card.GetPosition() + ev.GetPosition() # relative to the canvas
-        self.moving_cards_pos = []
-        for c in self.GetSelection():
-            # (card, pos w.r.t. the original click, current pos)
-            self.moving_cards_pos.append((c, c.GetPosition() - pos, c.GetPosition()))
+    #     self.on_motion = False
+    #     pos = card.GetPosition() + ev.GetPosition() # relative to the canvas
+    #     self.moving_cards_pos = []
+    #     for c in self.GetSelection():
+    #         # (card, pos w.r.t. the original click, current pos)
+    #         self.moving_cards_pos.append((c, c.GetPosition() - pos, c.GetPosition()))
 
-    def OnCardChildFocus(self, ev):
-        """Listens to `wx.EVT_CHILD_FOCUS` from every `Card`."""
-        self.UnselectAll()
-        ev.Skip()
+    # def OnCardChildFocus(self, ev):
+    #     """Listens to `wx.EVT_CHILD_FOCUS` from every `Card`."""
+    #     self.UnselectAll()
+    #     ev.Skip()
 
-    def OnMovingCard(self, ev):
-        """Listens to `wx.EVT_MOTION` events from `Card`s only while a `Card` is being click-dragged."""
-        if ev.Dragging() and self.moving_cards_pos:
-            # draw a rectangle while moving
-            # order is important
-            self.on_motion = True
-            for c, orig, pos in self.moving_cards_pos:
-                self.EraseCardRect(c, pos, refresh = False)
-                pos = ev.GetPosition() + orig
-                self.PaintCardRect(c, pos)
+    # def OnMovingCard(self, ev):
+    #     """Listens to `wx.EVT_MOTION` events from `Card`s only while a `Card` is being click-dragged."""
+    #     if ev.Dragging() and self.moving_cards_pos:
+    #         # draw a rectangle while moving
+    #         # order is important
+    #         self.on_motion = True
+    #         for c, orig, pos in self.moving_cards_pos:
+    #             self.EraseCardRect(c, pos, refresh = False)
+    #             pos = ev.GetPosition() + orig
+    #             self.PaintCardRect(c, pos)
 
-    def OnCardLeftUp(self, ev):
-        """Listens to `wx.EVT_LEFT_UP` events from `Card`s only while a `Card` is being click-dragged."""
-        # terminate moving
-        if self.on_motion:
-            self.on_motion = False
-            for c, orig, pos in self.moving_cards_pos:
-                self.EraseCardRect(c, pos)
+    # def OnCardLeftUp(self, ev):
+    #     """Listens to `wx.EVT_LEFT_UP` events from `Card`s only while a `Card` is being click-dragged."""
+    #     # terminate moving
+    #     if self.on_motion:
+    #         self.on_motion = False
+    #         for c, orig, pos in self.moving_cards_pos:
+    #             self.EraseCardRect(c, pos)
                 
-            if self.moving_cards_pos:
-                for c, orig, pos in self.moving_cards_pos:
-                    final_pos = ev.GetPosition() + orig - (Content.BORDER_WIDTH, Content.BORDER_WIDTH)
-                    # since we need to set absolute final position, we use
-                    # Card.Move instead of Card.MoveBy
-                    c.Move(final_pos)
+    #         if self.moving_cards_pos:
+    #             for c, orig, pos in self.moving_cards_pos:
+    #                 final_pos = ev.GetPosition() + orig - (Content.BORDER_WIDTH, Content.BORDER_WIDTH)
+    #                 # since we need to set absolute final position, we use
+    #                 # Card.Move instead of Card.MoveBy
+    #                 c.Move(final_pos)
                     
-        self.moving_cards_pos = []
-        self.ReleaseMouse()
-        self.Unbind(wx.EVT_LEFT_UP)
-        self.Unbind(wx.EVT_MOTION)
+    #     self.moving_cards_pos = []
+    #     self.ReleaseMouse()
+    #     self.Unbind(wx.EVT_LEFT_UP)
+    #     self.Unbind(wx.EVT_MOTION)
 
-    def OnLeftDown(self, ev):
-        """Listens to `wx.EVT_LEFT_DOWN` from this object."""
-        self.UnselectAll()
-        self.selec.SetFocus()
+    # def OnLeftDown(self, ev):
+    #     """Listens to `wx.EVT_LEFT_DOWN` from this object."""
+    #     self.UnselectAll()
+    #     self.selec.SetFocus()
 
-        # initiate drag select
-        self.init_pos = ev.GetPosition()
-        self.cur_pos = ev.GetPosition()
-        self.Bind(wx.EVT_MOTION, self.OnDragSelect)
+    #     # initiate drag select
+    #     self.init_pos = ev.GetPosition()
+    #     self.cur_pos = ev.GetPosition()
+    #     self.Bind(wx.EVT_MOTION, self.OnDragSelect)
 
-    def OnDragSelect(self, ev):
-        """Listens to `wx.EVT_MOTION` events from this object, only when the user is click-dragging."""
-        if ev.Dragging() and not self.moving_cards_pos:
-            self.drag_select = True
+    # def OnDragSelect(self, ev):
+    #     """Listens to `wx.EVT_MOTION` events from this object, only when the user is click-dragging."""
+    #     if ev.Dragging() and not self.moving_cards_pos:
+    #         self.drag_select = True
             
-            # erase the last one selection rect
-            self.PaintRect(wx.Rect(self.init_pos[0], self.init_pos[1],
-                            self.cur_pos[0], self.cur_pos[1]),
-                            style = wx.TRANSPARENT,
-                            refresh = False)
+    #         # erase the last one selection rect
+    #         self.PaintRect(wx.Rect(self.init_pos[0], self.init_pos[1],
+    #                         self.cur_pos[0], self.cur_pos[1]),
+    #                         style = wx.TRANSPARENT,
+    #                         refresh = False)
             
-            # and draw the current one
-            final_pos = ev.GetPosition() - self.init_pos
-            self.PaintRect(wx.Rect(self.init_pos[0], self.init_pos[1],
-                            final_pos[0], final_pos[1]),
-                            refresh = False)
+    #         # and draw the current one
+    #         final_pos = ev.GetPosition() - self.init_pos
+    #         self.PaintRect(wx.Rect(self.init_pos[0], self.init_pos[1],
+    #                         final_pos[0], final_pos[1]),
+    #                         refresh = False)
 
-            self.cur_pos = final_pos
+    #         self.cur_pos = final_pos
 
-    def OnLeftUp(self, ev):
-        """Listens to `wx.EVT_LEFT_UP` events from this object."""
-        # terminate drag select
-        if self.drag_select:
-            # erase the last selection rect
-            final_rect = wxutils.MakeEncirclingRect(self.init_pos, self.init_pos + self.cur_pos)                        
-            self.PaintRect(final_rect, style = wx.TRANSPARENT)
+    # def OnLeftUp(self, ev):
+    #     """Listens to `wx.EVT_LEFT_UP` events from this object."""
+    #     # terminate drag select
+    #     if self.drag_select:
+    #         # erase the last selection rect
+    #         final_rect = wxutils.MakeEncirclingRect(self.init_pos, self.init_pos + self.cur_pos)                        
+    #         self.PaintRect(final_rect, style = wx.TRANSPARENT)
 
-            # select cards
-            selected = [c for c in self.GetCards() if c.GetRect().Intersects(final_rect)]
-            self.SelectGroup(card.CardGroup(selected), new_sel=True)
+    #         # select cards
+    #         selected = [c for c in self.GetCards() if c.GetRect().Intersects(final_rect)]
+    #         self.SelectGroup(card.CardGroup(selected), new_sel=True)
             
-            # finish up
-            self.Unbind(wx.EVT_MOTION)
-            self.drag_select = False
-            self.FitToChildren()
-            self.selec.SetFocus()
+    #         # finish up
+    #         self.Unbind(wx.EVT_MOTION)
+    #         self.drag_select = False
+    #         self.FitToChildren()
+    #         self.selec.SetFocus()
 
-    def OnMouseCaptureLost(self, ev):
-        """Listens to `wx.EVT_MOUSE_CAPTURE_LOST` events from this object."""
-        self.ReleaseMouse()
+    # def OnMouseCaptureLost(self, ev):
+    #     """Listens to `wx.EVT_MOUSE_CAPTURE_LOST` events from this object."""
+    #     self.ReleaseMouse()
 
-    def OnLeftDClick(self, ev):
-        """Listens to `wx.EVT_LEFT_DCLICK` events from this object."""
-        self.NewCard("Content", pos=ev.GetPosition())
+    # def OnLeftDClick(self, ev):
+    #     """Listens to `wx.EVT_LEFT_DCLICK` events from this object."""
+    #     self.NewCard("Content", pos=ev.GetPosition())
         
-    def OnCtrlRet(self, ev):
-        """Listens to CTRL+RET."""
-        self.PlaceNewCard("Content", below=False)
+    # def OnCtrlRet(self, ev):
+    #     """Listens to CTRL+RET."""
+    #     self.PlaceNewCard("Content", below=False)
 
-    def OnCtrlShftRet(self, ev):
-        """Listens to CTRL+SHIFT+RET."""
-        self.PlaceNewCard("Content", below=True)
+    # def OnCtrlShftRet(self, ev):
+    #     """Listens to CTRL+SHIFT+RET."""
+    #     self.PlaceNewCard("Content", below=True)
 
-    def OnAltRet(self, ev):
-        """Listens to ALT+RET."""
-        self.PlaceNewCard("Header", below=False)
+    # def OnAltRet(self, ev):
+    #     """Listens to ALT+RET."""
+    #     self.PlaceNewCard("Header", below=False)
         
-    def OnAltShftRet(self, ev):
-        """Listens to ALT+SHIFT+RET."""
-        self.PlaceNewCard("Header", below=True)
+    # def OnAltShftRet(self, ev):
+    #     """Listens to ALT+SHIFT+RET."""
+    #     self.PlaceNewCard("Header", below=True)
 
-    def OnRightDown(self, ev):
-        """Listens to `wx.EVT_RIGHT_DOWN` events."""
-        self.menu_position = ev.GetPosition()
-        self.PopupMenu(self.menu, ev.GetPosition())
+    # def OnRightDown(self, ev):
+    #     """Listens to `wx.EVT_RIGHT_DOWN` events."""
+    #     self.menu_position = ev.GetPosition()
+    #     self.PopupMenu(self.menu, ev.GetPosition())
 
-    def OnPaste(self, ev):
-        """Listens to the "Paste" `wx.EVT_MENU` event from the context menu."""
-        self.PasteFromClipboard(self.menu_position)
+    # def OnPaste(self, ev):
+    #     """Listens to the "Paste" `wx.EVT_MENU` event from the context menu."""
+    #     self.PasteFromClipboard(self.menu_position)
 
-    def OnInsertContent(self, ev):
-        """Listens to the "Insert Content" `wx.EVT_MENU` event from the context menu."""
-        self.PlaceNewCard("Content", pos=self.menu_position)
+    # def OnInsertContent(self, ev):
+    #     """Listens to the "Insert Content" `wx.EVT_MENU` event from the context menu."""
+    #     self.PlaceNewCard("Content", pos=self.menu_position)
 
-    def OnInsertHeader(self, ev):
-        """Listens to the "Insert Header" `wx.EVT_MENU` event from the context menu."""
-        self.PlaceNewCard("Header", pos=self.menu_position)
+    # def OnInsertHeader(self, ev):
+    #     """Listens to the "Insert Header" `wx.EVT_MENU` event from the context menu."""
+    #     self.PlaceNewCard("Header", pos=self.menu_position)
 
-    def OnInsertImg(self, ev):
-        """Listens to the "Insert Image" `wx.EVT_MENU` event from the context menu."""
-        self.PlaceNewCard("Image", pos=self.menu_position)
+    # def OnInsertImg(self, ev):
+    #     """Listens to the "Insert Image" `wx.EVT_MENU` event from the context menu."""
+    #     self.PlaceNewCard("Image", pos=self.menu_position)
 
-    def OnClose(self, ev):
-        """Listens to the "Close" `wx.EVT_MENU` event from the context menu."""
-        # should close tab
-        pass
+    # def OnClose(self, ev):
+    #     """Listens to the "Close" `wx.EVT_MENU` event from the context menu."""
+    #     # should close tab
+    #     pass
         
             
     ### Auxiliary functions
 
-    def InitMenu(self):
-        """Initializes the `wx.Menu` to display on right click."""
-        # make menu
-        menu = wx.Menu()
-        self.Bind(wx.EVT_RIGHT_DOWN, self.OnRightDown)
+    # def InitMenu(self):
+    #     """Initializes the `wx.Menu` to display on right click."""
+    #     # make menu
+    #     menu = wx.Menu()
+    #     self.Bind(wx.EVT_RIGHT_DOWN, self.OnRightDown)
 
-        # edit actions
-        past_it = wx.MenuItem(menu, wx.ID_PASTE, "Paste")
-        self.Bind(wx.EVT_MENU, self.OnPaste, past_it)
+    #     # edit actions
+    #     past_it = wx.MenuItem(menu, wx.ID_PASTE, "Paste")
+    #     self.Bind(wx.EVT_MENU, self.OnPaste, past_it)
 
-        # insert actions
-        cont_it = wx.MenuItem(menu, wx.ID_ANY, "Insert Content")
-        self.Bind(wx.EVT_MENU, self.OnInsertContent, cont_it)
+    #     # insert actions
+    #     cont_it = wx.MenuItem(menu, wx.ID_ANY, "Insert Content")
+    #     self.Bind(wx.EVT_MENU, self.OnInsertContent, cont_it)
 
-        head_it = wx.MenuItem(menu, wx.ID_ANY, "Insert Header")
-        self.Bind(wx.EVT_MENU, self.OnInsertHeader, head_it)
+    #     head_it = wx.MenuItem(menu, wx.ID_ANY, "Insert Header")
+    #     self.Bind(wx.EVT_MENU, self.OnInsertHeader, head_it)
         
-        img_it = wx.MenuItem(menu, wx.ID_ANY, "Insert Image")
-        self.Bind(wx.EVT_MENU, self.OnInsertImg, img_it)
+    #     img_it = wx.MenuItem(menu, wx.ID_ANY, "Insert Image")
+    #     self.Bind(wx.EVT_MENU, self.OnInsertImg, img_it)
         
-        # tab actions
-        close_it = wx.MenuItem(menu, wx.ID_ANY, "Close")
-        self.Bind(wx.EVT_MENU, self.OnClose, close_it)
+    #     # tab actions
+    #     close_it = wx.MenuItem(menu, wx.ID_ANY, "Close")
+    #     self.Bind(wx.EVT_MENU, self.OnClose, close_it)
 
-        menu.AppendItem(past_it)
-        menu.AppendItem(cont_it)
-        menu.AppendItem(head_it)
-        menu.AppendItem(img_it)
-        menu.AppendSeparator()
-        menu.AppendItem(close_it)        
+    #     menu.AppendItem(past_it)
+    #     menu.AppendItem(cont_it)
+    #     menu.AppendItem(head_it)
+    #     menu.AppendItem(img_it)
+    #     menu.AppendSeparator()
+    #     menu.AppendItem(close_it)        
 
-        self.menu = menu
+    #     self.menu = menu
 
-    def InitAccels(self):
-        """Initializes the `wx.AcceleratorTable`."""
-        # we create ghost menus so that we can
-        # bind its items to some accelerators
-        accels = []
-        ghost = wx.Menu()
+    # def InitAccels(self):
+    #     """Initializes the `wx.AcceleratorTable`."""
+    #     # we create ghost menus so that we can
+    #     # bind its items to some accelerators
+    #     accels = []
+    #     ghost = wx.Menu()
 
-        contr = wx.MenuItem(ghost, wx.ID_ANY, "New Card: Right")
-        contb = wx.MenuItem(ghost, wx.ID_ANY, "New Card: Below")
-        headr = wx.MenuItem(ghost, wx.ID_ANY, "New Header: Right")
-        headb = wx.MenuItem(ghost, wx.ID_ANY, "New Header: Below")
+    #     contr = wx.MenuItem(ghost, wx.ID_ANY, "New Card: Right")
+    #     contb = wx.MenuItem(ghost, wx.ID_ANY, "New Card: Below")
+    #     headr = wx.MenuItem(ghost, wx.ID_ANY, "New Header: Right")
+    #     headb = wx.MenuItem(ghost, wx.ID_ANY, "New Header: Below")
 
-        self.Bind(wx.EVT_MENU, self.OnCtrlRet    , contr)
-        self.Bind(wx.EVT_MENU, self.OnAltRet     , headr)
-        self.Bind(wx.EVT_MENU, self.OnCtrlShftRet , contb)
-        self.Bind(wx.EVT_MENU, self.OnAltShftRet  , headb)
+    #     self.Bind(wx.EVT_MENU, self.OnCtrlRet    , contr)
+    #     self.Bind(wx.EVT_MENU, self.OnAltRet     , headr)
+    #     self.Bind(wx.EVT_MENU, self.OnCtrlShftRet , contb)
+    #     self.Bind(wx.EVT_MENU, self.OnAltShftRet  , headb)
 
-        accels.append(wx.AcceleratorEntry(wx.ACCEL_CTRL, wx.WXK_RETURN , contr.GetId()))
-        accels.append(wx.AcceleratorEntry(wx.ACCEL_ALT, wx.WXK_RETURN  , headr.GetId()))
-        accels.append(wx.AcceleratorEntry(wx.ACCEL_SHIFT|wx.ACCEL_CTRL , wx.WXK_RETURN, contb.GetId()))
-        accels.append(wx.AcceleratorEntry(wx.ACCEL_SHIFT|wx.ACCEL_ALT  , wx.WXK_RETURN, headb.GetId()))
+    #     accels.append(wx.AcceleratorEntry(wx.ACCEL_CTRL, wx.WXK_RETURN , contr.GetId()))
+    #     accels.append(wx.AcceleratorEntry(wx.ACCEL_ALT, wx.WXK_RETURN  , headr.GetId()))
+    #     accels.append(wx.AcceleratorEntry(wx.ACCEL_SHIFT|wx.ACCEL_CTRL , wx.WXK_RETURN, contb.GetId()))
+    #     accels.append(wx.AcceleratorEntry(wx.ACCEL_SHIFT|wx.ACCEL_ALT  , wx.WXK_RETURN, headb.GetId()))
 
-        self.SetAcceleratorTable(wx.AcceleratorTable(accels))
+    #     self.SetAcceleratorTable(wx.AcceleratorTable(accels))
 
     def PaintRect(self, rect, thick=MOVING_RECT_THICKNESS, style=wx.SOLID, refresh=True):
         """Paints a rectangle over this window. Used for click-dragging.

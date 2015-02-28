@@ -30,16 +30,16 @@ class Card(wx.Panel):
     return the main window's children, when it would normally return the main window
     (since it is the only child of the border window).
     """
-    BORDER_WIDTH = 2
-    BORDER_THICK = 5
-    SELECT_CL = (0, 0, 0, 0)
+    # BORDER_WIDTH = 2
+    # BORDER_THICK = 5
+    # SELECT_CL = (0, 0, 0, 0)
 
-    bar = None
+    # bar = None
 
-    DeleteEvent,   EVT_DELETE = ne.NewEvent()
-    CollapseEvent, EVT_COLLAPSE = ne.NewEvent()
-    ReqViewEvent,    EVT_REQUEST_VIEW = ne.NewEvent()
-    CancelViewEvent, EVT_CANCEL_VIEW = ne.NewEvent()
+    # DeleteEvent,   EVT_DELETE = ne.NewEvent()
+    # CollapseEvent, EVT_COLLAPSE = ne.NewEvent()
+    # ReqViewEvent,    EVT_REQUEST_VIEW = ne.NewEvent()
+    # CancelViewEvent, EVT_CANCEL_VIEW = ne.NewEvent()
 
     def __init__(self, parent, label, pos=wx.DefaultPosition, size=wx.DefaultSize, style=0):
         """Constructor.
@@ -66,32 +66,32 @@ class Card(wx.Panel):
 
     ### Behavior functions
 
-    def __del__(self):
-        """Destructor."""
-        pass
+    # def __del__(self):
+    #     """Destructor."""
+    #     pass
 
-    def GetChildren(self):
-        """Get the main `Card`'s children.
+    # def GetChildren(self):
+    #     """Get the main `Card`'s children.
 
-        `returns: ` a `list` of `wx.Window`s.
-        """
-        return self.main.GetChildren()
+    #     `returns: ` a `list` of `wx.Window`s.
+    #     """
+    #     return self.main.GetChildren()
 
-    def GetLabel(self):
-        """Get this `Card`'s identifier. Overrides `wx.Window.GetLabel`.
+    # def GetLabel(self):
+    #     """Get this `Card`'s identifier. Overrides `wx.Window.GetLabel`.
 
-        `returns: ` an `int`.
-        """
-        return self.label
+    #     `returns: ` an `int`.
+    #     """
+    #     return self.label
 
-    def ShowBar(self):
-        """Show the `CardBar` associated to this `Card`. Deprecated."""
-        CardBar.Associate(self)
-        self.bar.Show()
+    # def ShowBar(self):
+    #     """Show the `CardBar` associated to this `Card`. Deprecated."""
+    #     CardBar.Associate(self)
+    #     self.bar.Show()
 
-    def HideBar(self):
-        """Hide the `CardBar` associated to this `Card`. Deprecated."""
-        self.bar.Hide()
+    # def HideBar(self):
+    #     """Hide the `CardBar` associated to this `Card`. Deprecated."""
+    #     self.bar.Hide()
 
     def Delete(self):
         """Delete this `Card`. Raises `Card.EVT_DELETE`."""
@@ -102,227 +102,228 @@ class Card(wx.Panel):
         self.Hide()
         self.Destroy()
 
-    def Select(self):
-        """Show this card as selected (changes the border window colour)."""
-        self.SetBorderColour(self.SELECT_CL)
+    # def Select(self):
+    #     """Show this card as selected (changes the border window colour)."""
+    #     self.SetBorderColour(self.SELECT_CL)
 
-    def Unselect(self):
-        """Change back the border window colour."""
-        self.SetBorderColour(self.GetParent().GetBackgroundColour())
+    # def Unselect(self):
+    #     """Change back the border window colour."""
+    #     self.SetBorderColour(self.GetParent().GetBackgroundColour())
 
-    def SetBorderColour(self, cl):
-        """Set the colour that the border window colour is painted with when this `Card` is selected."""
-        super(Card, self).SetBackgroundColour(cl)
+    # def SetBorderColour(self, cl):
+    #     """Set the colour that the border window colour is painted with when this `Card` is selected."""
+    #     super(Card, self).SetBackgroundColour(cl)
 
-    def SetBackgroundColour(self, cl):
-        """Change the main window background colour."""
-        self.main.SetBackgroundColour(cl)
+    # def SetBackgroundColour(self, cl):
+    #     """Change the main window background colour."""
+    #     self.main.SetBackgroundColour(cl)
 
-    def GetBackgroundColour(self):
-        """Get the main window background colour.
+    # def GetBackgroundColour(self):
+    #     """Get the main window background colour.
 
-        `returns: ` a `wx.Colour`.
-        """
-        return self.main.GetBackgroundColour()
+    #     `returns: ` a `wx.Colour`.
+    #     """
+    #     return self.main.GetBackgroundColour()
 
-    def SetCardSizer(self, sz):
-        """Sets the sizer for the main window. All controls should be added to this
-        sizer, NOT to the one returned by `Card.GetSizer` (this would return the
-        border window's sizer)."""
-        self.main.SetSizer(sz)
+    # def SetCardSizer(self, sz):
+    #     """Sets the sizer for the main window. All controls should be added to this
+    #     sizer, NOT to the one returned by `Card.GetSizer` (this would return the
+    #     border window's sizer)."""
+    #     self.main.SetSizer(sz)
 
-    def GetCardSizer(self):
-        """Gets the sizer for the main window. All controls should be added to this
-        sizer, NOT to the one returned by `Card.GetSizer` (this would return the
-        border window's sizer).
+    # def GetCardSizer(self):
+    #     """Gets the sizer for the main window. All controls should be added to this
+    #     sizer, NOT to the one returned by `Card.GetSizer` (this would return the
+    #     border window's sizer).
 
-        `returns: ` a `wx.Sizer`.
-        """
-        return self.main.GetSizer()
+    #     `returns: ` a `wx.Sizer`.
+    #     """
+    #     return self.main.GetSizer()
 
-    def SetPosition(self, pt):
-        """Sets this `Card`'s. Overrides `frect`
+    # def SetPosition(self, pt):
+    #     """Sets this `Card`'s. Overrides `frect`
 
-        * `pt: ` the new position.
-        """
-        super(Card, self).SetPosition(pt)
-        self.ResetFRect()
+    #     * `pt: ` the new position.
+    #     """
+    #     super(Card, self).SetPosition(pt)
+    #     self.ResetFRect()
 
-    def Fit(self):
-        """Fits this Card to its contents. Overrides `frect`."""
-        super(Card, self).Fit()
-        self.ResetFRect()
+    # def Fit(self):
+    #     """Fits this Card to its contents. Overrides `frect`."""
+    #     super(Card, self).Fit()
+    #     self.ResetFRect()
 
-    def SetSize(self, sz):
-        """Sets this `Card`'s size. Overrides `frect`."""
-        super(Card, self).SetSize(sz)
-        self.ResetFRect()
+    # def SetSize(self, sz):
+    #     """Sets this `Card`'s size. Overrides `frect`."""
+    #     super(Card, self).SetSize(sz)
+    #     self.ResetFRect()
 
-    def Move(self, pt):
-        """Sets this `Card`'s new position. Overrides `frect`.
+    # def Move(self, pt):
+    #     """Sets this `Card`'s new position. Overrides `frect`.
 
-        * `pt: ` the new position.
-        """
-        super(Card, self).Move(pt)
-        self.ResetFRect()
+    #     * `pt: ` the new position.
+    #     """
+    #     super(Card, self).Move(pt)
+    #     self.ResetFRect()
 
-    def MoveBy(self, dx, dy):
-        """Moves the card by the offsets `dx`, `dy`. Unlike `SetPosition` and `Move`,
-        this method preserves `frect`.
+    # def MoveBy(self, dx, dy):
+    #     """Moves the card by the offsets `dx`, `dy`. Unlike `SetPosition` and `Move`,
+    #     this method preserves `frect`.
 
-        * `dx: ` pixels to move in the X direction.
-        * `dy: ` pixels to move in the Y direction.
-        """
-        bd = self.GetParent()
-        if not self.frect:
-            self.ResetFRect()
+    #     * `dx: ` pixels to move in the X direction.
+    #     * `dy: ` pixels to move in the Y direction.
+    #     """
+    #     bd = self.GetParent()
+    #     if not self.frect:
+    #         self.ResetFRect()
 
-        # self.frect stores the aboslute coordinates
-        abs_left = self.frect[0] + dx
-        abs_top  = self.frect[1] + dy
+    #     # self.frect stores the aboslute coordinates
+    #     abs_left = self.frect[0] + dx
+    #     abs_top  = self.frect[1] + dy
 
-        # but Move() is expecting coordinates relative to the start of the view port
-        start = self.GetParent().GetViewStartPixels()
-        rel_left = abs_left - start[0]
-        rel_top  = abs_top  - start[1]
+    #     # but Move() is expecting coordinates relative to the start of the view port
+    #     start = self.GetParent().GetViewStartPixels()
+    #     rel_left = abs_left - start[0]
+    #     rel_top  = abs_top  - start[1]
 
-        self.frect = (abs_left, abs_top, self.frect[2], self.frect[3])
-        super(Card, self).Move((rel_left, rel_top))
+    #     self.frect = (abs_left, abs_top, self.frect[2], self.frect[3])
+    #     super(Card, self).Move((rel_left, rel_top))
 
-    def Stretch(self, factor):
-        """Stretches this object's width and height by `factor`.
+        
+    # def Stretch(self, factor):
+    #     """Stretches this object's width and height by `factor`.
 
-        * `factor: ` float to multiply the size by. If it is less than one, the `Card` shrinks.
-        """
-        # if we haven't stored our float coordinates yet
-        if not self.frect:
-            self.ResetFRect()
+    #     * `factor: ` float to multiply the size by. If it is less than one, the `Card` shrinks.
+    #     """
+    #     # if we haven't stored our float coordinates yet
+    #     if not self.frect:
+    #         self.ResetFRect()
 
-        # only scale if we're a sensitive factor away from 1.0
-        if abs(factor - 1.0) < 0.001:
-            return
+    #     # only scale if we're a sensitive factor away from 1.0
+    #     if abs(factor - 1.0) < 0.001:
+    #         return
 
-        # keep count of the scale after every stretch
-        self.scale *= factor
+    #     # keep count of the scale after every stretch
+    #     self.scale *= factor
 
-        # wx.Rect() converts everything to integers
-        # since factor is always a float, this is why
-        # we need to store our own coordinates!
-        self.frect = [f * factor for f in self.frect]
-        self.SetRect(wx.Rect(*self.frect))
+    #     # wx.Rect() converts everything to integers
+    #     # since factor is always a float, this is why
+    #     # we need to store our own coordinates!
+    #     self.frect = [f * factor for f in self.frect]
+    #     self.SetRect(wx.Rect(*self.frect))
 
-    def SetScale(self, new_scale):
-        """`Stretches` this `Card` until its size is a fraction (or multiple) of its original size.
-        Call `SetScale` the return to the original size.
+    # def SetScale(self, new_scale):
+    #     """`Stretches` this `Card` until its size is a fraction (or multiple) of its original size.
+    #     Call `SetScale` the return to the original size.
 
-        * `new_scale: ` the desired scale.
-        """
-        self.Stretch(new_scale / self.scale)
+    #     * `new_scale: ` the desired scale.
+    #     """
+    #     self.Stretch(new_scale / self.scale)
 
-    def GetScale(self):
-        """Gets the current size scale.
+    # def GetScale(self):
+    #     """Gets the current size scale.
 
-        `returns: ` a float.
-        """
-        return self.scale
+    #     `returns: ` a float.
+    #     """
+    #     return self.scale
 
-    def NavigateOut(self, forward):
-        """Implement TAB navigation.
+    # def NavigateOut(self, forward):
+    #     """Implement TAB navigation.
 
-        * `forward: ` if `True`, the focus will be set to the next `Card`, as
-        decided by `Deck.GetNextCard`. If `False`, focus the previos `Card`.
-        """
-        dk = self.GetParent()
+    #     * `forward: ` if `True`, the focus will be set to the next `Card`, as
+    #     decided by `Deck.GetNextCard`. If `False`, focus the previos `Card`.
+    #     """
+    #     dk = self.GetParent()
 
-        # try to get the nearest card
-        if forward:
-            nxt = dk.GetNextCard(self, deck.Deck.RIGHT)
-            if not nxt:
-                nxt = dk.GetNextCard(self, deck.Deck.DOWN)
-        else:
-            nxt = dk.GetNextCard(self, deck.Deck.LEFT)
-            if not nxt:
-                nxt = dk.GetNextCard(self, deck.Deck.UP)
+    #     # try to get the nearest card
+    #     if forward:
+    #         nxt = dk.GetNextCard(self, deck.Deck.RIGHT)
+    #         if not nxt:
+    #             nxt = dk.GetNextCard(self, deck.Deck.DOWN)
+    #     else:
+    #         nxt = dk.GetNextCard(self, deck.Deck.LEFT)
+    #         if not nxt:
+    #             nxt = dk.GetNextCard(self, deck.Deck.UP)
 
-        # and navigate!
-        if nxt:
-            nxt.SetFocus()
-        else:
-            self.GetParent().Navigate(forward)
+    #     # and navigate!
+    #     if nxt:
+    #         nxt.SetFocus()
+    #     else:
+    #         self.GetParent().Navigate(forward)
 
     ### Auxiliary functions
 
-    def InitBorder(self):
-        """Initialize this `Card`'s border window."""
-        # border is just a window that sits behind the actual controls
-        # it's used for changing selection rect around the card
-        self.SetBorderColour(self.GetParent().GetBackgroundColour())
+    # def InitBorder(self):
+    #     """Initialize this `Card`'s border window."""
+    #     # border is just a window that sits behind the actual controls
+    #     # it's used for changing selection rect around the card
+    #     self.SetBorderColour(self.GetParent().GetBackgroundColour())
 
-        # main is the window where the real controls will be placed
-        main = wx.Panel(self, style=wx.BORDER_RAISED|wx.TAB_TRAVERSAL)
-        box = wx.BoxSizer(wx.VERTICAL)
-        box.Add(main, proportion=1, flag=wx.ALL|wx.EXPAND, border=1)
+    #     # main is the window where the real controls will be placed
+    #     main = wx.Panel(self, style=wx.BORDER_RAISED|wx.TAB_TRAVERSAL)
+    #     box = wx.BoxSizer(wx.VERTICAL)
+    #     box.Add(main, proportion=1, flag=wx.ALL|wx.EXPAND, border=1)
 
-        # since it's the main window displayed as a Card
-        # we have to make it work like one
-        # basically, just redirect all events
-        main.Bind(wx.EVT_MOUSE_EVENTS, self.OnMouseEvent)
+    #     # since it's the main window displayed as a Card
+    #     # we have to make it work like one
+    #     # basically, just redirect all events
+    #     main.Bind(wx.EVT_MOUSE_EVENTS, self.OnMouseEvent)
 
-        # use Set/GetCardSizer to get the control sizer
-        self.SetSizer(box)
-        self.main = main
+    #     # use Set/GetCardSizer to get the control sizer
+    #     self.SetSizer(box)
+    #     self.main = main
 
-    def InitUI(self):
-        """Initialize this `Card`'s GUI and controls. Must override."""
-        pass
+    # def InitUI(self):
+    #     """Initialize this `Card`'s GUI and controls. Must override."""
+    #     pass
 
-    def ResetFRect(self):
-        """Stores the float-valued, absolute coordinates in `Card.frect`."""
-        start = self.GetParent().GetViewStartPixels()
-        self.frect = [float(x) for x in self.GetRect()]
+    # def ResetFRect(self):
+    #     """Stores the float-valued, absolute coordinates in `Card.frect`."""
+    #     start = self.GetParent().GetViewStartPixels()
+    #     self.frect = [float(x) for x in self.GetRect()]
 
-        # GetRect() returns coordinates relative to the current view point
-        # we have to manually add the start of the view point (in pixels)
-        # to store absolute coordinates
-        self.frect[0] += start[0]
-        self.frect[1] += start[1]
+    #     # GetRect() returns coordinates relative to the current view point
+    #     # we have to manually add the start of the view point (in pixels)
+    #     # to store absolute coordinates
+    #     self.frect[0] += start[0]
+    #     self.frect[1] += start[1]
 
-    def Dump(self):
-        """Return an object holding all this `Card`'s data. Must override.
+    # def Dump(self):
+    #     """Return an object holding all this `Card`'s data. Must override.
         
-        `returns: ` an object holding data. Generally, a `dict`.
-        """
-        pass
+    #     `returns: ` an object holding data. Generally, a `dict`.
+    #     """
+    #     pass
 
-    def Load(self, obj):
-        """Read data from an object and load it into this `Card` for displaying.
+    # def Load(self, obj):
+    #     """Read data from an object and load it into this `Card` for displaying.
 
-        * `obj: ` must be an object in the format returned by `Card.Dump`.
-        """
-        pass
+    #     * `obj: ` must be an object in the format returned by `Card.Dump`.
+    #     """
+    #     pass
 
 
     ### Callbacks
 
-    def OnMouseEvent(self, ev):
-        """Listens to `wx.EVT_MOUSE_EVENTS` in the main window and raises it as being from the actual `Card`."""
-        ev.SetEventObject(self)
-        ev.SetPosition(ev.GetPosition() + self.main.GetPosition())
-        self.GetEventHandler().ProcessEvent(ev)
+    # def OnMouseEvent(self, ev):
+    #     """Listens to `wx.EVT_MOUSE_EVENTS` in the main window and raises it as being from the actual `Card`."""
+    #     ev.SetEventObject(self)
+    #     ev.SetPosition(ev.GetPosition() + self.main.GetPosition())
+    #     self.GetEventHandler().ProcessEvent(ev)
 
-    def OnTab(self, ev):
-        """Not bound to any event, called by children when simulating TAB traversal."""
-        ctrl = ev.GetEventObject()
-        forward = not ev.ShiftDown()
-        children = self.GetChildren()
-        index = children.index(ctrl)
+    # def OnTab(self, ev):
+    #     """Not bound to any event, called by children when simulating TAB traversal."""
+    #     ctrl = ev.GetEventObject()
+    #     forward = not ev.ShiftDown()
+    #     children = self.GetChildren()
+    #     index = children.index(ctrl)
 
-        if index == 0 and not forward:
-            self.NavigateOut(forward)
-        elif index == len(children)-1 and forward:
-            self.NavigateOut(forward)
-        else:
-            self.Navigate(forward)
+    #     if index == 0 and not forward:
+    #         self.NavigateOut(forward)
+    #     elif index == len(children)-1 and forward:
+    #         self.NavigateOut(forward)
+    #     else:
+    #         self.Navigate(forward)
 
 
 
@@ -353,32 +354,32 @@ class Header(Card):
 
     ### Behavior Functions
 
-    def GetHeader(self):
-        """Get the title.
+    # def GetHeader(self):
+    #     """Get the title.
 
-        `returns: ` a string.
-        """
-        return self.header.GetValue()
+    #     `returns: ` a string.
+    #     """
+    #     return self.header.GetValue()
 
-    def SetHeader(self, head):
-        """Sets the title."""
-        self.header.SetValue(head)
+    # def SetHeader(self, head):
+    #     """Sets the title."""
+    #     self.header.SetValue(head)
 
-    ### Auxiliary functions
+    # ### Auxiliary functions
 
-    def InitUI(self):
-        """Overridden from `Card`."""
-        # Controls
-        txt = wxutils.EditText(self.main)
-        txt.Bind(wx.EVT_KEY_UP, self.OnKeyUp)
+    # def InitUI(self):
+    #     """Overridden from `Card`."""
+    #     # Controls
+    #     txt = wxutils.EditText(self.main)
+    #     txt.Bind(wx.EVT_KEY_UP, self.OnKeyUp)
 
-        # Boxes
-        vbox = wx.BoxSizer(wx.VERTICAL)
-        vbox.Add(txt, proportion=0, flag=wx.ALL|wx.EXPAND, border=Card.BORDER_WIDTH)
+    #     # Boxes
+    #     vbox = wx.BoxSizer(wx.VERTICAL)
+    #     vbox.Add(txt, proportion=0, flag=wx.ALL|wx.EXPAND, border=Card.BORDER_WIDTH)
 
-        self.header = txt
-        self.SetCardSizer(vbox)
-        self.Show(True)
+    #     self.header = txt
+    #     self.SetCardSizer(vbox)
+    #     self.Show(True)
 
     def Dump(self):
         """Return a `dict` holding all this `Header`'s data.
@@ -414,35 +415,35 @@ class Header(Card):
 
 
 
-    ### Callbacks
+    # ### Callbacks
 
-    def OnKeyUp(self, ev):
-        """Listens to `wx.EVT_KEY_UP`."""
-        # calculate the sizes to compare
-        new_len = len(self.GetHeader())
+    # def OnKeyUp(self, ev):
+    #     """Listens to `wx.EVT_KEY_UP`."""
+    #     # calculate the sizes to compare
+    #     new_len = len(self.GetHeader())
 
-        sw, sh = self.GetSize()
+    #     sw, sh = self.GetSize()
 
-        dc = wx.WindowDC(self)
-        dc.SetFont(self.header.GetFont())
-        tw, th = dc.GetTextExtent(self.GetHeader())
-        # print "new text size: ", (tw, th)
+    #     dc = wx.WindowDC(self)
+    #     dc.SetFont(self.header.GetFont())
+    #     tw, th = dc.GetTextExtent(self.GetHeader())
+    #     # print "new text size: ", (tw, th)
 
-        # if we're too short: elongate
-        if new_len > self.len and tw + 20 > sw:
-            # print "we're too short"
-            self.SetSize((tw + 25, sh))
+    #     # if we're too short: elongate
+    #     if new_len > self.len and tw + 20 > sw:
+    #         # print "we're too short"
+    #         self.SetSize((tw + 25, sh))
 
-        # if we're too long: shorten
-        # but not more than the minimum size!
-        if new_len < self.len and sw > self.MIN_WIDTH and tw - 20 < sw:
-            # print "we're too long: ", sw
-            self.SetSize((tw + 10, sh))
+    #     # if we're too long: shorten
+    #     # but not more than the minimum size!
+    #     if new_len < self.len and sw > self.MIN_WIDTH and tw - 20 < sw:
+    #         # print "we're too long: ", sw
+    #         self.SetSize((tw + 10, sh))
 
-        self.len = new_len
+    #     self.len = new_len
 
-        # important!
-        ev.Skip()
+    #     # important!
+    #     ev.Skip()
 
 
         
@@ -479,25 +480,25 @@ class ContentText(wxutils.ColouredText):
 
     ### Callbacks
 
-    def OnKeyDown(self, ev):
-        """Listens to `wx.EVT_KEY_DOWN`."""
-        key = ev.GetKeyCode()
+    # def OnKeyDown(self, ev):
+    #     """Listens to `wx.EVT_KEY_DOWN`."""
+    #     key = ev.GetKeyCode()
 
-        if ev.ControlDown():
-            if   key == ord("B"):
-                self.BoldRange()
-            elif key == ord("I"):
-                self.ItalicRange()
+    #     if ev.ControlDown():
+    #         if   key == ord("B"):
+    #             self.BoldRange()
+    #         elif key == ord("I"):
+    #             self.ItalicRange()
                 
-            else:
-                ev.Skip()
+    #         else:
+    #             ev.Skip()
                 
-        else:
-            if key == 9:
-                # On TAB: instead of writing a "\t" char, let the card handle it
-                GetCardAncestor(self).OnTab(ev)
-            else:
-                ev.Skip()
+    #     else:
+    #         if key == 9:
+    #             # On TAB: instead of writing a "\t" char, let the card handle it
+    #             GetCardAncestor(self).OnTab(ev)
+    #         else:
+    #             ev.Skip()
 
 
 
@@ -536,31 +537,31 @@ class KindButton(wx.Button):
 
     ### Behavior functions
 
-    def GetKind(self, long=False):
-        """Get the current kind.
+    # def GetKind(self, long=False):
+    #     """Get the current kind.
 
-        * `long: ` if `True`, return the corresponding
-        `KindButton.*_LBL_LONG`. If `False`, return the
-        `KindButton.*_LBL`.
+    #     * `long: ` if `True`, return the corresponding
+    #     `KindButton.*_LBL_LONG`. If `False`, return the
+    #     `KindButton.*_LBL`.
 
-        `returns: ` a string.
-        """
-        if long: return self.LONG_LABELS[self.GetLabel()]
-        else:    return self.GetLabel()
+    #     `returns: ` a string.
+    #     """
+    #     if long: return self.LONG_LABELS[self.GetLabel()]
+    #     else:    return self.GetLabel()
 
-    def SetKind(self, kind):
-        """Sets the current kind.
+    # def SetKind(self, kind):
+    #     """Sets the current kind.
 
-        * `kind: ` one of `KindButton.*_LBL`.
-        """
-        if kind == "kind": self.SetLabel("kind")
-        else:              self.SetLabel(kind[0])
+    #     * `kind: ` one of `KindButton.*_LBL`.
+    #     """
+    #     if kind == "kind": self.SetLabel("kind")
+    #     else:              self.SetLabel(kind[0])
 
-    ### Callbacks
+    # ### Callbacks
 
-    def OnPress(self, ev):
-        """Listens to `wx.EVT_BUTTON`."""
-        rect = self.GetRect()
+    # def OnPress(self, ev):
+    #     """Listens to `wx.EVT_BUTTON`."""
+    #     rect = self.GetRect()
         self.PopupMenu(KindSelectMenu(GetCardAncestor(self)), (rect.width, rect.height))
 
 
@@ -595,16 +596,16 @@ class KindSelectMenu(wx.Menu):
         self.Bind(wx.EVT_MENU, lambda ev: self.OnSelect(ev, KindButton.DEFAULT_LBL), N_item)
 
 
-    ### Callbacks
+    # ### Callbacks
     
-    def OnSelect(self, ev, kind):
-        """Listens to `wx.EVT_MENU` events.
+    # def OnSelect(self, ev, kind):
+    #     """Listens to `wx.EVT_MENU` events.
 
-        * `kind: ` one of `KindButton.*_LBL`.
-        """
-        # my parent is the control that displayed the menu
-        if isinstance(self.card, Content):
-            self.card.SetKind(kind)
+    #     * `kind: ` one of `KindButton.*_LBL`.
+    #     """
+    #     # my parent is the control that displayed the menu
+    #     if isinstance(self.card, Content):
+    #         self.card.SetKind(kind)
 
 
             
@@ -616,16 +617,16 @@ class TitleEditText(wxutils.EditText):
 
     # have to use own MAX length since wx.TextCtrl.SetMaxLength
     # is only implemented for single line text controls
-    MAXLEN_PX = 175
-    HEIGHT_PX = wxutils.EditText.DEFAULT_SZ[1]
+    # MAXLEN_PX = 175
+    # HEIGHT_PX = wxutils.EditText.DEFAULT_SZ[1]
 
-    DEFAULT_WIDTH = wxutils.EditText.DEFAULT_SZ[0]
-    DEFAULT_HEIGHT = wxutils.EditText.DEFAULT_SZ[1]
-    HEIGHTS = [DEFAULT_HEIGHT, DEFAULT_HEIGHT * 1.75, DEFAULT_HEIGHT * 2]
+    # DEFAULT_WIDTH = wxutils.EditText.DEFAULT_SZ[0]
+    # DEFAULT_HEIGHT = wxutils.EditText.DEFAULT_SZ[1]
+    # HEIGHTS = [DEFAULT_HEIGHT, DEFAULT_HEIGHT * 1.75, DEFAULT_HEIGHT * 2]
 
-    DEFAULT_FONT = wxutils.EditText.DEFAULT_FONT
-    DEFAULT_FONT_SZ = wxutils.EditText.DEFAULT_FONT[0]
-    FONT_SIZES = [DEFAULT_FONT_SZ, DEFAULT_FONT_SZ - 2, DEFAULT_FONT_SZ - 2 - 2]
+    # DEFAULT_FONT = wxutils.EditText.DEFAULT_FONT
+    # DEFAULT_FONT_SZ = wxutils.EditText.DEFAULT_FONT[0]
+    # FONT_SIZES = [DEFAULT_FONT_SZ, DEFAULT_FONT_SZ - 2, DEFAULT_FONT_SZ - 2 - 2]
 
 
     def __init__(self, parent):
@@ -653,13 +654,13 @@ class TitleEditText(wxutils.EditText):
 
     ### Behavior functions
 
-    def SetValue(self, val):
-        """Set the title.
+    # def SetValue(self, val):
+    #     """Set the title.
 
-        * `val: ` a string.
-        """
-        super(TitleEditText, self).SetValue(val)
-        self.ComputeLines()
+    #     * `val: ` a string.
+    #     """
+    #     super(TitleEditText, self).SetValue(val)
+    #     self.ComputeLines()
 
     def SetHeightAndFontSize(self, height, font_sz):
         """Sets the window's height and font size.
@@ -721,23 +722,23 @@ class TitleEditText(wxutils.EditText):
         self.SetInsertionPoint(pt)
 
 
-    ### Callbacks
+    # ### Callbacks
 
-    def OnTextEntry(self, ev):
-        """Listens to `wx.EVT_TEXT`."""
-        self.ComputeLines()
+    # def OnTextEntry(self, ev):
+    #     """Listens to `wx.EVT_TEXT`."""
+    #     self.ComputeLines()
 
 
 
 class StarRating(wx.Button):
     """The `wx.Button` that displays the rating on a `Content` `Card`."""
-    PATH = "/home/leo/code/threepy5/threepy5/img/"
+    # PATH = "/home/leo/code/threepy5/threepy5/img/"
 
-    # thanks openclipart.org for the stars!
-    # https://openclipart.org/detail/117079/5-star-rating-system-by-jhnri4
-    FILES = ["stars_0.png", "stars_1.png", "stars_2.png", "stars_3.png"]
-    BMPS = []
-    MAX = 3
+    # # thanks openclipart.org for the stars!
+    # # https://openclipart.org/detail/117079/5-star-rating-system-by-jhnri4
+    # FILES = ["stars_0.png", "stars_1.png", "stars_2.png", "stars_3.png"]
+    # BMPS = []
+    # MAX = 3
 
     def __init__(self, parent):
         """Constructor.
@@ -759,42 +760,42 @@ class StarRating(wx.Button):
 
     ### Behavior functions
 
-    def SetRating(self, n):
-        """Sets the rating, and sets the image to reflect it.
+    # def SetRating(self, n):
+    #     """Sets the rating, and sets the image to reflect it.
 
-        * `n: ` the new rating.
-        """
-        self.SetBitmap(self.BMPS[n])
-        self.rating = n
+    #     * `n: ` the new rating.
+    #     """
+    #     self.SetBitmap(self.BMPS[n])
+    #     self.rating = n
 
-    def GetRating(self):
-        """Get the current rating.
+    # def GetRating(self):
+    #     """Get the current rating.
 
-        `returns: ` an `int`.
-        """
-        return self.rating
+    #     `returns: ` an `int`.
+    #     """
+    #     return self.rating
 
-    def IncreaseRating(self, wrap=True):
-        """Set the rating to be one more than its current value.
+    # def IncreaseRating(self, wrap=True):
+    #     """Set the rating to be one more than its current value.
         
-        * `wrap: ` if `True`, and we increase to more than the maximum rating, we set it to zero.
-        if `False` and the new rating is more than `self.MAX`, don't do anything."""
-        new = self.GetRating() + 1
-        if wrap:
-            if new > self.MAX:
-                new = 0
-        else:
-            if new > self.MAX:
-                return
+    #     * `wrap: ` if `True`, and we increase to more than the maximum rating, we set it to zero.
+    #     if `False` and the new rating is more than `self.MAX`, don't do anything."""
+    #     new = self.GetRating() + 1
+    #     if wrap:
+    #         if new > self.MAX:
+    #             new = 0
+    #     else:
+    #         if new > self.MAX:
+    #             return
 
-        self.SetRating(new)
+    #     self.SetRating(new)
     
 
-    ### Callbacks
+    # ### Callbacks
 
-    def OnPress(self, ev):
-        """Listens to `wx.EVT_BUTTON`."""
-        self.IncreaseRating()
+    # def OnPress(self, ev):
+    #     """Listens to `wx.EVT_BUTTON`."""
+    #     self.IncreaseRating()
                     
 
 
@@ -816,36 +817,36 @@ class Content(Card):
     DEFAULT_TITLE   = ""
     DEFAULT_CONTENT = ""
 
-    # # kind labels
-    DEFAULT_KIND = "kind"
-    # DEFAULT_LBL     = "kind"
-    # CONCEPT_LBL    = "C"
-    # ASSUMPTION_LBL = "A"
-    # RESEARCH_LBL   = "R"
-    # FACT_LBL       = "F"
-    # DEFAULT_LBL_LONG    = "kind"
-    # CONCEPT_LBL_LONG    = "Concept"
-    # ASSUMPTION_LBL_LONG = "Assumption"
-    # RESEARCH_LBL_LONG   = "Research"
-    # FACT_LBL_LONG       = "Fact"
-    # LONG_LABELS = {CONCEPT_LBL: CONCEPT_LBL_LONG, ASSUMPTION_LBL: ASSUMPTION_LBL_LONG, RESEARCH_LBL: RESEARCH_LBL_LONG, FACT_LBL: FACT_LBL_LONG, DEFAULT_LBL: DEFAULT_LBL_LONG}
+    # # # kind labels
+    # DEFAULT_KIND = "kind"
+    # # DEFAULT_LBL     = "kind"
+    # # CONCEPT_LBL    = "C"
+    # # ASSUMPTION_LBL = "A"
+    # # RESEARCH_LBL   = "R"
+    # # FACT_LBL       = "F"
+    # # DEFAULT_LBL_LONG    = "kind"
+    # # CONCEPT_LBL_LONG    = "Concept"
+    # # ASSUMPTION_LBL_LONG = "Assumption"
+    # # RESEARCH_LBL_LONG   = "Research"
+    # # FACT_LBL_LONG       = "Fact"
+    # # LONG_LABELS = {CONCEPT_LBL: CONCEPT_LBL_LONG, ASSUMPTION_LBL: ASSUMPTION_LBL_LONG, RESEARCH_LBL: RESEARCH_LBL_LONG, FACT_LBL: FACT_LBL_LONG, DEFAULT_LBL: DEFAULT_LBL_LONG}
 
-    # colours; thanks paletton.com!
-    COLOURS = {}
-    COLOURS[KindButton.DEFAULT_LBL]    = {"border": (220, 218, 213, 255), "bg": (255, 255, 255, 255)}
-    COLOURS[KindButton.CONCEPT_LBL]    = {"border": (149, 246, 214, 255), "bg": (242, 254, 250, 255)}
-    COLOURS[KindButton.ASSUMPTION_LBL] = {"border": (255, 188, 154, 255), "bg": (255, 247, 243, 255)}
-    COLOURS[KindButton.RESEARCH_LBL]   = {"border": (255, 232, 154, 255), "bg": (255, 252, 243, 255)}
-    COLOURS[KindButton.FACT_LBL]       = {"border": (169, 163, 247, 255), "bg": (245, 244, 254, 255)}
+    # # colours; thanks paletton.com!
+    # COLOURS = {}
+    # COLOURS[KindButton.DEFAULT_LBL]    = {"border": (220, 218, 213, 255), "bg": (255, 255, 255, 255)}
+    # COLOURS[KindButton.CONCEPT_LBL]    = {"border": (149, 246, 214, 255), "bg": (242, 254, 250, 255)}
+    # COLOURS[KindButton.ASSUMPTION_LBL] = {"border": (255, 188, 154, 255), "bg": (255, 247, 243, 255)}
+    # COLOURS[KindButton.RESEARCH_LBL]   = {"border": (255, 232, 154, 255), "bg": (255, 252, 243, 255)}
+    # COLOURS[KindButton.FACT_LBL]       = {"border": (169, 163, 247, 255), "bg": (245, 244, 254, 255)}
 
-    # content text colours
-    # CONCEPT_CNT_CL    = (24, 243, 171, 255)
-    # ASSUMPTION_CNT_CL = (255, 102, 25, 255)
-    # RESEARCH_CNT_CL   = (255, 202, 25, 255)
-    # FACT_CNT_CL       = (68, 54, 244, 255)
+    # # content text colours
+    # # CONCEPT_CNT_CL    = (24, 243, 171, 255)
+    # # ASSUMPTION_CNT_CL = (255, 102, 25, 255)
+    # # RESEARCH_CNT_CL   = (255, 202, 25, 255)
+    # # FACT_CNT_CL       = (68, 54, 244, 255)
 
     # Content events
-    KindEvent, EVT_CONT_KIND = ne.NewCommandEvent()
+    # KindEvent, EVT_CONT_KIND = ne.NewCommandEvent()
 
     def __init__(self, parent, label, pos=wx.DefaultPosition, size=DEFAULT_SZ,
                  title="", kind=KindButton.DEFAULT_LBL, content="", rating=0):
@@ -897,48 +898,48 @@ class Content(Card):
         """
         self.rating.SetRating(n)
 
-    def GetCaretPos(self):
-        """Get the position where the caret (insertion point) is in the `Card`.
+    # def GetCaretPos(self):
+    #     """Get the position where the caret (insertion point) is in the `Card`.
 
-        `returns: ` a tuple `(ctrl, pos)` where `ctrl` may be "title" or "content", and
-        `pos` is the position of the caret within that control. If other
-        controls are focused or the `Card`'s contents are not focused at
-        all, returns `(None, -1)`.
-        """
-        ctrl = self.FindFocus()
-        pos = None
+    #     `returns: ` a tuple `(ctrl, pos)` where `ctrl` may be "title" or "content", and
+    #     `pos` is the position of the caret within that control. If other
+    #     controls are focused or the `Card`'s contents are not focused at
+    #     all, returns `(None, -1)`.
+    #     """
+    #     ctrl = self.FindFocus()
+    #     pos = None
 
-        if ctrl == self.title:
-            pos = ctrl.GetInsertionPoint()
-            ctrl = "title"
-        elif ctrl == self.content:
-            pos = ctrl.GetInsertionPoint()
-            ctrl = "content"
-        else:
-            pos = -1
-            ctrl = None
+    #     if ctrl == self.title:
+    #         pos = ctrl.GetInsertionPoint()
+    #         ctrl = "title"
+    #     elif ctrl == self.content:
+    #         pos = ctrl.GetInsertionPoint()
+    #         ctrl = "content"
+    #     else:
+    #         pos = -1
+    #         ctrl = None
 
-        return (ctrl, pos)
+    #     return (ctrl, pos)
 
-    def SetCaretPos(self, ctrl, pos):
-        """Accepts a tuple `(ctrl, pos)` where `ctrl` may be "title" or "content", and
-        `pos` is the desired position of the caret within that control.
-        """
-        if ctrl == "title":
-            ctrl = self.title
-            ctrl.SetFocus()
-            ctrl.SetInsertionPoint(pos)
-        elif ctrl == "content":
-            ctrl = self.content
-            ctrl.SetFocus()
-            ctrl.SetInsertionPoint(pos)
+    # def SetCaretPos(self, ctrl, pos):
+    #     """Accepts a tuple `(ctrl, pos)` where `ctrl` may be "title" or "content", and
+    #     `pos` is the desired position of the caret within that control.
+    #     """
+    #     if ctrl == "title":
+    #         ctrl = self.title
+    #         ctrl.SetFocus()
+    #         ctrl.SetInsertionPoint(pos)
+    #     elif ctrl == "content":
+    #         ctrl = self.content
+    #         ctrl.SetFocus()
+    #         ctrl.SetInsertionPoint(pos)
 
-    def ScrollToChar(self, pos):
-        """Scrolls the content text control to put the char in the specified position in view.
+    # def ScrollToChar(self, pos):
+    #     """Scrolls the content text control to put the char in the specified position in view.
 
-        * `pos: ` the position for the specified character.
-        """
-        self.content.ShowPosition(pos)
+    #     * `pos: ` the position for the specified character.
+    #     """
+    #     self.content.ShowPosition(pos)
 
     def DisableCollapse(self):
         """Calling `Collapse` or `Uncollapse` after calling this method will do nothing."""
@@ -979,12 +980,12 @@ class Content(Card):
                 self.title.SetFocus()
             self.Collapse()
 
-    def IsCollapsed(self):
-        """Get the current collapsed state.
+    # def IsCollapsed(self):
+    #     """Get the current collapsed state.
 
-        `returns: ` `True` if the `Card` is collapsed, `False` otherwise.
-        """
-        return not self.content.IsShown()
+    #     `returns: ` `True` if the `Card` is collapsed, `False` otherwise.
+    #     """
+    #     return not self.content.IsShown()
 
     def RequestView(self):
         """Request an viewion. Raises `Card.EVT_REQUEST_VIEW`."""
@@ -998,103 +999,103 @@ class Content(Card):
         event.SetEventObject(self)
         self.GetEventHandler().ProcessEvent(event)
 
-    def GetTitle(self):
-        """Get the current title.
+    # def GetTitle(self):
+    #     """Get the current title.
 
-        `returns: ` a string.
-        """
-        return self.title.GetValue()
+    #     `returns: ` a string.
+    #     """
+    #     return self.title.GetValue()
 
-    def SetTitle(self, title):
-        """Sets the current title.
+    # def SetTitle(self, title):
+    #     """Sets the current title.
         
-        * `title: ` a string with the new title.
-        """
-        self.title.SetValue(title)
+    #     * `title: ` a string with the new title.
+    #     """
+    #     self.title.SetValue(title)
 
-    def GetContent(self):
-        """Get the current content text.
+    # def GetContent(self):
+    #     """Get the current content text.
 
-        `returns: ` a string.
-        """
-        return self.content.GetValue()
+    #     `returns: ` a string.
+    #     """
+    #     return self.content.GetValue()
 
-    def SetContent(self, txt):
-        """Sets the content text.
+    # def SetContent(self, txt):
+    #     """Sets the content text.
 
-        * `txt: ` the content.
-        """
-        self.content.SetValue(txt)
+    #     * `txt: ` the content.
+    #     """
+    #     self.content.SetValue(txt)
 
-    def GetKind(self, long=False):
-        """Get the current kind.
+    # def GetKind(self, long=False):
+    #     """Get the current kind.
 
-        * `long: ` if `True`, return the corresponding
-        `KindButton.*_LBL_LONG`. If `False`, return the
-        `KindButton.*_LBL`.
+    #     * `long: ` if `True`, return the corresponding
+    #     `KindButton.*_LBL_LONG`. If `False`, return the
+    #     `KindButton.*_LBL`.
 
-        `returns: ` a `KindButton.*_LBL`.
-        """
-        return self.kindbut.GetKind()
+    #     `returns: ` a `KindButton.*_LBL`.
+    #     """
+    #     return self.kindbut.GetKind()
 
-    def SetKind(self, kind):
-        """Sets the kind.
+    # def SetKind(self, kind):
+    #     """Sets the kind.
 
-        * `kind: ` one of `KindButton.*_LBL`.
-        """
-        self.kindbut.SetKind(kind)
-        self.SetColours(kind)
+    #     * `kind: ` one of `KindButton.*_LBL`.
+    #     """
+    #     self.kindbut.SetKind(kind)
+    #     self.SetColours(kind)
 
-        event = self.KindEvent(id=wx.ID_ANY)
-        event.SetEventObject(self)
-        self.GetEventHandler().ProcessEvent(event)
+    #     event = self.KindEvent(id=wx.ID_ANY)
+    #     event.SetEventObject(self)
+    #     self.GetEventHandler().ProcessEvent(event)
 
 
-    ### Auxiliary functions
+    # ### Auxiliary functions
 
-    def InitUI(self):
-        """Overridden from `Card`."""
-        # controls
-        title = TitleEditText(self.main)
-        kindbut = KindButton(self.main)
-        rating = StarRating(self.main)
-        content = ContentText(self.main)
+    # def InitUI(self):
+    #     """Overridden from `Card`."""
+    #     # controls
+    #     title = TitleEditText(self.main)
+    #     kindbut = KindButton(self.main)
+    #     rating = StarRating(self.main)
+    #     content = ContentText(self.main)
 
-        # boxes
-        hbox1 = wx.BoxSizer(wx.HORIZONTAL)
-        hbox1.Add(title,   proportion=1, flag=wx.LEFT|wx.ALIGN_CENTRE, border=Card.BORDER_THICK)
-        hbox1.Add(kindbut, proportion=0, flag=wx.ALL|wx.ALIGN_CENTRE, border=Card.BORDER_WIDTH)
-        hbox1.Add(rating,  proportion=0, flag=wx.ALL|wx.EXPAND, border=0)
+    #     # boxes
+    #     hbox1 = wx.BoxSizer(wx.HORIZONTAL)
+    #     hbox1.Add(title,   proportion=1, flag=wx.LEFT|wx.ALIGN_CENTRE, border=Card.BORDER_THICK)
+    #     hbox1.Add(kindbut, proportion=0, flag=wx.ALL|wx.ALIGN_CENTRE, border=Card.BORDER_WIDTH)
+    #     hbox1.Add(rating,  proportion=0, flag=wx.ALL|wx.EXPAND, border=0)
 
-        hbox2 = wx.BoxSizer(wx.HORIZONTAL)
-        hbox2.Add(content, proportion=1, flag=wx.EXPAND)
+    #     hbox2 = wx.BoxSizer(wx.HORIZONTAL)
+    #     hbox2.Add(content, proportion=1, flag=wx.EXPAND)
 
-        vbox = wx.BoxSizer(wx.VERTICAL)
-        self.SetCardSizer(vbox)
-        vbox.Add(hbox1, proportion=0, flag=wx.ALL|wx.EXPAND, border=Card.BORDER_WIDTH)
-        vbox.Add(hbox2, proportion=1, flag=wx.ALL|wx.EXPAND, border=Card.BORDER_THICK)
+    #     vbox = wx.BoxSizer(wx.VERTICAL)
+    #     self.SetCardSizer(vbox)
+    #     vbox.Add(hbox1, proportion=0, flag=wx.ALL|wx.EXPAND, border=Card.BORDER_WIDTH)
+    #     vbox.Add(hbox2, proportion=1, flag=wx.ALL|wx.EXPAND, border=Card.BORDER_THICK)
 
-        self.kindbut = kindbut
-        self.title = title
-        self.content = content
-        self.rating = rating
-        self.Show(True)
+    #     self.kindbut = kindbut
+    #     self.title = title
+    #     self.content = content
+    #     self.rating = rating
+    #     self.Show(True)
 
-    def InitAccels(self):
-        """Initializes the `wx.AcceleratorTable`."""
-        # ghost menu to generate menu item events and setup accelerators
-        accels = []
-        ghost = wx.Menu()
+    # def InitAccels(self):
+    #     """Initializes the `wx.AcceleratorTable`."""
+    #     # ghost menu to generate menu item events and setup accelerators
+    #     accels = []
+    #     ghost = wx.Menu()
 
-        # view
-        coll = wx.MenuItem(ghost, wx.ID_ANY, "Toggle collapse")
-        insp = wx.MenuItem(ghost, wx.ID_ANY, "Request view")
-        self.Bind(wx.EVT_MENU, self.OnCtrlU, coll)
-        self.Bind(wx.EVT_MENU, self.OnCtrlI, insp)
-        accels.append(wx.AcceleratorEntry(wx.ACCEL_CTRL, ord("U"), coll.GetId()))
-        accels.append(wx.AcceleratorEntry(wx.ACCEL_CTRL, ord("I"), insp.GetId()))
+    #     # view
+    #     coll = wx.MenuItem(ghost, wx.ID_ANY, "Toggle collapse")
+    #     insp = wx.MenuItem(ghost, wx.ID_ANY, "Request view")
+    #     self.Bind(wx.EVT_MENU, self.OnCtrlU, coll)
+    #     self.Bind(wx.EVT_MENU, self.OnCtrlI, insp)
+    #     accels.append(wx.AcceleratorEntry(wx.ACCEL_CTRL, ord("U"), coll.GetId()))
+    #     accels.append(wx.AcceleratorEntry(wx.ACCEL_CTRL, ord("I"), insp.GetId()))
 
-        self.SetAcceleratorTable(wx.AcceleratorTable(accels))
+    #     self.SetAcceleratorTable(wx.AcceleratorTable(accels))
 
     def Dump(self):
         """Return a `dict` holding all this `Content`'s data.
@@ -1137,36 +1138,36 @@ class Content(Card):
         if "collapsed" in dic.keys():
             if dic["collapsed"]: self.Collapse()
 
-    def SetColours(self, kind):
-        """Set all controls' colours according to the `kind`.
+    # def SetColours(self, kind):
+    #     """Set all controls' colours according to the `kind`.
 
-        * `kind: ` must be one of `KindButton.*_LBL`.
-        """
-        self.SetBackgroundColour(self.COLOURS[kind]["border"])
-        self.title.SetFirstColour(self.COLOURS[kind]["border"])
-        self.title.SetSecondColour(self.COLOURS[kind]["bg"])
-        self.content.SetBackgroundColour(self.COLOURS[kind]["bg"])
+    #     * `kind: ` must be one of `KindButton.*_LBL`.
+    #     """
+    #     self.SetBackgroundColour(self.COLOURS[kind]["border"])
+    #     self.title.SetFirstColour(self.COLOURS[kind]["border"])
+    #     self.title.SetSecondColour(self.COLOURS[kind]["bg"])
+    #     self.content.SetBackgroundColour(self.COLOURS[kind]["bg"])
 
 
-    ### Callbacks
+    # ### Callbacks
 
-    def OnCtrlI(self, ev):
-        """Listens to CTRL+I."""
-        # if there's a selection, let ContentText handle styling
-        start, end = self.content.GetSelection()
-        if start != end:
-            ev.Skip()
-            return
+    # def OnCtrlI(self, ev):
+    #     """Listens to CTRL+I."""
+    #     # if there's a selection, let ContentText handle styling
+    #     start, end = self.content.GetSelection()
+    #     if start != end:
+    #         ev.Skip()
+    #         return
 
-        # if not, then handle viewing
-        if not self.viewing:
-            self.RequestView()
-        elif self.viewing:
-            self.CancelView()
+    #     # if not, then handle viewing
+    #     if not self.viewing:
+    #         self.RequestView()
+    #     elif self.viewing:
+    #         self.CancelView()
 
-    def OnCtrlU(self, ev):
-        """Listens to CTRL+U."""
-        self.ToggleCollapse()
+    # def OnCtrlU(self, ev):
+    #     """Listens to CTRL+U."""
+    #     self.ToggleCollapse()
 
 
 
@@ -1280,18 +1281,18 @@ class Image(Card):
             
     ### Auxiliary functions
 
-    def InitUI(self, path=None):
-        """Overridden from `Card`."""
-        vbox = wx.BoxSizer(wx.VERTICAL)
-        self.SetCardSizer(vbox)
+    # def InitUI(self, path=None):
+    #     """Overridden from `Card`."""
+    #     vbox = wx.BoxSizer(wx.VERTICAL)
+    #     self.SetCardSizer(vbox)
 
-        if not path:
-            btn = wx.BitmapButton(self.main, bitmap=wx.ArtProvider.GetBitmap(wx.ART_MISSING_IMAGE), size=self.DEFAULT_SZ)
-            vbox.Add(btn, proportion=1, flag=wx.ALL|wx.EXPAND, border=self.BORDER_THICK)
-            self.btn = btn
-            btn.Bind(wx.EVT_BUTTON, self.OnButton)
-        else:
-            self.LoadImage(path)
+    #     if not path:
+    #         btn = wx.BitmapButton(self.main, bitmap=wx.ArtProvider.GetBitmap(wx.ART_MISSING_IMAGE), size=self.DEFAULT_SZ)
+    #         vbox.Add(btn, proportion=1, flag=wx.ALL|wx.EXPAND, border=self.BORDER_THICK)
+    #         self.btn = btn
+    #         btn.Bind(wx.EVT_BUTTON, self.OnButton)
+    #     else:
+    #         self.LoadImage(path)
 
     def Dump(self):
         """Return a `dict` holding all this `Image`'s data.
@@ -1317,95 +1318,95 @@ class Image(Card):
             self.LoadImage(dic["path"])
 
 
-    ### Callbacks
+    # ### Callbacks
 
-    def OnButton(self, ev):
-        """Listens to `wx.EVT_BUTTON` from the "load image" button."""
-        fd = wx.FileDialog(self, "Open", os.getcwd(), "", "All files (*.*)|*.*",
-                           wx.FD_OPEN | wx.FD_FILE_MUST_EXIST)
-        if fd.ShowModal() == wx.ID_CANCEL: return # user changed her mind
-        self.LoadImage(fd.GetPath())
+    # def OnButton(self, ev):
+    #     """Listens to `wx.EVT_BUTTON` from the "load image" button."""
+    #     fd = wx.FileDialog(self, "Open", os.getcwd(), "", "All files (*.*)|*.*",
+    #                        wx.FD_OPEN | wx.FD_FILE_MUST_EXIST)
+    #     if fd.ShowModal() == wx.ID_CANCEL: return # user changed her mind
+    #     self.LoadImage(fd.GetPath())
 
-    def OnImageLeftDown(self, ev):
-        """Listens to all mouse events from the underlying `wx.StaticBitmap`, which
-        are redirected as coming from this `Image`.
-        """
-        ev.SetEventObject(self)
-        ev.SetPosition(ev.GetPosition() + self.img.GetPosition())
-        self.GetEventHandler().ProcessEvent(ev)
+    # def OnImageLeftDown(self, ev):
+    #     """Listens to all mouse events from the underlying `wx.StaticBitmap`, which
+    #     are redirected as coming from this `Image`.
+    #     """
+    #     ev.SetEventObject(self)
+    #     ev.SetPosition(ev.GetPosition() + self.img.GetPosition())
+    #     self.GetEventHandler().ProcessEvent(ev)
 
-    def OnMouseOverBorder(self, ev):
-        """Listens to `wx.EVT_ENTER_WINDOW`."""
-        self.Bind(wx.EVT_MOTION, self.OnMotionOverBorder)
+    # def OnMouseOverBorder(self, ev):
+    #     """Listens to `wx.EVT_ENTER_WINDOW`."""
+    #     self.Bind(wx.EVT_MOTION, self.OnMotionOverBorder)
 
-    def OnMotionOverBorder(self, ev):
-        """Listens to `wx.EVT_MOTION` but only when the mouse is over the iamge's border."""
-        x, y =  ev.GetPosition()
-        win_w, win_h = self.GetSize()
-        img_w, img_h = self.img.GetSize()
-        w_border = win_w - img_w
-        h_border = win_h - img_h
+    # def OnMotionOverBorder(self, ev):
+    #     """Listens to `wx.EVT_MOTION` but only when the mouse is over the iamge's border."""
+    #     x, y =  ev.GetPosition()
+    #     win_w, win_h = self.GetSize()
+    #     img_w, img_h = self.img.GetSize()
+    #     w_border = win_w - img_w
+    #     h_border = win_h - img_h
 
-        right  = abs(x - win_w) < w_border
-        bottom = abs(y - win_h) < h_border
-        top    = y < h_border
-        left   = x < w_border
+    #     right  = abs(x - win_w) < w_border
+    #     bottom = abs(y - win_h) < h_border
+    #     top    = y < h_border
+    #     left   = x < w_border
 
-        if   (left and top) or (right and bottom):
-            self.resize_w = True
-            self.resize_h = True
-            self.SetCursor(wx.StockCursor(wx.CURSOR_SIZENWSE))
-        elif (right and top) or (left and bottom):
-            self.resize_w = True
-            self.resize_h = True
-            self.SetCursor(wx.StockCursor(wx.CURSOR_SIZENESW))
-        elif left or right:
-            self.resize_w = True
-            self.SetCursor(wx.StockCursor(wx.CURSOR_SIZEWE))
-        elif top or bottom:
-            self.resize_h = True
-            self.SetCursor(wx.StockCursor(wx.CURSOR_SIZENS))
+    #     if   (left and top) or (right and bottom):
+    #         self.resize_w = True
+    #         self.resize_h = True
+    #         self.SetCursor(wx.StockCursor(wx.CURSOR_SIZENWSE))
+    #     elif (right and top) or (left and bottom):
+    #         self.resize_w = True
+    #         self.resize_h = True
+    #         self.SetCursor(wx.StockCursor(wx.CURSOR_SIZENESW))
+    #     elif left or right:
+    #         self.resize_w = True
+    #         self.SetCursor(wx.StockCursor(wx.CURSOR_SIZEWE))
+    #     elif top or bottom:
+    #         self.resize_h = True
+    #         self.SetCursor(wx.StockCursor(wx.CURSOR_SIZENS))
 
-    def OnMouseLeaveBorder(self, ev):
-        """Listens to `wx.EVT_LEAVE_WINDOW`."""
-        self.SetCursor(wx.NullCursor)
+    # def OnMouseLeaveBorder(self, ev):
+    #     """Listens to `wx.EVT_LEAVE_WINDOW`."""
+    #     self.SetCursor(wx.NullCursor)
 
-    def OnBorderLeftDown(self, ev):
-        """Listens to `wx.EVT_LEFT_DOWN` coming from the `Card`'s main window."""
-        self.CaptureMouse()                
-        self.Unbind(wx.EVT_MOTION)
-        self.Bind(wx.EVT_MOTION, self.OnDragResize)
-        self.Bind(wx.EVT_LEFT_UP, self.OnBorderLeftUp)
+    # def OnBorderLeftDown(self, ev):
+    #     """Listens to `wx.EVT_LEFT_DOWN` coming from the `Card`'s main window."""
+    #     self.CaptureMouse()                
+    #     self.Unbind(wx.EVT_MOTION)
+    #     self.Bind(wx.EVT_MOTION, self.OnDragResize)
+    #     self.Bind(wx.EVT_LEFT_UP, self.OnBorderLeftUp)
 
-    def OnBorderLeftUp(self, ev):
-        """Listens to `wx.EVT_LEFT_UP`, but only when the mouse has already been clicked."""
-        # since we captured the mouse, ev.GetPosition() returns
-        # coordinates relative to this card's top left corner
-        # thus: the new position is our new size
-        if self.resizing:
-            ev_w, ev_h = ev.GetPosition()
-            cur_w, cur_h = self.GetSize()
-            new_w, new_h = cur_w, cur_h
+    # def OnBorderLeftUp(self, ev):
+    #     """Listens to `wx.EVT_LEFT_UP`, but only when the mouse has already been clicked."""
+    #     # since we captured the mouse, ev.GetPosition() returns
+    #     # coordinates relative to this card's top left corner
+    #     # thus: the new position is our new size
+    #     if self.resizing:
+    #         ev_w, ev_h = ev.GetPosition()
+    #         cur_w, cur_h = self.GetSize()
+    #         new_w, new_h = cur_w, cur_h
 
-            if   self.resize_w and self.resize_h:
-                new_w, new_h = ev_w, ev_h
-            elif not self.resize_w and self.resize_h:
-                new_h = ev_h
-            elif self.resize_w and not self.resize_h:
-                new_w = ev_w
-            self.SetSize(wx.Size(new_w, new_h))
+    #         if   self.resize_w and self.resize_h:
+    #             new_w, new_h = ev_w, ev_h
+    #         elif not self.resize_w and self.resize_h:
+    #             new_h = ev_h
+    #         elif self.resize_w and not self.resize_h:
+    #             new_w = ev_w
+    #         self.SetSize(wx.Size(new_w, new_h))
             
-            self.resize_w = False
-            self.resize_h = False
+    #         self.resize_w = False
+    #         self.resize_h = False
         
-        self.Unbind(wx.EVT_MOTION)
-        self.Unbind(wx.EVT_LEFT_UP)
-        self.ReleaseMouse()        
+    #     self.Unbind(wx.EVT_MOTION)
+    #     self.Unbind(wx.EVT_LEFT_UP)
+    #     self.ReleaseMouse()        
 
-    def OnDragResize(self, ev):
-        """Listens to `wx.EVT_MOTION`, but only when the mouse has been clicked over the border."""
-        if ev.Dragging():
-            self.resizing = True
+    # def OnDragResize(self, ev):
+    #     """Listens to `wx.EVT_MOTION`, but only when the mouse has been clicked over the border."""
+    #     if ev.Dragging():
+    #         self.resizing = True
 
 
 
@@ -1426,33 +1427,33 @@ class CardGroup(object):
         self.members = members[:]
         self.label = label
 
-    def GetMembers(self):
-        """Get the members of this `CardGroup`.
+    # def GetMembers(self):
+    #     """Get the members of this `CardGroup`.
 
-        `returns: ` a `list` of `Card`s.
-        """
-        return self.members
+    #     `returns: ` a `list` of `Card`s.
+    #     """
+    #     return self.members
 
-    def GetLabel(self):
-        """Get the identifier of this `CardGroup`.
+    # def GetLabel(self):
+    #     """Get the identifier of this `CardGroup`.
 
-        `returns: ` an `int`.
-        """
-        return self.label
+    #     `returns: ` an `int`.
+    #     """
+    #     return self.label
 
-    def Add(self, card):
-        """Add a new `Card` to the `CardGroup`.
+    # def Add(self, card):
+    #     """Add a new `Card` to the `CardGroup`.
 
-        * `card: ` a `Card`.
-        """
-        self.members.append(card)
+    #     * `card: ` a `Card`.
+    #     """
+    #     self.members.append(card)
 
-    def Remove(self, card):
-        """Remove a `Card` from the `CardGroup`.
+    # def Remove(self, card):
+    #     """Remove a `Card` from the `CardGroup`.
 
-        * `card: ` a `Card`.
-        """
-        self.members.remove(card)
+    #     * `card: ` a `Card`.
+    #     """
+    #     self.members.remove(card)
 
     def Dump(self):
         """Return a `list` holding all this `CardGroup`'s data.
