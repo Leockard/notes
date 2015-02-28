@@ -1038,20 +1038,18 @@ class Board(AutoSize):
 
         `returns: ` the new `CardWin`.
         """
-        id = len(self.Cards)
-
         # create the new card with the unscaled position
         pos = [i / self.Scale for i in pos]
 
-        # if   subclass == "Content" : new = card.Content(self, id, pos=pos)
-        # elif subclass == "Header"  : new = card.Header(self, id, pos=pos)
-        # elif subclass == "Image"   : new = card.Image(self, id, pos=pos)
+        # if   subclass == "Content" : new = card.Content(self, pos=pos)
+        # elif subclass == "Header"  : new = card.Header(self, pos=pos)
+        # elif subclass == "Image"   : new = card.Image(self, pos=pos)
 
         cardclass = getattr(py5, subclass)
         winclass  = globals()[subclass + "Win"]
         sz = winclass.DEFAULT_SZ
         
-        card = cardclass(id, rect=(pos[0], pos[1], sz[0], sz[1]))
+        card = cardclass(rect=(pos[0], pos[1], sz[0], sz[1]))
         win = winclass(self, card)
         
         #win.Stretch(self.scale)
