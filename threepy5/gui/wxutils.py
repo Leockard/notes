@@ -1,9 +1,6 @@
 # -*- coding: utf-8 -*-
-"""
-This module holds two types of objects:
-1. general-use functions, and
-2. classes derived from wx that could be usable outside
-of `threepy5`.
+"""This module contains classes derived from wx that could be
+used outside of `threepy5`.
 """
 
 import wx
@@ -118,7 +115,6 @@ class AutoSize(wx.ScrolledWindow):
         ev.Skip()
 
 
-        
 
 class ColouredText(wx.TextCtrl):
     """
@@ -377,39 +373,6 @@ def MakeEncirclingRect(p1, p2):
     w = abs(p1[0] - p2[0])
     h = abs(p1[1] - p2[1])
     return wx.Rect(l, t, w, h)
-
-def isnumber(s):
-    """Return True of the argument is a string representing a number.
-    
-    * `s: ` a string.
-    
-    `returns: ` `True` if `s` is a number, or `False`.
-    """
-    try:
-        float(s)
-        return True
-    except ValueError:
-        return False
-
-def dist2(p1, p2):
-    """Returns the squared euclidean distance between two points.
-
-    * `p1: ` any object with two fields addressable as `p1[0]` and `p1[1]`.
-    * `p2: ` idem.
-
-    `returns: ` the squared distance, always a `float`.
-    """
-    return float(sum([i**2 for i in p1 - p2]))
-
-def dist(p1, p2):
-    """Returns the euclidean distance betwen two points.
-
-    * `p1: ` any object with two fields addressable as `p1[0]` and `p1[1]`.
-    * `p2: ` idem.
-
-    `returns: ` the distance, always a `float`.
-    """
-    return float(sqrt(dist2(p1, p2)))
 
 def IsFunctionKey(key):
     """Check if `key` is a function key.
