@@ -911,7 +911,7 @@ class Board(wxutils.AutoSize):
 
         def Unselect(self, card):
             """Removes `card` from the current selection.
-            
+
             * `card: ` a `Card`.
             """
             if card in self.Selection:
@@ -1069,11 +1069,31 @@ class Board(wxutils.AutoSize):
 
     def _init_drag_select(self, pos):
         """Drag selection setup."""
+        self.Selector.UnselectAll()
+        self.Selector.SetFocus()
+
         self._drag_init_pos = pos
         self._drag_cur_pos = pos
         # note we don't set self._dragging to True until the user actually drags the
-        # mouse, this is done in self._on_drag_select
-        self.Bind(wx.EVT_MOTION, self._on_drag_select)
+        # mouse, this is done in self._on_drag_motion
+        self.Bind(wx.EVT_MOTION, self._on_drag_motion)
+
+    def _drag_update(self, pos):
+        self._dragging = True
+
+        # erase the last one selection rect
+        self._paint_rect(wx.Rect(self._drag_init_pos[0], self._drag_init_pos[1],
+                                 self._drag_cur_pos[0],  self._drag_cur_pos[1]),
+                         style = wx.TRANSPARENT,
+                         refresh = False)
+
+        # and draw the current one
+        final_pos = pos - self._drag_init_pos
+        self._paint_rect(wx.Rect(self._drag_init_pos[0], self._drag_init_pos[1],
+                                 final_pos[0], final_pos[1]),
+                         refresh = False)
+
+        self._drag_cur_pos = final_pos
 
     def _end_drag_select(self, pos):
         # erase the last selection rect
@@ -1098,28 +1118,12 @@ class Board(wxutils.AutoSize):
         self.AddCard("Content", pos=ev.GetPosition())
 
     def _on_left_down(self, ev):
-        self.Selector.UnselectAll()
-        self.Selector.SetFocus()
         self._init_drag_select(ev.Position)
 
-    def _on_drag_select(self, ev):
+    def _on_drag_motion(self, ev):
         """Listens to `wx.EVT_MOTION` events from this object, only when the user is click-dragging."""
         if ev.Dragging() and not self._moving:
-            self._dragging = True
-
-            # erase the last one selection rect
-            self._paint_rect(wx.Rect(self._drag_init_pos[0], self._drag_init_pos[1],
-                                     self._drag_cur_pos[0],  self._drag_cur_pos[1]),
-                             style = wx.TRANSPARENT,
-                             refresh = False)
-
-            # and draw the current one
-            final_pos = ev.GetPosition() - self._drag_init_pos
-            self._paint_rect(wx.Rect(self._drag_init_pos[0], self._drag_init_pos[1],
-                                     final_pos[0], final_pos[1]),
-                             refresh = False)
-
-            self._drag_cur_pos = final_pos
+            self._drag_update(ev.Position)
 
     def _on_left_up(self, ev):
         if self._dragging:

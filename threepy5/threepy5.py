@@ -37,7 +37,7 @@ DEFAULT_THICKNESS = 1
 """Default thickness for a `Line`"""
 
 
-        
+
 ###################################
 # utils.Publisher classes
 ###################################
@@ -98,7 +98,7 @@ class Card(utils.Publisher):
         super(Card, self).__init__()
         self.rect = rect
 
-        
+
     ### properties
 
     @property
@@ -127,7 +127,7 @@ class Card(utils.Publisher):
         """Set the position of this `Card`."""
         self.rect[2], self.rect[3] = sz[0], sz[1]
 
-        
+
     ### methods
 
     def MoveBy(self, dx, dy):
@@ -141,7 +141,7 @@ class Card(utils.Publisher):
     def Dump(self):
         """Return a dict holding all this `Card`'s data. When overriding,
         call this method and append all adittional data to the object returned.
-        
+
         `returns: ` a dict holding data.
         """
         return {"id": self._id, "rect": self.rect}
@@ -184,7 +184,7 @@ class Content(Card):
     KIND_LBL_ASSUMPTION = "Assumption"
     KIND_LBL_FACT       = "Fact"
     KIND_LBLS = [KIND_LBL_CONCEPT, KIND_LBL_RESEARCH, KIND_LBL_ASSUMPTION, KIND_LBL_FACT]
-    
+
     RATING_MAX = 3
     DEFAULT_RECT_CONT = (0,0,250,150)
 
@@ -214,10 +214,10 @@ class Content(Card):
 
 
     ### methods
-    
+
     def IncreaseRating(self, wrap=True):
         """Set the rating to be one more than its current value.
-        
+
         * `wrap: ` if `True`, and we increase to more than the maximum rating, we set it to zero.
         if `False` and the new rating is more than `self.MAX`, don't do anything."""
         new = self.rating + 1
@@ -225,12 +225,12 @@ class Content(Card):
             new = 0
         elif new > self.RATING_MAX:
             return
-        
+
         self.rating = new
 
     def Dump(self):
         """Return a dict holding all this `Content`'s data.
-        
+
         `returns: ` a dict holding data.
         """
         data = super(Content, self).Dump()
@@ -271,10 +271,10 @@ class Header(Card):
 
 
     ### methods
-    
+
     def Dump(self):
         """Return a dict holding all this `Header`'s data.
-        
+
         `returns: ` a dict holding data.
         """
         data = super(Header, self).Dump()
@@ -288,7 +288,7 @@ class Header(Card):
         """
         super(Header, self).Load(data)
         self.header = data["header"]
-        
+
 
 
 class Image(Card):
@@ -313,7 +313,7 @@ class Image(Card):
 
     def Dump(self):
         """Return a dict holding all this `Image`'s data.
-        
+
         `returns: ` a dict holding data.
         """
         data = super(Image, self).Dump()

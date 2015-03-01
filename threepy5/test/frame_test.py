@@ -15,7 +15,7 @@ class TestFrame(wx.Frame):
         ####################
         # write code here
         ####################
-        
+
         ctrl = newgui.Board(self)
         box.Add(ctrl, proportion=1, flag=wx.EXPAND)
         self.ctrl = ctrl
@@ -25,22 +25,22 @@ class TestFrame(wx.Frame):
         ####################
         # end code here
         ####################
-        
+
         dbg = wx.Button(self, label="debug")
         dbg.Bind(wx.EVT_BUTTON, self.OnDebug)
-        
-        hbox = wx.BoxSizer(wx.HORIZONTAL)        
+
+        hbox = wx.BoxSizer(wx.HORIZONTAL)
         hbox.Add(dbg, flag=wx.ALIGN_BOTTOM)
-        
+
         box.Add(hbox, proportion=0)
-        
+
 
     def OnDebug(self, ev):
         print "------DEBUG-----"
         for c in self.ctrl.Cards:
             print c.Position
- 
-        
+
+
 
 if __name__ == "__main__":
     app = wx.App()
