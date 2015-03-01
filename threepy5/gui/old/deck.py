@@ -113,54 +113,54 @@ class Deck(wxutils.AutoSize):
         """
         return [c for c in self.GetContents() if c.GetKind() == kind or c.GetKind(long=True) == kind]
 
-    def GetNextCard(self, card, direc):
-        """
-        Returns the nearest `Card` to `card` in the direction `direc`.
+    # def GetNextCard(self, card, direc):
+    #     """
+    #     Returns the nearest `Card` to `card` in the direction `direc`.
 
-        * `card: ` a `Card` held by this object.
-        * `direc: ` must be one of `Deck.LEFT`, `Deck.RIGHT`, `Deck.UP`, or `Deck.DOWN`.
+    #     * `card: ` a `Card` held by this object.
+    #     * `direc: ` must be one of `Deck.LEFT`, `Deck.RIGHT`, `Deck.UP`, or `Deck.DOWN`.
 
-        `returns: ` the closest `Card` in the specified direction, or `None`.
-        """
-        # depending on the direction we compare a different side
-        # of the cards, as well as get the points whose distance
-        # we're going to calculate in a different way
-        if   direc == Deck.LEFT:
-            side  = lambda x: x.right
-            getp1 = lambda x: x.GetTopLeft()
-            getp2 = lambda x: x.GetBottomLeft()
-        elif direc == Deck.RIGHT:
-            side  = lambda x: x.left
-            getp1 = lambda x: x.GetTopLeft()
-            getp2 = lambda x: x.GetTopRight()
-        elif direc == Deck.UP:
-            side  = lambda x: x.bottom
-            getp1 = lambda x: x.GetTopLeft()
-            getp2 = lambda x: x.GetBottomLeft()
-        elif direc == Deck.DOWN:
-            side  = lambda x: x.top
-            getp1 = lambda x: x.GetBottomLeft()
-            getp2 = lambda x: x.GetTopLeft()
+    #     `returns: ` the closest `Card` in the specified direction, or `None`.
+    #     """
+    #     # depending on the direction we compare a different side
+    #     # of the cards, as well as get the points whose distance
+    #     # we're going to calculate in a different way
+    #     if   direc == Deck.LEFT:
+    #         side  = lambda x: x.right
+    #         getp1 = lambda x: x.GetTopLeft()
+    #         getp2 = lambda x: x.GetBottomLeft()
+    #     elif direc == Deck.RIGHT:
+    #         side  = lambda x: x.left
+    #         getp1 = lambda x: x.GetTopLeft()
+    #         getp2 = lambda x: x.GetTopRight()
+    #     elif direc == Deck.UP:
+    #         side  = lambda x: x.bottom
+    #         getp1 = lambda x: x.GetTopLeft()
+    #         getp2 = lambda x: x.GetBottomLeft()
+    #     elif direc == Deck.DOWN:
+    #         side  = lambda x: x.top
+    #         getp1 = lambda x: x.GetBottomLeft()
+    #         getp2 = lambda x: x.GetTopLeft()
 
-        # get those cards whose "side" is in the desired position with respect to card
-        rect = card.GetRect()
-        nxt = []
-        if direc == Deck.LEFT or direc == Deck.UP:
-            nxt = [c for c in self.GetCards() if side(c.GetRect()) < side(rect)]
-        elif direc == Deck.RIGHT or direc == Deck.DOWN:
-            nxt = [c for c in self.GetCards() if side(c.GetRect()) > side(rect)]
-        else:
-            return None
+    #     # get those cards whose "side" is in the desired position with respect to card
+    #     rect = card.GetRect()
+    #     nxt = []
+    #     if direc == Deck.LEFT or direc == Deck.UP:
+    #         nxt = [c for c in self.GetCards() if side(c.GetRect()) < side(rect)]
+    #     elif direc == Deck.RIGHT or direc == Deck.DOWN:
+    #         nxt = [c for c in self.GetCards() if side(c.GetRect()) > side(rect)]
+    #     else:
+    #         return None
 
-        # we're going to use getp1 to get a point in card and compare
-        # it to the point got by getp2 on all the cards in nxt
-        if nxt:
-            # order them by distance
-            nxt.sort(key=lambda x: wxutils.dist2(getp1(x.GetRect()), getp2(rect)))
-            # and return the nearest one
-            return nxt[0]
-        else:
-            return None
+    #     # we're going to use getp1 to get a point in card and compare
+    #     # it to the point got by getp2 on all the cards in nxt
+    #     if nxt:
+    #         # order them by distance
+    #         nxt.sort(key=lambda x: wxutils.dist2(getp1(x.GetRect()), getp2(rect)))
+    #         # and return the nearest one
+    #         return nxt[0]
+    #     else:
+    #         return None
 
     # def GetPadding(self):
     #     """Returns `self.CARD_PADDING`, fixed for scale.
@@ -223,60 +223,60 @@ class Deck(wxutils.AutoSize):
 
         return new
 
-    def NewCard(self, subclass, pos=wx.DefaultPosition, scroll=False):
-        """
-        Create a new `Card` of type `subclass` at `pos`.
+    # def NewCard(self, subclass, pos=wx.DefaultPosition, scroll=False):
+    #     """
+    #     Create a new `Card` of type `subclass` at `pos`.
 
-        * `pos: ` the position where to create the `Card`.
-        * `scroll: ` if True, scroll the `Deck` so that the new `Card` is in view.
+    #     * `pos: ` the position where to create the `Card`.
+    #     * `scroll: ` if True, scroll the `Deck` so that the new `Card` is in view.
 
-        `returns: ` the new `Card`.
-        """
-        # never use labels, always let Deck set its own
-        label = len(self.cards)
+    #     `returns: ` the new `Card`.
+    #     """
+    #     # never use labels, always let Deck set its own
+    #     label = len(self.cards)
 
-        # create the new card with the unscaled position
-        # so that we can just call new.Stretch() afterward
-        # to set both position and size
-        pos = [i / self.scale for i in pos]
+    #     # create the new card with the unscaled position
+    #     # so that we can just call new.Stretch() afterward
+    #     # to set both position and size
+    #     pos = [i / self.scale for i in pos]
 
-        if subclass == "Content":
-            new = card.Content(self, label, pos=pos)
-        elif subclass == "Header":
-            new = card.Header(self, label, pos=pos)
-        elif subclass == "Image":
-            new = card.Image(self, label, pos=pos)
-        new.Stretch(self.scale)
+    #     if subclass == "Content":
+    #         new = card.Content(self, label, pos=pos)
+    #     elif subclass == "Header":
+    #         new = card.Header(self, label, pos=pos)
+    #     elif subclass == "Image":
+    #         new = card.Image(self, label, pos=pos)
+    #     new.Stretch(self.scale)
 
-        # set bindings for every card
-        new.Bind(wx.EVT_LEFT_DOWN, self.OnCardLeftDown)
-        new.Bind(wx.EVT_CHILD_FOCUS, self.OnCardChildFocus)
-        new.Bind(card.Card.EVT_DELETE, self.OnCardDelete)
-        new.Bind(card.Card.EVT_COLLAPSE, self.OnCardCollapse)
-        new.Bind(card.Card.EVT_REQUEST_VIEW, self.OnCardRequest)
-        for ch in new.GetChildren():
-            ch.Bind(wx.EVT_LEFT_DOWN, self.OnCardChildLeftDown)
+    #     # set bindings for every card
+    #     new.Bind(wx.EVT_LEFT_DOWN, self.OnCardLeftDown)
+    #     new.Bind(wx.EVT_CHILD_FOCUS, self.OnCardChildFocus)
+    #     new.Bind(card.Card.EVT_DELETE, self.OnCardDelete)
+    #     new.Bind(card.Card.EVT_COLLAPSE, self.OnCardCollapse)
+    #     new.Bind(card.Card.EVT_REQUEST_VIEW, self.OnCardRequest)
+    #     for ch in new.GetChildren():
+    #         ch.Bind(wx.EVT_LEFT_DOWN, self.OnCardChildLeftDown)
 
-        # raise the appropriate event
-        event = self.NewCardEvent(id=wx.ID_ANY, subclass=subclass)
-        event.SetEventObject(new)
-        self.GetEventHandler().ProcessEvent(event)
+    #     # raise the appropriate event
+    #     event = self.NewCardEvent(id=wx.ID_ANY, subclass=subclass)
+    #     event.SetEventObject(new)
+    #     self.GetEventHandler().ProcessEvent(event)
 
-        # make enough space and breathing room for the new card
-        self.FitToChildren()
-        self.ExpandVirtualSize(self.GetPadding() * 2, self.GetPadding() * 2)
+    #     # make enough space and breathing room for the new card
+    #     self.FitToChildren()
+    #     self.ExpandVirtualSize(self.GetPadding() * 2, self.GetPadding() * 2)
         
-        # make sure the new card is visible
-        if scroll:
-            rect = new.GetRect()
-            deck = self.GetRect()
-            if rect.bottom > deck.bottom or rect.right > deck.right or rect.left < 0 or rect.top < 0:
-                self.ScrollToCard(new)
+    #     # make sure the new card is visible
+    #     if scroll:
+    #         rect = new.GetRect()
+    #         deck = self.GetRect()
+    #         if rect.bottom > deck.bottom or rect.right > deck.right or rect.left < 0 or rect.top < 0:
+    #             self.ScrollToCard(new)
 
-        # finish up
-        new.SetFocus()
-        self.cards.append(new)
-        return new
+    #     # finish up
+    #     new.SetFocus()
+    #     self.cards.append(new)
+    #     return new
 
     # def MoveCard(self, card, dx, dy):
     #     """Move the `Card`.
