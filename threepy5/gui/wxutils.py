@@ -312,7 +312,7 @@ def GetCardAncestor(ctrl):
 
     `returns: ` The first `Card` ancestor of `ctrl`, or `None`.
     """
-    from threepy5GUI_new import CardWin
+    from board import CardWin
     cards = [p for p in GetAncestors(ctrl) if isinstance(p, CardWin)]
     if cards:
         return cards[0]

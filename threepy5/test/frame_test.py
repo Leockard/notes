@@ -3,7 +3,7 @@
 import wx
 import threepy5.threepy5 as py5
 import threepy5
-from threepy5.gui import threepy5GUI_new as newgui
+from threepy5.gui import board as newgui
 
 
 class TestFrame(wx.Frame):
