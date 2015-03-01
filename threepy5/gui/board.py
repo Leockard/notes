@@ -864,6 +864,8 @@ class Board(wxutils.AutoSize):
             self.Active = False
             
             self.Bind(wx.EVT_KEY_DOWN, self._on_key_down)
+            self.Bind(wx.EVT_SET_FOCUS, self._on_set_focus)
+            self.Bind(wx.EVT_KILL_FOCUS, self._on_kill_focus)
 
 
         ### properties
@@ -876,7 +878,7 @@ class Board(wxutils.AutoSize):
         @Active.setter
         def Active(self, val):
             """If `val` is `True`, grab focus."""
-            if val:
+            if val and not self.HasFocus():
                 self.SetFocus()
             elif self._last:
                 self._last.SetFocus()
@@ -967,6 +969,12 @@ class Board(wxutils.AutoSize):
 
         ### callbacks
 
+        def _on_set_focus(self, ev):
+            self._active = True
+
+        def _on_kill_focus(self, ev):
+            self._active = False
+            
         def _on_key_down(self, ev):
             if not self.Active or not self.Selection:
                 ev.Skip()
