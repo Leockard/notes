@@ -148,7 +148,7 @@ class testBoard(unittest.TestCase):
         board = newgui.Board(self.frame)
         cards = []
         start_pos = {}
-        for i in range(50):
+        for i in range(20):
             pos = wx.Point(randint(1, 1000), randint(1, 1000))
             c = board.AddCard("Content", pos=pos)
             cards.append(c)
@@ -174,6 +174,7 @@ class testBoard(unittest.TestCase):
             self.assertEqual(start_pos[c] + (1000,1000), final_pos[c])
 
     def testFitToChildren(self):
+        """`Board` should adequately enlarge its virtual size to fit all children."""
         board = newgui.Board(self.frame)
         rect = board.Rect
 
@@ -201,24 +202,108 @@ class testSelectionManager(unittest.TestCase):
         # self.app.MainLoop()
 
     def testActive(self):
-        """`Board` should add all its `Card`s to its tracked `Deck`."""
+        """`SelectionManager` should handle its `Active` attribute according to focus and selection."""
         board = newgui.Board(self.frame)
         c1 = board.AddCard("Content")
         c2 = board.AddCard("Header", pos=(10,10))
         c3 = board.AddCard("Image", pos=(20,20))
         self.assertFalse(board.Selector.Active)
-
+        
         board.Selector.Select(c1)
         self.assertTrue(board.Selector.Active)
-        self.assertEqual(board.FindFocus(), board.Selector)
+        self.assertTrue(board.Selector.HasFocus())
+        self.assertEqual(board.Selector._last, c1)
 
-        # even if there's no selection, it should be Active to await
-        # more selection instructions
+        board.Selector.Select(c2, new_sel=False)
+        self.assertTrue(board.Selector.Active)
+        self.assertTrue(board.Selector.HasFocus())
+        self.assertEqual(board.Selector._last, c2)
+
         board.Selector.Unselect(c1)
         self.assertTrue(board.Selector.Active)
-        self.assertEqual(board.FindFocus(), board.Selector)
+        self.assertTrue(board.Selector.HasFocus())
+        self.assertEqual(board.Selection, [c2])
+
+        board.Selector.Select(c3)
+        self.assertTrue(board.Selector.Active)
+        self.assertTrue(board.Selector.HasFocus())
+        self.assertEqual(board.Selector._last, c3)
+
+        board.Selector.UnselectAll()
+        self.assertTrue(board.Selector.Active)
+        self.assertTrue(board.Selector.HasFocus())
+        self.assertEqual(board.Selector._last, c3)
         self.assertEqual(board.Selection, [])
         
+        board.Selector.Active = False
+        self.assertFalse(board.Selector.Active)
+        self.assertFalse(board.Selector.HasFocus())
+        self.assertEqual(board.Selector._last, c3)
+        self.assertEqual(board.Selection, [])
+        self.assertEqual(c3, wxutils.GetCardAncestor(board.FindFocus()))
+
+    def testSelectNearest(self):
+        """`SelectionManager` should select the nearest card correctly."""
+        board = newgui.Board(self.frame)
+        tl = board.AddCard("Content", pos=(15,15))
+        bl = board.AddCard("Content", pos=(15,200))
+        tr = board.AddCard("Content", pos=(300,15))
+        br = board.AddCard("Content", pos=(300,200))
+        
+        board.Selector.Select(tl)
+        self.assertEqual(len(board.Selection), 1)
+
+        board.Selector.SelectNearest(wx.WXK_RIGHT, new_sel=True)
+        self.assertEqual(board.Selection, [tr])
+
+        board.Selector.SelectNearest(wx.WXK_DOWN, new_sel=True)
+        self.assertEqual(board.Selection, [br])
+
+        board.Selector.SelectNearest(wx.WXK_LEFT, new_sel=True)
+        self.assertEqual(board.Selection, [bl])
+
+        board.Selector.SelectNearest(wx.WXK_UP, new_sel=True)
+        self.assertEqual(board.Selection, [tl])
+        
+    def testExtendSelection(self):
+        """`SelectionManager` should extend the selection to the nearest card correctly."""
+        board = newgui.Board(self.frame)
+        tl = board.AddCard("Content", pos=(15,15))
+        bl = board.AddCard("Content", pos=(15,200))
+        tr = board.AddCard("Content", pos=(300,15))
+        br = board.AddCard("Content", pos=(300,200))
+        
+        board.Selector.Select(tl)
+        self.assertEqual(len(board.Selection), 1)
+
+        board.Selector.SelectNearest(wx.WXK_RIGHT, new_sel=False)
+        self.assertEqual(board.Selection, [tl, tr])
+        self.assertEqual(board.Selector._last, tr)
+
+        board.Selector.SelectNearest(wx.WXK_DOWN, new_sel=False)
+        self.assertEqual(board.Selection, [tl, tr, br])
+        self.assertEqual(board.Selector._last, br)
+
+        board.Selector.SelectNearest(wx.WXK_LEFT, new_sel=False)
+        self.assertEqual(board.Selection, [tl, tr, br, bl])
+        self.assertEqual(board.Selector._last, bl)
+
+        board.Selector.SelectNearest(wx.WXK_UP, new_sel=False)
+        self.assertEqual(board.Selection, [tl, tr, br, bl])
+        self.assertEqual(board.Selector._last, bl)
+
+    def testMoveSelection(self):
+        """`SelectionManager` should move the selected cards correctly."""
+        board = newgui.Board(self.frame)
+        step = 10
+
+        for i in range(10):
+            crd = board.AddCard("Content", pos=(randint(1, 1000),randint(1, 1000)))
+            board.Selector.Select(crd, new_sel=False)
+            init_pos = {c: c.Position for c in board.Selection}
+            board.Selector.MoveSelection(step, step)
+            for c in board.Selection:
+                self.assertEqual(init_pos[c] + (step,step), c.Position)
 
     def tearDown(self):
         wx.CallAfter(self.app.Exit)
@@ -227,7 +312,6 @@ class testSelectionManager(unittest.TestCase):
 
         
 ### test Board dump (Deck dump), load, arrange
-### test Selectionmanager: Active, move selection, grab focus while selection is active, move selected cards, select nearest, extend selection
 ### test AutoSize class with a StaticBitmap
 
 
