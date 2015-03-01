@@ -37,8 +37,7 @@ class TestFrame(wx.Frame):
 
     def OnDebug(self, ev):
         print "------DEBUG-----"
-        for c in self.ctrl.Cards:
-            print c.Position
+        self.ctrl.ArrangeSelection(wx.VERTICAL)
 
 
 

@@ -463,62 +463,62 @@ class Deck(wxutils.AutoSize):
             # but it will surely be inside the view
             self.Scroll(xsc, ysc)
 
-    def ArrangeSelection(self, orient):
-        """Arranges the selected cards according to `orient`.
+    # def ArrangeSelection(self, orient):
+    #     """Arranges the selected cards according to `orient`.
 
-        * `orient: ` must be one of `Deck.HORIZONTAL` or `Deck.VERTICAL`.
-        """
-        if   orient == Deck.HORIZONTAL:
-            self.HArrangeSelectedCards()
-        elif orient == Deck.VERTICAL:
-            self.VArrangeSelectedCards()
+    #     * `orient: ` must be one of `Deck.HORIZONTAL` or `Deck.VERTICAL`.
+    #     """
+    #     if   orient == Deck.HORIZONTAL:
+    #         self.HArrangeSelectedCards()
+    #     elif orient == Deck.VERTICAL:
+    #         self.VArrangeSelectedCards()
 
-    def HArrangeSelectedCards(self):
-        """Same as `Deck.ArrangeSelection(Deck.HORIZONTAL)`. Arranges `Card`s
-        in a horizontal row, to the right of the left-most selected card.
-        """
-        if len(self.GetSelection()) < 1: return
+    # def HArrangeSelectedCards(self):
+    #     """Same as `Deck.ArrangeSelection(Deck.HORIZONTAL)`. Arranges `Card`s
+    #     in a horizontal row, to the right of the left-most selected card.
+    #     """
+    #     if len(self.GetSelection()) < 1: return
 
-        # we unselect first so that we erase the selection rectangles correctly
-        arrange = self.GetSelection()[:]
-        self.UnselectAll()         
+    #     # we unselect first so that we erase the selection rectangles correctly
+    #     arrange = self.GetSelection()[:]
+    #     self.UnselectAll()         
 
-        lefts = [c.GetRect().left for c in arrange]
-        left = min(lefts)
-        card = arrange[lefts.index(left)]
-        top = card.GetRect().top
-        arrange.sort(key=lambda x: x.GetRect().left)
+    #     lefts = [c.GetRect().left for c in arrange]
+    #     left = min(lefts)
+    #     card = arrange[lefts.index(left)]
+    #     top = card.GetRect().top
+    #     arrange.sort(key=lambda x: x.GetRect().left)
 
-        for c in arrange:
-            c.SetPosition(wx.Point(left, top))
-            left = c.GetRect().right + self.GetPadding()
+    #     for c in arrange:
+    #         c.SetPosition(wx.Point(left, top))
+    #         left = c.GetRect().right + self.GetPadding()
 
-        self.FitToChildren()
-        self.selec.SetFocus()
+    #     self.FitToChildren()
+    #     self.selec.SetFocus()
 
-    def VArrangeSelectedCards(self):
-        """Same as `Deck.ArrangeSelection(Deck.VERTICAL)`. Arranges `Card`s
-        in a vertical column, below of the top-most selected card.
-        """
-        if len(self.GetSelection()) < 1: return
+    # def VArrangeSelectedCards(self):
+    #     """Same as `Deck.ArrangeSelection(Deck.VERTICAL)`. Arranges `Card`s
+    #     in a vertical column, below of the top-most selected card.
+    #     """
+    #     if len(self.GetSelection()) < 1: return
 
-        # value-copy the list since we may do weird things to it
-        arrange = self.GetSelection()[:]
+    #     # value-copy the list since we may do weird things to it
+    #     arrange = self.GetSelection()[:]
 
-        # compute the pivot
-        tops = [c.GetRect().top for c in arrange]
-        top = min(tops)
-        card = arrange[tops.index(top)]
-        left = card.GetRect().left
-        arrange.sort(key=lambda x: x.GetRect().top)
+    #     # compute the pivot
+    #     tops = [c.GetRect().top for c in arrange]
+    #     top = min(tops)
+    #     card = arrange[tops.index(top)]
+    #     left = card.GetRect().left
+    #     arrange.sort(key=lambda x: x.GetRect().top)
 
-        # and align all to the pivot
-        for c in arrange:
-            c.SetPosition(wx.Point(left, top))
-            top = c.GetRect().bottom + self.GetPadding()
+    #     # and align all to the pivot
+    #     for c in arrange:
+    #         c.SetPosition(wx.Point(left, top))
+    #         top = c.GetRect().bottom + self.GetPadding()
 
-        self.FitToChildren()
-        self.selec.SetFocus()
+    #     self.FitToChildren()
+    #     self.selec.SetFocus()
 
                     
     ### Callbacks
