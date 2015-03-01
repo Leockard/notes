@@ -6,6 +6,7 @@ import unittest
 import wx
 from threepy5.gui import board as newgui
 from frame_test import TestFrame
+from random import randint
 
 
 class CardWinInit(unittest.TestCase):
@@ -108,22 +109,60 @@ class testBoard(unittest.TestCase):
         self.frame = TestFrame(None)
         # self.app.MainLoop()
 
-    def testNumberOfItems(self):
-        """`KindSelectMenu` should have one item for every kind type, with the right label."""
-        menu = newgui.ContentWin.KindButton.KindSelectMenu()
+    def testAddCard(self):
+        """`Board` should add all its `Card`s to its tracked `Deck`."""
+        board = newgui.Board(self.frame)
+        board.AddCard("Content")
+        board.AddCard("Header", pos=(10,10))
+        board.AddCard("Image", pos=(20,20))
 
-        menu_labels = set([it.Label for it in menu.MenuItems])
+        self.assertEqual(len(board.Deck.cards), 3)
+        self.assertEqual(len(board.Cards), 3)
 
-        self.assertEqual(menu.MenuItemCount, len(py5.Content.KIND_LBLS))
-        self.assertEqual(menu_labels, set(py5.Content.KIND_LBLS))
+    def testDragSelect(self):
+        """`Board` should select all `Card`s under the drag-select rect."""
+        board = newgui.Board(self.frame)
+        self.assertEqual(len(board.Selection), 0)
+        
+        board.AddCard("Header", pos=(10,10))
+        board.AddCard("Image", pos=(20,20))
 
+        # simulate a click-drag from (0,0) to (30,30)
+        # which should end up selecting both cards
+        board._init_drag_select(wx.Point(0,0))
+        for i in range(29):
+            board._drag_update(wx.Point(i,i))
+        board._end_drag_select(wx.Point(30,30))
+        self.assertEqual(len(board.Selection), 2)
+
+        cont = board.AddCard("Content", pos=(200,200))
+        board.Selector.Select(cont, new_sel=False)
+        self.assertEqual(len(board.Selection), 3)
+
+        board.Selector.Select(cont, new_sel=True)
+        self.assertEqual(len(board.Selection), 1)
+
+        board.Selector.UnselectAll()
+        self.assertEqual(len(board.Selection), 0)
+
+    def testFitToChildren(self):
+        board = newgui.Board(self.frame)
+        rect = board.Rect
+
+        for a in xrange(100):
+            rect = rect.Union(board.AddCard("Content", pos=(randint(0,1000),randint(0,1000))).Rect)
+
+        bd_rect = wx.Rect(0,0,board.VirtualSize[0], board.VirtualSize[1])
+        self.assertTrue(bd_rect.Contains(rect.TopLeft))
+        self.assertTrue(bd_rect.Contains(rect.TopRight))
+        self.assertTrue(bd_rect.Contains(rect.BottomLeft))
+        self.assertTrue(bd_rect.Contains(rect.BottomRight))
 
     def tearDown(self):
         wx.CallAfter(self.app.Exit)
         # self.app.MainLoop()
 
 
-### test Board class: drag selection, selection, new cards, fit to children
 ### test AutoSize class with a StaticBitmap
 
 
