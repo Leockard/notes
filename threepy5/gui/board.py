@@ -967,6 +967,27 @@ class Board(wxutils.AutoSize):
             """
             for c in self.Selection:
                 c.Card.MoveBy(dx, dy)
+
+        def DeleteSelection(self):
+            """Deletes every `Card` currently selected."""
+            # # store the number of cards we're deleting to raise the event
+            # number = len(self.cards)
+            
+            # remember to use while instead of for, since in every
+            # iteration self.Selection is growing shorter
+            while len(self.Selection) > 0:
+                c = self.Selection[-1]
+                self.Parent.Deck.RemoveCard(c)
+                if c in self.Selection:
+                    self.Selection.remove(c)
+            
+            # # raise the event; it differs from Card.DeleteEvent in that
+            # # we raise only one event for every delete action
+            # # e.g., if we delete five cards, there will be five Card.DeleteEvent's
+            # # raised, but only one SelectionManager.DeleteEvent
+            # event = self.DeleteEvent(id=wx.ID_ANY, number=number)
+            # event.SetEventObject(self)
+            # self.GetEventHandler().ProcessEvent(event)
                 
 
         ### callbacks
@@ -984,7 +1005,6 @@ class Board(wxutils.AutoSize):
     
             key = ev.GetKeyCode()
     
-            # alt + arrow: move selection
             if ev.AltDown():
                 bd = self.Parent
                 if   key == wx.WXK_LEFT:
@@ -998,7 +1018,6 @@ class Board(wxutils.AutoSize):
                 else:
                     ev.Skip()
     
-            # ctrl key
             # elif ev.ControlDown():
             #     if   key == ord("U"):
             #         # since collapsing takes away focus, store selection
@@ -1018,11 +1037,9 @@ class Board(wxutils.AutoSize):
             #     else:
             #         ev.Skip()
     
-            # meta key
             elif ev.MetaDown():
                 ev.Skip()
     
-            # shift key
             elif ev.ShiftDown():
                 if   key == wx.WXK_LEFT:
                     self.SelectNearest(wx.WXK_LEFT, new_sel=False)
@@ -1035,13 +1052,10 @@ class Board(wxutils.AutoSize):
                 else:
                     ev.Skip()
     
-            # function keys
             elif wxutils.IsFunctionKey(key):
                 ev.Skip()
     
-            # no modifiers
             else:
-                # arrow keys: select next card    
                 if   key == wx.WXK_LEFT:
                     self.SelectNearest(wx.WXK_LEFT, new_sel=True)
                 elif key == wx.WXK_RIGHT:
@@ -1051,9 +1065,8 @@ class Board(wxutils.AutoSize):
                 elif key == wx.WXK_DOWN:
                     self.SelectNearest(wx.WXK_DOWN, new_sel=True)
     
-                # # DEL: delete all selection
-                # elif key == wx.WXK_DELETE:
-                #     self.DeleteSelection()
+                elif key == wx.WXK_DELETE:
+                    self.DeleteSelection()
                     
                 # all other keys cancel selection
                 else:
