@@ -38,7 +38,7 @@ class TestFrame(wx.Frame):
     def OnDebug(self, ev):
         print "------DEBUG-----"
         self.ctrl.ArrangeSelection(wx.VERTICAL)
-
+        print self.FindFocus()
 
 
 if __name__ == "__main__":

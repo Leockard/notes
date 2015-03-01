@@ -916,35 +916,35 @@ class SelectionManager(wx.Window):
 
     ### behavior functions
 
-    def Activate(self):
-        """Prepare this object to manage selection.
-        """
-        self.Bind(wx.EVT_KEY_DOWN, self.OnKeyDown)
-        self.SetFocus()
-        self.active = True
+    # def Activate(self):
+    #     """Prepare this object to manage selection.
+    #     """
+    #     self.Bind(wx.EVT_KEY_DOWN, self.OnKeyDown)
+    #     self.SetFocus()
+    #     self.active = True
 
-    def Deactivate(self):
-        """Signal this object to stop managing selection. All `Card`s in the
-        current selection are unselected.
-        """
-        # return focus to the last card
-        if self.last:
-            self.last.SetFocus()
-            self.last = None
-        else:
-            self.GetGrandParent().SetFocus()
+    # def Deactivate(self):
+    #     """Signal this object to stop managing selection. All `Card`s in the
+    #     current selection are unselected.
+    #     """
+    #     # return focus to the last card
+    #     if self.last:
+    #         self.last.SetFocus()
+    #         self.last = None
+    #     else:
+    #         self.GetGrandParent().SetFocus()
             
-        # clean up
-        self.UnselectAll()
-        self.Unbind(wx.EVT_KEY_DOWN)
-        self.active = False
+    #     # clean up
+    #     self.UnselectAll()
+    #     self.Unbind(wx.EVT_KEY_DOWN)
+    #     self.active = False
 
-    def IsActive(self):
-        """Check if this object is managing selection.
+    # def IsActive(self):
+    #     """Check if this object is managing selection.
 
-        `returns: ` `True` if active, `False` otherwise.
-        """
-        return self.active
+    #     `returns: ` `True` if active, `False` otherwise.
+    #     """
+    #     return self.active
 
     # def GetSelection(self):
     #     """Get the selected `Card`s.
@@ -1043,14 +1043,14 @@ class SelectionManager(wx.Window):
         if nxt:
             self.SelectCard(nxt, new_sel)
 
-    def MoveSelected(self, dx, dy):
-        """Move all selected `Card`s.
+    # def MoveSelected(self, dx, dy):
+    #     """Move all selected `Card`s.
 
-        `dx: ` the amount of pixels to move in the X direction.
-        `dy: ` the amount of pixels to move in the Y direction.
-        """
-        for c in self.GetSelection():
-            self.GetParent().MoveCard(c, dx, dy)
+    #     `dx: ` the amount of pixels to move in the X direction.
+    #     `dy: ` the amount of pixels to move in the Y direction.
+    #     """
+    #     for c in self.GetSelection():
+    #         self.GetParent().MoveCard(c, dx, dy)
 
 
     ### callbacks
@@ -1070,88 +1070,88 @@ class SelectionManager(wx.Window):
     #             # shift + click while not selected: add select   
     #             self.SelectCard(card, new_sel = False)
 
-    def OnKeyDown(self, ev):
-        """Listens to `wx.EVT_KEY_DOWN`, only when activated."""
-        if not self.IsActive():
-            ev.Skip()
-            return
+    # def OnKeyDown(self, ev):
+    #     """Listens to `wx.EVT_KEY_DOWN`, only when activated."""
+    #     if not self.IsActive():
+    #         ev.Skip()
+    #         return
 
-        key = ev.GetKeyCode()
-        bd = self.GetParent()
+    #     key = ev.GetKeyCode()
+    #     bd = self.GetParent()
 
-        # alt + arrow: move selection
-        if ev.AltDown():
-            if   key == wx.WXK_LEFT:
-                self.MoveSelected(-bd.SCROLL_STEP, 0)
-            elif key == wx.WXK_RIGHT:
-                self.MoveSelected(bd.SCROLL_STEP, 0)
-            elif key == wx.WXK_UP:
-                self.MoveSelected(0, -bd.SCROLL_STEP)
-            elif key == wx.WXK_DOWN:
-                self.MoveSelected(0, bd.SCROLL_STEP)
-            else:
-                ev.Skip()
+    #     # alt + arrow: move selection
+    #     if ev.AltDown():
+    #         if   key == wx.WXK_LEFT:
+    #             self.MoveSelected(-bd.SCROLL_STEP, 0)
+    #         elif key == wx.WXK_RIGHT:
+    #             self.MoveSelected(bd.SCROLL_STEP, 0)
+    #         elif key == wx.WXK_UP:
+    #             self.MoveSelected(0, -bd.SCROLL_STEP)
+    #         elif key == wx.WXK_DOWN:
+    #             self.MoveSelected(0, bd.SCROLL_STEP)
+    #         else:
+    #             ev.Skip()
 
-        # ctrl key
-        elif ev.ControlDown():
-            if   key == ord("U"):
-                # since collapsing takes away focus, store selection
-                cards = self.GetSelection()[:]
+    #     # ctrl key
+    #     elif ev.ControlDown():
+    #         if   key == ord("U"):
+    #             # since collapsing takes away focus, store selection
+    #             cards = self.GetSelection()[:]
 
-                # for the same reason, don't iterate over self.GetSelection
-                for c in cards:
-                    if isinstance(c, card.Content):
-                        c.ToggleCollapse()
+    #             # for the same reason, don't iterate over self.GetSelection
+    #             for c in cards:
+    #                 if isinstance(c, card.Content):
+    #                     c.ToggleCollapse()
 
-                # restore selection
-                self.SelectGroup(card.CardGroup(members=cards), True)
+    #             # restore selection
+    #             self.SelectGroup(card.CardGroup(members=cards), True)
                 
-            elif key == ord("I"):
-                pass
+    #         elif key == ord("I"):
+    #             pass
             
-            else:
-                ev.Skip()
+    #         else:
+    #             ev.Skip()
 
-        # meta key
-        elif ev.MetaDown():
-            ev.Skip()
+    #     # meta key
+    #     elif ev.MetaDown():
+    #         ev.Skip()
 
-        # shift key
-        elif ev.ShiftDown():
-            if   key == wx.WXK_LEFT:
-                self.SelectNext(Deck.LEFT, new_sel=False)
-            elif key == wx.WXK_RIGHT:
-                self.SelectNext(Deck.RIGHT, new_sel=False)
-            elif key == wx.WXK_UP:
-                self.SelectNext(Deck.UP, new_sel=False)
-            elif key == wx.WXK_DOWN:
-                self.SelectNext(Deck.DOWN, new_sel=False)
-            else:
-                ev.Skip()
+    #     # shift key
+    #     elif ev.ShiftDown():
+    #         if   key == wx.WXK_LEFT:
+    #             self.SelectNext(Deck.LEFT, new_sel=False)
+    #         elif key == wx.WXK_RIGHT:
+    #             self.SelectNext(Deck.RIGHT, new_sel=False)
+    #         elif key == wx.WXK_UP:
+    #             self.SelectNext(Deck.UP, new_sel=False)
+    #         elif key == wx.WXK_DOWN:
+    #             self.SelectNext(Deck.DOWN, new_sel=False)
+    #         else:
+    #             ev.Skip()
 
-        # function keys
-        elif wxutils.IsFunctionKey(key):
-            ev.Skip()
+    #     # function keys
+    #     elif wxutils.IsFunctionKey(key):
+    #         ev.Skip()
 
-        # no modifiers
-        else:
-            # arrow keys: select next card    
-            if   key == wx.WXK_LEFT:
-                self.SelectNext(Deck.LEFT, new_sel=True)
-            elif key == wx.WXK_RIGHT:
-                self.SelectNext(Deck.RIGHT, new_sel=True)
-            elif key == wx.WXK_UP:
-                self.SelectNext(Deck.UP, new_sel=True)
-            elif key == wx.WXK_DOWN:
-                self.SelectNext(Deck.DOWN, new_sel=True)
+    #     # no modifiers
+    #     else:
+    #         # arrow keys: select next card    
+    #         if   key == wx.WXK_LEFT:
+    #             self.SelectNext(Deck.LEFT, new_sel=True)
+    #         elif key == wx.WXK_RIGHT:
+    #             self.SelectNext(Deck.RIGHT, new_sel=True)
+    #         elif key == wx.WXK_UP:
+    #             self.SelectNext(Deck.UP, new_sel=True)
+    #         elif key == wx.WXK_DOWN:
+    #             self.SelectNext(Deck.DOWN, new_sel=True)
 
-            # DEL: delete all selection
-            elif key == wx.WXK_DELETE:
-                self.DeleteSelected()
+    #         # DEL: delete all selection
+    #         elif key == wx.WXK_DELETE:
+    #             self.DeleteSelected()
                 
-            # all other keys cancel selection
-            else:
-                self.Deactivate()
+    #         # all other keys cancel selection
+    #         else:
+    #             self.Deactivate()
 
                 
 
