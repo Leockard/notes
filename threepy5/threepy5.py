@@ -128,7 +128,10 @@ class Card(utils.Publisher):
     @Size.setter
     def Size(self, sz):
         """Set the position of this `Card`."""
-        self.rect[2], self.rect[3] = sz[0], sz[1]
+        new_rect = self.rect
+        new_rect[2], new_rect[3] = sz[0], sz[1]
+        # force an update on Rect by using setter
+        self.rect = new_rect
 
 
     ### methods
