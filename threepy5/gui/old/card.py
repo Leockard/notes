@@ -381,37 +381,37 @@ class Header(Card):
     #     self.SetCardSizer(vbox)
     #     self.Show(True)
 
-    def Dump(self):
-        """Return a `dict` holding all this `Header`'s data.
+    # def Dump(self):
+    #     """Return a `dict` holding all this `Header`'s data.
         
-        `returns: ` a `dict` of the form `{"class": "Header", "label": lbl, "pos": (x, y), "width": w, "height": h, "header": str}`.
-        """
-        sz = self.GetSize()
-        pos = self.GetPosition()
-        return {"class": "Header",
-               "label": self.label,
-               "pos": (pos.x, pos.y),
-               "width": sz.width,
-               "height": sz.height,
-               "header": self.GetHeader()}
+    #     `returns: ` a `dict` of the form `{"class": "Header", "label": lbl, "pos": (x, y), "width": w, "height": h, "header": str}`.
+    #     """
+    #     sz = self.GetSize()
+    #     pos = self.GetPosition()
+    #     return {"class": "Header",
+    #            "label": self.label,
+    #            "pos": (pos.x, pos.y),
+    #            "width": sz.width,
+    #            "height": sz.height,
+    #            "header": self.GetHeader()}
 
-    def Load(self, dic):
-        """Read data from an object and load it into this `Card` for displaying.
+    # def Load(self, dic):
+    #     """Read data from an object and load it into this `Card` for displaying.
 
-        * `dic: ` a `dict` returned by `Dump`.
-        """
-        if "label" in dic.keys():
-            self.label = dic["label"]
-        if "pos" in dic.keys():
-            self.SetPosition(dic["pos"])
-        if "width" in dic.keys():
-            w, h = self.GetSize()
-            self.SetSize((dic["width"], h))
-        if "height" in dic.keys():
-            w, h = self.GetSize()
-            self.SetSize((w, dic["height"]))
-        if "header" in dic.keys():
-            self.SetHeader(dic["header"])
+    #     * `dic: ` a `dict` returned by `Dump`.
+    #     """
+    #     if "label" in dic.keys():
+    #         self.label = dic["label"]
+    #     if "pos" in dic.keys():
+    #         self.SetPosition(dic["pos"])
+    #     if "width" in dic.keys():
+    #         w, h = self.GetSize()
+    #         self.SetSize((dic["width"], h))
+    #     if "height" in dic.keys():
+    #         w, h = self.GetSize()
+    #         self.SetSize((w, dic["height"]))
+    #     if "header" in dic.keys():
+    #         self.SetHeader(dic["header"])
 
 
 
@@ -566,34 +566,34 @@ class KindButton(wx.Button):
 
 
 
-class KindSelectMenu(wx.Menu):
-    """The `wx.Menu` that pops up from a `KindButton`."""
+# class KindSelectMenu(wx.Menu):
+#     """The `wx.Menu` that pops up from a `KindButton`."""
 
-    def __init__(self, card):
-        """Constructor.
+#     def __init__(self, card):
+#         """Constructor.
 
-        * `card: ` the `Content` this menu is associated to.
-        """
-        super(KindSelectMenu, self).__init__()
-        self.card = card
+#         * `card: ` the `Content` this menu is associated to.
+#         """
+#         super(KindSelectMenu, self).__init__()
+#         self.card = card
 
-        A_item = wx.MenuItem(self, wx.NewId(), "Assumption")
-        C_item = wx.MenuItem(self, wx.NewId(), "Concept")
-        R_item = wx.MenuItem(self, wx.NewId(), "Research")
-        F_item = wx.MenuItem(self, wx.NewId(), "Fact")
-        N_item = wx.MenuItem(self, wx.NewId(), "None")
+#         A_item = wx.MenuItem(self, wx.NewId(), "Assumption")
+#         C_item = wx.MenuItem(self, wx.NewId(), "Concept")
+#         R_item = wx.MenuItem(self, wx.NewId(), "Research")
+#         F_item = wx.MenuItem(self, wx.NewId(), "Fact")
+#         N_item = wx.MenuItem(self, wx.NewId(), "None")
 
-        self.AppendItem(A_item)
-        self.AppendItem(C_item)
-        self.AppendItem(R_item)
-        self.AppendItem(F_item)
-        self.AppendItem(N_item)
+#         self.AppendItem(A_item)
+#         self.AppendItem(C_item)
+#         self.AppendItem(R_item)
+#         self.AppendItem(F_item)
+#         self.AppendItem(N_item)
 
-        self.Bind(wx.EVT_MENU, lambda ev: self.OnSelect(ev, KindButton.ASSUMPTION_LBL), A_item)
-        self.Bind(wx.EVT_MENU, lambda ev: self.OnSelect(ev, KindButton.CONCEPT_LBL), C_item)
-        self.Bind(wx.EVT_MENU, lambda ev: self.OnSelect(ev, KindButton.RESEARCH_LBL), R_item)
-        self.Bind(wx.EVT_MENU, lambda ev: self.OnSelect(ev, KindButton.FACT_LBL), F_item)
-        self.Bind(wx.EVT_MENU, lambda ev: self.OnSelect(ev, KindButton.DEFAULT_LBL), N_item)
+#         self.Bind(wx.EVT_MENU, lambda ev: self.OnSelect(ev, KindButton.ASSUMPTION_LBL), A_item)
+#         self.Bind(wx.EVT_MENU, lambda ev: self.OnSelect(ev, KindButton.CONCEPT_LBL), C_item)
+#         self.Bind(wx.EVT_MENU, lambda ev: self.OnSelect(ev, KindButton.RESEARCH_LBL), R_item)
+#         self.Bind(wx.EVT_MENU, lambda ev: self.OnSelect(ev, KindButton.FACT_LBL), F_item)
+#         self.Bind(wx.EVT_MENU, lambda ev: self.OnSelect(ev, KindButton.DEFAULT_LBL), N_item)
 
 
     # ### Callbacks
@@ -1097,46 +1097,46 @@ class Content(Card):
 
     #     self.SetAcceleratorTable(wx.AcceleratorTable(accels))
 
-    def Dump(self):
-        """Return a `dict` holding all this `Content`'s data.
+    # def Dump(self):
+    #     """Return a `dict` holding all this `Content`'s data.
         
-        `returns: ` a `dict` of the form
-        `{"class": "Content","label": lbl,
-        "pos": (x, y), "kind": str,
-        "title": str, "content": str,
-        "collapsed": bool, "rating": int}`
-        """
-        if self.frect: pos = self.frect[:2]
-        else:          pos = self.GetPosition()
+    #     `returns: ` a `dict` of the form
+    #     `{"class": "Content","label": lbl,
+    #     "pos": (x, y), "kind": str,
+    #     "title": str, "content": str,
+    #     "collapsed": bool, "rating": int}`
+    #     """
+    #     if self.frect: pos = self.frect[:2]
+    #     else:          pos = self.GetPosition()
 
-        return {"class": "Content",
-                "label": self.label,
-                "pos": (pos[0], pos[1]),
-                "kind": self.GetKind(),
-                "title": self.GetTitle(),
-                "content": self.GetContent(),
-                "collapsed": self.IsCollapsed(),
-                "rating": self.rating.GetRating()}
+    #     return {"class": "Content",
+    #             "label": self.label,
+    #             "pos": (pos[0], pos[1]),
+    #             "kind": self.GetKind(),
+    #             "title": self.GetTitle(),
+    #             "content": self.GetContent(),
+    #             "collapsed": self.IsCollapsed(),
+    #             "rating": self.rating.GetRating()}
 
-    def Load(self, dic):
-        """Read data from a `dict` and load it into this `Content`.
+    # def Load(self, dic):
+    #     """Read data from a `dict` and load it into this `Content`.
 
-        * `dic: ` must be a dict as returned by `Dump`.
-        """
-        if "label" in dic.keys():
-            self.label = dic["label"]
-        if "title" in dic.keys():
-            self.SetTitle(dic["title"])
-        if "kind" in dic.keys():
-            self.SetKind(dic["kind"])
-        if "content" in dic.keys():
-            self.SetContent(dic["content"])
-        if "rating" in dic.keys():
-            self.SetRating(dic["rating"])
-        if "pos" in dic.keys():
-            self.SetPosition(dic["pos"])
-        if "collapsed" in dic.keys():
-            if dic["collapsed"]: self.Collapse()
+    #     * `dic: ` must be a dict as returned by `Dump`.
+    #     """
+    #     if "label" in dic.keys():
+    #         self.label = dic["label"]
+    #     if "title" in dic.keys():
+    #         self.SetTitle(dic["title"])
+    #     if "kind" in dic.keys():
+    #         self.SetKind(dic["kind"])
+    #     if "content" in dic.keys():
+    #         self.SetContent(dic["content"])
+    #     if "rating" in dic.keys():
+    #         self.SetRating(dic["rating"])
+    #     if "pos" in dic.keys():
+    #         self.SetPosition(dic["pos"])
+    #     if "collapsed" in dic.keys():
+    #         if dic["collapsed"]: self.Collapse()
 
     # def SetColours(self, kind):
     #     """Set all controls' colours according to the `kind`.
@@ -1294,28 +1294,28 @@ class Image(Card):
     #     else:
     #         self.LoadImage(path)
 
-    def Dump(self):
-        """Return a `dict` holding all this `Image`'s data.
+    # def Dump(self):
+    #     """Return a `dict` holding all this `Image`'s data.
         
-        `returns: ` a `dict` of the form {{"class": "Image", "label": lbl, "pos": (x, y), "path": str}}
-        """
-        pos = self.GetPosition()
-        return {"class": "Image",
-                "label": self.label,
-                "pos": (pos.x, pos.y),
-                "path": self.path}
+    #     `returns: ` a `dict` of the form {{"class": "Image", "label": lbl, "pos": (x, y), "path": str}}
+    #     """
+    #     pos = self.GetPosition()
+    #     return {"class": "Image",
+    #             "label": self.label,
+    #             "pos": (pos.x, pos.y),
+    #             "path": self.path}
 
-    def Load(self, dic):
-        """Read data from an object and load it into this `Image` for displaying.
+    # def Load(self, dic):
+    #     """Read data from an object and load it into this `Image` for displaying.
 
-        * `dic: ` a `dict` returned by `Dump`.
-        """
-        if "label" in dic.keys():
-            self.label = dic["label"]
-        if "pos" in dic.keys():
-            self.SetPosition(dic["pos"])
-        if "path" in dic.keys():
-            self.LoadImage(dic["path"])
+    #     * `dic: ` a `dict` returned by `Dump`.
+    #     """
+    #     if "label" in dic.keys():
+    #         self.label = dic["label"]
+    #     if "pos" in dic.keys():
+    #         self.SetPosition(dic["pos"])
+    #     if "path" in dic.keys():
+    #         self.LoadImage(dic["path"])
 
 
     # ### Callbacks
