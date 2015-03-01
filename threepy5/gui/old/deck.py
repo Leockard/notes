@@ -809,19 +809,19 @@ class Deck(wxutils.AutoSize):
         rect = rect.Inflate(2 * thick, 2 * thick)
         self.PaintRect(rect, thick=thick, style=style, refresh=refresh)
 
-    def EraseCardRect(self, card, pos, thick=MOVING_RECT_THICKNESS, refresh=True):
-        """Erases a rectangle drawn by PaintCardRect().
+    # def EraseCardRect(self, card, pos, thick=MOVING_RECT_THICKNESS, refresh=True):
+    #     """Erases a rectangle drawn by PaintCardRect().
 
-        * `card: ` a `Card`.
-        * `pos: ` where to paint the rectangle.
-        * `thick: ` line thickness. By default, is `Deck.MOVING_RECT_THICKNESS`.
-        * `refresh: ` whether to call `Refresh` after the rectangle is painted.
-        """
-        # Brush is for background, Pen is for foreground
-        x, y, w, h = card.GetRect()        
-        rect = wx.Rect(pos[0], pos[1], w, h)
-        rect = rect.Inflate(2 * thick, 2 * thick)
-        self.PaintRect(rect, thick=thick, style=wx.TRANSPARENT, refresh=refresh)
+    #     * `card: ` a `Card`.
+    #     * `pos: ` where to paint the rectangle.
+    #     * `thick: ` line thickness. By default, is `Deck.MOVING_RECT_THICKNESS`.
+    #     * `refresh: ` whether to call `Refresh` after the rectangle is painted.
+    #     """
+    #     # Brush is for background, Pen is for foreground
+    #     x, y, w, h = card.GetRect()        
+    #     rect = wx.Rect(pos[0], pos[1], w, h)
+    #     rect = rect.Inflate(2 * thick, 2 * thick)
+    #     self.PaintRect(rect, thick=thick, style=wx.TRANSPARENT, refresh=refresh)
     
     def DumpCards(self):
         """Dumps all the `Card`s' info in a `dict`.
@@ -946,70 +946,70 @@ class SelectionManager(wx.Window):
         """
         return self.active
 
-    def GetSelection(self):
-        """Get the selected `Card`s.
+    # def GetSelection(self):
+    #     """Get the selected `Card`s.
 
-        `returns: ` a list of `Card`s.
-        """
-        return self.cards
+    #     `returns: ` a list of `Card`s.
+    #     """
+    #     return self.cards
 
-    def SelectCard(self, card, new_sel=False):
-        """Selects `card`.
+    # def SelectCard(self, card, new_sel=False):
+    #     """Selects `card`.
 
-        * `new_sel: ` if `True`, unselects all other `Card`s before selecting `card`.
-        """
-        # if new_sel, select only this card
-        if new_sel:
-            self.Activate()
-            self.UnselectAll()
-            self.cards = [card]
-            card.Select()
-            self.last = card
+    #     * `new_sel: ` if `True`, unselects all other `Card`s before selecting `card`.
+    #     """
+    #     # if new_sel, select only this card
+    #     if new_sel:
+    #         self.Activate()
+    #         self.UnselectAll()
+    #         self.cards = [card]
+    #         card.Select()
+    #         self.last = card
             
-        # else, select card only if it was not already selected
-        elif card not in self.cards:
-            if not self.IsActive():
-                self.Activate()
-            self.cards.append(card)                        
+    #     # else, select card only if it was not already selected
+    #     elif card not in self.cards:
+    #         if not self.IsActive():
+    #             self.Activate()
+    #         self.cards.append(card)                        
             
-            for c in self.cards:
-                c.Select()
-                self.last = card
+    #         for c in self.cards:
+    #             c.Select()
+    #             self.last = card
 
-    def UnselectCard(self, card):
-        """Removes `card` from the current selection.
+    # def UnselectCard(self, card):
+    #     """Removes `card` from the current selection.
 
-        * `card: ` a `Card`.
-        """
-        if card in self.cards:
-            self.cards.remove(card)
-            card.Unselect()
+    #     * `card: ` a `Card`.
+    #     """
+    #     if card in self.cards:
+    #         self.cards.remove(card)
+    #         card.Unselect()
 
-    def UnselectAll(self):
-        """Unselects all cards. Be sure to call this method instead of
-        `Unselect` on every card for proper cleanup.
-        """
-        while len(self.cards) > 0:
-            c = self.cards[0]
-            self.UnselectCard(c)
+    # def UnselectAll(self):
+    #     """Unselects all cards. Be sure to call this method instead of
+    #     `Unselect` on every card for proper cleanup.
+    #     """
+    #     while len(self.cards) > 0:
+    #         c = self.cards[0]
+    #         self.UnselectCard(c)
 
-    def SelectGroup(self, group, new_sel=True):
-        """Select every `Card` in `group`.
+    # def SelectGroup(self, group, new_sel=True):
+    #     """Select every `Card` in `group`.
 
-        * `group: ` a `CardGroup` to select.
-        * `new_sel: ` if `True`, unselects all other `Card`s before selecting.
-        """
-        # in case we are coming from a card that's inside the group,
-        # we may want to return to that card after selection ends
-        # so we select the group but restore the last card after
-        if self.last and self.last in group.GetMembers():
-            crd = self.last
+    #     * `group: ` a `CardGroup` to select.
+    #     * `new_sel: ` if `True`, unselects all other `Card`s before selecting.
+    #     """
+    #     # in case we are coming from a card that's inside the group,
+    #     # we may want to return to that card after selection ends
+    #     # so we select the group but restore the last card after
+    #     if self.last and self.last in group.GetMembers():
+    #         crd = self.last
 
-        if new_sel: self.UnselectAll()
-        for c in group.GetMembers(): self.SelectCard(c)
+    #     if new_sel: self.UnselectAll()
+    #     for c in group.GetMembers(): self.SelectCard(c)
 
-        if crd:
-            self.last = crd
+    #     if crd:
+    #         self.last = crd
 
     def DeleteSelected(self):
         """Deletes every `Card` currently selected."""
