@@ -970,6 +970,9 @@ class Board(wxutils.AutoSize):
         self._moving = False
         """True when the user is moving cards with the mouse."""
 
+        self._moving_cards_pos = []
+        """Stores position information while moving `Card`s."""
+
         self.Bind(wx.EVT_LEFT_DCLICK, self._on_left_double)
         self.Bind(wx.EVT_LEFT_DOWN, self._on_left_down)
         self.Bind(wx.EVT_LEFT_UP, self._on_left_up)
@@ -1038,10 +1041,9 @@ class Board(wxutils.AutoSize):
         self.Cards.append(win)
         win.SetFocus()
 
-        #win.Stretch(self.scale)
+        # win.Stretch(self.scale)
 
-        # set bindings for every card
-        # win.Bind(wx.EVT_LEFT_DOWN, self.OnCardLeftDown)
+        win.Bind(wx.EVT_LEFT_DOWN, self._on_card_left_down)
         # win.Bind(wx.EVT_CHILD_FOCUS, self.OnCardChildFocus)
         # win.Bind(card.Card.EVT_DELETE, self.OnCardDelete)
         # win.Bind(card.Card.EVT_COLLAPSE, self.OnCardCollapse)
@@ -1070,13 +1072,43 @@ class Board(wxutils.AutoSize):
         * `refresh: ` whether to call `Refresh` after the rectangle is painted.
         """
         dc = wx.ClientDC(self)
-        dc.SetBrush(wx.Brush(self.GetBackgroundColour()))      # background
-        dc.SetPen(wx.Pen("BLACK", thick, style))               # foreground
+        dc.Brush = wx.Brush(self.GetBackgroundColour())      # background
+        dc.Pen = wx.Pen("BLACK", thick, style)               # foreground
         dc.DrawRectangle(rect[0], rect[1], rect[2], rect[3])
         if refresh: self.RefreshRect(rect)
 
-    def _init_drag_select(self, pos):
-        """Drag selection setup."""
+    def _paint_card_rect(self, card, pos, thick=MOVING_RECT_THICKNESS, style=wx.SOLID, refresh=True):
+        """Paints a rectangle just big enough to encircle `card`.
+
+        * `card: ` a `Card`.
+        * `pos: ` where to paint the rectangle.
+        * `thick: ` line thickness. By default, is `Board.MOVING_RECT_THICKNESS`.
+        * `style: ` a `dc.Pen` style. Use `wx.TRANSPARENT` to erase a rectangle.
+        * `refresh: ` whether to call `Refresh` after the rectangle is painted.
+        """
+        x, y, w, h = card.Rect
+        rect = wx.Rect(pos[0], pos[1], w, h)
+        rect = rect.Inflate(2 * thick, 2 * thick)
+        self._paint_rect(rect, thick=thick, style=style, refresh=refresh)
+
+    def _erase_card_rect(self, card, pos, thick=MOVING_RECT_THICKNESS, refresh=True):
+        """Erases a rectangle drawn by PaintCardRect().
+
+        * `card: ` a `Card`.
+        * `pos: ` where to paint the rectangle.
+        * `thick: ` line thickness. By default, is `Board.MOVING_RECT_THICKNESS`.
+        * `refresh: ` whether to call `Refresh` after the rectangle is painted.
+        """
+        x, y, w, h = card.Rect
+        rect = wx.Rect(pos[0], pos[1], w, h)
+        rect = rect.Inflate(2 * thick, 2 * thick)
+        self._paint_rect(rect, thick=thick, style=wx.TRANSPARENT, refresh=refresh)
+
+    def _drag_init(self, pos):
+        """Prepare for drag-select.
+
+        * `pos: ` mouse click position, relative to the Board.
+        """
         self.Selector.UnselectAll()
         self.Selector.SetFocus()
 
@@ -1084,9 +1116,9 @@ class Board(wxutils.AutoSize):
         self._drag_cur_pos = pos
         # note we don't set self._dragging to True until the user actually drags the
         # mouse, this is done in self._on_drag_motion
-        self.Bind(wx.EVT_MOTION, self._on_drag_motion)
-
+        
     def _drag_update(self, pos):
+        """Called on every wx.EVT_MOTION while we are dragging."""
         self._dragging = True
 
         # erase the last one selection rect
@@ -1103,21 +1135,56 @@ class Board(wxutils.AutoSize):
 
         self._drag_cur_pos = final_pos
 
-    def _end_drag_select(self, pos):
+    def _drag_end(self, pos):
+        """Clean up the drag-select task. Called on wx.EVT_LEFT_UP while we are dragging."""
         # erase the last selection rect
         final_rect = wxutils.MakeEncirclingRect(self._drag_init_pos, self._drag_init_pos + self._drag_cur_pos)
         self._paint_rect(final_rect, style=wx.TRANSPARENT)
 
-        self.Unbind(wx.EVT_MOTION)
         self._dragging = False
         self._drag_init_pos = None
         self._drag_cur_pos = None
         self.FitToChildren()
         self.Selector.SetFocus()
 
-        # select cards
         selected = [c for c in self.Cards if c.Rect.Intersects(final_rect)]
         self.Selector.SelectGroup(py5.CardGroup(selected), new_sel=True)
+
+    def _move_init(self, card, pos):
+        """Prepare for moving the selected cards.
+
+        * `card: ` the clicked card that will (probably) be moved.
+        * `pos: ` mouse click position, relative to the Board.
+        """
+        self.Selector.Select(card)
+
+        self._moving_cards_pos = []
+        for c in self.Selection:
+            # self._moving_cards_pos has tuple elements of the form:
+            # (card, pos w.r.t. the original click, pos w.r.t. the board)
+            self._moving_cards_pos.append((c, c.Position - pos, c.Position))
+
+    def _move_update(self, cur_pos):
+        """Called on every wx.EVT_MOTION while we are moving cards."""
+        self._moving = True
+        
+        # draw a rectangle around each card while moving
+        for c, orig, pos in self._moving_cards_pos:
+            # order is important
+            self._erase_card_rect(c, pos, refresh=False)
+            self._paint_card_rect(c, cur_pos + orig)
+
+    def _move_end(self, final_pos):
+        """Clean up the move task. Called on wx.EVT_LEFT_UP while we are moving."""
+        print final_pos
+        for c, orig, pos in self._moving_cards_pos:
+            # erase the last floating rect
+            self._erase_card_rect(c, pos)
+            
+            c.Move(final_pos + orig - (c.BORDER_WIDTH, c.BORDER_WIDTH))
+
+        self._moving = False            
+        self._moving_cards_pos = []
 
 
     ### callbacks
@@ -1126,7 +1193,8 @@ class Board(wxutils.AutoSize):
         self.AddCard("Content", pos=ev.GetPosition())
 
     def _on_left_down(self, ev):
-        self._init_drag_select(ev.Position)
+        self._drag_init(ev.Position)
+        self.Bind(wx.EVT_MOTION, self._on_drag_motion)
 
     def _on_drag_motion(self, ev):
         """Listens to `wx.EVT_MOTION` events from this object, only when the user is click-dragging."""
@@ -1135,11 +1203,32 @@ class Board(wxutils.AutoSize):
 
     def _on_left_up(self, ev):
         if self._dragging:
-            self._end_drag_select(ev.Position)
+            self._drag_end(ev.Position)
+        self.Unbind(wx.EVT_MOTION)
 
+    def _on_card_left_down(self, ev):
+        """Listens to `wx.EVT_LEFT_DOWN` events from every `Card`."""
+        # pass the position relative to the Board
+        pos = ev.EventObject.Position + ev.Position
+        self.Bind(wx.EVT_LEFT_UP, self._on_card_left_up)
+        self.Bind(wx.EVT_MOTION, self._on_moving_motion)
+        self.CaptureMouse()
+        self._move_init(ev.EventObject, pos)
 
+    def _on_moving_motion(self, ev):
+        """Listens to `wx.EVT_MOTION` events from this object, only when the user is moving cards."""
+        if ev.Dragging() and not self._dragging:
+            self._move_update(ev.Position)
 
+    def _on_card_left_up(self, ev):
+        if self._moving:
+            self._move_end(ev.Position)
+        self.Unbind(wx.EVT_LEFT_UP)
+        self.Unbind(wx.EVT_MOTION)
+        self.ReleaseMouse()
+        
 
+        
 
 
 ###########################
