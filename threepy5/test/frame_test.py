@@ -20,6 +20,12 @@ class TestFrame(wx.Frame):
         box.Add(ctrl, proportion=1, flag=wx.EXPAND)
         self.ctrl = ctrl
 
+        c1 = self.ctrl.AddCard("Content", pos=(15,15))
+        c2 = self.ctrl.AddCard("Content", pos=(15,200))
+        c3 = self.ctrl.AddCard("Content", pos=(300,15))
+        c4 = self.ctrl.AddCard("Content", pos=(300,200))
+
+        self.ctrl.Selector.Select(c2)
 
 
         ####################
@@ -37,8 +43,8 @@ class TestFrame(wx.Frame):
 
     def OnDebug(self, ev):
         print "------DEBUG-----"
-        self.ctrl.ArrangeSelection(wx.VERTICAL)
-        print self.FindFocus()
+        
+        self.ctrl.Selector.SelectNearest(wx.WXK_UP)
 
 
 if __name__ == "__main__":

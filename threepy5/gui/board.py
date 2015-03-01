@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import wx
 import wxutils
+import threepy5.utils as utils
 from os import getcwd as oscwd
 from threepy5.threepy5 import pub
 import threepy5.threepy5 as py5
@@ -927,6 +928,16 @@ class Board(wxutils.AutoSize):
             if crd:
                 self.last = crd
 
+        def SelectNearest(self, direc, new_sel=False):
+            """Selects the nearest `Card` in the specified direction.
+            
+            * `direc: ` direc should be one of `wx.WXK_LEFT`, `wx.WXK_RIGHT`, `wx.WXK_UP`, or `wx.WXK_DOWN`.
+            * `new_sel: ` if `True`, unselect all others and select only the next card.
+            """
+            nxt = self.Parent.Nearest(self._last, direc)
+            if nxt:
+                self.Select(nxt, new_sel)
+
         def Unselect(self, card):
             """Removes `card` from the current selection.
 
@@ -1001,42 +1012,42 @@ class Board(wxutils.AutoSize):
             elif ev.MetaDown():
                 ev.Skip()
     
-            # # shift key
-            # elif ev.ShiftDown():
-            #     if   key == wx.WXK_LEFT:
-            #         self.SelectNext(Deck.LEFT, new_sel=False)
-            #     elif key == wx.WXK_RIGHT:
-            #         self.SelectNext(Deck.RIGHT, new_sel=False)
-            #     elif key == wx.WXK_UP:
-            #         self.SelectNext(Deck.UP, new_sel=False)
-            #     elif key == wx.WXK_DOWN:
-            #         self.SelectNext(Deck.DOWN, new_sel=False)
-            #     else:
-            #         ev.Skip()
+            # shift key
+            elif ev.ShiftDown():
+                if   key == wx.WXK_LEFT:
+                    self.SelectNearest(wx.WXK_LEFT, new_sel=False)
+                elif key == wx.WXK_RIGHT:
+                    self.SelectNearest(wx.WXK_RIGHT, new_sel=False)
+                elif key == wx.WXK_UP:
+                    self.SelectNearest(wx.WXK_UP, new_sel=False)
+                elif key == wx.WXK_DOWN:
+                    self.SelectNearest(wx.WXK_DOWN, new_sel=False)
+                else:
+                    ev.Skip()
     
             # function keys
             elif wxutils.IsFunctionKey(key):
                 ev.Skip()
     
-            # # no modifiers
-            # else:
-            #     # arrow keys: select next card    
-            #     if   key == wx.WXK_LEFT:
-            #         self.SelectNext(Deck.LEFT, new_sel=True)
-            #     elif key == wx.WXK_RIGHT:
-            #         self.SelectNext(Deck.RIGHT, new_sel=True)
-            #     elif key == wx.WXK_UP:
-            #         self.SelectNext(Deck.UP, new_sel=True)
-            #     elif key == wx.WXK_DOWN:
-            #         self.SelectNext(Deck.DOWN, new_sel=True)
+            # no modifiers
+            else:
+                # arrow keys: select next card    
+                if   key == wx.WXK_LEFT:
+                    self.SelectNearest(wx.WXK_LEFT, new_sel=True)
+                elif key == wx.WXK_RIGHT:
+                    self.SelectNearest(wx.WXK_RIGHT, new_sel=True)
+                elif key == wx.WXK_UP:
+                    self.SelectNearest(wx.WXK_UP, new_sel=True)
+                elif key == wx.WXK_DOWN:
+                    self.SelectNearest(wx.WXK_DOWN, new_sel=True)
     
-            #     # DEL: delete all selection
-            #     elif key == wx.WXK_DELETE:
-            #         self.DeleteSelection()
+                # # DEL: delete all selection
+                # elif key == wx.WXK_DELETE:
+                #     self.DeleteSelection()
                     
-            #     # all other keys cancel selection
-            #     else:
-            #         self.Deactivate()
+                # all other keys cancel selection
+                else:
+                    self.Ative = False
 
 
 
@@ -1174,6 +1185,53 @@ class Board(wxutils.AutoSize):
         #         self.ScrollToCard(win)
 
         return win
+
+    def Nearest(self, card, direc):
+        """Returns the nearest `Card` to `card` in the direction `direc`.
+
+        * `card: ` a `Card` held by this object.
+        * `direc: ` must be one of `wx.WXK_LEFT`, `wx.WXK_RIGHT`, `wx.WXK_UP`, or `wx.WXK_DOWN`.
+
+        `returns: ` a `Card` or `None`.
+        """
+        # depending on the direction, we compare a different side
+        # of the cards, as well as get the points whose distance
+        # we're going to calculate in a different way
+        if   direc == wx.WXK_LEFT:
+            side  = lambda x: x.right
+            getp1 = lambda x: x.GetTopLeft()
+            getp2 = lambda x: x.GetTopLeft()
+        elif direc == wx.WXK_RIGHT:
+            side  = lambda x: x.left
+            getp1 = lambda x: x.GetTopLeft()
+            getp2 = lambda x: x.GetTopRight()
+        elif direc == wx.WXK_UP:
+            side  = lambda x: x.bottom
+            getp1 = lambda x: x.GetTopLeft()
+            getp2 = lambda x: x.GetBottomLeft()
+        elif direc == wx.WXK_DOWN:
+            side  = lambda x: x.top
+            getp1 = lambda x: x.GetBottomLeft()
+            getp2 = lambda x: x.GetTopLeft()
+
+        # get those cards whose "side" is in the desired position with respect to card
+        rect = card.Rect
+        nxt = []
+        if direc == wx.WXK_LEFT or direc == wx.WXK_UP:
+            nxt = [c for c in self.Cards if side(c.Rect) < side(rect)]
+        elif direc == wx.WXK_RIGHT or direc == wx.WXK_DOWN:
+            nxt = [c for c in self.Cards if side(c.Rect) > side(rect)]
+        else:
+            return None
+
+        # we're going to use getp2 to get a point in card and compare
+        # it to the point got by getp1 on all the cards in nxt
+        if nxt:
+            # order them by distance and return the nearest one
+            nxt.sort(key=lambda x: utils.dist2(getp1(x.Rect), getp2(rect)))
+            return nxt[0]
+        else:
+            return None
 
     def ArrangeSelection(self, orient):
         """Arranges the selected cards according to `orient`. Don't use the _arrange_*

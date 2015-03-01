@@ -191,7 +191,8 @@ class testBoard(unittest.TestCase):
         wx.CallAfter(self.app.Exit)
         # self.app.MainLoop()
 
-### test Board dump, load, arrange
+
+### test Board dump (Deck dump), load, arrange
 ### test Selectionmanager: Active, move selection, grab focus while selection is active
 ### test AutoSize class with a StaticBitmap
 

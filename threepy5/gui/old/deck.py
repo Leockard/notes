@@ -30,10 +30,10 @@ class Deck(wxutils.AutoSize):
     HORIZONTAL = 2
     VERTICAL   = 4
 
-    LEFT   = 2
-    RIGHT  = 4
-    DOWN   = 8
-    UP     = 16
+    # LEFT   = 2
+    # RIGHT  = 4
+    # DOWN   = 8
+    # UP     = 16
 
     NewCardEvent, EVT_NEW_CARD = ne.NewEvent()
     DeleteEvent,  EVT_DEL_CARD = ne.NewEvent()
@@ -1032,16 +1032,16 @@ class SelectionManager(wx.Window):
         event.SetEventObject(self)
         self.GetEventHandler().ProcessEvent(event)
 
-    def SelectNext(self, direc, new_sel=False):
-        """Selects next `Card` in the specified direction.
+    # def SelectNext(self, direc, new_sel=False):
+    #     """Selects next `Card` in the specified direction.
 
-        * `direc: ` direc should be one of `Deck.LEFT`, `Deck.RIGHT`, `Deck.UP`, or `Deck.DOWN`.
-        * `new_sel: ` if `True`, unselect all others and select only the next card,
-        if `False`, add it to current selection.
-        """
-        nxt = self.GetParent().GetNextCard(self.last, direc)
-        if nxt:
-            self.SelectCard(nxt, new_sel)
+    #     * `direc: ` direc should be one of `Deck.LEFT`, `Deck.RIGHT`, `Deck.UP`, or `Deck.DOWN`.
+    #     * `new_sel: ` if `True`, unselect all others and select only the next card,
+    #     if `False`, add it to current selection.
+    #     """
+    #     nxt = self.GetParent().GetNextCard(self.last, direc)
+    #     if nxt:
+    #         self.SelectCard(nxt, new_sel)
 
     # def MoveSelected(self, dx, dy):
     #     """Move all selected `Card`s.
