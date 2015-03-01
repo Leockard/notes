@@ -98,7 +98,6 @@ class Card(utils.Publisher):
         super(Card, self).__init__()
         self.rect = rect
 
-
     ### properties
 
     @property

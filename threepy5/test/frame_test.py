@@ -21,11 +21,11 @@ class TestFrame(wx.Frame):
         self.ctrl = ctrl
 
         c1 = self.ctrl.AddCard("Content", pos=(15,15))
-        c2 = self.ctrl.AddCard("Content", pos=(15,200))
-        c3 = self.ctrl.AddCard("Content", pos=(300,15))
-        c4 = self.ctrl.AddCard("Content", pos=(300,200))
+        # c2 = self.ctrl.AddCard("Content", pos=(15,200))
+        # c3 = self.ctrl.AddCard("Content", pos=(300,15))
+        # c4 = self.ctrl.AddCard("Content", pos=(300,200))
 
-        self.ctrl.Selector.Select(c2)
+        # self.ctrl.Selector.Select(c1)
 
 
         ####################
@@ -44,7 +44,7 @@ class TestFrame(wx.Frame):
     def OnDebug(self, ev):
         print "------DEBUG-----"
         
-        self.ctrl.Selector.SelectNearest(wx.WXK_UP)
+        self.ctrl.Selector.DeleteSelection()
 
 
 if __name__ == "__main__":

@@ -136,13 +136,22 @@ class Publisher(WithId):
 
         # listen to whenever our _id changes, so that we can set topics again
         pub.subscribe(self._on_set_id, self._make_topic_name() + "." + "UPDATE_ID")
-        
-        
+
+    def __del__(self):
+        """Publishes a "DESTROY" message. Called automatically on destruction."""
+        # since we are not touching an attribute, we need to set the full topic
+        print "__del__"
+        print "id: ", self._id
+        print "topic: ", self._make_topic_name()
+        # print self._make_topic_name() + "." + "DESTROY"
+        pub.sendMessage(self._make_topic_name() + "." + "DESTROY")
+
     def _make_topic_name(self):
         """Returns the root topic name for all messages coming from this object."""
         return ".".join([self.__class__.__name__, str(self._id)])
 
     def _register_topics(self):
+        """Registers the topic for all `Loud` attributes."""
         for attr in dir(self.__class__):
             if isinstance(getattr(self.__class__, attr), LoudSetter):
                 # print "setting %s topic for %s" % (self._make_topic_name(), attr)

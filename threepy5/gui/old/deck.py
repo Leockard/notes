@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
-"""
-This module holds the `Deck` and its helper class `SelectionManager`.
+"""This module holds the `Deck` and its helper class `SelectionManager`.
 `Deck` is the window that holds all `Card`s. Every `Box` has a `Deck`.
 `SelectionManager` handles selection.
 """
