@@ -795,19 +795,19 @@ class Deck(wxutils.AutoSize):
     #     dc.DrawRectangle(rect[0], rect[1], rect[2], rect[3])
     #     if refresh: self.RefreshRect(rect)
         
-    def PaintCardRect(self, card, pos, thick=MOVING_RECT_THICKNESS, style=wx.SOLID, refresh=True):
-        """Paints a rectangle just big enough to encircle `card`.
+    # def PaintCardRect(self, card, pos, thick=MOVING_RECT_THICKNESS, style=wx.SOLID, refresh=True):
+    #     """Paints a rectangle just big enough to encircle `card`.
 
-        * `card: ` a `Card`.
-        * `pos: ` where to paint the rectangle.
-        * `thick: ` line thickness. By default, is `Deck.MOVING_RECT_THICKNESS`.
-        * `style: ` a `dc.Pen` style. Use `wx.TRANSPARENT` to erase a rectangle.
-        * `refresh: ` whether to call `Refresh` after the rectangle is painted.
-        """
-        x, y, w, h = card.GetRect()
-        rect = wx.Rect(pos[0], pos[1], w, h)
-        rect = rect.Inflate(2 * thick, 2 * thick)
-        self.PaintRect(rect, thick=thick, style=style, refresh=refresh)
+    #     * `card: ` a `Card`.
+    #     * `pos: ` where to paint the rectangle.
+    #     * `thick: ` line thickness. By default, is `Deck.MOVING_RECT_THICKNESS`.
+    #     * `style: ` a `dc.Pen` style. Use `wx.TRANSPARENT` to erase a rectangle.
+    #     * `refresh: ` whether to call `Refresh` after the rectangle is painted.
+    #     """
+    #     x, y, w, h = card.GetRect()
+    #     rect = wx.Rect(pos[0], pos[1], w, h)
+    #     rect = rect.Inflate(2 * thick, 2 * thick)
+    #     self.PaintRect(rect, thick=thick, style=style, refresh=refresh)
 
     # def EraseCardRect(self, card, pos, thick=MOVING_RECT_THICKNESS, refresh=True):
     #     """Erases a rectangle drawn by PaintCardRect().

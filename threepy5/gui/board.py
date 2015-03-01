@@ -1176,7 +1176,6 @@ class Board(wxutils.AutoSize):
 
     def _move_end(self, final_pos):
         """Clean up the move task. Called on wx.EVT_LEFT_UP while we are moving."""
-        print final_pos
         for c, orig, pos in self._moving_cards_pos:
             # erase the last floating rect
             self._erase_card_rect(c, pos)
