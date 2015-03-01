@@ -1063,6 +1063,54 @@ class Board(wxutils.AutoSize):
 
         return win
 
+    def ArrangeSelection(self, orient):
+        """Arranges the selected cards according to `orient`. Don't use the _arrange_*
+        methods directly, use this public method.
+
+        * `orient: ` must be one of `wx.HORIZONTAL` or `wx.VERTICAL`.
+        """
+        if len(self.Selection) < 1:
+            return
+
+        if   orient == wx.HORIZONTAL:
+            self._arrange_horizontally(self.Selection[:])
+            self.FitToChildren()
+            self.Selector.SetFocus()
+        elif orient == wx.VERTICAL:
+            self._arrange_vertically(self.Selection[:])
+            self.FitToChildren()
+            self.Selector.SetFocus()
+
+    def _arrange_horizontally(self, cards):
+        """Arrange `cards` in a horizontal row, to the right of the left-most selected card.
+        Don't use directly, use `ArrangeSelection`.
+        """
+        lefts = [c.Rect.left for c in cards]
+        left = min(lefts)
+        pivot = cards[lefts.index(left)]
+        top = pivot.Rect.top
+        cards.sort(key=lambda x: x.Rect.left)
+
+        # note in every iteration we shift <left>
+        for c in cards:
+            c.Position = wx.Point(left, top)
+            left = c.Rect.right + self.Padding
+
+    def _arrange_vertically(self, cards):
+        """Arrange `cards` in a vertical column, below of the top-most selected card.
+        Don't use directly, use `ArrangeSelection`.
+        """
+        tops = [c.GetRect().top for c in cards]
+        top = min(tops)
+        pivot = cards[tops.index(top)]
+        left = pivot.GetRect().left
+        cards.sort(key=lambda x: x.GetRect().top)
+
+        # note in every iteration we shift <top>
+        for c in cards:
+            c.Position = wx.Point(left, top)
+            top = c.Rect.bottom + self.Padding
+
     def _paint_rect(self, rect, thick=MOVING_RECT_THICKNESS, style=wx.SOLID, refresh=True):
         """Paints a rectangle over this window. Used for click-dragging.
 
