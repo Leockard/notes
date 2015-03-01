@@ -1,4 +1,4 @@
-"""Unit test for threepy5.py (gui layer)."""
+"""Unit test for `threepy5` (gui layer)."""
 
 import threepy5.threepy5 as py5
 import threepy5.gui.wxutils as wxutils
@@ -16,7 +16,7 @@ class CardWinInit(unittest.TestCase):
     test_content = "this is content\n\nand this is more.\n\n\nrtag1: foo bar."
     test_collapsed = True
     test_title = "my title"
-    test_path = "/home/leo/research/reading_notes/Kandle - Principles of Neural Science/brain.bmp"
+    test_path = "/home/leo/research/reading_notes/Kandel - Principles of Neural Science/brain.bmp"
 
     test_pts = [(1,2), (3,4), (-1,-1), (0,0), (2,-4)]
     test_lines = [test_pts, [(x+1, y-1) for x,y in test_pts]]
@@ -40,11 +40,11 @@ class CardWinInit(unittest.TestCase):
         card = py5.Content()
         win = newgui.ContentWin(self.frame, card)
 
-        card.rect = self.test_rect
-        card.title = self.test_title
-        card.kind = self.test_kind
-        card.rating = self.test_rating
-        card.content = self.test_content
+        card.rect      = self.test_rect
+        card.title     = self.test_title
+        card.kind      = self.test_kind
+        card.rating    = self.test_rating
+        card.content   = self.test_content
         card.collapsed = self.test_collapsed
 
         self.assertEqual(win.Rect, card.rect)
@@ -193,7 +193,7 @@ class testBoard(unittest.TestCase):
 
 
 ### test Board dump (Deck dump), load, arrange
-### test Selectionmanager: Active, move selection, grab focus while selection is active
+### test Selectionmanager: Active, move selection, grab focus while selection is active, move selected cards, select nearest, extend selection
 ### test AutoSize class with a StaticBitmap
 
 
