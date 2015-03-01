@@ -122,8 +122,6 @@ class testBoard(unittest.TestCase):
     def testDragSelect(self):
         """`Board` should select all `Card`s under the drag-select rect."""
         board = newgui.Board(self.frame)
-        self.assertEqual(len(board.Selection), 0)
-        
         board.AddCard("Header", pos=(10,10))
         board.AddCard("Image", pos=(20,20))
 
@@ -145,12 +143,43 @@ class testBoard(unittest.TestCase):
         board.Selector.UnselectAll()
         self.assertEqual(len(board.Selection), 0)
 
+    def testDragMove(self):
+        """`Board` should move all `Card`s when click-dragging."""
+        board = newgui.Board(self.frame)
+        cards = []
+        start_pos = {}
+        for i in range(50):
+            pos = wx.Point(randint(1, 1000), randint(1, 1000))
+            c = board.AddCard("Content", pos=pos)
+            cards.append(c)
+            start_pos[c] = pos
+        board.Selector.SelectGroup(py5.CardGroup(members=cards))
+        self.assertEqual(len(board.Selection), len(cards))
+
+        # simulate a click-drag from the top left corner of the first card
+        # to the point (1000, 1000)
+        start = cards[0].Position + wx.Point(3,3)
+        board._move_init(cards[0], wx.Point(*start))
+        for i in range(999):
+            board._move_update(wx.Point(i,i))
+        pad = cards[0].BORDER_WIDTH
+        board._move_end(start + wx.Point(1000,1000) + wx.Point(pad,pad))
+        self.assertEqual(len(board.Selection), len(cards))
+
+        final_pos = {}
+        for c in board.Cards:
+            final_pos[c] = c.Position
+
+        for c in cards:
+            self.assertEqual(start_pos[c] + (1000,1000), final_pos[c])
+
     def testFitToChildren(self):
         board = newgui.Board(self.frame)
         rect = board.Rect
 
         for a in xrange(100):
-            rect = rect.Union(board.AddCard("Content", pos=(randint(0,1000),randint(0,1000))).Rect)
+            c = board.AddCard("Content", pos=(randint(0,1000),randint(0,1000)))
+            rect = rect.Union(c.Rect)
 
         bd_rect = wx.Rect(0,0,board.VirtualSize[0], board.VirtualSize[1])
         self.assertTrue(bd_rect.Contains(rect.TopLeft))
@@ -162,7 +191,7 @@ class testBoard(unittest.TestCase):
         wx.CallAfter(self.app.Exit)
         # self.app.MainLoop()
 
-
+### test Board dump and load
 ### test AutoSize class with a StaticBitmap
 
 
