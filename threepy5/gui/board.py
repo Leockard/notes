@@ -880,8 +880,10 @@ class Board(wxutils.AutoSize):
             """If `val` is `True`, grab focus."""
             if val and not self.HasFocus():
                 self.SetFocus()
-            elif self._last:
-                self._last.SetFocus()
+            else:
+                self.UnselectAll()
+                if self._last:
+                    self._last.SetFocus()
             self._active = val
         
 
