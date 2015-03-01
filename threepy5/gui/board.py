@@ -853,16 +853,31 @@ class Board(wxutils.AutoSize):
             """
             super(Board.SelectionManager, self).__init__(parent, size=self.SIZE, pos=self.POS)
             self.BackgroundColour = self.Parent.BackgroundColour
-
+            self.Active = False
+            
             self.Selection = []
             """The currently selected `Card`s"""
 
             self._last = None
             """The last `Card` added to the current selection."""
 
-            # self.Active = False
-            # """If False, the `Select*` will not work."""
+            self.Bind(wx.EVT_KEY_DOWN, self._on_key_down)
 
+
+        ### properties
+
+        @property
+        def Active(self):
+            """If False, the `Select*` will not work."""
+            return self._active
+
+        @Active.setter
+        def Active(self, val):
+            """If `val` is `True`, grab focus."""
+            if val:
+                self.SetFocus()
+            self._active = val
+        
 
         ### methods
 
@@ -873,6 +888,9 @@ class Board(wxutils.AutoSize):
             * `new_sel: ` if `True`, unselects all other `Card`s before selecting `card`.
             If `False`, adds `card` to the current selection.
             """
+            if not self.Active:
+                self.Active = True
+
             # if new_sel, select only this card
             if new_sel:
                 # self.Activate()
@@ -925,6 +943,100 @@ class Board(wxutils.AutoSize):
             while len(self.Selection) > 0:
                 c = self.Selection[0]
                 self.Unselect(c)
+
+        def MoveSelection(self, dx, dy):
+            """Move all selected `Card`s.
+            
+            `dx: ` the amount of pixels to move in the X direction.
+            `dy: ` the amount of pixels to move in the Y direction.
+            """
+            for c in self.Selection:
+                c.Card.MoveBy(dx, dy)
+                
+
+        ### callbacks
+
+        def _on_key_down(self, ev):
+            if not self.Active:
+                ev.Skip()
+                return
+    
+            key = ev.GetKeyCode()
+    
+            # alt + arrow: move selection
+            if ev.AltDown():
+                bd = self.Parent
+                if   key == wx.WXK_LEFT:
+                    self.MoveSelection(-bd.SCROLL_STEP, 0)
+                elif key == wx.WXK_RIGHT:
+                    self.MoveSelection(bd.SCROLL_STEP, 0)
+                elif key == wx.WXK_UP:
+                    self.MoveSelection(0, -bd.SCROLL_STEP)
+                elif key == wx.WXK_DOWN:
+                    self.MoveSelection(0, bd.SCROLL_STEP)
+                else:
+                    ev.Skip()
+    
+            # ctrl key
+            # elif ev.ControlDown():
+            #     if   key == ord("U"):
+            #         # since collapsing takes away focus, store selection
+            #         cards = self.GetSelection()[:]
+    
+            #         # for the same reason, don't iterate over self.GetSelection
+            #         for c in cards:
+            #             if isinstance(c, card.Content):
+            #                 c.ToggleCollapse()
+    
+            #         # restore selection
+            #         self.SelectGroup(card.CardGroup(members=cards), True)
+                    
+            #     elif key == ord("I"):
+            #         pass
+                
+            #     else:
+            #         ev.Skip()
+    
+            # meta key
+            elif ev.MetaDown():
+                ev.Skip()
+    
+            # # shift key
+            # elif ev.ShiftDown():
+            #     if   key == wx.WXK_LEFT:
+            #         self.SelectNext(Deck.LEFT, new_sel=False)
+            #     elif key == wx.WXK_RIGHT:
+            #         self.SelectNext(Deck.RIGHT, new_sel=False)
+            #     elif key == wx.WXK_UP:
+            #         self.SelectNext(Deck.UP, new_sel=False)
+            #     elif key == wx.WXK_DOWN:
+            #         self.SelectNext(Deck.DOWN, new_sel=False)
+            #     else:
+            #         ev.Skip()
+    
+            # function keys
+            elif wxutils.IsFunctionKey(key):
+                ev.Skip()
+    
+            # # no modifiers
+            # else:
+            #     # arrow keys: select next card    
+            #     if   key == wx.WXK_LEFT:
+            #         self.SelectNext(Deck.LEFT, new_sel=True)
+            #     elif key == wx.WXK_RIGHT:
+            #         self.SelectNext(Deck.RIGHT, new_sel=True)
+            #     elif key == wx.WXK_UP:
+            #         self.SelectNext(Deck.UP, new_sel=True)
+            #     elif key == wx.WXK_DOWN:
+            #         self.SelectNext(Deck.DOWN, new_sel=True)
+    
+            #     # DEL: delete all selection
+            #     elif key == wx.WXK_DELETE:
+            #         self.DeleteSelection()
+                    
+            #     # all other keys cancel selection
+            #     else:
+            #         self.Deactivate()
 
 
 
@@ -1035,7 +1147,7 @@ class Board(wxutils.AutoSize):
         winclass = globals()[subclass + "Win"]
         sz = winclass.DEFAULT_SZ
 
-        card = cardclass(rect=(pos[0], pos[1], sz[0], sz[1]))
+        card = cardclass(rect=[pos[0], pos[1], sz[0], sz[1]])
         self.Deck.AddCard(card)
         win = winclass(self, card)
         self.Cards.append(win)
@@ -1227,8 +1339,9 @@ class Board(wxutils.AutoSize):
         for c, orig, pos in self._moving_cards_pos:
             # erase the last floating rect
             self._erase_card_rect(c, pos)
-            
-            c.Move(final_pos + orig - (c.BORDER_WIDTH, c.BORDER_WIDTH))
+
+            # set the `Card` position, not the `CardWin`!
+            c.Card.Position = final_pos + orig - (c.BORDER_WIDTH, c.BORDER_WIDTH)
 
         self._moving = False            
         self._moving_cards_pos = []
