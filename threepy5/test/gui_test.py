@@ -1,6 +1,7 @@
 """Unit test for threepy5.py (gui layer)."""
 
 import threepy5.threepy5 as py5
+import threepy5.gui.wxutils as wxutils
 import unittest
 import wx
 from threepy5.gui import threepy5GUI_new as newgui
@@ -77,6 +78,29 @@ class CardWinInit(unittest.TestCase):
         # self.app.MainLoop()
 
 
+class testKindSelectMenu(unittest.TestCase):
+    def setUp(self):
+        self.app = wx.App()
+        self.frame = TestFrame(None)
+        # self.app.MainLoop()
+
+    def testNumberOfItems(self):
+        """`KindSelectMenu` should have one item for every kind type, with the right label."""
+        menu = newgui.ContentWin.KindButton.KindSelectMenu()
+
+        menu_labels = set([it.Label for it in menu.MenuItems])
+
+        self.assertEqual(menu.MenuItemCount, len(py5.Content.KIND_LBLS))
+        self.assertEqual(menu_labels, set(py5.Content.KIND_LBLS))
+
+
+    def tearDown(self):
+        wx.CallAfter(self.app.Exit)
+        # self.app.MainLoop()        
+
+
+
+### test Board class: drag selection, selection, new cards, fit to children
 ### test AutoSize class with a StaticBitmap
 
 
