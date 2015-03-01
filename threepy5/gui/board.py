@@ -878,7 +878,7 @@ class Board(wxutils.AutoSize):
                 # self.Activate()
                 self.UnselectAll()
                 self.Selection = [card]
-                card.Select()
+                card.Selected = True
                 self._last = card
 
             # else, select card only if it was not already selected
@@ -953,8 +953,10 @@ class Board(wxutils.AutoSize):
         """The current zoom scale."""
 
         self.Cards = []
-        self.Groups = []
+        """The `CardWin`s in this `Board`."""
 
+        # see the property Groups
+        # self.Groups = []
 
         self._drag_init_pos = None
         """The position where we started dragging the mouse."""
@@ -985,13 +987,18 @@ class Board(wxutils.AutoSize):
     ### properties
 
     @property
+    def Groups(self):
+        """The `CardGroup`s in this `Board`'s `Deck`."""
+        return self.Deck.groups
+
+    @property
     def Headers(self):
-        """Get a list of all `HeaderWin`s in this `Board`."""
+        """A list of all `HeaderWin`s in this `Board`."""
         return [h for h in self.Cards if isinstance(h, HeaderWin)]
 
     @property
     def Contents(self):
-        """Get a list of all `ContentWin`s in this `Board`."""
+        """A list of all `ContentWin`s in this `Board`."""
         return [h for h in self.Cards if isinstance(h, ContentWin)]
 
     @property
@@ -1025,7 +1032,11 @@ class Board(wxutils.AutoSize):
         winclass = globals()[subclass + "Win"]
         sz = winclass.DEFAULT_SZ
 
-        win = winclass(self, cardclass(rect=(pos[0], pos[1], sz[0], sz[1])))
+        card = cardclass(rect=(pos[0], pos[1], sz[0], sz[1]))
+        self.Deck.AddCard(card)
+        win = winclass(self, card)
+        self.Cards.append(win)
+        win.SetFocus()
 
         #win.Stretch(self.scale)
 
@@ -1048,16 +1059,13 @@ class Board(wxutils.AutoSize):
         #     if rect.bottom > brd.bottom or rect.right > brd.right or rect.left < 0 or rect.top < 0:
         #         self.ScrollToCard(win)
 
-        win.SetFocus()
-        self.Cards.append(win)
-
         return win
 
     def _paint_rect(self, rect, thick=MOVING_RECT_THICKNESS, style=wx.SOLID, refresh=True):
         """Paints a rectangle over this window. Used for click-dragging.
 
         * `rect: ` a `wx.Rect`.
-        * `thick: ` line thickness. By default, is `Deck.MOVING_RECT_THICKNESS`.
+        * `thick: ` line thickness. By default, is `Board.MOVING_RECT_THICKNESS`.
         * `style: ` a `dc.Pen` style. Use `wx.TRANSPARENT` to erase a rectangle.
         * `refresh: ` whether to call `Refresh` after the rectangle is painted.
         """
