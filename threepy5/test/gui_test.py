@@ -192,9 +192,44 @@ class testBoard(unittest.TestCase):
         # self.app.MainLoop()
 
 
+
+class testSelectionManager(unittest.TestCase):
+
+    def setUp(self):
+        self.app = wx.App()
+        self.frame = TestFrame(None)
+        # self.app.MainLoop()
+
+    def testActive(self):
+        """`Board` should add all its `Card`s to its tracked `Deck`."""
+        board = newgui.Board(self.frame)
+        c1 = board.AddCard("Content")
+        c2 = board.AddCard("Header", pos=(10,10))
+        c3 = board.AddCard("Image", pos=(20,20))
+        self.assertFalse(board.Selector.Active)
+
+        board.Selector.Select(c1)
+        self.assertTrue(board.Selector.Active)
+        self.assertEqual(board.FindFocus(), board.Selector)
+
+        # even if there's no selection, it should be Active to await
+        # more selection instructions
+        board.Selector.Unselect(c1)
+        self.assertTrue(board.Selector.Active)
+        self.assertEqual(board.FindFocus(), board.Selector)
+        self.assertEqual(board.Selection, [])
+        
+
+    def tearDown(self):
+        wx.CallAfter(self.app.Exit)
+        # self.app.MainLoop()        
+
+
+        
 ### test Board dump (Deck dump), load, arrange
 ### test Selectionmanager: Active, move selection, grab focus while selection is active, move selected cards, select nearest, extend selection
 ### test AutoSize class with a StaticBitmap
+
 
 
 if __name__ == "__main__":

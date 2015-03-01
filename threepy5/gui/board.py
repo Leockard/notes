@@ -854,7 +854,6 @@ class Board(wxutils.AutoSize):
             """
             super(Board.SelectionManager, self).__init__(parent, size=self.SIZE, pos=self.POS)
             self.BackgroundColour = self.Parent.BackgroundColour
-            self.Active = False
             
             self.Selection = []
             """The currently selected `Card`s"""
@@ -862,6 +861,8 @@ class Board(wxutils.AutoSize):
             self._last = None
             """The last `Card` added to the current selection."""
 
+            self.Active = False
+            
             self.Bind(wx.EVT_KEY_DOWN, self._on_key_down)
 
 
@@ -869,7 +870,7 @@ class Board(wxutils.AutoSize):
 
         @property
         def Active(self):
-            """If False, the `Select*` will not work."""
+            """`True` if we're doing a selection task. As of writing, this means having focus."""
             return self._active
 
         @Active.setter
@@ -877,6 +878,8 @@ class Board(wxutils.AutoSize):
             """If `val` is `True`, grab focus."""
             if val:
                 self.SetFocus()
+            elif self._last:
+                self._last.SetFocus()
             self._active = val
         
 
@@ -894,7 +897,6 @@ class Board(wxutils.AutoSize):
 
             # if new_sel, select only this card
             if new_sel:
-                # self.Activate()
                 self.UnselectAll()
                 self.Selection = [card]
                 card.Selected = True
@@ -902,8 +904,6 @@ class Board(wxutils.AutoSize):
 
             # else, select card only if it was not already selected
             elif card not in self.Selection:
-                # if not self.IsActive():
-                #     self.ACtive = True
                 self.Selection.append(card)
                 card.Selected = True
                 self._last = card
@@ -968,7 +968,7 @@ class Board(wxutils.AutoSize):
         ### callbacks
 
         def _on_key_down(self, ev):
-            if not self.Active:
+            if not self.Active or not self.Selection:
                 ev.Skip()
                 return
     
