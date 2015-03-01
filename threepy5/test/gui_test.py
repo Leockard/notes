@@ -129,10 +129,10 @@ class testBoard(unittest.TestCase):
 
         # simulate a click-drag from (0,0) to (30,30)
         # which should end up selecting both cards
-        board._init_drag_select(wx.Point(0,0))
+        board._drag_init(wx.Point(0,0))
         for i in range(29):
             board._drag_update(wx.Point(i,i))
-        board._end_drag_select(wx.Point(30,30))
+        board._drag_end(wx.Point(30,30))
         self.assertEqual(len(board.Selection), 2)
 
         cont = board.AddCard("Content", pos=(200,200))
