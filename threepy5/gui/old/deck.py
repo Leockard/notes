@@ -400,67 +400,67 @@ class Deck(wxutils.AutoSize):
     #     sel = self.GetSelection()
     #     if sel: self.AddGroup(sel)
 
-    def ScrollToCard(self, card):
-        """Scroll in both direction so that `card` is fully in view.
+    # def ScrollToCard(self, card):
+    #     """Scroll in both direction so that `card` is fully in view.
 
-        * `card: ` a `Card` to scroll to.
-        """
-        rect = card.GetRect()
-        pt = rect.GetBottomRight()
-        pt = self.CalcUnscrolledPosition(pt)
-        self.ScrollToPoint(pt)
+    #     * `card: ` a `Card` to scroll to.
+    #     """
+    #     rect = card.GetRect()
+    #     pt = rect.GetBottomRight()
+    #     pt = self.CalcUnscrolledPosition(pt)
+    #     self.ScrollToPoint(pt)
 
-        # call rect again since we may have scrolled the window
-        rect = card.GetRect()
-        pt = rect.GetTopLeft()        
-        pt = self.CalcUnscrolledPosition(pt)
-        self.ScrollToPoint(pt)
+    #     # call rect again since we may have scrolled the window
+    #     rect = card.GetRect()
+    #     pt = rect.GetTopLeft()        
+    #     pt = self.CalcUnscrolledPosition(pt)
+    #     self.ScrollToPoint(pt)
 
-    def ScrollToPoint(self, pt):
-        """Scroll in both direction so that `pt` is in view. `Deck.ScrollToCard` basically just calls
-        this function twice, on a `Card`'s corner points.
+    # def ScrollToPoint(self, pt):
+    #     """Scroll in both direction so that `pt` is in view. `Deck.ScrollToCard` basically just calls
+    #     this function twice, on a `Card`'s corner points.
 
-        * `pt: ` a (x, y) point.
-        """
-        step = self.SCROLL_STEP
+    #     * `pt: ` a (x, y) point.
+    #     """
+    #     step = self.SCROLL_STEP
 
-        # get the current rect in view, in pixels
-        # coordinates relative to underlying content size
-        view = [k * step for k in self.GetViewStart()]
-        sz = self.GetClientSize()
-        rect = wx.Rect(view[0], view[1], sz.width, sz.height)
+    #     # get the current rect in view, in pixels
+    #     # coordinates relative to underlying content size
+    #     view = [k * step for k in self.GetViewStart()]
+    #     sz = self.GetClientSize()
+    #     rect = wx.Rect(view[0], view[1], sz.width, sz.height)
 
-        # point we're scrolling to (already in pixels)
-        # relative to content size
+    #     # point we're scrolling to (already in pixels)
+    #     # relative to content size
 
-        # nothing to do
-        if rect.Contains(pt):
-            return
+    #     # nothing to do
+    #     if rect.Contains(pt):
+    #         return
 
-        # scroll the point into view
-        scroll = False
-        pad = self.GetPadding()
+    #     # scroll the point into view
+    #     scroll = False
+    #     pad = self.GetPadding()
 
-        # if one of the argumets is wx.DefaultCoord,
-        # we will not scroll in that direction
-        ysc = wx.DefaultCoord
-        xsc = wx.DefaultCoord
+    #     # if one of the argumets is wx.DefaultCoord,
+    #     # we will not scroll in that direction
+    #     ysc = wx.DefaultCoord
+    #     xsc = wx.DefaultCoord
         
-        # remember y coordinate grows downward
-        if pt.x >= rect.right or pt.x <= rect.left:
-            scroll = True
-            xsc = pt.x - pad      # where we want to go
-            xsc /= step           # in scroll units
-        if pt.y <= rect.top or pt.y >= rect.bottom:
-            scroll = True
-            ysc = pt.y - pad      # where we want to go
-            ysc /= step           # in scroll units
+    #     # remember y coordinate grows downward
+    #     if pt.x >= rect.right or pt.x <= rect.left:
+    #         scroll = True
+    #         xsc = pt.x - pad      # where we want to go
+    #         xsc /= step           # in scroll units
+    #     if pt.y <= rect.top or pt.y >= rect.bottom:
+    #         scroll = True
+    #         ysc = pt.y - pad      # where we want to go
+    #         ysc /= step           # in scroll units
 
-        if scroll:
-            # will scroll as much as it's possible
-            # i.e., pt will not necessarily be in the top left corner after scrolling
-            # but it will surely be inside the view
-            self.Scroll(xsc, ysc)
+    #     if scroll:
+    #         # will scroll as much as it's possible
+    #         # i.e., pt will not necessarily be in the top left corner after scrolling
+    #         # but it will surely be inside the view
+    #         self.Scroll(xsc, ysc)
 
     # def ArrangeSelection(self, orient):
     #     """Arranges the selected cards according to `orient`.
@@ -822,65 +822,65 @@ class Deck(wxutils.AutoSize):
     #     rect = rect.Inflate(2 * thick, 2 * thick)
     #     self.PaintRect(rect, thick=thick, style=wx.TRANSPARENT, refresh=refresh)
     
-    def DumpCards(self):
-        """Dumps all the `Card`s' info in a `dict`.
+    # def DumpCards(self):
+    #     """Dumps all the `Card`s' info in a `dict`.
 
-        `returns: ` a `dict` of the form {id1: data1, id2: data2, ...}.
-        """
-        carddict = {}
+    #     `returns: ` a `dict` of the form {id1: data1, id2: data2, ...}.
+    #     """
+    #     carddict = {}
 
-        # we put the scrollbars at the origin, to get the real positions
-        shown = self.IsShown()
-        if shown: self.Hide()
-        view_start = self.GetViewStart()
-        self.Scroll(0, 0)
+    #     # we put the scrollbars at the origin, to get the real positions
+    #     shown = self.IsShown()
+    #     if shown: self.Hide()
+    #     view_start = self.GetViewStart()
+    #     self.Scroll(0, 0)
 
-        # with the scrollbars at the origin, dump the cards        
-        for c in self.cards:
-            carddict[c.GetId()] = c.Dump()
-            carddict[c.GetId()]["pos"] = [i / self.scale for i in carddict[c.GetId()]["pos"]]
+    #     # with the scrollbars at the origin, dump the cards        
+    #     for c in self.cards:
+    #         carddict[c.GetId()] = c.Dump()
+    #         carddict[c.GetId()]["pos"] = [i / self.scale for i in carddict[c.GetId()]["pos"]]
             
-        # and return to the original view
-        self.Scroll(view_start[0], view_start[1])
-        if shown: self.Show()
+    #     # and return to the original view
+    #     self.Scroll(view_start[0], view_start[1])
+    #     if shown: self.Show()
 
-        return carddict
+    #     return carddict
 
-    def DumpGroups(self):
-        """Dumps all the `CardGroup`s' info in a `dict`.
+    # def DumpGroups(self):
+    #     """Dumps all the `CardGroup`s' info in a `dict`.
 
-        `returns: ` a `dict` of the form {label1: data1, label2: data2, ...}.
-        """
-        d = {}
-        for g in self.groups: d[g.GetLabel()] = g.Dump()
-        return d
+    #     `returns: ` a `dict` of the form {label1: data1, label2: data2, ...}.
+    #     """
+    #     d = {}
+    #     for g in self.groups: d[g.GetLabel()] = g.Dump()
+    #     return d
 
-    def Dump(self):
-        """Returns a `dict` with all the info contained in this `Deck`.
+    # def Dump(self):
+    #     """Returns a `dict` with all the info contained in this `Deck`.
 
-        `returns: ` a `dict` of the form {"cards": self.DumpCards(), "groups": self.DumpGroups()}.
-        """
-        return {"cards": self.DumpCards(), "groups": self.DumpGroups()}
+    #     `returns: ` a `dict` of the form {"cards": self.DumpCards(), "groups": self.DumpGroups()}.
+    #     """
+    #     return {"cards": self.DumpCards(), "groups": self.DumpGroups()}
 
-    def Load(self, d):
-        """Read a `dict` and load all its data.
+    # def Load(self, d):
+    #     """Read a `dict` and load all its data.
 
-        * `d: ` a `dict` in the format returned by `Dump`.
-        """
-        if "cards" in d.keys():
-            # note we are not loading the wx id of the windows
-            # instead, as identifier, we use label, which should
-            # be a value of the dict values
-            for id, values in d["cards"].iteritems():
-                new = self.NewCard(values["class"])
-                new.Load(values)
+    #     * `d: ` a `dict` in the format returned by `Dump`.
+    #     """
+    #     if "cards" in d.keys():
+    #         # note we are not loading the wx id of the windows
+    #         # instead, as identifier, we use label, which should
+    #         # be a value of the dict values
+    #         for id, values in d["cards"].iteritems():
+    #             new = self.NewCard(values["class"])
+    #             new.Load(values)
                     
-        if "groups" in d.keys():
-            # here again we use the label as identifier
-            # but this time the label is the key in the dictionary
-            for label, members in d["groups"].iteritems():
-                cards = [self.GetCard(l) for l in members]
-                self.NewGroup(cards)
+    #     if "groups" in d.keys():
+    #         # here again we use the label as identifier
+    #         # but this time the label is the key in the dictionary
+    #         for label, members in d["groups"].iteritems():
+    #             cards = [self.GetCard(l) for l in members]
+    #             self.NewGroup(cards)
 
 
                 
