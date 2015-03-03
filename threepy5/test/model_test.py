@@ -8,14 +8,19 @@ from collections import defaultdict
 
 
 class listener(object):
-    def __init__(self):
+    def __init__(self, topics=[]):
         self.calls = {}
-        pub.subscribe(self.callback, pub.ALL_TOPICS)
+        for t in topics:
+            pub.subscribe(self.callback, t)
+        
     def callback(self, topic=pub.AUTO_TOPIC, **kwargs):
         name = topic.getName()
         if not name in self.calls.keys():
             self.calls[name] = 0
         self.calls[name] += 1
+
+    def addTopic(self, topic):
+        pub.subscribe(self.callback, topic)
 
 
 class DefaultValues(unittest.TestCase):
@@ -27,7 +32,7 @@ class DefaultValues(unittest.TestCase):
     def testContentDefaultValues(self):
         """Content should assign the correct default values for all properties."""
         cont = py5.Content()
-        self.assertEqual(cont.rect, py5.Content.DEFAULT_RECT_CONT)
+        self.assertEqual(cont.rect, py5.Content.DEFAULT_RECT)
         self.assertEqual(cont.kind, py5.DEFAULT_KIND)
         self.assertEqual(cont.rating,    py5.DEFAULT_RATING)
         self.assertEqual(cont.collapsed, False)
@@ -217,27 +222,24 @@ class GetSetPub(unittest.TestCase):
 
     def testCardGetSetPub(self):
         """Card should publish every call to its property getters."""
-        lis = listener()
-        calls = defaultdict(lambda: 0, {})
-        
         test_id = self.test_id
         test_rect = self.test_rect
 
-        # each descriptor is set once in the constructor
-        # but the id is published with a dummy topic
+        # we haven't subsccribed anything yet so the messages sent when
+        # setting default values in the constructor won't be logged
         card = py5.Card()
-        calls["UPDATE_ID"] +=1
-        
-        topic = card._make_topic_name()
-        calls[topic + "." + "UPDATE_RECT"] +=1
+        topic = card._root
 
-        # and once for the assignment
-        # the published when the id is set is sent with a topic
-        # containing the previous id, that's why we log in
-        # calls{} with the old topic and then update it
+        # lis = listener(topics=["Card." + str(card._id)])
+        lis = listener(topics=[topic])
+        calls = defaultdict(lambda: 0, {})        
+
+        # the UPDATE_ID message is sent with the old id
+        # we need to subscribe to the messages sent with the new id
         card._id = test_id
         calls[topic + "." + "UPDATE_ID"] +=1
-        topic = card._make_topic_name()
+        topic = card._root
+        lis.addTopic(topic)
         
         card.rect = test_rect
         calls[topic + "." + "UPDATE_RECT"] +=1
@@ -248,9 +250,6 @@ class GetSetPub(unittest.TestCase):
 
     def testContentGetSetPub(self):
         """Content should publish every call to its property getters."""
-        lis = listener()
-        calls = defaultdict(lambda: 0, {})
-        
         test_id = self.test_id
         test_rect = self.test_rect
         test_kind = py5.Content.KIND_LBL_CONCEPT
@@ -260,19 +259,15 @@ class GetSetPub(unittest.TestCase):
         test_content = "this is content\nand this is more.\n\ntag1: foo bar."
 
         cont = py5.Content()
-        calls["UPDATE_ID"] += 1
-        topic = cont._make_topic_name()
+        topic = cont._root
         
-        calls[topic + "." + "UPDATE_RECT"] += 1
-        calls[topic + "." + "UPDATE_KIND"] += 1
-        calls[topic + "." + "UPDATE_RATING"] += 1
-        calls[topic + "." + "UPDATE_COLLAPSED"] += 1
-        calls[topic + "." + "UPDATE_TITLE"] += 1
-        calls[topic + "." + "UPDATE_CONTENT"] += 1
+        lis = listener(topics=[topic])
+        calls = defaultdict(lambda: 0, {})
         
         cont._id=test_id
         calls[topic + "." + "UPDATE_ID"] += 1
-        topic = cont._make_topic_name()
+        topic = cont._root
+        lis.addTopic(topic)
         
         cont.rect=test_rect
         cont.kind=test_kind
@@ -298,22 +293,20 @@ class GetSetPub(unittest.TestCase):
 
     def testHeaderGetSetPub(self):
         """Header should publish every call to its property getters."""
-        lis = listener()
-        calls = defaultdict(lambda: 0, {})
-        
         test_id = self.test_id
         test_rect = self.test_rect
         test_header = "my test header"
         
         head = py5.Header()
-        calls["UPDATE_ID"] += 1
-        topic = head._make_topic_name()
-        calls[topic + "." + "UPDATE_RECT"] += 1
-        calls[topic + "." + "UPDATE_HEADER"] += 1
+        topic = head._root
         
+        lis = listener(topics=[topic])
+        calls = defaultdict(lambda: 0, {})
+
         head._id = test_id
         calls[topic + "." + "UPDATE_ID"] += 1
-        topic = head._make_topic_name()
+        topic = head._root
+        lis.addTopic(topic)
         
         head.rect =  test_rect
         head.header = test_header
@@ -327,24 +320,21 @@ class GetSetPub(unittest.TestCase):
 
     def testImageGetSetPub(self):
         """Image should publish every call to its property getters."""
-        lis = listener()
-        calls = defaultdict(lambda: 0, {})
-
         test_id = self.test_id
         test_rect = self.test_rect
         test_path = "/home/leo/code/1233.bmp"
         test_scale = 0.5
 
         img = py5.Image()
-        topic = img._make_topic_name()        
-        calls["UPDATE_ID"] += 1
-        calls[topic + "." + "UPDATE_RECT"] += 1
-        calls[topic + "." + "UPDATE_PATH"] += 1
-        calls[topic + "." + "UPDATE_SCALE"] += 1
+        topic = img._root
+
+        lis = listener(topics=[topic])
+        calls = defaultdict(lambda: 0, {})
         
         img._id = test_id
         calls[topic + ".UPDATE_ID"] += 1
-        topic = img._make_topic_name()        
+        topic = img._root
+        lis.addTopic(topic)
         
         img.rect = test_rect
         img.path = test_path
@@ -361,15 +351,13 @@ class GetSetPub(unittest.TestCase):
 
     def testAnnotationGetSetPub(self):
         """Annotation should publish every call to its property getters."""
-        lis = listener()
-        calls = defaultdict(lambda: 0, {})
-
         test_lines = self.test_lines
 
         anno = py5.Annotation()
-        calls["UPDATE_ID"] += 1
-        topic = anno._make_topic_name()
-        calls[topic + "." + "UPDATE_LINES"] += 1
+        topic = anno._root
+
+        lis = listener(topics=[topic])
+        calls = defaultdict(lambda: 0, {})
         
         anno.lines = test_lines
         calls[topic + "." + "UPDATE_LINES"] += 1
@@ -379,20 +367,19 @@ class GetSetPub(unittest.TestCase):
 
     def testCardGroupGetSetPub(self):
         """CardGroup should publish every call to its property getters."""
-        lis = listener()
-        calls = defaultdict(lambda: 0, {})
-
         test_id = self.test_id
         test_members = self.test_members
 
         grp = py5.CardGroup()
-        calls["UPDATE_ID"] += 1
-        topic = grp._make_topic_name()
-        calls[topic + "." + "UPDATE_MEMBERS"] += 1
-        
+        topic = grp._root
+        lis = listener(topics=[topic])
+        calls = defaultdict(lambda: 0, {})
+
         grp._id = test_id
         calls[topic + "." + "UPDATE_ID"] += 1
-        topic = grp._make_topic_name()
+        topic = grp._root
+        lis.addTopic(topic)
+        
         grp.members = test_members
         calls[topic + "." + "UPDATE_MEMBERS"] += 1
 
@@ -402,29 +389,22 @@ class GetSetPub(unittest.TestCase):
 
     def testDeckGetSetPub(self):
         """Deck should publish every call to its property getters."""
-        lis = listener()
-        calls = defaultdict(lambda: 0, {})
-
         test_id = self.test_id
         test_name = self.test_name
         test_cards = [py5.Card() for j in range(3)]
-        calls["UPDATE_ID"] += len(test_cards)
-        
         test_members = self.test_members
         test_groups = [py5.CardGroup(members=test_members.append(2*j)) for j in range(3)]
-        calls["UPDATE_ID"] += len(test_groups)
 
         deck = py5.Deck()
-        calls["UPDATE_ID"] += 1
-        topic = deck._make_topic_name()
-        
-        calls[topic + "." + "UPDATE_NAME"] += 1
-        calls[topic + "." + "UPDATE_CARDS"] += 1
-        calls[topic + "." + "UPDATE_GROUPS"] += 1
+        topic = deck._root
+
+        lis = listener(topics=[topic])
+        calls = defaultdict(lambda: 0, {})
         
         deck._id = test_id
         calls[topic + "." + "UPDATE_ID"] += 1
-        topic = deck._make_topic_name()
+        topic = deck._root
+        lis.addTopic(topic)
         
         deck.name = test_name
         deck.cards = test_cards
@@ -437,80 +417,60 @@ class GetSetPub(unittest.TestCase):
         self.assertEqual(deck.name, test_name)
         self.assertEqual(deck.cards, test_cards)
         self.assertEqual(deck.groups, test_groups)
-        # since we created Cards and CardGroups, there were move calls than the
-        # ones that we have logged: only compare the ones we are interested in
-        # note that we _are_ interested in "UPDATE_ID" so we had to add all calls
-        self.assertEqual(calls, {k: v for k,v in lis.calls.items() if k in calls.keys()})
+        self.assertEqual(calls, lis.calls)
 
-    # def testAnnotatedDeckGetSetPub(self):
-    #     """AnnotatedDeck should publish every call to its property getters."""
-    #     lis = listener()
-    #     calls = defaultdict(lambda: 0, {})
+    def testAnnotatedDeckGetSetPub(self):
+        """AnnotatedDeck should publish every call to its property getters."""
+        test_id = self.test_id
+        test_name = self.test_name
+        test_cards = self.test_cards
+        test_members = self.test_members
+        test_lines = self.test_lines
+        test_groups = [py5.CardGroup(members=test_members.append(2*j)) for j in range(3)]
 
-    #     test_id = self.test_id
-    #     test_name = self.test_name
-    #     test_cards = self.test_cards
-    #     test_members = self.test_members
-    #     test_lines = self.test_lines
-    #     test_groups = [py5.CardGroup(members=test_members.append(2*j)) for j in range(3)]
-    #     calls["UPDATE_ID"] += len(test_groups)
-
-    #     annodk = py5.AnnotatedDeck()
-    #     calls["UPDATE_ID"] += 1
-    #     topic = annodk._make_topic_name()
+        annodk = py5.AnnotatedDeck()
+        topic = annodk._root
+        lis = listener(topics=[topic])
+        calls = defaultdict(lambda: 0, {})
         
-    #     calls[topic + "." + "UPDATE_NAME"] += 1
-    #     calls[topic + "." + "UPDATE_CARDS"] += 1
-    #     calls[topic + "." + "UPDATE_GROUPS"] += 1
-    #     calls[topic + "." + "UPDATE_LINES"] += 1
+        annodk._id = test_id
+        calls[topic + "." + "UPDATE_ID"] += 1
+        topic = annodk._root
+        lis.addTopic(topic)
         
-    #     annodk._id = test_id
-    #     calls[topic + "." + "UPDATE_ID"] += 1
-    #     topic = annodk._make_topic_name()
-        
-    #     annodk.name = test_name
-    #     annodk.cards = test_cards
-    #     annodk.groups = test_groups
-    #     annodk.annotation.lines = test_lines
-    #     calls[topic + "." + "UPDATE_NAME"] += 1
-    #     calls[topic + "." + "UPDATE_CARDS"] += 1
-    #     calls[topic + "." + "UPDATE_GROUPS"] += 1
-    #     calls[topic + "." + "UPDATE_LINES"] += 1
+        annodk.name = test_name
+        annodk.cards = test_cards
+        annodk.groups = test_groups
+        annodk.annotation.lines = test_lines
+        calls[topic + "." + "UPDATE_NAME"] += 1
+        calls[topic + "." + "UPDATE_CARDS"] += 1
+        calls[topic + "." + "UPDATE_GROUPS"] += 1
+        # calls[topic + "." + "UPDATE_LINES"] += 1
 
-    #     self.assertEqual(annodk._id, test_id)
-    #     self.assertEqual(annodk.name, test_name)
-    #     self.assertEqual(annodk.cards, test_cards)
-    #     self.assertEqual(annodk.groups, test_groups)
-    #     self.assertEqual(annodk.annotation.lines, test_lines)
-
-    #     # since we created Cards and CardGroups, there were move calls than the
-    #     # ones that we have logged: only compare the ones we are interested in
-    #     # note that we _are_ interested in "UPDATE_ID" so we had to add all calls
-    #     self.assertEqual(calls, {k: v for k,v in lis.calls.items() if k in calls.keys()})
+        self.assertEqual(annodk._id, test_id)
+        self.assertEqual(annodk.name, test_name)
+        self.assertEqual(annodk.cards, test_cards)
+        self.assertEqual(annodk.groups, test_groups)
+        self.assertEqual(annodk.annotation.lines, test_lines)
+        self.assertEqual(calls, lis.calls)
 
     def testBoxGetSetPub(self):
         """Box should publish every call to its property getters."""
-        lis = listener()
-        calls = defaultdict(lambda: 0, {})
-
         test_id = self.test_id
         test_name = self.test_name
         test_path = "/home/leo/research/foobar.aaa"
         test_cards = self.test_cards
         test_decks = [py5.AnnotatedDeck(cards=test_cards) for j in range(5)]
-        calls["UPDATE_ID"] += 2 * len(test_decks)
 
         box = py5.Box()
-        calls["UPDATE_ID"] += 1
-        topic = box._make_topic_name()
-
-        calls[topic + "." + "UPDATE_NAME"] += 1
-        calls[topic + "." + "UPDATE_PATH"] += 1
-        calls[topic + "." + "UPDATE_DECKS"] += 1
+        topic = box._root
+        lis = listener(topics=[topic])
+        calls = defaultdict(lambda: 0, {})
         
         box._id = test_id
         calls[topic + "." + "UPDATE_ID"] += 1
-        topic = box._make_topic_name()
+        topic = box._root
+        lis.addTopic(topic)
 
         box.name = test_name
         box.path = test_path
@@ -522,10 +482,7 @@ class GetSetPub(unittest.TestCase):
         self.assertEqual(box.name, test_name)
         self.assertEqual(box.path, test_path)
         self.assertEqual(box.decks, test_decks)
-        # since we created Cards and CardGroups, there were move calls than the
-        # ones that we have logged: only compare the ones we are interested in
-        # note that we _are_ interested in "UPDATE_ID" so we had to add all calls
-        self.assertEqual(calls, {k: v for k,v in lis.calls.items() if k in calls.keys()})
+        self.assertEqual(calls, lis.calls)
 
         
 
@@ -705,57 +662,53 @@ class AddRemove(unittest.TestCase):
 
     def testCardGroupAddRemove(self):
         """CardGroup Add/Remove should work properly and publish their calls."""
-        lis = listener()
-        calls = defaultdict(lambda: 0, {})
-
         card = py5.Card()
         grp = py5.CardGroup()
-        topic = grp._make_topic_name()
-        calls[topic + "." + "UPDATE_MEMBERS"] += 1
+        topic = grp._root
         
+        lis = listener(topics=[topic])
+        calls = defaultdict(lambda: 0, {})        
+
         grp.Add(card)
+        calls[topic + "." + "NEW_MEMBER"] += 1
         grp.Remove(card)
-        calls[topic + "." + "UPDATE_MEMBERS"] += 2
+        calls[topic + "." + "POP_MEMBER"] += 1
 
         self.assertEqual(grp.members, [])
-        self.assertEqual(calls[topic + "." + "UPDATE_MEMBERS"], lis.calls[topic + "." + "UPDATE_MEMBERS"])
+        self.assertEqual(calls, lis.calls)
 
     def testDeckAddRemove(self):
         """Deck Add/Remove should work properly and publish their calls."""
-        lis = listener()
-        calls = defaultdict(lambda: 0, {})
-
         card = py5.Card()
         group = py5.CardGroup()
         deck = py5.Deck()
-        topic = deck._make_topic_name()
-        calls[topic + "." + "UPDATE_CARDS"] += 1
-        calls[topic + "." + "UPDATE_GROUPS"] += 1
+        topic = deck._root
+        
+        lis = listener(topics=[topic])
+        calls = defaultdict(lambda: 0, {})        
         
         deck.AddCard(card)
         deck.RemoveCard(card)
         deck.AddGroup(group)
         deck.RemoveGroup(group)
-        calls[topic + "." + "UPDATE_CARDS"] += 2
-        calls[topic + "." + "UPDATE_GROUPS"] += 2
+        calls[topic + "." + "NEW_CARD"] += 1
+        calls[topic + "." + "POP_CARD"] += 1
+        calls[topic + "." + "NEW_GROUP"] += 1
+        calls[topic + "." + "POP_GROUP"] += 1
 
         self.assertEqual(deck.cards, [])
         self.assertEqual(deck.groups, [])
-        self.assertEqual(calls[topic + "." + "UPDATE_CARDS"],  lis.calls[topic + "." + "UPDATE_CARDS"])
-        self.assertEqual(calls[topic + "." + "UPDATE_GROUPS"], lis.calls[topic + "." + "UPDATE_GROUPS"])
+        self.assertEqual(calls, lis.calls)
 
     def testAnnotatedDeckAddRemove(self):
         """AnnotatedDeck Add/Remove should work properly and publish their calls."""
-        lis = listener()
-        calls = defaultdict(lambda: 0, {})
-
         card = py5.Card()
         group = py5.CardGroup()
         annodk = py5.AnnotatedDeck()
-        topic = annodk._make_topic_name()
-        calls[topic + "." + "UPDATE_CARDS"] += 1
-        calls[topic + "." + "UPDATE_GROUPS"] += 1
-        calls[topic + "." + "UPDATE_LINES"] += 1
+        topic = annodk._root
+        
+        lis = listener(topics=[topic])
+        calls = defaultdict(lambda: 0, {})
         
         annodk.AddCard(card)
         annodk.RemoveCard(card)
@@ -764,33 +717,31 @@ class AddRemove(unittest.TestCase):
         line = py5.Line()
         annodk.annotation.Add(line)
         annodk.annotation.Remove(line)
-        calls[topic + "." + "UPDATE_CARDS"] += 2
-        calls[topic + "." + "UPDATE_GROUPS"] += 2
-        calls[topic + "." + "UPDATE_LINES"] += 2
+        calls[topic + "." + "NEW_CARD"] += 1
+        calls[topic + "." + "POP_CARD"] += 1
+        calls[topic + "." + "NEW_GROUP"] += 1
+        calls[topic + "." + "POP_GROUP"] += 1
 
         self.assertEqual(annodk.cards, [])
         self.assertEqual(annodk.groups, [])
         self.assertEqual(annodk.annotation.lines, [])
-        self.assertEqual(calls[topic + "." + "UPDATE_CARDS"],  lis.calls[topic + "." + "UPDATE_CARDS"])
-        self.assertEqual(calls[topic + "." + "UPDATE_GROUPS"], lis.calls[topic + "." + "UPDATE_GROUPS"])
-        # self.assertEqual(calls[topic + "." + "UPDATE_LINES"],  lis.calls[topic + "." + "UPDATE_LINES"])
+        self.assertEqual(calls, lis.calls)
 
     def testBoxAddRemove(self):
         """Box Add/Remove should work properly and publish their calls."""
-        lis = listener()
-        calls = defaultdict(lambda: 0, {})
-
         deck = py5.AnnotatedDeck()
         box = py5.Box()
-        topic = box._make_topic_name()
-        calls[topic + "." + "UPDATE_DECKS"] += 1
+        topic = box._root
+        lis = listener(topics=[topic])
+        calls = defaultdict(lambda: 0, {})
         
         box.AddDeck(deck)
+        calls[topic + "." + "NEW_DECK"] += 1
         box.RemoveDeck(deck)
-        calls[topic + "." + "UPDATE_DECKS"] += 2
+        calls[topic + "." + "POP_DECK"] += 1
 
         self.assertEqual(box.decks, [])
-        self.assertEqual(calls[topic + "." + "UPDATE_DECKS"], lis.calls[topic + "." + "UPDATE_DECKS"])
+        self.assertEqual(calls, lis.calls)
 
         
 

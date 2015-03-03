@@ -112,9 +112,9 @@ class testBoard(unittest.TestCase):
     def testAddCard(self):
         """`Board` should add all its `Card`s to its tracked `Deck`."""
         board = newgui.Board(self.frame)
-        board.AddCard("Content")
-        board.AddCard("Header", pos=(10,10))
-        board.AddCard("Image", pos=(20,20))
+        board.Deck.NewCard("Content")
+        board.Deck.NewCard("Header", pos=(10,10))
+        board.Deck.NewCard("Image", pos=(20,20))
 
         self.assertEqual(len(board.Deck.cards), 3)
         self.assertEqual(len(board.Cards), 3)
@@ -122,8 +122,8 @@ class testBoard(unittest.TestCase):
     def testDragSelect(self):
         """`Board` should select all `Card`s under the drag-select rect."""
         board = newgui.Board(self.frame)
-        board.AddCard("Header", pos=(10,10))
-        board.AddCard("Image", pos=(20,20))
+        board.Deck.NewCard("Header", pos=(10,10))
+        board.Deck.NewCard("Image", pos=(20,20))
 
         # simulate a click-drag from (0,0) to (30,30)
         # which should end up selecting both cards
@@ -133,7 +133,8 @@ class testBoard(unittest.TestCase):
         board._drag_end(wx.Point(30,30))
         self.assertEqual(len(board.Selection), 2)
 
-        cont = board.AddCard("Content", pos=(200,200))
+        board.Deck.NewCard("Content", pos=(200,200))
+        cont = board.Cards[-1]
         board.Selector.Select(cont, new_sel=False)
         self.assertEqual(len(board.Selection), 3)
 
@@ -150,7 +151,8 @@ class testBoard(unittest.TestCase):
         start_pos = {}
         for i in range(20):
             pos = wx.Point(randint(1, 1000), randint(1, 1000))
-            c = board.AddCard("Content", pos=pos)
+            board.Deck.NewCard("Content", pos=pos)
+            c = board.Cards[-1]
             cards.append(c)
             start_pos[c] = pos
         board.Selector.SelectGroup(py5.CardGroup(members=cards))
@@ -179,7 +181,8 @@ class testBoard(unittest.TestCase):
         rect = board.Rect
 
         for a in xrange(100):
-            c = board.AddCard("Content", pos=(randint(0,1000),randint(0,1000)))
+            board.Deck.NewCard("Content", pos=(randint(0,1000),randint(0,1000)))
+            c = board.Cards[-1]
             rect = rect.Union(c.Rect)
 
         bd_rect = wx.Rect(0,0,board.VirtualSize[0], board.VirtualSize[1])
@@ -187,6 +190,42 @@ class testBoard(unittest.TestCase):
         self.assertTrue(bd_rect.Contains(rect.TopRight))
         self.assertTrue(bd_rect.Contains(rect.BottomLeft))
         self.assertTrue(bd_rect.Contains(rect.BottomRight))
+
+    def testHorizontalArrange(self):
+        """`Board` should adequately arrange its Cards."""
+        board = newgui.Board(self.frame)
+
+        for a in xrange(100):
+            board.Deck.NewCard("Content", pos=(randint(0,100),randint(0,100)))
+            board.Selector.Select(board.Cards[-1])
+        self.assertTrue(len(board.Selection), 100)
+
+        board.ArrangeSelection(wx.HORIZONTAL)
+        cards = board.Cards[:]
+        cards.sort(key=lambda x: x.Position.x)
+
+        pairs = [(cards[i], cards[i+1]) for i in range(len(cards)-1)]
+        for c1, c2 in pairs:
+            self.assertTrue(c1.Position.x <= c2.Position.x)
+            self.assertTrue(c1.Position.y == c2.Position.y)
+
+    def testVerticalArrange(self):
+        """`Board` should adequately arrange its Cards."""
+        board = newgui.Board(self.frame)
+
+        for a in xrange(100):
+            board.Deck.NewCard("Content", pos=(randint(0,100),randint(0,100)))
+            board.Selector.Select(board.Cards[-1])
+        self.assertTrue(len(board.Selection), 100)
+
+        board.ArrangeSelection(wx.VERTICAL)
+        cards = board.Cards[:]
+        cards.sort(key=lambda x: x.Position.y)
+
+        pairs = [(cards[i], cards[i+1]) for i in range(len(cards)-1)]
+        for c1, c2 in pairs:
+            self.assertTrue(c1.Position.x == c2.Position.x)
+            self.assertTrue(c1.Position.y <= c2.Position.y)
 
     def tearDown(self):
         wx.CallAfter(self.app.Exit)
@@ -204,9 +243,11 @@ class testSelectionManager(unittest.TestCase):
     def testActive(self):
         """`SelectionManager` should handle its `Active` attribute according to focus and selection."""
         board = newgui.Board(self.frame)
-        c1 = board.AddCard("Content")
-        c2 = board.AddCard("Header", pos=(10,10))
-        c3 = board.AddCard("Image", pos=(20,20))
+        board.Deck.NewCard("Content")
+        board.Deck.NewCard("Header", pos=(10,10))
+        board.Deck.NewCard("Image", pos=(20,20))
+        c1, c2, c3 = board.Cards
+
         self.assertFalse(board.Selector.Active)
         
         board.Selector.Select(c1)
@@ -245,12 +286,14 @@ class testSelectionManager(unittest.TestCase):
     def testSelectNearest(self):
         """`SelectionManager` should select the nearest card correctly."""
         board = newgui.Board(self.frame)
-        tl = board.AddCard("Content", pos=(15,15))
-        bl = board.AddCard("Content", pos=(15,200))
-        tr = board.AddCard("Content", pos=(300,15))
-        br = board.AddCard("Content", pos=(300,200))
-        
+        board.Deck.NewCard("Content", pos=(15,15))
+        board.Deck.NewCard("Content", pos=(15,200))
+        board.Deck.NewCard("Content", pos=(300,15))
+        board.Deck.NewCard("Content", pos=(300,200))
+
+        tl, bl, tr, br = board.Cards
         board.Selector.Select(tl)
+
         self.assertEqual(len(board.Selection), 1)
 
         board.Selector.SelectNearest(wx.WXK_RIGHT, new_sel=True)
@@ -268,10 +311,11 @@ class testSelectionManager(unittest.TestCase):
     def testExtendSelection(self):
         """`SelectionManager` should extend the selection to the nearest card correctly."""
         board = newgui.Board(self.frame)
-        tl = board.AddCard("Content", pos=(15,15))
-        bl = board.AddCard("Content", pos=(15,200))
-        tr = board.AddCard("Content", pos=(300,15))
-        br = board.AddCard("Content", pos=(300,200))
+        board.Deck.NewCard("Content", pos=(15,15))
+        board.Deck.NewCard("Content", pos=(15,200))
+        board.Deck.NewCard("Content", pos=(300,15))
+        board.Deck.NewCard("Content", pos=(300,200))
+        tl, bl, tr, br = board.Cards
         
         board.Selector.Select(tl)
         self.assertEqual(len(board.Selection), 1)
@@ -298,12 +342,27 @@ class testSelectionManager(unittest.TestCase):
         step = 10
 
         for i in range(10):
-            crd = board.AddCard("Content", pos=(randint(1, 1000),randint(1, 1000)))
+            board.Deck.NewCard("Content", pos=(randint(1, 10),randint(1, 10)))
+            crd = board.Cards[-1]
             board.Selector.Select(crd, new_sel=False)
             init_pos = {c: c.Position for c in board.Selection}
             board.Selector.MoveSelection(step, step)
             for c in board.Selection:
                 self.assertEqual(init_pos[c] + (step,step), c.Position)
+
+    def testDeleteSelection(self):
+        """`SelectionManager` should delete the selected cards correctly."""
+        board = newgui.Board(self.frame)
+
+        for i in range(10):
+            c = board.Deck.NewCard("Content", pos=(randint(1, 10),randint(1, 10)))
+            w = board.Cards[-1]
+            board.Selector.Select(w)
+            board.Selector.DeleteSelection()
+            
+            self.assertTrue(w not in board.Cards)
+            self.assertTrue(w not in board.Selector.Selection)
+            self.assertTrue(c not in board.Deck.cards)
 
     def tearDown(self):
         wx.CallAfter(self.app.Exit)
@@ -311,7 +370,6 @@ class testSelectionManager(unittest.TestCase):
 
 
         
-### test Board dump (Deck dump), load, arrange
 ### test AutoSize class with a StaticBitmap
 
 
