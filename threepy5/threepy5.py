@@ -68,9 +68,18 @@ def subscribe(attr, call, obj):
     * `call: ` a callable object to call when `attr` is updated.
     * `obj: ` the object whose attribute `attr` we want to track.
     """
-    topic = ".".join([obj._make_topic_name(), "UPDATE_" + attr.upper()])
+    topic = ".".join([obj._root, "UPDATE_" + attr.upper()])
     pub.subscribe(call, topic)
 
+def track(call, obj):
+    topic = ".".join([obj._root, "DESTROY"])
+    pub.subscribe(call, topic)
+
+def subscribeList(attr, new, pop, obj):
+    topic = ".".join([obj._root, "NEW_" + attr[:-1].upper()])
+    pub.subscribe(new, topic)
+    topic = ".".join([obj._root, "POP_" + attr[:-1].upper()])
+    pub.subscribe(pop, topic)
 
 
 ######################
@@ -191,7 +200,8 @@ class Content(Card):
     KIND_LBLS = [KIND_LBL_CONCEPT, KIND_LBL_RESEARCH, KIND_LBL_ASSUMPTION, KIND_LBL_FACT]
 
     RATING_MAX = 3
-    DEFAULT_RECT_CONT = (0,0,250,150)
+    DEFAULT_SZ = (250, 150)
+    DEFAULT_RECT = (0,0,250,150)
 
     title = LoudSetterTitle()
     kind = LoudSetterKind()
@@ -199,7 +209,7 @@ class Content(Card):
     content = LoudSetterContent()
     collapsed = LoudSetterCollapsed()
 
-    def __init__(self, rect=DEFAULT_RECT_CONT, title="", kind=DEFAULT_KIND, rating=DEFAULT_RATING, content="", collapsed=False):
+    def __init__(self, rect=DEFAULT_RECT, title="", kind=DEFAULT_KIND, rating=DEFAULT_RATING, content="", collapsed=False):
         """Constructor.
 
         * `rect: ` (x, y, w, h), accepts floats.
@@ -263,6 +273,7 @@ class Content(Card):
 
 class Header(Card):
     """`Card` that holds a title or header."""
+    DEFAULT_SZ = (150, 32)
     header = LoudSetterHeader()
 
     def __init__(self, rect=NO_RECT, header=""):
@@ -301,6 +312,7 @@ class Image(Card):
     actually load the image from disk. If the application needs to display
     the image, it must load it by itself.
     """
+    DEFAULT_SZ = (50, 50)
     path = LoudSetterPath()
     scale = LoudSetterScale()
 
@@ -350,8 +362,8 @@ class Image(Card):
 #     # thickness = LoudSetterThickness()
 #     # pts = LoudSetterPts()
 
-#     Add = utils.AddDesc("pts")
-#     Remove = utils.RemoveDesc("pts")
+#     Add = utils.LoudAppend("pts")
+#     Remove = utils.LoudRemove("pts")
 
 #     def __init__(self, colour=DEFAULT_COLOUR, thickness=DEFAULT_THICKNESS, pts=[]):
 #         """Constructor.
@@ -380,8 +392,8 @@ and "pts".
 class Annotation(utils.Publisher):
     """`Annotation` is the set of all `Line`s over an `AnnotatedDeck` of `Card`s."""
     lines = LoudSetterLines()
-    Add = utils.AddDesc("lines")
-    Remove = utils.RemoveDesc("lines")
+    Add = utils.LoudAppend("lines")
+    Remove = utils.LoudRemove("lines")
 
     def __init__(self, lines=[]):
         """Constructor.
@@ -403,8 +415,8 @@ class CardGroup(utils.Publisher):
     another group, the smaller group is considered nested in the larger one.
     """
     members = LoudSetterMembers()
-    Add = utils.AddDesc("members")
-    Remove = utils.RemoveDesc("members")
+    Add = utils.LoudAppend("members")
+    Remove = utils.LoudRemove("members")
 
     def __init__(self, members=[]):
         """Constructor.
@@ -424,10 +436,10 @@ class Deck(utils.Publisher):
     cards = LoudSetterCards()
     groups = LoudSetterGroups()
 
-    AddCard = utils.AddDesc("cards")
-    RemoveCard = utils.RemoveDesc("cards")
-    AddGroup = utils.AddDesc("groups")
-    RemoveGroup = utils.RemoveDesc("groups")
+    AddCard = utils.LoudAppend("cards")
+    RemoveCard = utils.LoudRemove("cards")
+    AddGroup = utils.LoudAppend("groups")
+    RemoveGroup = utils.LoudRemove("groups")
 
     def __init__(self, name="", cards=[], groups=[]):
         """Constructor.
@@ -440,6 +452,22 @@ class Deck(utils.Publisher):
         self.name = name
         self.cards = cards
         self.groups = groups
+
+
+    ### methods
+
+    def NewCard(self, class_, pos=(0,0)):
+        cardclass = globals()[class_]
+        sz = cardclass.DEFAULT_SZ
+        card = cardclass(rect=[pos[0], pos[1], sz[0], sz[1]])
+        self.AddCard(card)
+        return card
+
+    def Dump(self):
+        pass
+
+    def Load(self, data):
+        pass
 
 
 
@@ -473,8 +501,8 @@ class Box(utils.Publisher):
     path = LoudSetterPath()
     decks = LoudSetterDecks()
 
-    AddDeck = utils.AddDesc("decks")
-    RemoveDeck = utils.RemoveDesc("decks")
+    AddDeck = utils.LoudAppend("decks")
+    RemoveDeck = utils.LoudRemove("decks")
 
     def __init__(self, name="", path="", decks=[]):
         """Constructor.
