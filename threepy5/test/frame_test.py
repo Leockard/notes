@@ -12,26 +12,6 @@ class TestFrame(wx.Frame):
         box = wx.BoxSizer(wx.VERTICAL)
         self.Sizer = box
 
-        ####################
-        # write code here
-        ####################
-
-        ctrl = newgui.Board(self)
-        box.Add(ctrl, proportion=1, flag=wx.EXPAND)
-        self.ctrl = ctrl
-
-        c1 = self.ctrl.AddCard("Content", pos=(15,15))
-        # c2 = self.ctrl.AddCard("Content", pos=(15,200))
-        # c3 = self.ctrl.AddCard("Content", pos=(300,15))
-        # c4 = self.ctrl.AddCard("Content", pos=(300,200))
-
-        # self.ctrl.Selector.Select(c1)
-
-
-        ####################
-        # end code here
-        ####################
-
         dbg = wx.Button(self, label="debug")
         dbg.Bind(wx.EVT_BUTTON, self.OnDebug)
 
@@ -50,5 +30,28 @@ class TestFrame(wx.Frame):
 if __name__ == "__main__":
     app = wx.App()
     frame = TestFrame(None)
+
+    ####################
+    # write code here
+    ####################
+
+    ctrl = newgui.Board(frame)
+    frame.Sizer.Add(ctrl, proportion=1, flag=wx.EXPAND)
+    frame.ctrl = ctrl
+
+    frame.ctrl.Deck.NewCard("Content", pos=(15,15))
+    frame.ctrl.Deck.NewCard("Content", pos=(15,200))
+    frame.ctrl.Deck.NewCard("Content", pos=(300,15))
+    frame.ctrl.Deck.NewCard("Content", pos=(300,200))
+    c1, c2, c3, c3 = ctrl.Cards    
+
+    ctrl.Selector.Select(c1)
+
+    ####################
+    # end code here
+    ####################
+    
     frame.Show()
     app.MainLoop()
+
+
