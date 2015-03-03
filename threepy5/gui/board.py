@@ -1281,6 +1281,57 @@ class Board(wxutils.AutoSize):
 
         return result
 
+    def ScrollToCard(self, card):
+        """Scroll in both directions so that `card` is fully in view.
+
+        * `card: ` a `Card` to scroll to.
+        """
+        # call ScrollToPoint on opposite points of card
+        rect = card.Rect
+        pt = rect.BottomRight
+        pt = self.CalcUnscrolledPosition(pt)
+        self.ScrollToPoint(pt)
+
+        # read Rect again since we may have scrolled the window
+        rect = card.Rect
+        pt = rect.TopLeft
+        pt = self.CalcUnscrolledPosition(pt)
+        self.ScrollToPoint(pt)
+
+    def ScrollToPoint(self, pt):
+        """Scroll in both directions so that `pt` is in view.
+
+        * `pt: ` a (x, y) point.
+        """
+        view = self.GetViewStartPixels()
+        sz = self.ClientSize
+        rect = wx.Rect(view[0], view[1], sz.width, sz.height)
+
+        if rect.Contains(pt):
+            # nothing to do
+            return
+
+        scroll = False
+        pad = self.Padding
+
+        # if one of the argumets is wx.DefaultCoord,
+        # we will not scroll in that direction
+        ysc = wx.DefaultCoord
+        xsc = wx.DefaultCoord
+        
+        # remember y coordinate grows downward
+        if pt.x >= rect.right or pt.x <= rect.left:
+            scroll = True
+            xsc = pt.x - pad                  # where we want to go
+            xsc /= self.SCROLL_STEP           # in scroll units
+        if pt.y <= rect.top or pt.y >= rect.bottom:
+            scroll = True
+            ysc = pt.y - pad                  # where we want to go
+            ysc /= self.SCROLL_STEP           # in scroll units
+
+        if scroll:
+            self.Scroll(xsc, ysc)
+
     def _arrange_horizontally(self, cards):
         """Arrange `cards` in a horizontal row, to the right of the left-most selected card.
         Don't use directly, use `ArrangeSelection`.
