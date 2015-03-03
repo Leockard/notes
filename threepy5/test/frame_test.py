@@ -24,7 +24,7 @@ class TestFrame(wx.Frame):
     def OnDebug(self, ev):
         print "------DEBUG-----"
         
-        self.ctrl.Selector.DeleteSelection()
+        print self.ctrl.Deck.groups
 
 
 if __name__ == "__main__":
@@ -40,10 +40,11 @@ if __name__ == "__main__":
     frame.ctrl = ctrl
 
     frame.ctrl.Deck.NewCard("Content", pos=(15,15))
-    frame.ctrl.Deck.NewCard("Content", pos=(15,200))
-    frame.ctrl.Deck.NewCard("Content", pos=(300,15))
-    frame.ctrl.Deck.NewCard("Content", pos=(300,200))
-    c1, c2, c3, c3 = ctrl.Cards    
+    # frame.ctrl.Deck.NewCard("Content", pos=(15,200))
+    # frame.ctrl.Deck.NewCard("Content", pos=(280,10))
+    # frame.ctrl.Deck.NewCard("Content", pos=(300,200))
+    # c1, c2, c3, c3 = ctrl.Cards
+    c1 = ctrl.Cards[0]
 
     ctrl.Selector.Select(c1)
 

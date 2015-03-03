@@ -828,7 +828,7 @@ class Board(wxutils.AutoSize):
     and listens to individual Cards' events, so that `Box` only needs to listen
     to `Deck` events.
     """
-    WIN_PADDING = 15
+    WIN_PADDING = py5.Deck.PADDING
     BACKGROUND_CL = "#CCCCCC"
     MOVING_RECT_THICKNESS = 1
 
@@ -983,8 +983,11 @@ class Board(wxutils.AutoSize):
             while len(self.Selection) > 0:
                 c = self.Selection[-1]
                 self.Selection.remove(c)
-                self.Parent.Cards.remove(c)
                 self.Parent.Deck.RemoveCard(c.Card)
+                # don't remove the window from Parent.Cards because the Board
+                # must be listening to the removal of the card from the Deck:
+                # it must handle that itself
+                # self.Parent.Cards.remove(c)
 
 
         ### callbacks
@@ -1015,24 +1018,28 @@ class Board(wxutils.AutoSize):
                 else:
                     ev.Skip()
     
-            # elif ev.ControlDown():
-            #     if   key == ord("U"):
-            #         # since collapsing takes away focus, store selection
-            #         cards = self.GetSelection()[:]
+            elif ev.ControlDown():
+                if   key == ord("U"):
+                    pass
+                    # # since collapsing takes away focus, store selection
+                    # cards = self.GetSelection()[:]
     
-            #         # for the same reason, don't iterate over self.GetSelection
-            #         for c in cards:
-            #             if isinstance(c, card.Content):
-            #                 c.ToggleCollapse()
+                    # # for the same reason, don't iterate over self.GetSelection
+                    # for c in cards:
+                    #     if isinstance(c, card.Content):
+                    #         c.ToggleCollapse()
     
-            #         # restore selection
-            #         self.SelectGroup(card.CardGroup(members=cards), True)
+                    # # restore selection
+                    # self.SelectGroup(card.CardGroup(members=cards), True)
                     
-            #     elif key == ord("I"):
-            #         pass
-                
-            #     else:
-            #         ev.Skip()
+                elif key == ord("I"):
+                    pass
+
+                elif key == ord("G"):
+                    self.Parent.GroupSelected()
+
+                else:
+                    ev.Skip()
     
             elif ev.MetaDown():
                 ev.Skip()
@@ -1127,7 +1134,28 @@ class Board(wxutils.AutoSize):
     ### init methods
 
     def _init_accels(self):
+        """Sets up keyboard shortcuts."""
+        # we create an invisible menu so that we can bind its items to keystrokes
         accels = []
+        ghost = wx.Menu()
+
+        # new cards
+        contr = wx.MenuItem(ghost, wx.ID_ANY, "New Card: Right")
+        contb = wx.MenuItem(ghost, wx.ID_ANY, "New Card: Below")
+        headr = wx.MenuItem(ghost, wx.ID_ANY, "New Header: Right")
+        headb = wx.MenuItem(ghost, wx.ID_ANY, "New Header: Below")
+
+        self.Bind(wx.EVT_MENU, self._on_ctrl_ret     , contr)
+        self.Bind(wx.EVT_MENU, self._on_alt_ret      , headr)
+        self.Bind(wx.EVT_MENU, self._on_ctrl_shft_ret , contb)
+        self.Bind(wx.EVT_MENU, self._on_alt_shft_ret  , headb)
+
+        accels.append(wx.AcceleratorEntry(wx.ACCEL_CTRL, wx.WXK_RETURN , contr.GetId()))
+        accels.append(wx.AcceleratorEntry(wx.ACCEL_ALT,  wx.WXK_RETURN , headr.GetId()))
+        accels.append(wx.AcceleratorEntry(wx.ACCEL_SHIFT|wx.ACCEL_CTRL , wx.WXK_RETURN, contb.GetId()))
+        accels.append(wx.AcceleratorEntry(wx.ACCEL_SHIFT|wx.ACCEL_ALT  , wx.WXK_RETURN, headb.GetId()))
+
+        self.SetAcceleratorTable(wx.AcceleratorTable(accels))
 
     def _init_menu(self):
         self._menu_pos = (0, 0)
@@ -1165,41 +1193,6 @@ class Board(wxutils.AutoSize):
 
 
     ### methods
-
-    # def NewCard(self, subclass, pos=wx.DefaultPosition, scroll=False):
-    #     """Create a new `CardWin` of type `subclass`.
-
-    #     * `subclass` the `__name__` of a `CardWin` subclass.
-    #     * `pos: ` the position of the new `CardWin`.
-    #     * `scroll: ` if `True`, scroll the `Board` so that the new `CardWin` is in view.
-
-    #     `returns: ` the new `CardWin`.
-    #     """
-    #     # create the new card with the unscaled position
-    #     pos = [i / self.Scale for i in pos]
-    #     self.Deck.NewCard(subclass, pos)
-        
-    #     # win.Stretch(self.scale)
-
-    #     # win.Bind(wx.EVT_LEFT_DOWN, self._on_card_left_down)
-    #     # win.Bind(wx.EVT_CHILD_FOCUS, self.OnCardChildFocus)
-    #     # win.Bind(card.Card.EVT_DELETE, self.OnCardDelete)
-    #     # win.Bind(card.Card.EVT_COLLAPSE, self.OnCardCollapse)
-    #     # win.Bind(card.Card.EVT_REQUEST_VIEW, self.OnCardRequest)
-    #     # for ch in win.GetChildren():
-    #     #     ch.Bind(wx.EVT_LEFT_DOWN, self.OnCardChildLeftDown)
-
-    #     # make enough space and breathing room for the new card
-    #     # self.FitToChildren(pad=self.Padding * 2)
-
-    #     # make sure the new card is visible
-    #     # if scroll:
-    #     #     rect = win.Rect
-    #     #     brd = self.Rect
-    #     #     if rect.bottom > brd.bottom or rect.right > brd.right or rect.left < 0 or rect.top < 0:
-    #     #         self.ScrollToCard(win)
-
-    #     # return win
 
     def Nearest(self, card, direc):
         """Returns the nearest `Card` to `card` in the direction `direc`.
@@ -1265,6 +1258,28 @@ class Board(wxutils.AutoSize):
             self._arrange_vertically(self.Selection[:])
             self.FitToChildren()
             self.Selector.SetFocus()
+
+    def GroupSelected(self):
+        """Creates a new `CardGroup` with the currently selected `Card`s."""
+        sel = self.Selection
+        if sel:
+            self.Deck.AddGroup(sel)
+
+    def FindFocusOrSelection(self):
+        """If there's a selection, returns the last selected `CardWin`. If there's no
+        selection, returns the `CardWin` the cursor is currently in, or None."""
+        restul = None
+        
+        if self.Selection:
+            result = self.Selector._last
+        else:
+            focus = self.FindFocus()
+            if focus:
+                ancestor = wxutils.GetCardAncestor(focus)
+                if ancestor:
+                    result = ancestor
+
+        return result
 
     def _arrange_horizontally(self, cards):
         """Arrange `cards` in a horizontal row, to the right of the left-most selected card.
@@ -1427,12 +1442,10 @@ class Board(wxutils.AutoSize):
         # win.Stretch(self.scale)
 
         win.Bind(wx.EVT_LEFT_DOWN, self._on_card_left_down)
-        # win.Bind(wx.EVT_CHILD_FOCUS, self.OnCardChildFocus)
-        # win.Bind(card.Card.EVT_DELETE, self.OnCardDelete)
         # win.Bind(card.Card.EVT_COLLAPSE, self.OnCardCollapse)
         # win.Bind(card.Card.EVT_REQUEST_VIEW, self.OnCardRequest)
-        # for ch in win.GetChildren():
-        #     ch.Bind(wx.EVT_LEFT_DOWN, self.OnCardChildLeftDown)
+        for ch in win.Children:
+            ch.Bind(wx.EVT_LEFT_DOWN, self._on_card_child_left_down)
 
         # make enough space and breathing room for the new card
         self.FitToChildren(pad=self.Padding * 2)
@@ -1445,10 +1458,13 @@ class Board(wxutils.AutoSize):
         #         self.ScrollToCard(win)
 
         self.Cards.append(win)
+        self.Selector.Active = False
+        win.SetFocus()
 
     def _on_pop_card(self, val):
         win = [w for w in self.Cards if w.Card is val]
         for w in win:
+            self.Cards.remove(w)
             w.Card = None
             w.Hide()
             w.Destroy()
@@ -1456,6 +1472,18 @@ class Board(wxutils.AutoSize):
 
     ### callbacks
 
+    def _on_ctrl_ret(self, ev):
+        self.Deck.NewCard("Content", pivot=self.FindFocusOrSelection().Card, below=False)
+
+    def _on_ctrl_shft_ret(self, ev):
+        self.Deck.NewCard("Content", pivot=self.FindFocusOrSelection().Card, below=True)
+        
+    def _on_alt_ret(self, ev):
+        self.Deck.NewCard("Header", pivot=self.FindFocusOrSelection().Card, below=False)
+        
+    def _on_alt_shft_ret(self, ev):
+        self.Deck.NewCard("Header", pivot=self.FindFocusOrSelection().Card, below=True)
+        
     def _on_left_double(self, ev):
         pos = [i / self.Scale for i in ev.Position]
         self.Deck.NewCard("Content", pos=pos)
@@ -1482,6 +1510,10 @@ class Board(wxutils.AutoSize):
         self.Bind(wx.EVT_MOTION, self._on_moving_motion)
         self.CaptureMouse()
         self._move_init(ev.EventObject, pos)
+
+    def _on_card_child_left_down(self, ev):
+        self.Selector.Active = False
+        ev.EventObject.SetFocus()
 
     def _on_moving_motion(self, ev):
         """Listens to `wx.EVT_MOTION` events from this object, only when the user is moving cards."""

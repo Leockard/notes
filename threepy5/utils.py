@@ -8,6 +8,22 @@ used outside of `threepy5`.
 #####################################################
 
 ###########################
+# Rect recordtype
+###########################
+
+import recordtype
+
+class Rect(recordtype.recordtype('Rect', [('left', 0), ('top', 0), ("width", 0), ("height", 0)])):
+    @property
+    def right(self):
+        return self.left + self.width
+
+    @property
+    def bottom(self):
+        return self.top + self.height
+
+
+###########################
 # WithId class
 ###########################
 

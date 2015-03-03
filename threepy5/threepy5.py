@@ -16,7 +16,10 @@ import utils
 # NO_ID = -1
 # """Default ID for a `Card`."""
 
-NO_RECT = [0,0,-1,-1]
+NO_POS = (-1,-1)
+"""Magic value for position arguments."""
+
+NO_RECT = utils.Rect(0,0,-1,-1)
 """Default rect for a `Card`."""
 
 # Content defaults
@@ -107,6 +110,7 @@ class Card(utils.Publisher):
         super(Card, self).__init__()
         self.rect = rect
 
+        
     ### properties
 
     @property
@@ -432,6 +436,8 @@ class Deck(utils.Publisher):
     """It's a collection of `Card`s that share a common topic. It can also hold
     many `CardGroup`s.
     """
+    PADDING = 15
+    
     name = LoudSetterName()
     cards = LoudSetterCards()
     groups = LoudSetterGroups()
@@ -456,12 +462,53 @@ class Deck(utils.Publisher):
 
     ### methods
 
-    def NewCard(self, class_, pos=(0,0)):
+    def NewCard(self, class_, pos=NO_POS, pivot=None, below=False):
         cardclass = globals()[class_]
         sz = cardclass.DEFAULT_SZ
+
+        if pos == NO_POS and pivot:
+            pos = self._new_pos(pivot=pivot, below=below)
+
         card = cardclass(rect=[pos[0], pos[1], sz[0], sz[1]])
         self.AddCard(card)
         return card
+
+    def _new_pos(self, pivot=None, below=False):
+        """Returns the recommended position of the next `Card`.
+
+        * `pivot: ` a reference `Card` around which to look for a suitable position.
+        * `below: ` when `False`, looks for a suitable position to the right of the
+        `pivot`, if any; when `True`, looks for the position below the `pivot`.
+
+        `returns: ` the recommended position for a new `Card`.
+        """
+        pos = (0,0)
+        pad = self.PADDING
+        
+        # if there are no cards, recommend the top left corner
+        if len(self.cards) < 1:
+            pos = (pad, pad)
+    
+        # if there's a pivot, recommend next to it
+        elif pivot:
+            rect = utils.Rect(*pivot.rect)
+            if below:
+                top = rect.bottom + pad
+                left = rect.left
+            else:
+                top = rect.top
+                left = rect.right + pad
+            pos = (left, top)
+
+        # otherwise, move it to the right of the last Card
+        else: 
+            rects = [utils.Rect(c.rect) for c in self.cards]
+            rights = [r.right for r in rects]
+            top = min([r.top for r in rects])
+            left = max(rights) + pad
+            pos = (left, top)
+
+        return pos
 
     def Dump(self):
         pass

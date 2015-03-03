@@ -167,60 +167,60 @@ class Deck(wxutils.AutoSize):
     #     `returns: ` the current scaled padding width (float)."""
     #     return self.CARD_PADDING * self.scale
 
-    def PlaceNewCard(self, subclass, pos=wx.DefaultPosition, below=False):
-        """
-        Places a new `Card` on this `Deck`.
+    # def PlaceNewCard(self, subclass, pos=wx.DefaultPosition, below=False):
+    #     """
+    #     Places a new `Card` on this `Deck`.
 
-        * `subclass: ` should be the string with the name of the `Card` subclass to create ("Content", "Header", "Image").
-        * `pos: ` the position where to put the new `Card`. If it is the default, use `below` to determine
-        where to put it.
-        * `below ` when `False`, creates the new `Card` to the right of the currently selected
-        `Card` in the `Deck`, if any; when `True` creates it below.
+    #     * `subclass: ` should be the string with the name of the `Card` subclass to create ("Content", "Header", "Image").
+    #     * `pos: ` the position where to put the new `Card`. If it is the default, use `below` to determine
+    #     where to put it.
+    #     * `below ` when `False`, creates the new `Card` to the right of the currently selected
+    #     `Card` in the `Deck`, if any; when `True` creates it below.
 
-        `returns: ` the new `Card`.
-        """
-        if pos == wx.DefaultPosition:
-            pos = (0, 0)
-            pad = self.GetPadding()
+    #     `returns: ` the new `Card`.
+    #     """
+    #     if pos == wx.DefaultPosition:
+    #         pos = (0, 0)
+    #         pad = self.GetPadding()
             
-            # if there are no cards, place this one on the top left corner
-            if len(self.GetCards()) < 1:
-                pos = (pad, pad)
+    #         # if there are no cards, place this one on the top left corner
+    #         if len(self.GetCards()) < 1:
+    #             pos = (pad, pad)
     
-            # if there's a selection, place it next to it
-            elif self.GetSelection():
-                rect = self.GetSelection()[-1].GetRect()
-                if below:
-                    top = rect.bottom + pad
-                    left = rect.left
-                else:
-                    top = rect.top
-                    left = rect.right + pad
-                pos = (left, top)
+    #         # if there's a selection, place it next to it
+    #         elif self.GetSelection():
+    #             rect = self.GetSelection()[-1].GetRect()
+    #             if below:
+    #                 top = rect.bottom + pad
+    #                 left = rect.left
+    #             else:
+    #                 top = rect.top
+    #                 left = rect.right + pad
+    #             pos = (left, top)
 
-            # if cursor is inside a card, place it next to it
-            elif wxutils.GetCardAncestor(self.FindFocus()):
-                rect = wxutils.GetCardAncestor(self.FindFocus()).GetRect()
-                if below:
-                    top = rect.bottom + pad
-                    left = rect.left
-                else:
-                    top = rect.top
-                    left = rect.right + pad
-                pos = (left, top)
+    #         # if cursor is inside a card, place it next to it
+    #         elif wxutils.GetCardAncestor(self.FindFocus()):
+    #             rect = wxutils.GetCardAncestor(self.FindFocus()).GetRect()
+    #             if below:
+    #                 top = rect.bottom + pad
+    #                 left = rect.left
+    #             else:
+    #                 top = rect.top
+    #                 left = rect.right + pad
+    #             pos = (left, top)
             
-            else: # otherwise, move it to the right of the last one
-                rects = [c.GetRect() for c in self.GetCards()]
-                rights = [r.right for r in rects]
-                top = min([r.top for r in rects])
-                left = max(rights) + pad
-                pos = (left, top)
+    #         else: # otherwise, move it to the right of the last one
+    #             rects = [c.GetRect() for c in self.GetCards()]
+    #             rights = [r.right for r in rects]
+    #             top = min([r.top for r in rects])
+    #             left = max(rights) + pad
+    #             pos = (left, top)
     
-        new = self.NewCard(subclass, pos=pos, scroll=True)
-        self.UnselectAll()
-        new.SetFocus()
+    #     new = self.NewCard(subclass, pos=pos, scroll=True)
+    #     self.UnselectAll()
+    #     new.SetFocus()
 
-        return new
+    #     return new
 
     # def NewCard(self, subclass, pos=wx.DefaultPosition, scroll=False):
     #     """
@@ -394,11 +394,11 @@ class Deck(wxutils.AutoSize):
     #     """
     #     self.groups.append(card.CardGroup(label=len(self.groups), members=cards))
 
-    def GroupSelected(self):
-        """Creates a new `CardGroup` with the selected `Card`s as members.
-        """
-        sel = self.GetSelection()
-        if sel: self.NewGroup(sel)
+    # def GroupSelected(self):
+    #     """Creates a new `CardGroup` with the selected `Card`s as members.
+    #     """
+    #     sel = self.GetSelection()
+    #     if sel: self.AddGroup(sel)
 
     def ScrollToCard(self, card):
         """Scroll in both direction so that `card` is fully in view.
@@ -1010,26 +1010,26 @@ class SelectionManager(wx.Window):
     #     if crd:
     #         self.last = crd
 
-    def DeleteSelected(self):
-        """Deletes every `Card` currently selected."""
-        # store the number of cards we're deleting to raise the event
-        number = len(self.cards)
+    # def DeleteSelected(self):
+    #     """Deletes every `Card` currently selected."""
+    #     # store the number of cards we're deleting to raise the event
+    #     number = len(self.cards)
         
-        # remember to use while instead of for, since in every
-        # iteration self.cards is growing shorter
-        while len(self.cards) > 0:
-            c = self.cards[-1]
-            c.Delete()
-            if c in self.cards:
-                self.cards.remove(c)
+    #     # remember to use while instead of for, since in every
+    #     # iteration self.cards is growing shorter
+    #     while len(self.cards) > 0:
+    #         c = self.cards[-1]
+    #         c.Delete()
+    #         if c in self.cards:
+    #             self.cards.remove(c)
 
-        # raise the event; it differs from Card.DeleteEvent in that
-        # we raise only one event for every delete action
-        # e.g., if we delete five cards, there will be five Card.DeleteEvent's
-        # raised, but only one SelectionManager.DeleteEvent
-        event = self.DeleteEvent(id=wx.ID_ANY, number=number)
-        event.SetEventObject(self)
-        self.GetEventHandler().ProcessEvent(event)
+    #     # raise the event; it differs from Card.DeleteEvent in that
+    #     # we raise only one event for every delete action
+    #     # e.g., if we delete five cards, there will be five Card.DeleteEvent's
+    #     # raised, but only one SelectionManager.DeleteEvent
+    #     event = self.DeleteEvent(id=wx.ID_ANY, number=number)
+    #     event.SetEventObject(self)
+    #     self.GetEventHandler().ProcessEvent(event)
 
     # def SelectNext(self, direc, new_sel=False):
     #     """Selects next `Card` in the specified direction.
