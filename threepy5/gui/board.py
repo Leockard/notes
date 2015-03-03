@@ -188,15 +188,17 @@ class CardWin(Selectable):
         self._selected = False
         self._init_border()
         self._init_UI()
+        
         self.Card = card
         """The tracked `Card`."""
+
+        py5.track(self._on_destroy, self.Card)
 
 
     ### init methods
 
     def _init_UI(self):
         """Called from __init__ to initialize this `CardWin`'s GUI and controls. Must override.
-
         """
         pass
 
@@ -218,6 +220,14 @@ class CardWin(Selectable):
         self.Rect = card.rect
         # pub.subscribe(self._update_rect, "UPDATE_RECT")
         py5.subscribe("rect", self._update_rect, card)
+
+
+    ### subscribers
+
+    def _on_destroy(self):
+        # wxpython objects are False after they are destroyed
+        if self:
+            self.Destroy()
 
 
     ### methods
@@ -264,7 +274,7 @@ class CardWin(Selectable):
 class HeaderWin(CardWin):
     """`CardWin` that holds a title or header. Consists of a single `EditText` control."""
     MIN_WIDTH = 150
-    DEFAULT_SZ = (150, 32)
+    DEFAULT_SZ = py5.Header.DEFAULT_SZ
 
     def __init__(self, parent, card=None):
         """Constructor.
@@ -356,7 +366,7 @@ class ImagePlaceHolder(Selectable):
 
 class ImageWin(CardWin):
     """A `CardWin` that holds a single image."""
-    DEFAULT_SZ = (50, 50)
+    DEFAULT_SZ = py5.Image.DEFAULT_SZ
 
     def __init__(self, parent, card=None):
         """Constructor.
@@ -407,7 +417,7 @@ class ContentWin(CardWin):
     and shown by `*View` objects.
     """
     # sizes
-    DEFAULT_SZ   = (250, 150)
+    DEFAULT_SZ   = py5.Content.DEFAULT_RECT[2:]
     COLLAPSED_SZ = (250, 30)
 
     # colours; thanks paletton.com!
@@ -804,9 +814,8 @@ class ContentWin(CardWin):
     # in the following callbacks, we need to set the value silently
     # otherwise, a new "UPDATE_*" message would be published and we would
     # generate a infinite recursion exception
-    def _on_title_entry(self, ev): py5.Content.title.silent(self.Card, self._title.Value)
-    def _on_content_entry(self, ev): py5.Content.content.silent(self.Card, self._content.Value)
-
+    def _on_title_entry(self, ev): py5.Content.title.silently(self.Card, self._title.Value)
+    def _on_content_entry(self, ev): py5.Content.content.silently(self.Card, self._content.Value)
 
 
 ######################
@@ -826,7 +835,6 @@ class Board(wxutils.AutoSize):
 
     ################################
     # maybe private!!!
-    # AddCard     = AddDesc("Cards")
     # RemoveCard  = RemoveDesc("Cards")
     # AddGroup    = AddDesc("Cards")
     # RemoveGroup = RemoveDesc("Cards")
@@ -970,25 +978,14 @@ class Board(wxutils.AutoSize):
 
         def DeleteSelection(self):
             """Deletes every `Card` currently selected."""
-            # # store the number of cards we're deleting to raise the event
-            # number = len(self.cards)
-            
             # remember to use while instead of for, since in every
             # iteration self.Selection is growing shorter
             while len(self.Selection) > 0:
                 c = self.Selection[-1]
-                self.Parent.Deck.RemoveCard(c)
-                if c in self.Selection:
-                    self.Selection.remove(c)
-            
-            # # raise the event; it differs from Card.DeleteEvent in that
-            # # we raise only one event for every delete action
-            # # e.g., if we delete five cards, there will be five Card.DeleteEvent's
-            # # raised, but only one SelectionManager.DeleteEvent
-            # event = self.DeleteEvent(id=wx.ID_ANY, number=number)
-            # event.SetEventObject(self)
-            # self.GetEventHandler().ProcessEvent(event)
-                
+                self.Selection.remove(c)
+                self.Parent.Cards.remove(c)
+                self.Parent.Deck.RemoveCard(c.Card)
+
 
         ### callbacks
 
@@ -1092,9 +1089,6 @@ class Board(wxutils.AutoSize):
         self.Selector = Board.SelectionManager(self)
         """The `SelectionManager`."""
 
-        self.Deck = py5.Deck()
-        """The tracked `Deck`."""
-
         self.Scale = 1.0
         """The current zoom scale."""
 
@@ -1118,6 +1112,12 @@ class Board(wxutils.AutoSize):
 
         self._moving_cards_pos = []
         """Stores position information while moving `Card`s."""
+
+        self.Deck = py5.Deck()
+        """The tracked `Deck`."""
+
+        py5.subscribeList("cards", self._on_new_card, self._on_pop_card, self.Deck)
+
 
         self.Bind(wx.EVT_LEFT_DCLICK, self._on_left_double)
         self.Bind(wx.EVT_LEFT_DOWN, self._on_left_down)
@@ -1166,48 +1166,40 @@ class Board(wxutils.AutoSize):
 
     ### methods
 
-    def AddCard(self, subclass, pos=wx.DefaultPosition, scroll=False):
-        """Create a new `CardWin` of type `subclass`.
+    # def NewCard(self, subclass, pos=wx.DefaultPosition, scroll=False):
+    #     """Create a new `CardWin` of type `subclass`.
 
-        * `subclass` the `__name__` of a `CardWin` subclass.
-        * `pos: ` the position of the new `CardWin`.
-        * `scroll: ` if `True`, scroll the `Board` so that the new `CardWin` is in view.
+    #     * `subclass` the `__name__` of a `CardWin` subclass.
+    #     * `pos: ` the position of the new `CardWin`.
+    #     * `scroll: ` if `True`, scroll the `Board` so that the new `CardWin` is in view.
 
-        `returns: ` the new `CardWin`.
-        """
-        # create the new card with the unscaled position
-        cardclass = getattr(py5, subclass)
-        pos = [i / self.Scale for i in pos]
-        winclass = globals()[subclass + "Win"]
-        sz = winclass.DEFAULT_SZ
+    #     `returns: ` the new `CardWin`.
+    #     """
+    #     # create the new card with the unscaled position
+    #     pos = [i / self.Scale for i in pos]
+    #     self.Deck.NewCard(subclass, pos)
+        
+    #     # win.Stretch(self.scale)
 
-        card = cardclass(rect=[pos[0], pos[1], sz[0], sz[1]])
-        self.Deck.AddCard(card)
-        win = winclass(self, card)
-        self.Cards.append(win)
-        win.SetFocus()
+    #     # win.Bind(wx.EVT_LEFT_DOWN, self._on_card_left_down)
+    #     # win.Bind(wx.EVT_CHILD_FOCUS, self.OnCardChildFocus)
+    #     # win.Bind(card.Card.EVT_DELETE, self.OnCardDelete)
+    #     # win.Bind(card.Card.EVT_COLLAPSE, self.OnCardCollapse)
+    #     # win.Bind(card.Card.EVT_REQUEST_VIEW, self.OnCardRequest)
+    #     # for ch in win.GetChildren():
+    #     #     ch.Bind(wx.EVT_LEFT_DOWN, self.OnCardChildLeftDown)
 
-        # win.Stretch(self.scale)
+    #     # make enough space and breathing room for the new card
+    #     # self.FitToChildren(pad=self.Padding * 2)
 
-        win.Bind(wx.EVT_LEFT_DOWN, self._on_card_left_down)
-        # win.Bind(wx.EVT_CHILD_FOCUS, self.OnCardChildFocus)
-        # win.Bind(card.Card.EVT_DELETE, self.OnCardDelete)
-        # win.Bind(card.Card.EVT_COLLAPSE, self.OnCardCollapse)
-        # win.Bind(card.Card.EVT_REQUEST_VIEW, self.OnCardRequest)
-        # for ch in win.GetChildren():
-        #     ch.Bind(wx.EVT_LEFT_DOWN, self.OnCardChildLeftDown)
+    #     # make sure the new card is visible
+    #     # if scroll:
+    #     #     rect = win.Rect
+    #     #     brd = self.Rect
+    #     #     if rect.bottom > brd.bottom or rect.right > brd.right or rect.left < 0 or rect.top < 0:
+    #     #         self.ScrollToCard(win)
 
-        # make enough space and breathing room for the new card
-        self.FitToChildren(pad=self.Padding * 2)
-
-        # make sure the new card is visible
-        # if scroll:
-        #     rect = win.Rect
-        #     brd = self.Rect
-        #     if rect.bottom > brd.bottom or rect.right > brd.right or rect.left < 0 or rect.top < 0:
-        #         self.ScrollToCard(win)
-
-        return win
+    #     # return win
 
     def Nearest(self, card, direc):
         """Returns the nearest `Card` to `card` in the direction `direc`.
@@ -1427,11 +1419,46 @@ class Board(wxutils.AutoSize):
         self._moving = False            
         self._moving_cards_pos = []
 
+        
+    ### subscribers
+
+    def _on_new_card(self, val):
+        win = globals()[val.__class__.__name__ + "Win"](self, card=val)
+        # win.Stretch(self.scale)
+
+        win.Bind(wx.EVT_LEFT_DOWN, self._on_card_left_down)
+        # win.Bind(wx.EVT_CHILD_FOCUS, self.OnCardChildFocus)
+        # win.Bind(card.Card.EVT_DELETE, self.OnCardDelete)
+        # win.Bind(card.Card.EVT_COLLAPSE, self.OnCardCollapse)
+        # win.Bind(card.Card.EVT_REQUEST_VIEW, self.OnCardRequest)
+        # for ch in win.GetChildren():
+        #     ch.Bind(wx.EVT_LEFT_DOWN, self.OnCardChildLeftDown)
+
+        # make enough space and breathing room for the new card
+        self.FitToChildren(pad=self.Padding * 2)
+
+        # make sure the new card is visible
+        # if scroll:
+        #     rect = win.Rect
+        #     brd = self.Rect
+        #     if rect.bottom > brd.bottom or rect.right > brd.right or rect.left < 0 or rect.top < 0:
+        #         self.ScrollToCard(win)
+
+        self.Cards.append(win)
+
+    def _on_pop_card(self, val):
+        win = [w for w in self.Cards if w.Card is val]
+        for w in win:
+            w.Card = None
+            w.Hide()
+            w.Destroy()
+        
 
     ### callbacks
 
     def _on_left_double(self, ev):
-        self.AddCard("Content", pos=ev.GetPosition())
+        pos = [i / self.Scale for i in ev.Position]
+        self.Deck.NewCard("Content", pos=pos)
 
     def _on_left_down(self, ev):
         self._drag_init(ev.Position)
