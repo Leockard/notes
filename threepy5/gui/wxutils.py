@@ -2,7 +2,6 @@
 """This module contains classes derived from wx that could be
 used outside of `threepy5`.
 """
-
 import wx
 import wx.lib.stattext as st
 import wx.lib.newevent as ne
