@@ -1500,7 +1500,9 @@ class Board(wxutils.AutoSize):
         self.Selector.SetFocus()
 
         selected = [c for c in self.Cards if c.Rect.Intersects(final_rect)]
-        self.Selector.SelectGroup(py5.CardGroup(selected), new_sel=True)
+        self.Selector.UnselectAll()
+        for w in selected:
+            self.Selector.Select(w)
 
     def _move_init(self, card, pos):
         """Prepare for moving the selected cards.
