@@ -165,12 +165,20 @@ class Card(utils.Publisher):
         return {"id": self._id, "rect": list(self.rect), "class": self.__class__.__name__}
 
     def Load(self, data):
-        """Read data from an object and load it into this `Card`.
+        """Read data from an object and load it into this `Card`. Does not change
+        this object's id, only copies the data.
 
         * `obj: ` must be a dict in the format returned by `Card.Dump`.
         """
-        self._id = data["id"]
         self.rect = utils.Rect(*data["rect"])
+
+    def Clone(self, data):
+        """Read data from an object and load it into this `Card`, including id.
+
+        * `obj: ` must be a dict in the format returned by `Card.Dump`.
+        """
+        self.Load(data)
+        self._id = data["id"]
 
 
 
