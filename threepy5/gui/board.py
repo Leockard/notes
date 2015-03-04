@@ -1,9 +1,11 @@
 # -*- coding: utf-8 -*-
 import wx
 import wxutils
+import json
 import threepy5.utils as utils
 from os import getcwd as oscwd
 from threepy5.threepy5 import pub
+from ast import literal_eval
 import threepy5.threepy5 as py5
 
 
@@ -665,8 +667,8 @@ class ContentWin(CardWin):
 
         coll = wx.MenuItem(ghost, wx.ID_ANY, "Toggle collapse")
         insp = wx.MenuItem(ghost, wx.ID_ANY, "Request view")
-        # self.Bind(wx.EVT_MENU, self.OnCtrlU, coll)
-        # self.Bind(wx.EVT_MENU, self.OnCtrlI, insp)
+        self.Bind(wx.EVT_MENU, self._on_ctrl_u, coll)
+        self.Bind(wx.EVT_MENU, self._on_ctrl_i, insp)
         accels.append(wx.AcceleratorEntry(wx.ACCEL_CTRL, ord("U"), coll.GetId()))
         accels.append(wx.AcceleratorEntry(wx.ACCEL_CTRL, ord("I"), insp.GetId()))
 
@@ -686,7 +688,7 @@ class ContentWin(CardWin):
         self._kind.Kind      = card.kind
         self._rating.Rating  = card.rating
         self._content.Value  = card.content
-        self._collapsed      = card.collapsed
+        # self._collapsed      = card.collapsed
 
         # pub.subscribe(self._update_title     , "UPDATE_TITLE")
         # pub.subscribe(self._update_kind      , "UPDATE_KIND")
@@ -748,41 +750,14 @@ class ContentWin(CardWin):
         """
         self.content.ShowPosition(pos)
 
-    def Collapse(self):
-        """Hides the content text and displays only the title (and rating). A "minimization" of sorts.
-        This will only work if `CollapseEnabled` is `True`.
-        """
-        if self.CollapseEnabled and not self._collapsed:
-            self.content.Hide()
-            self._collapsed = True
-            self.Size = self.COLLAPSED_SZ
-
-            # # raise the event
-            # event = self.CollapseEvent(id=wx.ID_ANY, collapsed=True)
-            # event.SetEventObject(self)
-            # self.GetEventHandler().ProcessEvent(event)
-
-    def Uncollapse(self):
-        """Shows the content text and returns to normal size.
-        This will only work if `CollapseEnabled` is `True`.
-        """
-        if self.CollapseEnabled and self._collapsed:
-            self._content.Show()
-            self.Size = self.DEFAULT_SZ
-
-            # # raise the event
-            # event = self.CollapseEvent(id=wx.ID_ANY, collapsed=False)
-            # event.SetEventObject(self)
-            # self.GetEventHandler().ProcessEvent(event)
-
-    def ToggleCollapse(self):
-        """If the window is collapsed, uncollapsed it, or the other way around."""
-        if self._collapsed:
-            self.Uncollapse()
-        else:
-            if self.FindFocus() == self._content:
-                self.title.SetFocus()
-            self.Collapse()
+    def _collapse(self, val):
+        if self.CollapseEnabled:
+            if val:
+                self._content.Hide()
+                self.Size = self.COLLAPSED_SZ
+            else:
+                self._content.Show()
+                self.Size = self.DEFAULT_SZ
 
     def _set_colours(self):
         """Set all controls' colours according to the `kind`."""
@@ -797,19 +772,25 @@ class ContentWin(CardWin):
     def _update_title(self, val)     : self._title.Value = val
     def _update_rating(self, val)    : self._rating.Rating = val
     def _update_content(self, val)   : self._content.Value = val
-    def _update_collapsed(self, val) : self._collapsed = val
+    def _update_collapsed(self, val) : self._collapse(val)
     def _update_kind(self, val):
         self._kind.Label = val;
         self._set_colours()
 
 
-    ### callbacks: listen to wx.EVT_* events
-
+    ### callbacks
+    
 
     ### controllers: callbacks that change the model's state
 
     def _on_kind_selected(self, ev): self.Card.kind = self._kind.menu.FindItemById(ev.Id).Label
     def _on_rating_pressed(self, ev): self.Card.IncreaseRating()
+
+    def _on_ctrl_u(self, ev):
+        self.Card.collapsed = not self.Card.collapsed
+
+    def _on_ctrl_i(self, ev):
+        print "ctrl i"
 
     # in the following callbacks, we need to set the value silently
     # otherwise, a new "UPDATE_*" message would be published and we would
@@ -1021,16 +1002,18 @@ class Board(wxutils.AutoSize):
             elif ev.ControlDown():
                 if   key == ord("U"):
                     pass
-                    # # since collapsing takes away focus, store selection
-                    # cards = self.GetSelection()[:]
+                    # since collapsing takes away focus, store selection
+                    windows = self.Selection[:]
     
-                    # # for the same reason, don't iterate over self.GetSelection
-                    # for c in cards:
-                    #     if isinstance(c, card.Content):
-                    #         c.ToggleCollapse()
+                    # for the same reason, don't iterate over self.Selection
+                    for c in [w.Card for w in windows]:
+                        if isinstance(c, py5.Content):
+                            c.collapsed = not c.collapsed
     
-                    # # restore selection
-                    # self.SelectGroup(card.CardGroup(members=cards), True)
+                    # restore selection
+                    self.UnselectAll()
+                    for w in windows:
+                        self.Select(w)
                     
                 elif key == ord("I"):
                     pass
@@ -1129,12 +1112,13 @@ class Board(wxutils.AutoSize):
         self.Bind(wx.EVT_LEFT_DCLICK, self._on_left_double)
         self.Bind(wx.EVT_LEFT_DOWN, self._on_left_down)
         self.Bind(wx.EVT_LEFT_UP, self._on_left_up)
+        self.Bind(wx.EVT_CHILD_FOCUS, self._on_child_focus)
+        self.Bind(wx.EVT_MOUSE_CAPTURE_LOST, self._on_mouse_capture_lost)
 
 
     ### init methods
 
     def _init_accels(self):
-        """Sets up keyboard shortcuts."""
         # we create an invisible menu so that we can bind its items to keystrokes
         accels = []
         ghost = wx.Menu()
@@ -1145,8 +1129,8 @@ class Board(wxutils.AutoSize):
         headr = wx.MenuItem(ghost, wx.ID_ANY, "New Header: Right")
         headb = wx.MenuItem(ghost, wx.ID_ANY, "New Header: Below")
 
-        self.Bind(wx.EVT_MENU, self._on_ctrl_ret     , contr)
-        self.Bind(wx.EVT_MENU, self._on_alt_ret      , headr)
+        self.Bind(wx.EVT_MENU, self._on_ctrl_ret      , contr)
+        self.Bind(wx.EVT_MENU, self._on_alt_ret       , headr)
         self.Bind(wx.EVT_MENU, self._on_ctrl_shft_ret , contb)
         self.Bind(wx.EVT_MENU, self._on_alt_shft_ret  , headb)
 
@@ -1158,7 +1142,38 @@ class Board(wxutils.AutoSize):
         self.SetAcceleratorTable(wx.AcceleratorTable(accels))
 
     def _init_menu(self):
-        self._menu_pos = (0, 0)
+        # note that none of these menu items have accelerators: see _init_accels
+        menu = wx.Menu()
+        self.Bind(wx.EVT_RIGHT_DOWN, self._on_right_down)
+
+        # edit actions
+        copy_it = wx.MenuItem(menu, wx.ID_COPY, "Copy Selection")      # automatic accel
+        self.Bind(wx.EVT_MENU, self._on_copy, copy_it)
+        
+        past_it = wx.MenuItem(menu, wx.ID_PASTE, "Paste")      # automatic accel
+        self.Bind(wx.EVT_MENU, self._on_paste, past_it)
+
+        # # insert actions
+        # cont_it = wx.MenuItem(menu, wx.ID_ANY, "Insert Content")
+        # self.Bind(wx.EVT_MENU, self._on_ctrl_ret, cont_it)
+        # head_it = wx.MenuItem(menu, wx.ID_ANY, "Insert Header")
+        # self.Bind(wx.EVT_MENU, self._on_alt_ret, head_it)
+        # img_it = wx.MenuItem(menu, wx.ID_ANY, "Insert Image")
+        # self.Bind(wx.EVT_MENU, lambda ev: ImagePlaceHolder(self, pos=self._menu_pos), img_it)
+        # # # tab actions
+        # # close_it = wx.MenuItem(menu, wx.ID_ANY, "Close")
+        # # self.Bind(wx.EVT_MENU, self.OnClose, close_it)
+
+        menu.AppendItem(copy_it)
+        menu.AppendItem(past_it)
+        # menu.AppendItem(cont_it)
+        # menu.AppendItem(head_it)
+        # menu.AppendItem(img_it)
+        # # menu.AppendSeparator()
+        # # menu.AppendItem(close_it)
+
+        self.menu = menu
+        self._menu_pos = (0, 0)        
 
 
     ### properties
@@ -1263,12 +1278,12 @@ class Board(wxutils.AutoSize):
         """Creates a new `CardGroup` with the currently selected `Card`s."""
         sel = self.Selection
         if sel:
-            self.Deck.AddGroup(sel)
+            self.Deck.AddGroup(py5.CardGroup([w.Card for w in sel]))
 
     def FindFocusOrSelection(self):
         """If there's a selection, returns the last selected `CardWin`. If there's no
         selection, returns the `CardWin` the cursor is currently in, or None."""
-        restul = None
+        result = None
         
         if self.Selection:
             result = self.Selector._last
@@ -1331,6 +1346,41 @@ class Board(wxutils.AutoSize):
 
         if scroll:
             self.Scroll(xsc, ysc)
+
+    def CopySelection(self):
+        """Copies every selected `Card` to `wx.TheClipboard`."""
+        if self.Selection and not wx.TheClipboard.IsOpened() and wx.TheClipboard.Open():
+            data = []
+            for c in self.Selection:
+                data.append(c.Card.Dump())
+    
+            obj = wx.TextDataObject()
+            obj.Text = str([json.dumps(d) for d in data])
+
+            wx.TheClipboard.SetData(obj)
+            wx.TheClipboard.Close()
+
+    def PasteFromClipboard(self, pos=wx.DefaultPosition):
+        """Pastes every `Card` currently in `wx.TheClipboard`."""
+        if wx.TheClipboard.Open():
+            obj = wx.TextDataObject()
+            wx.TheClipboard.GetData(obj)
+
+            # don't use eval()! Use ast.literal_eval() instead
+            data = [json.loads(d) for d in literal_eval(obj.Text)]
+
+            for d in data:
+                card = self.Deck.NewCard(d["class"])
+                card.Load(d)
+                self.Cards[-1].SetFocus()
+                
+                if pos == wx.DefaultPosition:
+                    # default position: a step away from the original
+                    card.Position = [i + self.Padding for i in d["pos"]]
+                else:
+                    card.Position = pos
+
+            wx.TheClipboard.Close()
 
     def _arrange_horizontally(self, cards):
         """Arrange `cards` in a horizontal row, to the right of the left-most selected card.
@@ -1523,17 +1573,37 @@ class Board(wxutils.AutoSize):
 
     ### callbacks
 
+    def _on_right_down(self, ev):
+        self._menu_pos = ev.Position
+        self.PopupMenu(self.menu, ev.Position)
+
     def _on_ctrl_ret(self, ev):
-        self.Deck.NewCard("Content", pivot=self.FindFocusOrSelection().Card, below=False)
+        pivot = self.FindFocusOrSelection()
+        if pivot:
+            self.Deck.NewCard("Content", pivot=pivot.Card, below=False)
+        else:
+            self.Deck.NewCard("Content", pivot=None, below=False)
 
     def _on_ctrl_shft_ret(self, ev):
-        self.Deck.NewCard("Content", pivot=self.FindFocusOrSelection().Card, below=True)
+        pivot = self.FindFocusOrSelection().Card
+        if pivot:
+            self.Deck.NewCard("Content", pivot=pivot.Card, below=True)
+        else:
+            self.Deck.NewCard("Content", pivot=None, below=True)
         
     def _on_alt_ret(self, ev):
-        self.Deck.NewCard("Header", pivot=self.FindFocusOrSelection().Card, below=False)
+        pivot = self.FindFocusOrSelection().Card
+        if pivot:
+            self.Deck.NewCard("Header", pivot=pivot.Card, below=False)
+        else:
+            self.Deck.NewCard("Header", pivot=None, below=False)
         
     def _on_alt_shft_ret(self, ev):
-        self.Deck.NewCard("Header", pivot=self.FindFocusOrSelection().Card, below=True)
+        pivot = self.FindFocusOrSelection().Card
+        if pivot:
+            self.Deck.NewCard("Header", pivot=pivot.Card, below=True)
+        else:
+            self.Deck.NewCard("Header", pivot=None, below=True)
         
     def _on_left_double(self, ev):
         pos = [i / self.Scale for i in ev.Position]
@@ -1553,6 +1623,21 @@ class Board(wxutils.AutoSize):
             self._drag_end(ev.Position)
         self.Unbind(wx.EVT_MOTION)
 
+    def _on_child_focus(self, ev):
+        # important to avoid automatically scrolling to focused child
+        pass 
+
+    def _on_mouse_capture_lost(self, ev):
+        self.ReleaseMouse()
+
+    def _on_copy(self, ev):
+        print "copy"
+        self.CopySelection()
+        
+    def _on_paste(self, ev):
+        print "paste"
+        self.PasteFromClipboard(self._menu_pos)
+
     def _on_card_left_down(self, ev):
         """Listens to `wx.EVT_LEFT_DOWN` events from every `Card`."""
         # pass the position relative to the Board
@@ -1564,7 +1649,8 @@ class Board(wxutils.AutoSize):
 
     def _on_card_child_left_down(self, ev):
         self.Selector.Active = False
-        ev.EventObject.SetFocus()
+        # ev.EventObject.SetFocus()
+        ev.Skip()
 
     def _on_moving_motion(self, ev):
         """Listens to `wx.EVT_MOTION` events from this object, only when the user is moving cards."""
