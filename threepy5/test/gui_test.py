@@ -4,13 +4,14 @@ import threepy5.threepy5 as py5
 import threepy5.gui.wxutils as wxutils
 import unittest
 import wx
+import threepy5.utils as utils
 from threepy5.gui import board as newgui
 from frame_test import TestFrame
 from random import randint
 
 
 class CardWinInit(unittest.TestCase):
-    test_rect = (1,2,3,4)
+    test_rect = utils.Rect(1,2,3,4)
     test_rating = 2
     test_kind = py5.Content.KIND_LBL_CONCEPT
     test_content = "this is content\n\nand this is more.\n\n\nrtag1: foo bar."
@@ -33,7 +34,7 @@ class CardWinInit(unittest.TestCase):
 
         card.rect = self.test_rect
 
-        self.assertEqual(win.Rect, card.rect)
+        self.assertEqual(list(win.Rect), list(card.rect))
 
     def testContentWinInit(self):
         """`ContentWin` should properly track `Card` properties."""
@@ -45,14 +46,12 @@ class CardWinInit(unittest.TestCase):
         card.kind      = self.test_kind
         card.rating    = self.test_rating
         card.content   = self.test_content
-        card.collapsed = self.test_collapsed
 
-        self.assertEqual(win.Rect, card.rect)
+        self.assertEqual(list(win.Rect), list(card.rect))
         self.assertEqual(win._title.Value, card.title)
         self.assertEqual(win._kind.Label, card.kind)
         self.assertEqual(win._rating.Rating, card.rating)
         self.assertEqual(win._content.Value, card.content)
-        self.assertEqual(win._collapsed, card.collapsed)
 
     def testHeaderWinInit(self):
         """`HeaderWin` should properly track `Header` properties."""
@@ -62,7 +61,7 @@ class CardWinInit(unittest.TestCase):
         card.rect = self.test_rect
         card.header = self.test_title
 
-        self.assertEqual(win.Rect, card.rect)
+        self.assertEqual(list(win.Rect), list(card.rect))
         self.assertEqual(win._header.Value, card.header)
 
     def testImageWinInit(self):
@@ -72,7 +71,7 @@ class CardWinInit(unittest.TestCase):
 
         card.rect = self.test_rect
 
-        self.assertEqual(win.Rect, card.rect)
+        self.assertEqual(list(win.Rect), list(card.rect))
 
     def tearDown(self):
         wx.CallAfter(self.app.Exit)
@@ -224,7 +223,7 @@ class testBoard(unittest.TestCase):
 
         pairs = [(cards[i], cards[i+1]) for i in range(len(cards)-1)]
         for c1, c2 in pairs:
-            self.assertTrue(c1.Position.x == c2.Position.x)
+            self.assertEqual(c1.Position.x, c2.Position.x)
             self.assertTrue(c1.Position.y <= c2.Position.y)
 
     def tearDown(self):

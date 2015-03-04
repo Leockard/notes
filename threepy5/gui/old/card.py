@@ -803,19 +803,19 @@ class TitleEditText(wxutils.EditText):
 # Class Content
 ######################
 
-class Content(Card):
-    """A `Card` which holds text contents. Features: `TitleEditText`, `KindButton`,
-    `StarRating`, `ContentText`. Tags are not handled, since they are parsed
-    and shown by `TagView`.
-    """
-    # sizes
-    DEFAULT_SZ   = (250, 150)
-    COLLAPSED_SZ = (250, 30)
-    BIG_SZ       = (350, 250)
+# class Content(Card):
+#     """A `Card` which holds text contents. Features: `TitleEditText`, `KindButton`,
+#     `StarRating`, `ContentText`. Tags are not handled, since they are parsed
+#     and shown by `TagView`.
+#     """
+#     # sizes
+#     DEFAULT_SZ   = (250, 150)
+#     COLLAPSED_SZ = (250, 30)
+#     BIG_SZ       = (350, 250)
 
-    # default control contents
-    DEFAULT_TITLE   = ""
-    DEFAULT_CONTENT = ""
+#     # default control contents
+#     DEFAULT_TITLE   = ""
+#     DEFAULT_CONTENT = ""
 
     # # # kind labels
     # DEFAULT_KIND = "kind"
@@ -987,17 +987,17 @@ class Content(Card):
     #     """
     #     return not self.content.IsShown()
 
-    def RequestView(self):
-        """Request an viewion. Raises `Card.EVT_REQUEST_VIEW`."""
-        event = self.ReqViewEvent(id=wx.ID_ANY)
-        event.SetEventObject(self)
-        self.GetEventHandler().ProcessEvent(event)
+    # def RequestView(self):
+    #     """Request an viewion. Raises `Card.EVT_REQUEST_VIEW`."""
+    #     event = self.ReqViewEvent(id=wx.ID_ANY)
+    #     event.SetEventObject(self)
+    #     self.GetEventHandler().ProcessEvent(event)
 
-    def CancelView(self):
-        """Request to stop being viewed. Raises `Card.EVT_CANCEL_VIEW`."""
-        event = self.CancelViewEvent(id=wx.ID_ANY)
-        event.SetEventObject(self)
-        self.GetEventHandler().ProcessEvent(event)
+    # def CancelView(self):
+    #     """Request to stop being viewed. Raises `Card.EVT_CANCEL_VIEW`."""
+    #     event = self.CancelViewEvent(id=wx.ID_ANY)
+    #     event.SetEventObject(self)
+    #     self.GetEventHandler().ProcessEvent(event)
 
     # def GetTitle(self):
     #     """Get the current title.
@@ -1175,35 +1175,35 @@ class Content(Card):
 # Class Image
 ######################
 
-class Image(Card):
-    """A `Card` that holds a single image."""
+# class Image(Card):
+    # """A `Card` that holds a single image."""
     
-    DEFAULT_SZ = (50, 50)
-    DEFAULT_PATH = ""
+    # DEFAULT_SZ = (50, 50)
+    # DEFAULT_PATH = ""
 
-    def __init__(self, parent, label, path=None, pos=wx.DefaultPosition, size=DEFAULT_SZ):
-        """Constructor.
+    # def __init__(self, parent, label, path=None, pos=wx.DefaultPosition, size=DEFAULT_SZ):
+    #     """Constructor.
 
-        * `parent: ` the parent `Deck`.
-        * `label: ` the unique internal identifier of this `Image`.
-        * `path: ` the path to load the image from. By default, is `None`.
-        * `pos: ` by default, is `wx.DefaultPosition`.
-        * `size: ` by default, is `Content.DEFAULT_SZ`.
-        """
-        super(Image, self).__init__(parent, label, pos=pos, size=size)
-        self.btn = None
-        self.img = None
-        self.path = path
-        self.orig = None
-        self.resizing = False
-        self.resize_w = False
-        self.resize_h = False
-        self.InitUI(path)
+    #     * `parent: ` the parent `Deck`.
+    #     * `label: ` the unique internal identifier of this `Image`.
+    #     * `path: ` the path to load the image from. By default, is `None`.
+    #     * `pos: ` by default, is `wx.DefaultPosition`.
+    #     * `size: ` by default, is `Content.DEFAULT_SZ`.
+    #     """
+    #     super(Image, self).__init__(parent, label, pos=pos, size=size)
+    #     self.btn = None
+    #     self.img = None
+    #     self.path = path
+    #     self.orig = None
+    #     self.resizing = False
+    #     self.resize_w = False
+    #     self.resize_h = False
+    #     self.InitUI(path)
 
-        # bindings
-        self.Bind(wx.EVT_ENTER_WINDOW, self.OnMouseOverBorder)
-        self.Bind(wx.EVT_LEAVE_WINDOW, self.OnMouseLeaveBorder)
-        self.main.Bind(wx.EVT_LEFT_DOWN, self.OnBorderLeftDown)
+    #     # bindings
+    #     self.Bind(wx.EVT_ENTER_WINDOW, self.OnMouseOverBorder)
+    #     self.Bind(wx.EVT_LEAVE_WINDOW, self.OnMouseLeaveBorder)
+    #     self.main.Bind(wx.EVT_LEFT_DOWN, self.OnBorderLeftDown)
 
         
     ### Behavior funtions
@@ -1247,36 +1247,36 @@ class Image(Card):
 
     #     self.Fit()
 
-    def Stretch(self, factor):
-        """Overridden from `Card`. Calls `Card.Stretch` and then resizes the current image."""
-        if abs(factor - 1.0) < 0.001:
-            return
+    # def Stretch(self, factor):
+    #     """Overridden from `Card`. Calls `Card.Stretch` and then resizes the current image."""
+    #     if abs(factor - 1.0) < 0.001:
+    #         return
 
-        # Card.Stretch takes care of the new rect size
-        super(Image, self).Stretch(factor)
+    #     # Card.Stretch takes care of the new rect size
+    #     super(Image, self).Stretch(factor)
 
-        # having handled the new rect, we only need to resize the image to it
-        if self.img:
-            # if we're returning to the original size, reload instead of resize,
-            # to cancel out scaling smoothing
-            if abs(self.GetScale() - 1.0) < 0.001:
-                bmp = self.orig
-            else:
-                bmp = self.ResizeBitmap(*self.GetSize())
+    #     # having handled the new rect, we only need to resize the image to it
+    #     if self.img:
+    #         # if we're returning to the original size, reload instead of resize,
+    #         # to cancel out scaling smoothing
+    #         if abs(self.GetScale() - 1.0) < 0.001:
+    #             bmp = self.orig
+    #         else:
+    #             bmp = self.ResizeBitmap(*self.GetSize())
 
-            self.SetImage(bmp)
+    #         self.SetImage(bmp)
 
-    def ResizeBitmap(self, w, h, quality=wx.IMAGE_QUALITY_BILINEAR):
-        """Helper function for `Stretch`. Resizes the current bitmap to the new size `(w, h)`.
+    # def ResizeBitmap(self, w, h, quality=wx.IMAGE_QUALITY_BILINEAR):
+    #     """Helper function for `Stretch`. Resizes the current bitmap to the new size `(w, h)`.
 
-        * `w: ` the new width.
-        * `h: ` the new height.
-        * `quality: ` one of `wx.IMAGE_QUALITY_*`.
+    #     * `w: ` the new width.
+    #     * `h: ` the new height.
+    #     * `quality: ` one of `wx.IMAGE_QUALITY_*`.
         
-        `returns: ` the current image resized to the specified size, as a `wx.Bitmap`.
-        """
-        img = self.img.GetBitmap().ConvertToImage()
-        return wx.BitmapFromImage(img.Scale(w, h, quality))
+    #     `returns: ` the current image resized to the specified size, as a `wx.Bitmap`.
+    #     """
+    #     img = self.img.GetBitmap().ConvertToImage()
+    #     return wx.BitmapFromImage(img.Scale(w, h, quality))
 
             
     ### Auxiliary functions

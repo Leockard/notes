@@ -119,15 +119,15 @@ class Card(utils.Publisher):
 
         `returns: ` a (x, y) tuple of floats.
         """
-        return namedtuple("Point", "x y")(self.rect[0], self.rect[1])
+        return namedtuple("Point", "x y")(self.rect.left, self.rect.top)
 
     @Position.setter
     def Position(self, pt):
         """Set the position of this `Card`."""
         new_rect = self.rect
-        new_rect[0], new_rect[1] = pt[0], pt[1]
+        new_rect.left, new_rect.top = pt[0], pt[1]
         # force an update on Rect by using setter
-        self.rect = new_rect
+        self.rect = utils.Rect(*new_rect)
 
     @property
     def Size(self):
@@ -135,15 +135,15 @@ class Card(utils.Publisher):
 
         `returns: ` a (x, y) tuple of floats.
         """
-        return namedtuple("Size", "w h")(self.rect[2], self.rect[3])
+        return namedtuple("Size", "w h")(self.rect.width, self.rect.height)
 
     @Size.setter
     def Size(self, sz):
         """Set the position of this `Card`."""
         new_rect = self.rect
-        new_rect[2], new_rect[3] = sz[0], sz[1]
+        new_rect.width, new_rect.height = sz[0], sz[1]
         # force an update on Rect by using setter
-        self.rect = new_rect
+        self.rect = utils.Rect(*new_rect)
 
 
     ### methods
@@ -154,7 +154,7 @@ class Card(utils.Publisher):
         * `dx: ` amount to move in the horizontal direction.
         * `dy: ` amount to move in the vertical direction.
         """
-        self.Position = (self.rect[0] + dx, self.rect[1] + dy)
+        self.Position = (self.rect.left + dx, self.rect.top + dy)
 
     def Dump(self):
         """Return a dict holding all this `Card`'s data. When overriding,
@@ -170,7 +170,7 @@ class Card(utils.Publisher):
         * `obj: ` must be a dict in the format returned by `Card.Dump`.
         """
         self._id = data["id"]
-        self.rect = data["rect"]
+        self.rect = utils.Rect(*data["rect"])
 
 
 
@@ -475,7 +475,7 @@ class Deck(utils.Publisher):
         if pos == NO_POS:
             pos = self._new_pos(pivot=pivot, below=below)
 
-        card = cardclass(rect=[pos[0], pos[1], sz[0], sz[1]])
+        card = cardclass(rect=utils.Rect(pos[0], pos[1], sz[0], sz[1]))
         self.AddCard(card)
         return card
 

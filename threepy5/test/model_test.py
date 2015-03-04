@@ -755,11 +755,11 @@ class CardMethods(unittest.TestCase):
         card = py5.Card()
         
         card.Position = self.test_pt1
-        self.assertEqual(card.Position, (card.rect[0], card.rect[1]))
+        self.assertEqual(card.Position, (card.rect.left, card.rect.top))
         self.assertEqual(card.Position, self.test_pt1)
         
         card.Position = self.test_pt2
-        self.assertEqual(card.Position, (card.rect[0], card.rect[1]))
+        self.assertEqual(card.Position, (card.rect.left, card.rect.top))
         self.assertEqual(card.Position, self.test_pt2)
 
     def testSize(self):
@@ -767,11 +767,11 @@ class CardMethods(unittest.TestCase):
         card = py5.Card()
         
         card.Size = self.test_pt1
-        self.assertEqual(card.Size, (card.rect[2], card.rect[3]))
+        self.assertEqual(card.Size, (card.rect.width, card.rect.height))
         self.assertEqual(card.Size, self.test_pt1)
         
         card.Size = self.test_pt2
-        self.assertEqual(card.Size, (card.rect[2], card.rect[3]))
+        self.assertEqual(card.Size, (card.rect.width, card.rect.height))
         self.assertEqual(card.Size, self.test_pt2)
 
     def testMoveBy(self):
@@ -803,7 +803,7 @@ class CardMethods(unittest.TestCase):
 
         card.Load(data)
         self.assertEqual(data["id"], card._id)
-        self.assertEqual(data["rect"], card.rect)
+        self.assertEqual(list(data["rect"]), list(card.rect))
 
 
 
@@ -825,7 +825,7 @@ class HeaderMethods(unittest.TestCase):
 
         head.Load(data)
         self.assertEqual(data["id"], head._id)
-        self.assertEqual(data["rect"], head.rect)
+        self.assertEqual(list(data["rect"]), list(head.rect))
         self.assertEqual(data["header"], head.header)
 
 
@@ -850,7 +850,7 @@ class ContentMethods(unittest.TestCase):
 
         cont.Load(data)
         self.assertEqual(data["id"], cont._id)
-        self.assertEqual(data["rect"], cont.rect)
+        self.assertEqual(list(data["rect"]), list(cont.rect))
         self.assertEqual(data["title"], cont.title)
         self.assertEqual(data["kind"], cont.kind)
         self.assertEqual(data["rating"], cont.rating)
@@ -879,7 +879,7 @@ class ImageMethods(unittest.TestCase):
         
         img.Load(data)
         self.assertEqual(data["id"], img._id)
-        self.assertEqual(data["rect"], img.rect)
+        self.assertEqual(list(data["rect"]), list(img.rect))
         self.assertEqual(data["path"], img.path)
         self.assertEqual(data["scale"], img.scale)
         

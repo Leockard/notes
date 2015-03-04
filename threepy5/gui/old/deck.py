@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
-"""This module holds the `Deck` and its helper class `SelectionManager`.
-`Deck` is the window that holds all `Card`s. Every `Box` has a `Deck`.
-`SelectionManager` handles selection.
-"""
+# """This module holds the `Deck` and its helper class `SelectionManager`.
+# `Deck` is the window that holds all `Card`s. Every `Box` has a `Deck`.
+# `SelectionManager` handles selection.
+# """
 
 # import wx
 # import json
@@ -83,25 +83,25 @@
     #     """
     #     return [h for h in self.cards if isinstance(h, Content)]
 
-    def GetCard(self, label):
-        """Returns the specified `Card`.
+    # def GetCard(self, label):
+    #     """Returns the specified `Card`.
 
-        * `label: ` the label id of the `Card`. Labels are mostly used internally.
+    #     * `label: ` the label id of the `Card`. Labels are mostly used internally.
 
-        `returns: ` the requested `Card`, or None.
-        """
-        li = [c for c in self.cards if c.label == label]
-        if li: return li[0]
-        else: return None
+    #     `returns: ` the requested `Card`, or None.
+    #     """
+    #     li = [c for c in self.cards if c.label == label]
+    #     if li: return li[0]
+    #     else: return None
 
-    def GetContentsByKind(self, kind):
-        """Returns a list of all Content cards of the `kind`.
+    # def GetContentsByKind(self, kind):
+    #     """Returns a list of all Content cards of the `kind`.
 
-        * `kind `: must be a `Content.*_LBL` constant.
+    #     * `kind `: must be a `Content.*_LBL` constant.
         
-        `returns: ` a list of `Content`s, all of the same `kind`.
-        """
-        return [c for c in self.GetContents() if c.GetKind() == kind or c.GetKind(long=True) == kind]
+    #     `returns: ` a list of `Content`s, all of the same `kind`.
+    #     """
+    #     return [c for c in self.GetContents() if c.GetKind() == kind or c.GetKind(long=True) == kind]
 
     # def GetNextCard(self, card, direc):
     #     """
@@ -317,50 +317,50 @@
     #     """
     #     self.selec.DeleteSelected()
 
-    def CopySelected(self):
-        """Copies every `Card` currently selected to `wx.TheClipboard`.
-        """
-        # get the data
-        data = []
-        for c in self.GetSelection():
-            data.append(c.Dump())
+    # def CopySelected(self):
+    #     """Copies every `Card` currently selected to `wx.TheClipboard`.
+    #     """
+    #     # get the data
+    #     data = []
+    #     for c in self.GetSelection():
+    #         data.append(c.Dump())
 
-        # create our own custom data object
-        obj = wx.CustomDataObject("CardList")
-        obj.SetData(str([json.dumps(d) for d in data]))
+    #     # create our own custom data object
+    #     obj = wx.CustomDataObject("CardList")
+    #     obj.SetData(str([json.dumps(d) for d in data]))
 
-        # write the data to the clipboard
-        if wx.TheClipboard.Open():
-            wx.TheClipboard.SetData(obj)
-            wx.TheClipboard.Close()
+    #     # write the data to the clipboard
+    #     if wx.TheClipboard.Open():
+    #         wx.TheClipboard.SetData(obj)
+    #         wx.TheClipboard.Close()
 
-    def PasteFromClipboard(self, pos=wx.DefaultPosition):
-        """Pastes every `Card` currently in `wx.TheClipboard`.
-        """
-        if wx.TheClipboard.Open():
-            # get data
-            obj = wx.CustomDataObject("CardList")
-            wx.TheClipboard.GetData(obj)
+    # def PasteFromClipboard(self, pos=wx.DefaultPosition):
+    #     """Pastes every `Card` currently in `wx.TheClipboard`.
+    #     """
+    #     if wx.TheClipboard.Open():
+    #         # get data
+    #         obj = wx.CustomDataObject("CardList")
+    #         wx.TheClipboard.GetData(obj)
 
-            # don't use eval()! Use ast.literal_eval() instead
-            data = [json.loads(d) for d in ast.literal_eval(obj.GetData())]
+    #         # don't use eval()! Use ast.literal_eval() instead
+    #         data = [json.loads(d) for d in ast.literal_eval(obj.GetData())]
 
-            # create new cards with the data
-            for d in data:
-                # copy all info and set focus to it
-                card = self.NewCard(d["class"])
-                card.Load(d)
-                card.SetFocus()
+    #         # create new cards with the data
+    #         for d in data:
+    #             # copy all info and set focus to it
+    #             card = self.NewCard(d["class"])
+    #             card.Load(d)
+    #             card.SetFocus()
 
-                # default position: a step away from the original
-                if pos == wx.DefaultPosition:
-                    new_pos = [i + self.GetPadding() for i in d["pos"]]
-                else:
-                    new_pos = pos
+    #             # default position: a step away from the original
+    #             if pos == wx.DefaultPosition:
+    #                 new_pos = [i + self.GetPadding() for i in d["pos"]]
+    #             else:
+    #                 new_pos = pos
                     
-                card.SetPosition(new_pos)
+    #             card.SetPosition(new_pos)
 
-            wx.TheClipboard.Close()
+    #         wx.TheClipboard.Close()
 
     # def GetGroups(self):
     #     """Get the list of `CardGroup`s defined for this `Deck`.
@@ -369,14 +369,14 @@
     #     """
     #     return self.groups
 
-    def GetContainingGroups(self, card):
-        """Get a list of every `CardGroup` that contains `card`.
+    # def GetContainingGroups(self, card):
+    #     """Get a list of every `CardGroup` that contains `card`.
 
-        * `card: ` a `Card`.
+    #     * `card: ` a `Card`.
 
-        `returns: ` a list of `CardGroup`s.
-        """
-        return [g for g in self.groups if card in g.GetMembers()]
+    #     `returns: ` a list of `CardGroup`s.
+    #     """
+    #     return [g for g in self.groups if card in g.GetMembers()]
 
     # def NewGroup(self, cards=[]):
     #     """Create a new `CardGroup` with `cards` as members.

@@ -219,8 +219,7 @@ class CardWin(Selectable):
             return
 
         self._card = card
-        self.Rect = card.rect
-        # pub.subscribe(self._update_rect, "UPDATE_RECT")
+        self.Rect = wx.Rect(*card.rect)
         py5.subscribe("rect", self._update_rect, card)
 
 
@@ -246,7 +245,8 @@ class CardWin(Selectable):
 
     ### subscribers: listen to changes in the underlying Card object
 
-    def _update_rect(self, val): self.Rect = val
+    def _update_rect(self, val):
+        self.Rect = wx.Rect(val.left, val.top, val.width, val.height)
 
 
     ### callbacks
@@ -1353,6 +1353,7 @@ class Board(wxutils.AutoSize):
             data = []
             for c in self.Selection:
                 data.append(c.Card.Dump())
+                print "copying: ", data[-1]["id"]
     
             obj = wx.TextDataObject()
             obj.Text = str([json.dumps(d) for d in data])
@@ -1371,7 +1372,9 @@ class Board(wxutils.AutoSize):
 
             for d in data:
                 card = self.Deck.NewCard(d["class"])
+                print "created new card: ", card._id
                 card.Load(d)
+                print "loaded: ", card._id
                 self.Cards[-1].SetFocus()
                 
                 if pos == wx.DefaultPosition:
@@ -1559,7 +1562,7 @@ class Board(wxutils.AutoSize):
         #         self.ScrollToCard(win)
 
         self.Cards.append(win)
-        self.Selector.Active = False
+        # self.Selector.Active = False
         win.SetFocus()
 
     def _on_pop_card(self, val):
@@ -1631,11 +1634,9 @@ class Board(wxutils.AutoSize):
         self.ReleaseMouse()
 
     def _on_copy(self, ev):
-        print "copy"
         self.CopySelection()
         
     def _on_paste(self, ev):
-        print "paste"
         self.PasteFromClipboard(self._menu_pos)
 
     def _on_card_left_down(self, ev):

@@ -8,6 +8,29 @@ used outside of `threepy5`.
 #####################################################
 
 ###########################
+# listener class
+###########################
+
+from wx.lib.pubsub import pub
+
+class listener(object):
+    def __init__(self, topics=[]):
+        self.calls = {}
+        for t in topics:
+            pub.subscribe(self.callback, t)
+        
+    def callback(self, topic=pub.AUTO_TOPIC, **kwargs):
+        name = topic.getName()
+        print name
+        if not name in self.calls.keys():
+            self.calls[name] = 0
+        self.calls[name] += 1
+
+    def addTopic(self, topic):
+        pub.subscribe(self.callback, topic)
+
+
+###########################
 # Rect recordtype
 ###########################
 
