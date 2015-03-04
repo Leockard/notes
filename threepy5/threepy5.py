@@ -162,7 +162,7 @@ class Card(utils.Publisher):
 
         `returns: ` a dict holding data.
         """
-        return {"id": self._id, "rect": self.rect}
+        return {"id": self._id, "rect": self.rect, "class": self.__class__.__name__}
 
     def Load(self, data):
         """Read data from an object and load it into this `Card`.
@@ -271,7 +271,6 @@ class Content(Card):
         self.rating    = data["rating"]
         self.content   = data["content"]
         self.collapsed = data["collapsed"]
-
 
 
 
@@ -430,6 +429,13 @@ class CardGroup(utils.Publisher):
         super(CardGroup, self).__init__()
         self.members = members
 
+    def Dump(self):
+        """Returns a list holding all this `CardGroup`'s data.
+
+        `returns: ` a list holding data.
+        """
+        return [m._id for m in self.members]
+
 
 
 class Deck(utils.Publisher):
@@ -466,7 +472,7 @@ class Deck(utils.Publisher):
         cardclass = globals()[class_]
         sz = cardclass.DEFAULT_SZ
 
-        if pos == NO_POS and pivot:
+        if pos == NO_POS:
             pos = self._new_pos(pivot=pivot, below=below)
 
         card = cardclass(rect=[pos[0], pos[1], sz[0], sz[1]])
@@ -502,7 +508,7 @@ class Deck(utils.Publisher):
 
         # otherwise, move it to the right of the last Card
         else: 
-            rects = [utils.Rect(c.rect) for c in self.cards]
+            rects = [utils.Rect(*c.rect) for c in self.cards]
             rights = [r.right for r in rects]
             top = min([r.top for r in rects])
             left = max(rights) + pad
@@ -511,7 +517,12 @@ class Deck(utils.Publisher):
         return pos
 
     def Dump(self):
-        pass
+        """Return a dict holding all this `Deck`'s data.
+
+        `returns: ` a dict holding data.
+        """
+        return {"cards": [c.Dump() for c in self.cards],
+                "groups": [g.Dump() for g in self.groups]}
 
     def Load(self, data):
         pass
