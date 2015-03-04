@@ -4,69 +4,60 @@
 `SelectionManager` handles selection.
 """
 
-import wx
-import json
-import ast
-import card
-import wx.lib.newevent as ne
-import wxutils
+# import wx
+# import json
+# import ast
+# import card
+# import wx.lib.newevent as ne
+# import wxutils
 
     
 ######################
 # Deck Class
 ######################
 
-class Deck(wxutils.AutoSize):
-    """
-    `Deck` is the parent window of all `Card`s. It handles position, selection,
-    arrangement, and listens to individual Cards' events, so that `Box`
-    only needs to listen to `Deck` events.
-    """
+# class Deck(wxutils.AutoSize):
                 
-    MOVING_RECT_THICKNESS = 1
-    BACKGROUND_CL = "#CCCCCC"
-    CARD_PADDING = 15
-    HORIZONTAL = 2
-    VERTICAL   = 4
+    # MOVING_RECT_THICKNESS = 1
+    # BACKGROUND_CL = "#CCCCCC"
+    # CARD_PADDING = 15
+    # HORIZONTAL = 2
+    # VERTICAL   = 4
 
     # LEFT   = 2
     # RIGHT  = 4
     # DOWN   = 8
     # UP     = 16
 
-    NewCardEvent, EVT_NEW_CARD = ne.NewEvent()
-    DeleteEvent,  EVT_DEL_CARD = ne.NewEvent()
-    ReqViewEvent, EVT_REQUEST_VIEW = ne.NewEvent()
+    # NewCardEvent, EVT_NEW_CARD = ne.NewEvent()
+    # DeleteEvent,  EVT_DEL_CARD = ne.NewEvent()
+    # ReqViewEvent, EVT_REQUEST_VIEW = ne.NewEvent()
 
-    def __init__(self, parent, pos=wx.DefaultPosition, size=wx.DefaultSize, style=wx.BORDER_NONE):
-        """Constructor.
+    # def __init__(self, parent, pos=wx.DefaultPosition, size=wx.DefaultSize, style=wx.BORDER_NONE):
+        
+        # super(Deck, self).__init__(parent, pos=pos, size=size, style=style)
 
-        * `parent: ` the parent `wx.Window`.
-        * `style: ` by default is `wx.BORDER_NONE`.
-        """
-        super(Deck, self).__init__(parent, pos=pos, size=size, style=style)
-
-        # members
-        self.cards = []
-        self.groups = []
-        self.moving_cards_pos = []
-        self.drag_select = False
-        self.menu_position = (0, 0)
-        self.scale = 1.0
-        self.selec = SelectionManager(self)
-        self.InitAccels()
-        self.InitMenu()
+        # # members
+        # self.cards = []
+        # self.groups = []
+        # self.moving_cards_pos = []
+        # self.drag_select = False
+        # self.menu_position = (0, 0)
+        # self.scale = 1.0
+        # self.selec = SelectionManager(self)
+        # self.InitAccels()
+        # self.InitMenu()
 
         # Bindings
-        self.Bind(wx.EVT_LEFT_DOWN, self.OnLeftDown)
-        self.Bind(wx.EVT_LEFT_UP, self.OnLeftUp)
-        self.Bind(wx.EVT_LEFT_DCLICK, self.OnLeftDClick)
-        self.Bind(wx.EVT_MOUSE_CAPTURE_LOST, self.OnMouseCaptureLost)
-        self.Bind(wx.EVT_CHILD_FOCUS, self.OnChildFocus)
-        self.Bind(self.selec.EVT_MGR_DELETE, self.OnMgrDelete)
+        # self.Bind(wx.EVT_LEFT_DOWN, self.OnLeftDown)
+        # self.Bind(wx.EVT_LEFT_UP, self.OnLeftUp)
+        # self.Bind(wx.EVT_LEFT_DCLICK, self.OnLeftDClick)
+        # self.Bind(wx.EVT_MOUSE_CAPTURE_LOST, self.OnMouseCaptureLost)
+        # self.Bind(wx.EVT_CHILD_FOCUS, self.OnChildFocus)
+        # self.Bind(self.selec.EVT_MGR_DELETE, self.OnMgrDelete)
         
-        # other gui setup
-        self.SetBackgroundColour(Deck.BACKGROUND_CL)        
+        # # other gui setup
+        # self.SetBackgroundColour(Deck.BACKGROUND_CL)        
 
 
     ### Behavior functions
@@ -888,29 +879,29 @@ class Deck(wxutils.AutoSize):
 # SelectionManager Class
 ###########################
                                 
-class SelectionManager(wx.Window):
-    """
-    `SelectionManager` is an invisible window that positions itself on the top left corner of a `Deck`
-    and gets focus every time a card is (or many cards are) selected. This is done to hide carets
-    and selections from other controls while selection is active. `SelectionManager` also manages
-    card selection by managing key down events, such as arrow keys to move selection, shift + arrow
-    keys to extend selection, etc.
-    """
-    SIZE = (1,1)
-    POS  = (0,0)
+# class SelectionManager(wx.Window):
+#     """
+#     `SelectionManager` is an invisible window that positions itself on the top left corner of a `Deck`
+#     and gets focus every time a card is (or many cards are) selected. This is done to hide carets
+#     and selections from other controls while selection is active. `SelectionManager` also manages
+#     card selection by managing key down events, such as arrow keys to move selection, shift + arrow
+#     keys to extend selection, etc.
+#     """
+    # SIZE = (1,1)
+    # POS  = (0,0)
 
-    DeleteEvent, EVT_MGR_DELETE = ne.NewCommandEvent()
+    # DeleteEvent, EVT_MGR_DELETE = ne.NewCommandEvent()
 
-    def __init__(self, parent):
-        """Constructor.
+    # def __init__(self, parent):
+    #     """Constructor.
         
-        * `parent: ` the parent `wx.Window`, usually a `Deck`.
-        """
-        super(SelectionManager, self).__init__(parent, size=self.SIZE, pos=self.POS)
-        self.cards = []
-        self.last = None
-        self.active = False
-        self.SetBackgroundColour(self.GetParent().GetBackgroundColour())
+    #     * `parent: ` the parent `wx.Window`, usually a `Deck`.
+    #     """
+    #     super(SelectionManager, self).__init__(parent, size=self.SIZE, pos=self.POS)
+    #     self.cards = []
+    #     self.last = None
+    #     self.active = False
+    #     self.SetBackgroundColour(self.GetParent().GetBackgroundColour())
 
 
     ### behavior functions
@@ -1150,33 +1141,33 @@ class SelectionManager(wx.Window):
                 
     #         # all other keys cancel selection
     #         else:
-    #             self.Deactivate()
+#     #             self.Deactivate()
 
                 
 
-###########################
-# pdoc documentation setup
-###########################
-# __pdoc__ is the special variable from the automatic
-# documentation generator pdoc.
-# By setting pdoc[class.method] to None, we are telling
-# pdoc to not generate documentation for said method.
-__pdoc__ = {}
-__pdoc__["field"] = None
+# ###########################
+# # pdoc documentation setup
+# ###########################
+# # __pdoc__ is the special variable from the automatic
+# # documentation generator pdoc.
+# # By setting pdoc[class.method] to None, we are telling
+# # pdoc to not generate documentation for said method.
+# __pdoc__ = {}
+# __pdoc__["field"] = None
 
-# Since we only want to generate documentation for our own
-# mehods, and not the ones coming from the base classes,
-# we first set to None every method in the base class.
-for field in dir(wxutils.AutoSize):
-    __pdoc__['Deck.%s' % field] = None
-for field in dir(wx.Window):
-    __pdoc__['SelectionManager.%s' % field] = None
+# # Since we only want to generate documentation for our own
+# # mehods, and not the ones coming from the base classes,
+# # we first set to None every method in the base class.
+# for field in dir(wxutils.AutoSize):
+#     __pdoc__['Deck.%s' % field] = None
+# for field in dir(wx.Window):
+#     __pdoc__['SelectionManager.%s' % field] = None
 
-# Then, we have to add again the methods that we have
-# overriden. See https://github.com/BurntSushi/pdoc/issues/15.
-for field in Deck.__dict__.keys():
-    if 'Deck.%s' % field in __pdoc__.keys():
-        del __pdoc__['Deck.%s' % field]
-for field in SelectionManager.__dict__.keys():
-    if 'SelectionManager.%s' % field in __pdoc__.keys():
-        del __pdoc__['SelectionManager.%s' % field]
+# # Then, we have to add again the methods that we have
+# # overriden. See https://github.com/BurntSushi/pdoc/issues/15.
+# for field in Deck.__dict__.keys():
+#     if 'Deck.%s' % field in __pdoc__.keys():
+#         del __pdoc__['Deck.%s' % field]
+# for field in SelectionManager.__dict__.keys():
+#     if 'SelectionManager.%s' % field in __pdoc__.keys():
+#         del __pdoc__['SelectionManager.%s' % field]

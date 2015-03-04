@@ -1,63 +1,63 @@
 # -*- coding: utf-8 -*-
-"""
-A `Card` is the "virutal index card"; it is a window that goes on the
-`Deck`. It can hold text, images, etc.
-"""
-import wx
-import os
-import wxutils
-import deck
-import wx.richtext as rt
-import wx.lib.newevent as ne
+# """
+# A `Card` is the "virutal index card"; it is a window that goes on the
+# `Deck`. It can hold text, images, etc.
+# """
+# import wx
+# import os
+# import wxutils
+# import deck
+# import wx.richtext as rt
+# import wx.lib.newevent as ne
 
 
 ######################
 # Card Class
 ######################
 
-class Card(wx.Panel):
-    """The window for a `Card`. Just as `Card` itself, this is an abstract class.
+# class Card(wx.Panel):
+#     """The window for a `Card`. Just as `Card` itself, this is an abstract class.
 
-    An important feature of `Card` is that it consists of an underlying window, the
-    "border" window which is the same colour of the parent `Deck` most of the time. When
-    the `Card` is selected, the border window changes colour to signal selection. The
-    border window has only one child, the `Card`'s "main" window, which holds the actual
-    controls shown to the user. The "main" window is what one would normally assume is
-    the real `Card`.
+#     An important feature of `Card` is that it consists of an underlying window, the
+#     "border" window which is the same colour of the parent `Deck` most of the time. When
+#     the `Card` is selected, the border window changes colour to signal selection. The
+#     border window has only one child, the `Card`'s "main" window, which holds the actual
+#     controls shown to the user. The "main" window is what one would normally assume is
+#     the real `Card`.
     
-    We must take care to make the `Card` object behave appropriately
-    according to its border and main windows. For example, we override `GetChildren` to
-    return the main window's children, when it would normally return the main window
-    (since it is the only child of the border window).
-    """
-    # BORDER_WIDTH = 2
-    # BORDER_THICK = 5
-    # SELECT_CL = (0, 0, 0, 0)
+#     We must take care to make the `Card` object behave appropriately
+#     according to its border and main windows. For example, we override `GetChildren` to
+#     return the main window's children, when it would normally return the main window
+#     (since it is the only child of the border window).
+#     """
+#     # BORDER_WIDTH = 2
+#     # BORDER_THICK = 5
+#     # SELECT_CL = (0, 0, 0, 0)
 
-    # bar = None
+#     # bar = None
 
-    # DeleteEvent,   EVT_DELETE = ne.NewEvent()
-    # CollapseEvent, EVT_COLLAPSE = ne.NewEvent()
-    # ReqViewEvent,    EVT_REQUEST_VIEW = ne.NewEvent()
-    # CancelViewEvent, EVT_CANCEL_VIEW = ne.NewEvent()
+#     # DeleteEvent,   EVT_DELETE = ne.NewEvent()
+#     # CollapseEvent, EVT_COLLAPSE = ne.NewEvent()
+#     # ReqViewEvent,    EVT_REQUEST_VIEW = ne.NewEvent()
+#     # CancelViewEvent, EVT_CANCEL_VIEW = ne.NewEvent()
 
-    def __init__(self, parent, label, pos=wx.DefaultPosition, size=wx.DefaultSize, style=0):
-        """Constructor.
+#     def __init__(self, parent, label, pos=wx.DefaultPosition, size=wx.DefaultSize, style=0):
+#         """Constructor.
 
-        * `parent: ` the parent `Deck`.
-        * `label: ` the unique internal identifier of this `Card`.
-        * `pos: ` by default, is `wx.DefaultPosition`.
-        * `size: ` by default, is `wx.DefaultSize`.
-        * `style: ` the style for this window.
-        """
-        super(Card, self).__init__(parent, pos=pos, size=size, style=style)
-        self.main = None
-        self.InitBorder()
-        self.label = label
-        self.scale = 1.0
-        # frect stores the floating point coordinates of this card's rect
-        # in the usual order: [left, top, width, height]. See Card.Stretch()
-        self.frect = []
+#         * `parent: ` the parent `Deck`.
+#         * `label: ` the unique internal identifier of this `Card`.
+#         * `pos: ` by default, is `wx.DefaultPosition`.
+#         * `size: ` by default, is `wx.DefaultSize`.
+#         * `style: ` the style for this window.
+#         """
+#         super(Card, self).__init__(parent, pos=pos, size=size, style=style)
+#         self.main = None
+#         self.InitBorder()
+#         self.label = label
+#         self.scale = 1.0
+#         # frect stores the floating point coordinates of this card's rect
+#         # in the usual order: [left, top, width, height]. See Card.Stretch()
+#         self.frect = []
 
         # create CardBar
         # if Card.bar == None:
@@ -93,14 +93,14 @@ class Card(wx.Panel):
     #     """Hide the `CardBar` associated to this `Card`. Deprecated."""
     #     self.bar.Hide()
 
-    def Delete(self):
-        """Delete this `Card`. Raises `Card.EVT_DELETE`."""
-        event = self.DeleteEvent(id=wx.ID_ANY)
-        event.SetEventObject(self)
-        self.GetEventHandler().ProcessEvent(event)
+    # def Delete(self):
+    #     """Delete this `Card`. Raises `Card.EVT_DELETE`."""
+    #     event = self.DeleteEvent(id=wx.ID_ANY)
+    #     event.SetEventObject(self)
+    #     self.GetEventHandler().ProcessEvent(event)
 
-        self.Hide()
-        self.Destroy()
+    #     self.Hide()
+    #     self.Destroy()
 
     # def Select(self):
     #     """Show this card as selected (changes the border window colour)."""
@@ -331,25 +331,25 @@ class Card(wx.Panel):
 # Class Header
 ######################
 
-class Header(Card):
-    """`Card` that holds a title or header. Consists of a single `EditText` control."""
-    MIN_WIDTH = 150
-    DEFAULT_SZ = (150, 32)
-    DEFAULT_TITLE = ""
+# class Header(Card):
+#     """`Card` that holds a title or header. Consists of a single `EditText` control."""
+#     MIN_WIDTH = 150
+#     DEFAULT_SZ = (150, 32)
+#     DEFAULT_TITLE = ""
 
-    def __init__(self, parent, label, pos=wx.DefaultPosition, header = "", size=DEFAULT_SZ):
-        """Constructor.
+#     def __init__(self, parent, label, pos=wx.DefaultPosition, header = "", size=DEFAULT_SZ):
+#         """Constructor.
 
-        * `parent: ` the parent `wx.Window`.
-        * `label: ` the unique internal identifier of this `Card`.
-        * `pos: ` the position of this `Card`. By default, is `wx.DefaultPosition`.
-        * `header: ` the initial header.
-        * `size: ` by default, is `wx.DefaultSize`.
-        """
-        super(Header, self).__init__(parent, label, pos=pos, size=size, style=wx.TAB_TRAVERSAL)
-        self.InitUI()
-        self.SetHeader(header)
-        self.len = len(self.GetHeader())
+#         * `parent: ` the parent `wx.Window`.
+#         * `label: ` the unique internal identifier of this `Card`.
+#         * `pos: ` the position of this `Card`. By default, is `wx.DefaultPosition`.
+#         * `header: ` the initial header.
+#         * `size: ` by default, is `wx.DefaultSize`.
+#         """
+#         super(Header, self).__init__(parent, label, pos=pos, size=size, style=wx.TAB_TRAVERSAL)
+#         self.InitUI()
+#         self.SetHeader(header)
+#         self.len = len(self.GetHeader())
 
 
     ### Behavior Functions
@@ -451,31 +451,31 @@ class Header(Card):
 # Classes for the controls in Content card
 ############################################
 
-class ContentText(wxutils.ColouredText):
-    """The main text field on a `Content` `Card`."""
+# class ContentText(wxutils.ColouredText):
+#     """The main text field on a `Content` `Card`."""
     
-    def __init__(self, parent, size=wx.DefaultSize, style=wx.TE_RICH|wx.TE_MULTILINE):
-        """Constructor.
+#     def __init__(self, parent, size=wx.DefaultSize, style=wx.TE_RICH|wx.TE_MULTILINE):
+#         """Constructor.
 
-        * `parent: ` the parent `Content`.
-        * `size: ` by default, is `wx.DefaultSize`.
-        * `style: ` by default is wx.TE_RICH|wx.TE_MULTILINE.
-        """
-        super(ContentText, self).__init__(parent, size=size, style=style)
-        self.Bind(wx.EVT_KEY_DOWN, self.OnKeyDown)
+#         * `parent: ` the parent `Content`.
+#         * `size: ` by default, is `wx.DefaultSize`.
+#         * `style: ` by default is wx.TE_RICH|wx.TE_MULTILINE.
+#         """
+#         super(ContentText, self).__init__(parent, size=size, style=style)
+#         self.Bind(wx.EVT_KEY_DOWN, self.OnKeyDown)
 
 
     ### Behavior functions
 
-    def BoldRange(self):
-        """Sets the font weight in the current range to bold."""
-        start, end = self.GetSelection()
-        self.SetStyle(start, end, wx.TextAttr(None, None, self.GetFont().Bold()))
+    # def BoldRange(self):
+    #     """Sets the font weight in the current range to bold."""
+    #     start, end = self.GetSelection()
+    #     self.SetStyle(start, end, wx.TextAttr(None, None, self.GetFont().Bold()))
 
-    def ItalicRange(self):
-        """Sets the font style in the current range to italic."""
-        start, end = self.GetSelection()
-        self.SetStyle(start, end, wx.TextAttr(None, None, self.GetFont().Italic()))
+    # def ItalicRange(self):
+    #     """Sets the font style in the current range to italic."""
+    #     start, end = self.GetSelection()
+    #     self.SetStyle(start, end, wx.TextAttr(None, None, self.GetFont().Italic()))
 
 
     ### Callbacks
@@ -502,37 +502,37 @@ class ContentText(wxutils.ColouredText):
 
 
 
-class KindButton(wx.Button):
-    """The `wx.Button` which selects the kind of a `Content` `Card`."""
+# class KindButton(wx.Button):
+#     """The `wx.Button` which selects the kind of a `Content` `Card`."""
 
-    DEFAULT_SIZE = (33, 20)
-    DEFAULT_FONT = (8, wx.FONTFAMILY_DEFAULT, wx.FONTSTYLE_ITALIC, wx.FONTWEIGHT_NORMAL, False)
+#     DEFAULT_SIZE = (33, 20)
+#     DEFAULT_FONT = (8, wx.FONTFAMILY_DEFAULT, wx.FONTSTYLE_ITALIC, wx.FONTWEIGHT_NORMAL, False)
 
-    DEFAULT_LBL    = "kind"
-    CONCEPT_LBL    = "C"
-    ASSUMPTION_LBL = "A"
-    RESEARCH_LBL   = "R"
-    FACT_LBL       = "F"
-    DEFAULT_LBL_LONG    = "kind"
-    CONCEPT_LBL_LONG    = "Concept"
-    ASSUMPTION_LBL_LONG = "Assumption"
-    RESEARCH_LBL_LONG   = "Research"
-    FACT_LBL_LONG       = "Fact"
-    LONG_LABELS = {CONCEPT_LBL: CONCEPT_LBL_LONG, ASSUMPTION_LBL: ASSUMPTION_LBL_LONG, RESEARCH_LBL: RESEARCH_LBL_LONG, FACT_LBL: FACT_LBL_LONG, DEFAULT_LBL: DEFAULT_LBL_LONG}
+#     DEFAULT_LBL    = "kind"
+#     CONCEPT_LBL    = "C"
+#     ASSUMPTION_LBL = "A"
+#     RESEARCH_LBL   = "R"
+#     FACT_LBL       = "F"
+#     DEFAULT_LBL_LONG    = "kind"
+#     CONCEPT_LBL_LONG    = "Concept"
+#     ASSUMPTION_LBL_LONG = "Assumption"
+#     RESEARCH_LBL_LONG   = "Research"
+#     FACT_LBL_LONG       = "Fact"
+#     LONG_LABELS = {CONCEPT_LBL: CONCEPT_LBL_LONG, ASSUMPTION_LBL: ASSUMPTION_LBL_LONG, RESEARCH_LBL: RESEARCH_LBL_LONG, FACT_LBL: FACT_LBL_LONG, DEFAULT_LBL: DEFAULT_LBL_LONG}
 
 
-    def __init__(self, parent, size=DEFAULT_SIZE, pos=wx.DefaultPosition, label=DEFAULT_LBL_LONG, style=wx.BORDER_NONE):
-        """Constructor.
+#     def __init__(self, parent, size=DEFAULT_SIZE, pos=wx.DefaultPosition, label=DEFAULT_LBL_LONG, style=wx.BORDER_NONE):
+#         """Constructor.
 
-        * `parent: ` the parent `Content`.
-        * `pos: ` by default, is `wx.DefaultSize`.
-        * `size: ` by default, is `wx.DefaultPosition`.
-        * `label: ` by default, is `DEFAULT_LBL_LONG`.
-        * `style: ` by default, is `wx.BORDER_NONE`.
-        """
-        super(KindButton, self).__init__(parent, size=size, pos=pos, label=label, style=style)
-        self.SetOwnFont(wx.Font(*self.DEFAULT_FONT))
-        self.Bind(wx.EVT_BUTTON, self.OnPress)
+#         * `parent: ` the parent `Content`.
+#         * `pos: ` by default, is `wx.DefaultSize`.
+#         * `size: ` by default, is `wx.DefaultPosition`.
+#         * `label: ` by default, is `DEFAULT_LBL_LONG`.
+#         * `style: ` by default, is `wx.BORDER_NONE`.
+#         """
+#         super(KindButton, self).__init__(parent, size=size, pos=pos, label=label, style=style)
+#         self.SetOwnFont(wx.Font(*self.DEFAULT_FONT))
+#         self.Bind(wx.EVT_BUTTON, self.OnPress)
 
 
     ### Behavior functions
@@ -562,7 +562,7 @@ class KindButton(wx.Button):
     # def OnPress(self, ev):
     #     """Listens to `wx.EVT_BUTTON`."""
     #     rect = self.GetRect()
-        self.PopupMenu(KindSelectMenu(GetCardAncestor(self)), (rect.width, rect.height))
+        # self.PopupMenu(KindSelectMenu(GetCardAncestor(self)), (rect.width, rect.height))
 
 
 
@@ -730,33 +730,33 @@ class TitleEditText(wxutils.EditText):
 
 
 
-class StarRating(wx.Button):
-    """The `wx.Button` that displays the rating on a `Content` `Card`."""
-    # PATH = "/home/leo/code/threepy5/threepy5/img/"
+# class StarRating(wx.Button):
+#     """The `wx.Button` that displays the rating on a `Content` `Card`."""
+#     # PATH = "/home/leo/code/threepy5/threepy5/img/"
 
-    # # thanks openclipart.org for the stars!
-    # # https://openclipart.org/detail/117079/5-star-rating-system-by-jhnri4
-    # FILES = ["stars_0.png", "stars_1.png", "stars_2.png", "stars_3.png"]
-    # BMPS = []
-    # MAX = 3
+#     # # thanks openclipart.org for the stars!
+#     # # https://openclipart.org/detail/117079/5-star-rating-system-by-jhnri4
+#     # FILES = ["stars_0.png", "stars_1.png", "stars_2.png", "stars_3.png"]
+#     # BMPS = []
+#     # MAX = 3
 
-    def __init__(self, parent):
-        """Constructor.
+#     def __init__(self, parent):
+#         """Constructor.
 
-        * `parent: ` the parent `Content`.
-        """
-        super(StarRating, self).__init__(parent, size=(20, 35),
-                                         style=wx.BORDER_NONE|wx.BU_EXACTFIT)
+#         * `parent: ` the parent `Content`.
+#         """
+#         super(StarRating, self).__init__(parent, size=(20, 35),
+#                                          style=wx.BORDER_NONE|wx.BU_EXACTFIT)
 
-        # the first instance loads all BMPs
-        if not StarRating.BMPS:
-            StarRating.BMPS = [wx.Bitmap(self.PATH + self.FILES[n]) for n in range(self.MAX + 1)]
+#         # the first instance loads all BMPs
+#         if not StarRating.BMPS:
+#             StarRating.BMPS = [wx.Bitmap(self.PATH + self.FILES[n]) for n in range(self.MAX + 1)]
 
-        self.rating = 0
-        self.SetRating(0)
+#         self.rating = 0
+#         self.SetRating(0)
 
-        # bindings
-        self.Bind(wx.EVT_BUTTON, self.OnPress)
+#         # bindings
+#         self.Bind(wx.EVT_BUTTON, self.OnPress)
 
     ### Behavior functions
 
@@ -848,55 +848,55 @@ class Content(Card):
     # Content events
     # KindEvent, EVT_CONT_KIND = ne.NewCommandEvent()
 
-    def __init__(self, parent, label, pos=wx.DefaultPosition, size=DEFAULT_SZ,
-                 title="", kind=KindButton.DEFAULT_LBL, content="", rating=0):
-        """Constructor.
+    # def __init__(self, parent, label, pos=wx.DefaultPosition, size=DEFAULT_SZ,
+    #              title="", kind=KindButton.DEFAULT_LBL, content="", rating=0):
+    #     """Constructor.
 
-        * `parent: ` the parent `Deck`.
-        * `label: ` the unique internal identifier of this `Card`.
-        * `pos: ` by default, is `wx.DefaultPosition`.
-        * `size: ` by default, is `Content.DEFAULT_SZ`.
-        * `title: ` by default, is "".
-        * `kind: ` by default, is `KindButton.DEFAULT_LBL`.
-        * `content: ` by default, is "".
-        * `rating: ` by default, is 0 stars.
-        """
-        super(Content, self).__init__(parent, label, pos=pos, size=size, style=wx.TAB_TRAVERSAL)
+    #     * `parent: ` the parent `Deck`.
+    #     * `label: ` the unique internal identifier of this `Card`.
+    #     * `pos: ` by default, is `wx.DefaultPosition`.
+    #     * `size: ` by default, is `Content.DEFAULT_SZ`.
+    #     * `title: ` by default, is "".
+    #     * `kind: ` by default, is `KindButton.DEFAULT_LBL`.
+    #     * `content: ` by default, is "".
+    #     * `rating: ` by default, is 0 stars.
+    #     """
+    #     super(Content, self).__init__(parent, label, pos=pos, size=size, style=wx.TAB_TRAVERSAL)
 
-        self.InitUI()
-        self.InitAccels()
+    #     self.InitUI()
+    #     self.InitAccels()
 
-        self.viewing = False
-        self.collapse_enabled = True
+    #     self.viewing = False
+    #     self.collapse_enabled = True
 
-        if title:   self.title.SetValue(title)
-        if content: self.content.SetValue(content)
-        self.SetKind(kind)
-        self.rating.SetRating(rating)
+    #     if title:   self.title.SetValue(title)
+    #     if content: self.content.SetValue(content)
+    #     self.SetKind(kind)
+    #     self.rating.SetRating(rating)
 
 
     ### Behavior functions
 
-    def SetViewing(self, val):
-        """Sets the viewing condition for this `Card`.
+    # def SetViewing(self, val):
+    #     """Sets the viewing condition for this `Card`.
 
-        * `val: ` if `True`, this `Card` is being viewed.
-        """
-        self.viewing = val
+    #     * `val: ` if `True`, this `Card` is being viewed.
+    #     """
+    #     self.viewing = val
 
-    def GetViewing(self):
-        """Get the viewing condition for this `Card`.
+    # def GetViewing(self):
+    #     """Get the viewing condition for this `Card`.
 
-        `returns: ` `True` if this `Card` is being viewed.
-        """
-        return self.viewing
+    #     `returns: ` `True` if this `Card` is being viewed.
+    #     """
+    #     return self.viewing
 
-    def SetRating(self, n):
-        """Sets the star rating for this `Card`.
+    # def SetRating(self, n):
+    #     """Sets the star rating for this `Card`.
 
-        * `n: ` the number of stars to set for this `Card`.
-        """
-        self.rating.SetRating(n)
+    #     * `n: ` the number of stars to set for this `Card`.
+    #     """
+    #     self.rating.SetRating(n)
 
     # def GetCaretPos(self):
     #     """Get the position where the caret (insertion point) is in the `Card`.
@@ -941,44 +941,44 @@ class Content(Card):
     #     """
     #     self.content.ShowPosition(pos)
 
-    def DisableCollapse(self):
-        """Calling `Collapse` or `Uncollapse` after calling this method will do nothing."""
-        self.collapse_enabled = False
+    # def DisableCollapse(self):
+    #     """Calling `Collapse` or `Uncollapse` after calling this method will do nothing."""
+    #     self.collapse_enabled = False
 
-    def EnableCollapse(self):
-        """Calling `Collapse` or `Uncollapse` after calling this method will work normally."""
-        self.collapse_enabled = True
+    # def EnableCollapse(self):
+    #     """Calling `Collapse` or `Uncollapse` after calling this method will work normally."""
+    #     self.collapse_enabled = True
 
-    def Collapse(self):
-        """Hides the content text and displays only the title (and rating). A "minimization" of sorts."""
-        if self.collapse_enabled and not self.IsCollapsed():
-            self.content.Hide()
-            self.SetSize(self.COLLAPSED_SZ)
+    # def Collapse(self):
+    #     """Hides the content text and displays only the title (and rating). A "minimization" of sorts."""
+    #     if self.collapse_enabled and not self.IsCollapsed():
+    #         self.content.Hide()
+    #         self.SetSize(self.COLLAPSED_SZ)
 
-            # raise the event
-            event = self.CollapseEvent(id=wx.ID_ANY, collapsed=True)
-            event.SetEventObject(self)
-            self.GetEventHandler().ProcessEvent(event)
+    #         # raise the event
+    #         event = self.CollapseEvent(id=wx.ID_ANY, collapsed=True)
+    #         event.SetEventObject(self)
+    #         self.GetEventHandler().ProcessEvent(event)
 
-    def Uncollapse(self):
-        """Shows the content text and Returns to normal size."""
-        if self.collapse_enabled and self.IsCollapsed():
-            self.content.Show()
-            self.SetSize(self.DEFAULT_SZ)
+    # def Uncollapse(self):
+    #     """Shows the content text and Returns to normal size."""
+    #     if self.collapse_enabled and self.IsCollapsed():
+    #         self.content.Show()
+    #         self.SetSize(self.DEFAULT_SZ)
 
-            # raise the event
-            event = self.CollapseEvent(id=wx.ID_ANY, collapsed=False)
-            event.SetEventObject(self)
-            self.GetEventHandler().ProcessEvent(event)
+    #         # raise the event
+    #         event = self.CollapseEvent(id=wx.ID_ANY, collapsed=False)
+    #         event.SetEventObject(self)
+    #         self.GetEventHandler().ProcessEvent(event)
 
-    def ToggleCollapse(self):
-        """If `Card` is collapsed, uncollapsed it, or the other way around."""
-        if self.IsCollapsed():
-            self.Uncollapse()
-        else:
-            if self.FindFocus() == self.content:
-                self.title.SetFocus()
-            self.Collapse()
+    # def ToggleCollapse(self):
+    #     """If `Card` is collapsed, uncollapsed it, or the other way around."""
+    #     if self.IsCollapsed():
+    #         self.Uncollapse()
+    #     else:
+    #         if self.FindFocus() == self.content:
+    #             self.title.SetFocus()
+    #         self.Collapse()
 
     # def IsCollapsed(self):
     #     """Get the current collapsed state.
@@ -1208,44 +1208,44 @@ class Image(Card):
         
     ### Behavior funtions
 
-    def LoadImage(self, path):
-        """Load an image from disk and display it.
+    # def LoadImage(self, path):
+    #     """Load an image from disk and display it.
 
-        * `path: ` the path tothe image.
-        """
-        # load the image
-        bmp = wx.Bitmap(path)
-        self.SetImage(bmp)
-        self.SetScale(self.GetScale())
+    #     * `path: ` the path tothe image.
+    #     """
+    #     # load the image
+    #     bmp = wx.Bitmap(path)
+    #     self.SetImage(bmp)
+    #     self.SetScale(self.GetScale())
 
-        # hide the button
-        if self.btn:
-            self.btn.Hide()
-            self.btn = None
+    #     # hide the button
+    #     if self.btn:
+    #         self.btn.Hide()
+    #         self.btn = None
 
-        # set members
-        self.path = path
-        self.orig = bmp
-        self.GetParent().SetFocus()
+    #     # set members
+    #     self.path = path
+    #     self.orig = bmp
+    #     self.GetParent().SetFocus()
 
-    def SetImage(self, bmp):
-        """Display the `bmp`.
+    # def SetImage(self, bmp):
+    #     """Display the `bmp`.
 
-        * `bmp: ` a `wx.Bitmap`.
-        """
-        if not self.img:
-            self.img = wx.StaticBitmap(self.main)
+    #     * `bmp: ` a `wx.Bitmap`.
+    #     """
+    #     if not self.img:
+    #         self.img = wx.StaticBitmap(self.main)
 
-        # set the bitmap
-        self.img.SetBitmap(bmp)
-        self.img.SetSize(bmp.GetSize())
-        self.img.Bind(wx.EVT_LEFT_DOWN, self.OnImageLeftDown)
+    #     # set the bitmap
+    #     self.img.SetBitmap(bmp)
+    #     self.img.SetSize(bmp.GetSize())
+    #     self.img.Bind(wx.EVT_LEFT_DOWN, self.OnImageLeftDown)
 
-        # setup the card sizer
-        self.GetCardSizer().Clear()
-        self.GetCardSizer().Add(self.img, proportion=1, flag=wx.ALL|wx.EXPAND, border=self.BORDER_THICK)
+    #     # setup the card sizer
+    #     self.GetCardSizer().Clear()
+    #     self.GetCardSizer().Add(self.img, proportion=1, flag=wx.ALL|wx.EXPAND, border=self.BORDER_THICK)
 
-        self.Fit()
+    #     self.Fit()
 
     def Stretch(self, factor):
         """Overridden from `Card`. Calls `Card.Stretch` and then resizes the current image."""
@@ -1414,18 +1414,18 @@ class Image(Card):
 # Class CardGroup
 ######################
 
-class CardGroup(object):
-    """Basically, a list of Cards, used throughout the application."""
+# class CardGroup(object):
+#     """Basically, a list of Cards, used throughout the application."""
     
-    def __init__(self, members=[], label=-1):
-        """Constructor.
+#     def __init__(self, members=[], label=-1):
+#         """Constructor.
 
-        * `members: ` the initial members of the `CardGroup`.
-        * `label: ` unique identifier for.
-        """
-        # save references to cards, not to the list
-        self.members = members[:]
-        self.label = label
+#         * `members: ` the initial members of the `CardGroup`.
+#         * `label: ` unique identifier for.
+#         """
+#         # save references to cards, not to the list
+#         self.members = members[:]
+#         self.label = label
 
     # def GetMembers(self):
     #     """Get the members of this `CardGroup`.
@@ -1455,77 +1455,77 @@ class CardGroup(object):
     #     """
     #     self.members.remove(card)
 
-    def Dump(self):
-        """Return a `list` holding all this `CardGroup`'s data.
+    # def Dump(self):
+    #     """Return a `list` holding all this `CardGroup`'s data.
         
-        `returns: ` a `list` of the form `[lbl1, lbl2, ... ], where lbl* is the label of one of the members.`
-        """
-        return [c.label for c in self.members]
+    #     `returns: ` a `list` of the form `[lbl1, lbl2, ... ], where lbl* is the label of one of the members.`
+    #     """
+    #     return [c.label for c in self.members]
 
 
 
-###########################
-# pdoc documentation setup
-###########################
-# __pdoc__ is the special variable from the automatic
-# documentation generator pdoc.
-# By setting pdoc[class.method] to None, we are telling
-# pdoc to not generate documentation for said method.
-__pdoc__ = {}
-__pdoc__["field"] = None
+# ###########################
+# # pdoc documentation setup
+# ###########################
+# # __pdoc__ is the special variable from the automatic
+# # documentation generator pdoc.
+# # By setting pdoc[class.method] to None, we are telling
+# # pdoc to not generate documentation for said method.
+# __pdoc__ = {}
+# __pdoc__["field"] = None
 
-# Since we only want to generate documentation for our own
-# mehods, and not the ones coming from the base classes,
-# we first set to None every method in the base class.
-for field in dir(wx.Panel):
-    __pdoc__['Card.%s' % field] = None
-for field in dir(Card):
-    __pdoc__['Header.%s' % field] = None
-for field in dir(wxutils.ColouredText):
-    __pdoc__['ContentText.%s' % field] = None
-for field in dir(wx.Button):
-    __pdoc__['KindButton.%s' % field] = None
-for field in dir(wx.Menu):
-    __pdoc__['KindSelectMenu.%s' % field] = None
-for field in dir(Card):
-    __pdoc__['Content.%s' % field] = None
-for field in dir(Card):
-    __pdoc__['Image.%s' % field] = None
-for field in dir(wxutils.EditText):
-    __pdoc__['TitleEditText.%s' % field] = None
-for field in dir(wx.Button):
-    __pdoc__['StarRating.%s' % field] = None
-# CardGroup has no ancestors!    
-# for field in dir():
-#     __pdoc__['CardGroup.%s' % field] = None
+# # Since we only want to generate documentation for our own
+# # mehods, and not the ones coming from the base classes,
+# # we first set to None every method in the base class.
+# for field in dir(wx.Panel):
+#     __pdoc__['Card.%s' % field] = None
+# for field in dir(Card):
+#     __pdoc__['Header.%s' % field] = None
+# for field in dir(wxutils.ColouredText):
+#     __pdoc__['ContentText.%s' % field] = None
+# for field in dir(wx.Button):
+#     __pdoc__['KindButton.%s' % field] = None
+# for field in dir(wx.Menu):
+#     __pdoc__['KindSelectMenu.%s' % field] = None
+# for field in dir(Card):
+#     __pdoc__['Content.%s' % field] = None
+# for field in dir(Card):
+#     __pdoc__['Image.%s' % field] = None
+# for field in dir(wxutils.EditText):
+#     __pdoc__['TitleEditText.%s' % field] = None
+# for field in dir(wx.Button):
+#     __pdoc__['StarRating.%s' % field] = None
+# # CardGroup has no ancestors!    
+# # for field in dir():
+# #     __pdoc__['CardGroup.%s' % field] = None
 
 
-# Then, we have to add again the methods that we have
-# overriden. See https://github.com/BurntSushi/pdoc/issues/15.
-for field in Card.__dict__.keys():
-    if 'Card.%s' % field in __pdoc__.keys():
-        del __pdoc__['Card.%s' % field]
-for field in Header.__dict__.keys():
-    if 'Header.%s' % field in __pdoc__.keys():
-        del __pdoc__['Header.%s' % field]
-for field in ContentText.__dict__.keys():
-    if 'ContentText.%s' % field in __pdoc__.keys():
-        del __pdoc__['ContentText.%s' % field]
-for field in KindButton.__dict__.keys():
-    if 'KindButton.%s' % field in __pdoc__.keys():
-        del __pdoc__['KindButton.%s' % field]
-for field in KindSelectMenu.__dict__.keys():
-    if 'KindSelectMenu.%s' % field in __pdoc__.keys():
-        del __pdoc__['KindSelectMenu.%s' % field]
-for field in Content.__dict__.keys():
-    if 'Content.%s' % field in __pdoc__.keys():
-        del __pdoc__['Content.%s' % field]
-for field in Image.__dict__.keys():
-    if 'Image.%s' % field in __pdoc__.keys():
-        del __pdoc__['Image.%s' % field]
-for field in TitleEditText.__dict__.keys():
-    if 'TitleEditText.%s' % field in __pdoc__.keys():
-        del __pdoc__['TitleEditText.%s' % field]
-for field in StarRating.__dict__.keys():
-    if 'StarRating.%s' % field in __pdoc__.keys():
-        del __pdoc__['StarRating.%s' % field]
+# # Then, we have to add again the methods that we have
+# # overriden. See https://github.com/BurntSushi/pdoc/issues/15.
+# for field in Card.__dict__.keys():
+#     if 'Card.%s' % field in __pdoc__.keys():
+#         del __pdoc__['Card.%s' % field]
+# for field in Header.__dict__.keys():
+#     if 'Header.%s' % field in __pdoc__.keys():
+#         del __pdoc__['Header.%s' % field]
+# for field in ContentText.__dict__.keys():
+#     if 'ContentText.%s' % field in __pdoc__.keys():
+#         del __pdoc__['ContentText.%s' % field]
+# for field in KindButton.__dict__.keys():
+#     if 'KindButton.%s' % field in __pdoc__.keys():
+#         del __pdoc__['KindButton.%s' % field]
+# for field in KindSelectMenu.__dict__.keys():
+#     if 'KindSelectMenu.%s' % field in __pdoc__.keys():
+#         del __pdoc__['KindSelectMenu.%s' % field]
+# for field in Content.__dict__.keys():
+#     if 'Content.%s' % field in __pdoc__.keys():
+#         del __pdoc__['Content.%s' % field]
+# for field in Image.__dict__.keys():
+#     if 'Image.%s' % field in __pdoc__.keys():
+#         del __pdoc__['Image.%s' % field]
+# for field in TitleEditText.__dict__.keys():
+#     if 'TitleEditText.%s' % field in __pdoc__.keys():
+#         del __pdoc__['TitleEditText.%s' % field]
+# for field in StarRating.__dict__.keys():
+#     if 'StarRating.%s' % field in __pdoc__.keys():
+#         del __pdoc__['StarRating.%s' % field]
