@@ -1353,7 +1353,6 @@ class Board(wxutils.AutoSize):
             data = []
             for c in self.Selection:
                 data.append(c.Card.Dump())
-                print "copying: ", data[-1]["id"]
     
             obj = wx.TextDataObject()
             obj.Text = str([json.dumps(d) for d in data])
@@ -1370,11 +1369,10 @@ class Board(wxutils.AutoSize):
             # don't use eval()! Use ast.literal_eval() instead
             data = [json.loads(d) for d in literal_eval(obj.Text)]
 
+            self.Selector.UnselectAll()
             for d in data:
                 card = self.Deck.NewCard(d["class"])
-                print "created new card: ", card._id
                 card.Load(d)
-                print "loaded: ", card._id
                 self.Cards[-1].SetFocus()
                 
                 if pos == wx.DefaultPosition:
@@ -1382,6 +1380,10 @@ class Board(wxutils.AutoSize):
                     card.Position = [i + self.Padding for i in d["pos"]]
                 else:
                     card.Position = pos
+
+                # the last window in self.Cards is the one tracking the
+                # card we just created
+                self.Selector.Select(self.Cards[-1])
 
             wx.TheClipboard.Close()
 
