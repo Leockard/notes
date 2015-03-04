@@ -3,6 +3,7 @@
 import wx
 import threepy5.threepy5 as py5
 import threepy5
+import threepy5.utils as utils
 from threepy5.gui import board as newgui
 
 
@@ -42,6 +43,8 @@ if __name__ == "__main__":
     frame.ctrl.Deck.NewCard("Content", pos=(15,15))
     c1 = ctrl.Cards[0]
     ctrl.Selector.Select(c1)
+
+    # lis = utils.listener(topics=[utils.pub.ALL_TOPICS])
 
     ####################
     # end code here

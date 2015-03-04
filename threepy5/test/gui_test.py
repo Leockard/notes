@@ -368,7 +368,7 @@ class testSelectionManager(unittest.TestCase):
         # self.app.MainLoop()        
 
 
-### test Board.GroupSelected, ScrollToCard
+### test Board.GroupSelected, ScrollToCard, Copy/Paste
 ### test AutoSize class with a StaticBitmap
 
 
