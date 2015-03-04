@@ -24,7 +24,7 @@ class TestFrame(wx.Frame):
     def OnDebug(self, ev):
         print "------DEBUG-----"
         
-        self.ctrl.ScrollToCard(self.ctrl.Cards[-1])
+        print self.ctrl.Deck.Dump()
 
 
 if __name__ == "__main__":
@@ -39,10 +39,9 @@ if __name__ == "__main__":
     frame.Sizer.Add(ctrl, proportion=1, flag=wx.EXPAND)
     frame.ctrl = ctrl
 
-    frame.ctrl.Deck.NewCard("Content", pos=(1500,1500))
-    c1 = ctrl.Cards[0]
-
-    ctrl.Selector.Select(c1)
+    # frame.ctrl.Deck.NewCard("Content", pos=(1500,1500))
+    # c1 = ctrl.Cards[0]
+    # ctrl.Selector.Select(c1)
 
     ####################
     # end code here
