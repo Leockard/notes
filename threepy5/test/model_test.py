@@ -796,7 +796,7 @@ class CardMethods(unittest.TestCase):
         
         data = card.Dump()
         self.assertEqual(data["id"], card._id)
-        self.assertEqual(data["rect"], card.rect)
+        self.assertEqual(list(data["rect"]), list(card.rect))
 
         data["id"] = 3
         data["rect"] = (1,2,3,4)
@@ -816,7 +816,7 @@ class HeaderMethods(unittest.TestCase):
         
         data = head.Dump()
         self.assertEqual(data["id"], head._id)
-        self.assertEqual(data["rect"], head.rect)
+        self.assertEqual(list(data["rect"]), list(head.rect))
         self.assertEqual(data["header"], head.header)
         
         data["id"] = 3
@@ -838,7 +838,7 @@ class ContentMethods(unittest.TestCase):
         
         data = cont.Dump()
         self.assertEqual(data["id"], cont._id)
-        self.assertEqual(data["rect"], cont.rect)
+        self.assertEqual(list(data["rect"]), list(cont.rect))
         self.assertEqual(data["title"], cont.title)
         self.assertEqual(data["kind"], cont.kind)
         self.assertEqual(data["rating"], cont.rating)
@@ -868,7 +868,7 @@ class ImageMethods(unittest.TestCase):
         
         data = img.Dump()
         self.assertEqual(data["id"], img._id)
-        self.assertEqual(data["rect"], img.rect)
+        self.assertEqual(list(data["rect"]), list(img.rect))
         self.assertEqual(data["path"], img.path)
         self.assertEqual(data["scale"], img.scale)
         
