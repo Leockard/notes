@@ -162,7 +162,7 @@ class Card(utils.Publisher):
 
         `returns: ` a dict holding data.
         """
-        return {"id": self._id, "rect": self.rect, "class": self.__class__.__name__}
+        return {"id": self._id, "rect": list(self.rect), "class": self.__class__.__name__}
 
     def Load(self, data):
         """Read data from an object and load it into this `Card`.
