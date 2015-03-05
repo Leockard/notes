@@ -154,7 +154,7 @@ class testBoard(unittest.TestCase):
             c = board.Cards[-1]
             cards.append(c)
             start_pos[c] = pos
-        board.Selector.SelectGroup(py5.CardGroup(members=cards))
+        board.Selector.SelectGroup(py5.CardGroup(members=[c.Card._id for c in cards]))
         self.assertEqual(len(board.Selection), len(cards))
 
         # simulate a click-drag from the top left corner of the first card
