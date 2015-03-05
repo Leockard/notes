@@ -801,10 +801,14 @@ class CardMethods(unittest.TestCase):
         data["id"] = 3
         data["rect"] = (1,2,3,4)
 
+        # remember Load doesn't copy the id...
         card.Load(data)
-        self.assertEqual(data["id"], card._id)
         self.assertEqual(list(data["rect"]), list(card.rect))
 
+        # ...but Clone does
+        card.Clone(data)
+        self.assertEqual(data["id"], card._id)
+        self.assertEqual(list(data["rect"]), list(card.rect))
 
 
         
@@ -824,6 +828,10 @@ class HeaderMethods(unittest.TestCase):
         data["header"] = (1,2,3,4)
 
         head.Load(data)
+        self.assertEqual(list(data["rect"]), list(head.rect))
+        self.assertEqual(data["header"], head.header)
+
+        head.Clone(data)
         self.assertEqual(data["id"], head._id)
         self.assertEqual(list(data["rect"]), list(head.rect))
         self.assertEqual(data["header"], head.header)
@@ -849,6 +857,14 @@ class ContentMethods(unittest.TestCase):
         data["rect"] = (1,2,3,4)
 
         cont.Load(data)
+        self.assertEqual(list(data["rect"]), list(cont.rect))
+        self.assertEqual(data["title"], cont.title)
+        self.assertEqual(data["kind"], cont.kind)
+        self.assertEqual(data["rating"], cont.rating)
+        self.assertEqual(data["content"], cont.content)
+        self.assertEqual(data["collapsed"], cont.collapsed)
+
+        cont.Clone(data)
         self.assertEqual(data["id"], cont._id)
         self.assertEqual(list(data["rect"]), list(cont.rect))
         self.assertEqual(data["title"], cont.title)
@@ -878,6 +894,11 @@ class ImageMethods(unittest.TestCase):
         data["scale"] = 2.0
         
         img.Load(data)
+        self.assertEqual(list(data["rect"]), list(img.rect))
+        self.assertEqual(data["path"], img.path)
+        self.assertEqual(data["scale"], img.scale)
+
+        img.Clone(data)
         self.assertEqual(data["id"], img._id)
         self.assertEqual(list(data["rect"]), list(img.rect))
         self.assertEqual(data["path"], img.path)
