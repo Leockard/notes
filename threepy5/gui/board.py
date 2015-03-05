@@ -911,15 +911,17 @@ class Board(wxutils.AutoSize):
             # we may want to return to that card after selection ends
             # so we select the group but restore the last card after
             crd = None
-            if self._last and self._last in group.members:
+            print "SelectGroup. Last: ", self._last.Card.title
+            if self._last and self._last.Card._id in group.members:
                 crd = self._last
 
             if new_sel: self.UnselectAll()
-            for c in group.members:
-                self.Select(c)
+            for id_ in group.members:
+                w = self.Parent.GetWindowById(id_)
+                self.Select(w)
 
             if crd:
-                self.last = crd
+                self._last = crd
 
         def SelectNearest(self, direc, new_sel=False):
             """Selects the nearest `Card` in the specified direction.
@@ -1108,7 +1110,6 @@ class Board(wxutils.AutoSize):
 
         py5.subscribeList("cards", self._on_new_card, self._on_pop_card, self.Deck)
 
-
         self.Bind(wx.EVT_LEFT_DCLICK, self._on_left_double)
         self.Bind(wx.EVT_LEFT_DOWN, self._on_left_down)
         self.Bind(wx.EVT_LEFT_UP, self._on_left_up)
@@ -1139,6 +1140,21 @@ class Board(wxutils.AutoSize):
         accels.append(wx.AcceleratorEntry(wx.ACCEL_SHIFT|wx.ACCEL_CTRL , wx.WXK_RETURN, contb.GetId()))
         accels.append(wx.AcceleratorEntry(wx.ACCEL_SHIFT|wx.ACCEL_ALT  , wx.WXK_RETURN, headb.GetId()))
 
+        # copy/cut/paste: note these are different than the ones in _init_menu
+        copy = wx.MenuItem(ghost, wx.ID_COPY, "Copy Selection")
+        past = wx.MenuItem(ghost, wx.ID_PASTE, "Paste")
+        
+        self.Bind(wx.EVT_MENU, self._on_copy, copy)        
+        self.Bind(wx.EVT_MENU, self._on_paste, past)
+
+        accels.append(wx.AcceleratorEntry(wx.ACCEL_CTRL, ord("C") , copy.GetId()))
+        accels.append(wx.AcceleratorEntry(wx.ACCEL_CTRL, ord("V") , past.GetId()))
+
+        # misc
+        cycle = wx.MenuItem(ghost, wx.ID_ANY, "Cycle Selection")
+        self.Bind(wx.EVT_MENU, self._on_esc, cycle)
+        accels.append(wx.AcceleratorEntry(wx.ACCEL_NORMAL, 27 , cycle.GetId()))
+
         self.SetAcceleratorTable(wx.AcceleratorTable(accels))
 
     def _init_menu(self):
@@ -1147,10 +1163,10 @@ class Board(wxutils.AutoSize):
         self.Bind(wx.EVT_RIGHT_DOWN, self._on_right_down)
 
         # edit actions
-        copy_it = wx.MenuItem(menu, wx.ID_COPY, "Copy Selection")      # automatic accel
+        copy_it = wx.MenuItem(menu, wx.ID_COPY, "Copy Selection")
         self.Bind(wx.EVT_MENU, self._on_copy, copy_it)
         
-        past_it = wx.MenuItem(menu, wx.ID_PASTE, "Paste")      # automatic accel
+        past_it = wx.MenuItem(menu, wx.ID_PASTE, "Paste")
         self.Bind(wx.EVT_MENU, self._on_paste, past_it)
 
         # # insert actions
@@ -1208,6 +1224,30 @@ class Board(wxutils.AutoSize):
 
 
     ### methods
+
+    def GetCardById(self, id_):
+        """Returns the `Card` with the specified id.
+
+        * `id_: ` the id to look for.
+
+        `returns: ` the requested `Card`, or None.
+        """
+        win = self.GetWindowById(id_)
+        if win:
+            return win.Card
+        else:
+            return None
+
+    def GetWindowById(self, id_):
+        """Returns the `CardWin` whose tracked `Card` has the specified id.
+
+        * `id_: ` the id to look for.
+
+        `returns: ` the requested `CardWin`, or None.
+        """
+        li = [win for win in self.Cards if win.Card._id == id_]
+        if li: return li[0]
+        else: return None
 
     def Nearest(self, card, direc):
         """Returns the nearest `Card` to `card` in the direction `direc`.
@@ -1274,11 +1314,20 @@ class Board(wxutils.AutoSize):
             self.FitToChildren()
             self.Selector.SetFocus()
 
+    def GetContainingGroups(self, win):
+        """Get a list of every `CardGroup` that contains the `Card` tracked by `win`.
+
+        * `win: ` a `CardWin`.
+
+        `returns: ` a list of `CardGroup`s.
+        """
+        return [g for g in self.Deck.groups if win.Card._id in g.members]
+
     def GroupSelected(self):
         """Creates a new `CardGroup` with the currently selected `Card`s."""
         sel = self.Selection
         if sel:
-            self.Deck.AddGroup(py5.CardGroup([w.Card for w in sel]))
+            self.Deck.AddGroup(py5.CardGroup([w.Card._id for w in sel]))
 
     def FindFocusOrSelection(self):
         """If there's a selection, returns the last selected `CardWin`. If there's no
@@ -1293,6 +1342,48 @@ class Board(wxutils.AutoSize):
                 ancestor = wxutils.GetCardAncestor(focus)
                 if ancestor:
                     result = ancestor
+
+        return result
+
+    def CycleSelection(self):
+        """After each call, a different object will be selected. Assuming the cursor
+        is inside a `CardWin` child control, the first call will select that `CardWin`
+        (and only that `CardWin`). The next call will select all windows in that
+        `CardWin`'s `CardGroup`, if any. The next call, or if the original window wasn't
+        member of any `CardGroup`, will select all the `CardWin`'s in the `Board`.
+        The next call will again position the cursor where it was.
+
+        `returns: ` `True` if the operation was successful (selection changed), or `False`.
+        """
+        result = True
+
+        if len(self.Selection) > 1:
+            # selecting a group: there's no more to select
+            # so just cancel selection; when SelectionManager
+            # is deactivated, it will return focus to the last
+            # card that was selected
+            self.Selector.UnselectAll()
+            self.Selector.Active = False
+            
+        elif len(self.Selection) == 1:
+            # selecting a card: select group (if any)
+            win = self.Selection[0]
+            if self.GetContainingGroups(win):
+                self.Selector.SelectGroup(self.GetContainingGroups(win)[0], new_sel=True)
+                
+            # if no group, cancel selection
+            else:
+                self.Selector.UnselectAll()
+                self.Selector.Active = False
+                
+        elif wxutils.GetCardAncestor(self.FindFocus()):
+            # inside a card: select the card
+            win = wxutils.GetCardAncestor(self.FindFocus())
+            self.Selector.Select(win, True)
+
+        else:
+            # we didn't do anything!
+            result = False
 
         return result
 
@@ -1592,21 +1683,21 @@ class Board(wxutils.AutoSize):
             self.Deck.NewCard("Content", pivot=None, below=False)
 
     def _on_ctrl_shft_ret(self, ev):
-        pivot = self.FindFocusOrSelection().Card
+        pivot = self.FindFocusOrSelection()
         if pivot:
             self.Deck.NewCard("Content", pivot=pivot.Card, below=True)
         else:
             self.Deck.NewCard("Content", pivot=None, below=True)
         
     def _on_alt_ret(self, ev):
-        pivot = self.FindFocusOrSelection().Card
+        pivot = self.FindFocusOrSelection()
         if pivot:
             self.Deck.NewCard("Header", pivot=pivot.Card, below=False)
         else:
             self.Deck.NewCard("Header", pivot=None, below=False)
         
     def _on_alt_shft_ret(self, ev):
-        pivot = self.FindFocusOrSelection().Card
+        pivot = self.FindFocusOrSelection()
         if pivot:
             self.Deck.NewCard("Header", pivot=pivot.Card, below=True)
         else:
@@ -1642,6 +1733,10 @@ class Board(wxutils.AutoSize):
         
     def _on_paste(self, ev):
         self.PasteFromClipboard(self._menu_pos)
+
+    def _on_esc(self, ev):
+        if not self.CycleSelection():
+            ev.Skip()
 
     def _on_card_left_down(self, ev):
         """Listens to `wx.EVT_LEFT_DOWN` events from every `Card`."""
