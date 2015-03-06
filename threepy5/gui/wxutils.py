@@ -195,59 +195,41 @@ class EditText(ColouredText):
         * `style: ` by default, is `EditText.DEFAULT_STYLE`.
         """
         super(EditText, self).__init__(parent, pos=pos, size=size, style=style, value=value)
+        
+        self.First = first or parent.BackgroundColour
+        self.Second = self.DEFAULT_2_CL
+        """The second colour, shown when taking input."""
 
-        # colours
-        self.First = first or parent.GetBackgroundColour()
-        self.second_cl = self.DEFAULT_2_CL
         self.SetBackgroundColour(self.First)
-
-        # style
         self.SetFont(wx.Font(*self.DEFAULT_FONT))
         
-        # bindings
         self.Bind(wx.EVT_LEFT_DOWN, self.OnLeftDown)
         self.Bind(wx.EVT_SET_FOCUS, self.OnSetFocus)
         self.Bind(wx.EVT_KILL_FOCUS, self.OnKillFocus)
         self.Bind(wx.EVT_TEXT_ENTER, self.OnEnter)
 
+
+    ### properties
+
+    @property
+    def First(self):
+        """The first colour, shown when similar to a `wx.StaticText`."""
+        return self._First
+
+    @First.setter
+    def First(self, cl):
+        self._First = cl
+        self.SetBackgroundColour(self.First)
+
     
-    ### Behavior functions
+    ### methods
 
     def ToggleColours(self):
         """Change between first and second colours."""
         if self.GetBackgroundColour() == self.First:
-            self.ShowSecondColour()
+            self.SetBackgroundColour(self.Second)
         else:
-            self.ShowFirstColour()
-    
-    def ShowFirstColour(self):
-        """Set the background to the first colour."""
-        self.SetBackgroundColour(self.First)
-
-    def ShowSecondColour(self):
-        """Set the background to the second colour."""
-        self.SetBackgroundColour(self.second_cl)
-
-    def SetSecondColour(self, cl):
-        """Sets the second colour."""
-        self.second_cl = cl
-
-    def GetSecondColour(self):
-        """Get the second colour.
-
-        `returns: ` a `(R, G, B, alpha)` tuple."""
-        return self.second_cl
-
-    def SetFirstColour(self, cl):
-        """Sets the first colour."""
-        self.First = cl
-        self.SetBackgroundColour(self.First)
-
-    def GetFirstColour(self):
-        """Get the first colour.
-        
-        `returns: ` a `(R, G, B, alpha)` tuple."""
-        return self.First
+            self.SetBackgroundColour(self.First)
 
 
     ### callbacks
@@ -258,18 +240,18 @@ class EditText(ColouredText):
     
     def OnLeftDown(self, ev):
         if self.GetBackgroundColour() == self.First:
-            self.ShowSecondColour()
+            self.SetBackgroundColour(self.Second)
         ev.Skip()
 
     def OnSetFocus(self, ev):
         last = self.GetLastPosition()
         self.SetInsertionPoint(last)
         self.SetSelection(0, last)
-        self.ShowSecondColour()
+        self.SetBackgroundColour(self.Second)
 
     def OnKillFocus(self, ev):
         self.SetSelection(0,0)
-        self.ShowFirstColour()
+        self.SetBackgroundColour(self.First)
         
         
 
