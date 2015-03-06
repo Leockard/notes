@@ -209,7 +209,6 @@ class EditText(ColouredText):
         self.Bind(wx.EVT_SET_FOCUS, self.OnSetFocus)
         self.Bind(wx.EVT_KILL_FOCUS, self.OnKillFocus)
         self.Bind(wx.EVT_TEXT_ENTER, self.OnEnter)
-        self.Bind(wx.EVT_KEY_DOWN, self.OnKeyDown)
 
     
     ### Behavior functions
@@ -251,32 +250,24 @@ class EditText(ColouredText):
         return self.first_cl
 
 
-    ### Callbacks
-
-    def OnKeyDown(self, ev):
-        """Listens to `wx.EVT_KEY_DOWN`."""
-        ev.Skip()
+    ### callbacks
 
     def OnEnter(self, ev):
-        """Listens to `wx.EVT_TEXT_ENTER`."""
         self.ToggleColours()
         self.Navigate(not wx.MouseState().ShiftDown())
     
     def OnLeftDown(self, ev):
-        """Listens to `wx.EVT_LEFT_DOWN`."""
         if self.GetBackgroundColour() == self.first_cl:
             self.ShowSecondColour()
         ev.Skip()
 
     def OnSetFocus(self, ev):
-        """Listens to `wx.EVT_SET_FOCUS`."""
         last = self.GetLastPosition()
         self.SetInsertionPoint(last)
         self.SetSelection(0, last)
         self.ShowSecondColour()
 
     def OnKillFocus(self, ev):
-        """Listens to `wx.EVT_KILL_FOCUS`."""
         self.SetSelection(0,0)
         self.ShowFirstColour()
         
