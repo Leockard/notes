@@ -778,9 +778,9 @@ class ContentWin(CardWin):
 
     def _set_colours(self):
         """Set all controls' colours according to the `kind`."""
-        self.BackgroundColour = self.COLOURS[self.Card.kind]["strong"]
-        self._title.SetFirstColour(self.COLOURS[self.Card.kind]["strong"])
-        self._title.SetSecondColour(self.COLOURS[self.Card.kind]["soft"])
+        self.BackgroundColour          = self.COLOURS[self.Card.kind]["strong"]
+        self._title.First              = self.COLOURS[self.Card.kind]["strong"]
+        self._title.Second             = self.COLOURS[self.Card.kind]["soft"]
         self._content.BackgroundColour = self.COLOURS[self.Card.kind]["soft"]
 
 
