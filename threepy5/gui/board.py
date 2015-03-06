@@ -52,12 +52,12 @@ class Selectable(wx.Panel):
     BORDER_THICK = 5
     SELECT_CL = (0, 0, 0, 0)
 
-    def __init__(self, parent):
+    def __init__(self, parent, size=(0,0)):
         """Constructor.
 
         * `parent: ` the parent `Board`.
         """
-        super(Selectable, self).__init__(parent)
+        super(Selectable, self).__init__(parent, size=size)
         self._selected = False
         self._main = None
         self._init_border()
@@ -334,12 +334,12 @@ class ImagePlaceHolder(Selectable):
     """A `Selectable` with a button to load an image from disk. Does not track any `Card`s."""
     DEFAULT_SZ = (50, 50)
 
-    def __init__(self, parent):
+    def __init__(self, parent, size=DEFAULT_SZ):
         """Constructor.
 
         * `parent: ` the parent `Board`.
         """
-        super(ImagePlaceHolder, self).__init__(parent)
+        super(ImagePlaceHolder, self).__init__(parent, size=size)
         # only `CardWin`s call _init_UI, selectable doesn't!
         self._init_UI()
 
@@ -359,8 +359,8 @@ class ImagePlaceHolder(Selectable):
                            wx.FD_OPEN | wx.FD_FILE_MUST_EXIST)
 
         if fd.ShowModal() == wx.ID_OK:
-            img = py5.Image(rect=self.Rect, path=fd.Path, scale=1.0)
-            imgwin = ImageWin(self.Parent, card=img)
+            c = self.Parent.Deck.NewCard("Image", pos=self.Position)
+            c.path = fd.Path
             self.Destroy()
 
 
@@ -403,14 +403,24 @@ class ImageWin(CardWin):
         if card is None:
             return
 
-        bmp = wx.Bitmap(card.path)
+        if card.path:
+            self._load_img()
+
+        py5.subscribe("path", self._update_path, card)
+
+
+    ### methods
+
+    def _load_img(self):
+        bmp = wx.Bitmap(self.Card.path)
         self._bmp.SetBitmap(bmp)
-        self.Fit()
-
-        # only start listening to events once we have a Card
-        # self._rating.Bind(wx.EVT_BUTTON, self._on_rating_pressed)
+        self.Fit()        
 
 
+    ### subscribers
+
+    def _update_path(self, val):
+        self._load_img()
 
 
 
