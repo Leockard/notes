@@ -778,10 +778,11 @@ class ContentWin(CardWin):
 
     def _set_colours(self):
         """Set all controls' colours according to the `kind`."""
-        self.BackgroundColour          = self.COLOURS[self.Card.kind]["strong"]
+        self.BackgroundColour          = self.COLOURS[self.Card.kind]["strong"]        
+        self._content.BackgroundColour = self.COLOURS[self.Card.kind]["soft"]
         self._title.First              = self.COLOURS[self.Card.kind]["strong"]
         self._title.Second             = self.COLOURS[self.Card.kind]["soft"]
-        self._content.BackgroundColour = self.COLOURS[self.Card.kind]["soft"]
+        self._title.Static()
 
 
     ### subscribers: listen to changes in the underlying Card object
@@ -941,7 +942,7 @@ class Board(wxutils.AutoSize):
                 self._last = crd
 
         def SelectNearest(self, direc, new_sel=False):
-            """Selects the nearest `Card` in the specified direction.
+            """Selects the nearest `CardWin` in the specified direction.
             
             * `direc: ` direc should be one of `wx.WXK_LEFT`, `wx.WXK_RIGHT`, `wx.WXK_UP`, or `wx.WXK_DOWN`.
             * `new_sel: ` if `True`, unselect all others and select only the next card.
@@ -949,6 +950,12 @@ class Board(wxutils.AutoSize):
             nxt = self.Parent.Nearest(self._last, direc)
             if nxt:
                 self.Select(nxt, new_sel)
+
+        def SelectAll(self):
+            """Selects every `CardWin` in the `Board`."""
+            self.UnselectAll()
+            for w in self.Parent.Cards:
+                self.Select(w)
 
         def Unselect(self, card):
             """Removes `card` from the current selection.
@@ -1171,6 +1178,10 @@ class Board(wxutils.AutoSize):
         cycle = wx.MenuItem(ghost, wx.ID_ANY, "Cycle Selection")
         self.Bind(wx.EVT_MENU, self._on_esc, cycle)
         accels.append(wx.AcceleratorEntry(wx.ACCEL_NORMAL, 27 , cycle.GetId()))
+
+        selall = wx.MenuItem(ghost, wx.ID_ANY, "Select all")
+        self.Bind(wx.EVT_MENU, self._on_ctrl_a, selall)
+        accels.append(wx.AcceleratorEntry(wx.ACCEL_CTRL, ord("A") , selall.GetId()))
 
         self.SetAcceleratorTable(wx.AcceleratorTable(accels))
 
@@ -1754,6 +1765,9 @@ class Board(wxutils.AutoSize):
     def _on_esc(self, ev):
         if not self.CycleSelection():
             ev.Skip()
+
+    def _on_ctrl_a(self, ev):
+        self.Selector.SelectAll()
 
     def _on_card_left_down(self, ev):
         """Listens to `wx.EVT_LEFT_DOWN` events from every `Card`."""

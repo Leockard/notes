@@ -370,7 +370,7 @@ class testSelectionManager(unittest.TestCase):
 
 ### test Board.GroupSelected, ScrollToCard, Copy/Paste
 ### test AutoSize class with a StaticBitmap
-
+### test EditText colours
 
 
 if __name__ == "__main__":

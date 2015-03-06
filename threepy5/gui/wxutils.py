@@ -170,8 +170,7 @@ class ColouredText(wx.TextCtrl):
 
 
 class EditText(ColouredText):
-    """
-    `EditText` is a `wx.TextCtrl` that changes background colour when it has
+    """`EditText` is a `wx.TextCtrl` that changes background colour when it has
     focus. Basically, we want to make it look like a `wx.StaticText`, except when
     the user is editing its contents, in which case we want it to look like
     a `wx.TextCtrl`. The background colour `EditText` has when it looks like a
@@ -193,6 +192,7 @@ class EditText(ColouredText):
         * `pos: ` by default, is `wx.DefaultPosition`.
         * `size: ` by default, is `wx.DefaultSize`.
         * `style: ` by default, is `EditText.DEFAULT_STYLE`.
+        * `first: ` the first colour of the control.
         """
         super(EditText, self).__init__(parent, pos=pos, size=size, style=style, value=value)
         
