@@ -171,7 +171,7 @@ class ColouredText(wx.TextCtrl):
 
 class EditText(ColouredText):
     """
-    `EditText` is a `wx.TextCtrl` that cahnges background colour when it has
+    `EditText` is a `wx.TextCtrl` that changes background colour when it has
     focus. Basically, we want to make it look like a `wx.StaticText`, except when
     the user is editing its contents, in which case we want it to look like
     a `wx.TextCtrl`. The background colour `EditText` has when it looks like a
@@ -185,7 +185,7 @@ class EditText(ColouredText):
     DEFAULT_FONT = (12, wx.SWISS, wx.ITALIC, wx.BOLD)
     DEFAULT_2_CL = (255, 255, 255, 255)
     
-    def __init__(self, parent, value="", pos=wx.DefaultPosition, size=DEFAULT_SZ, style=DEFAULT_STYLE):
+    def __init__(self, parent, value="", pos=wx.DefaultPosition, size=DEFAULT_SZ, style=DEFAULT_STYLE, first_cl=None):
         """Constructor.
 
         * `parent: ` the parent window.
@@ -197,7 +197,7 @@ class EditText(ColouredText):
         super(EditText, self).__init__(parent, pos=pos, size=size, style=style, value=value)
 
         # colours
-        self.first_cl = parent.GetBackgroundColour()
+        self.first_cl = first_cl or parent.GetBackgroundColour()
         self.second_cl = self.DEFAULT_2_CL
         self.SetBackgroundColour(self.first_cl)
 
@@ -255,9 +255,6 @@ class EditText(ColouredText):
 
     def OnKeyDown(self, ev):
         """Listens to `wx.EVT_KEY_DOWN`."""
-        # if ev.GetKeyCode() == 9:
-        #     GetCardAncestor(self).OnTab(ev)
-        # else:
         ev.Skip()
 
     def OnEnter(self, ev):

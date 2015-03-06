@@ -21,11 +21,14 @@ class TestFrame(wx.Frame):
 
         box.Add(hbox, proportion=0)
 
+        dbg_it = wx.MenuItem(None, wx.ID_ANY, "Debug")
+        accels = [wx.AcceleratorEntry(wx.ACCEL_CTRL, ord("D") , dbg_it.GetId())]
+        self.SetAcceleratorTable(wx.AcceleratorTable(accels))
 
     def OnDebug(self, ev):
         print "------DEBUG-----"
-        
-        print self.ctrl.Deck.Dump()
+        c = self.ctrl.Cards[-1]
+        print c._title.__class__.__bases__
 
 
 if __name__ == "__main__":
@@ -42,7 +45,7 @@ if __name__ == "__main__":
 
     frame.ctrl.Deck.NewCard("Content", pos=(15,15))
     c1 = ctrl.Cards[0]
-    ctrl.Selector.Select(c1)
+    # ctrl.Selector.Select(c1)
 
     # lis = utils.listener(topics=[utils.pub.ALL_TOPICS])
 

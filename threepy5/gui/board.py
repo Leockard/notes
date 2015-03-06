@@ -8,6 +8,10 @@ from threepy5.threepy5 import pub
 from ast import literal_eval
 import threepy5.threepy5 as py5
 
+import wx.lib.expando as exp
+
+
+
 
 ######################
 # Class Selectable
@@ -437,15 +441,17 @@ class ContentWin(CardWin):
     # helper class: TitleEditText
     ##############################
 
-    class TitleEditText(wxutils.ColouredText):
+    # the order of the parents is important, since Expando
+    # doesn't call super()!
+    class TitleEditText(wxutils.EditText, exp.ExpandoTextCtrl):
         """The window for the title field."""
 
-        def __init__(self, parent):
+        def __init__(self, parent, size=(100,-1), first_cl=None):
             """Constructor.
 
             * `parent: ` the parent `Content`.
             """
-            super(ContentWin.TitleEditText, self).__init__(parent)
+            super(ContentWin.TitleEditText, self).__init__(parent, size=size, first_cl=first_cl)
             self.Bind(wx.EVT_KEY_DOWN, self._on_key_down)
 
         def _on_key_down(self, ev):
@@ -454,7 +460,10 @@ class ContentWin(CardWin):
                 # On TAB: instead of writing a "\t" char, let the card handle it
                 wxutils.GetCardAncestor(self)._on_tab(ev)
             else:
+                # here is where we call the expando magic
+                self.Parent.Layout()
                 ev.Skip()
+
 
     ##############################
     # helper class: ContentText
@@ -634,8 +643,7 @@ class ContentWin(CardWin):
 
     def _init_UI(self):
         """Overridden from `CardWin`."""
-        # controls
-        title   = self.TitleEditText(self)
+        title   = self.TitleEditText(self, first_cl=self._main.BackgroundColour)
         kind    = self.KindButton(self)
         rating  = self.StarRating(self)
         content = self.ContentText(self)
@@ -653,8 +661,8 @@ class ContentWin(CardWin):
         vbox.Add(hbox2, proportion=1, flag=wx.ALL|wx.EXPAND, border=CardWin.BORDER_THICK)
 
         self.Sizer = vbox
+        self._title   = title                
         self._kind    = kind
-        self._title   = title
         self._content = content
         self._rating  = rating
         self.Show()
@@ -762,8 +770,8 @@ class ContentWin(CardWin):
     def _set_colours(self):
         """Set all controls' colours according to the `kind`."""
         self.BackgroundColour = self.COLOURS[self.Card.kind]["strong"]
-        # self._title.SetFirstColour(self.COLOURS[kind]["border"])
-        # self._title.SetSecondColour(self.COLOURS[kind]["bg"])
+        self._title.SetFirstColour(self.COLOURS[self.Card.kind]["strong"])
+        self._title.SetSecondColour(self.COLOURS[self.Card.kind]["soft"])
         self._content.BackgroundColour = self.COLOURS[self.Card.kind]["soft"]
 
 
@@ -911,14 +919,14 @@ class Board(wxutils.AutoSize):
             # we may want to return to that card after selection ends
             # so we select the group but restore the last card after
             crd = None
-            print "SelectGroup. Last: ", self._last.Card.title
             if self._last and self._last.Card._id in group.members:
                 crd = self._last
 
             if new_sel: self.UnselectAll()
             for id_ in group.members:
                 w = self.Parent.GetWindowById(id_)
-                self.Select(w)
+                if w:
+                    self.Select(w)
 
             if crd:
                 self._last = crd
