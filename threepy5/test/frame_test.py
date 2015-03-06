@@ -28,7 +28,7 @@ class TestFrame(wx.Frame):
     def OnDebug(self, ev):
         print "------DEBUG-----"
         c = self.ctrl.Cards[-1]
-        print c._title.__class__.__bases__
+        print c._title.GetNumberOfLines()
 
 
 if __name__ == "__main__":

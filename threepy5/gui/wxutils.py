@@ -185,7 +185,7 @@ class EditText(ColouredText):
     DEFAULT_FONT = (12, wx.SWISS, wx.ITALIC, wx.BOLD)
     DEFAULT_2_CL = (255, 255, 255, 255)
     
-    def __init__(self, parent, value="", pos=wx.DefaultPosition, size=DEFAULT_SZ, style=DEFAULT_STYLE, first_cl=None):
+    def __init__(self, parent, value="", pos=wx.DefaultPosition, size=DEFAULT_SZ, style=DEFAULT_STYLE, first=None):
         """Constructor.
 
         * `parent: ` the parent window.
@@ -197,9 +197,9 @@ class EditText(ColouredText):
         super(EditText, self).__init__(parent, pos=pos, size=size, style=style, value=value)
 
         # colours
-        self.first_cl = first_cl or parent.GetBackgroundColour()
+        self.First = first or parent.GetBackgroundColour()
         self.second_cl = self.DEFAULT_2_CL
-        self.SetBackgroundColour(self.first_cl)
+        self.SetBackgroundColour(self.First)
 
         # style
         self.SetFont(wx.Font(*self.DEFAULT_FONT))
@@ -215,14 +215,14 @@ class EditText(ColouredText):
 
     def ToggleColours(self):
         """Change between first and second colours."""
-        if self.GetBackgroundColour() == self.first_cl:
+        if self.GetBackgroundColour() == self.First:
             self.ShowSecondColour()
         else:
             self.ShowFirstColour()
     
     def ShowFirstColour(self):
         """Set the background to the first colour."""
-        self.SetBackgroundColour(self.first_cl)
+        self.SetBackgroundColour(self.First)
 
     def ShowSecondColour(self):
         """Set the background to the second colour."""
@@ -240,14 +240,14 @@ class EditText(ColouredText):
 
     def SetFirstColour(self, cl):
         """Sets the first colour."""
-        self.first_cl = cl
-        self.SetBackgroundColour(self.first_cl)
+        self.First = cl
+        self.SetBackgroundColour(self.First)
 
     def GetFirstColour(self):
         """Get the first colour.
         
         `returns: ` a `(R, G, B, alpha)` tuple."""
-        return self.first_cl
+        return self.First
 
 
     ### callbacks
@@ -257,7 +257,7 @@ class EditText(ColouredText):
         self.Navigate(not wx.MouseState().ShiftDown())
     
     def OnLeftDown(self, ev):
-        if self.GetBackgroundColour() == self.first_cl:
+        if self.GetBackgroundColour() == self.First:
             self.ShowSecondColour()
         ev.Skip()
 

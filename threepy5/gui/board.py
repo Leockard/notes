@@ -447,12 +447,12 @@ class ContentWin(CardWin):
         """The window for the title field."""
         FONT_SIZES = {1: 12, 2: 10, 3:8}
 
-        def __init__(self, parent, size=(100,-1), first_cl=None):
+        def __init__(self, parent, size=(100,-1), first=None):
             """Constructor.
 
             * `parent: ` the parent `Content`.
             """
-            super(ContentWin.TitleEditText, self).__init__(parent, size=size, first_cl=first_cl)
+            super(ContentWin.TitleEditText, self).__init__(parent, size=size, first=first)
             self.Bind(wx.EVT_KEY_DOWN, self._on_key_down)
             self.Bind(exp.EVT_ETC_LAYOUT_NEEDED, self._on_layout_needed)
 
@@ -652,7 +652,7 @@ class ContentWin(CardWin):
 
     def _init_UI(self):
         """Overridden from `CardWin`."""
-        title   = self.TitleEditText(self, first_cl=self._main.BackgroundColour)
+        title   = self.TitleEditText(self, first=self.BackgroundColour)
         kind    = self.KindButton(self)
         rating  = self.StarRating(self)
         content = self.ContentText(self)
