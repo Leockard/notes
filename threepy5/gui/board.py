@@ -445,6 +445,7 @@ class ContentWin(CardWin):
     # doesn't call super()!
     class TitleEditText(wxutils.EditText, exp.ExpandoTextCtrl):
         """The window for the title field."""
+        FONT_SIZES = {1: 12, 2: 10, 3:8}
 
         def __init__(self, parent, size=(100,-1), first_cl=None):
             """Constructor.
@@ -453,6 +454,7 @@ class ContentWin(CardWin):
             """
             super(ContentWin.TitleEditText, self).__init__(parent, size=size, first_cl=first_cl)
             self.Bind(wx.EVT_KEY_DOWN, self._on_key_down)
+            self.Bind(exp.EVT_ETC_LAYOUT_NEEDED, self._on_layout_needed)
 
         def _on_key_down(self, ev):
             key = ev.GetKeyCode()
@@ -463,6 +465,13 @@ class ContentWin(CardWin):
                 # here is where we call the expando magic
                 self.Parent.Layout()
                 ev.Skip()
+
+        def _on_layout_needed(self, ev):
+            # self.NumberOfLines always returns 1
+            font = self.Font
+            new_sz = self.FONT_SIZES.get(self.GetNumberOfLines(), self.FONT_SIZES[3])
+            font.PointSize = new_sz
+            self.Font = font
 
 
     ##############################
