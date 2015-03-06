@@ -197,29 +197,18 @@ class EditText(ColouredText):
         super(EditText, self).__init__(parent, pos=pos, size=size, style=style, value=value)
         
         self.First = first or parent.BackgroundColour
+        """The first colour, shown when similar to a `wx.StaticText`."""
+        
         self.Second = self.DEFAULT_2_CL
         """The second colour, shown when taking input."""
 
         self.SetBackgroundColour(self.First)
         self.SetFont(wx.Font(*self.DEFAULT_FONT))
         
-        self.Bind(wx.EVT_LEFT_DOWN, self.OnLeftDown)
-        self.Bind(wx.EVT_SET_FOCUS, self.OnSetFocus)
-        self.Bind(wx.EVT_KILL_FOCUS, self.OnKillFocus)
-        self.Bind(wx.EVT_TEXT_ENTER, self.OnEnter)
-
-
-    ### properties
-
-    @property
-    def First(self):
-        """The first colour, shown when similar to a `wx.StaticText`."""
-        return self._First
-
-    @First.setter
-    def First(self, cl):
-        self._First = cl
-        self.SetBackgroundColour(self.First)
+        self.Bind(wx.EVT_LEFT_DOWN, self._on_left_down)
+        self.Bind(wx.EVT_SET_FOCUS, self._on_set_focus)
+        self.Bind(wx.EVT_KILL_FOCUS, self._on_kill_focus)
+        self.Bind(wx.EVT_TEXT_ENTER, self._on_enter)
 
     
     ### methods
@@ -231,25 +220,33 @@ class EditText(ColouredText):
         else:
             self.SetBackgroundColour(self.First)
 
+    def Input(self):
+        """Call to command the control to look like a `wx.TextCtrl`."""
+        self.SetBackgroundColour(self.Second)
+
+    def Static(self):
+        """Call to command the control to look like a `wx.StaticText`."""
+        self.SetBackgroundColour(self.First)
+
 
     ### callbacks
 
-    def OnEnter(self, ev):
+    def _on_enter(self, ev):
         self.ToggleColours()
         self.Navigate(not wx.MouseState().ShiftDown())
     
-    def OnLeftDown(self, ev):
+    def _on_left_down(self, ev):
         if self.GetBackgroundColour() == self.First:
             self.SetBackgroundColour(self.Second)
         ev.Skip()
 
-    def OnSetFocus(self, ev):
+    def _on_set_focus(self, ev):
         last = self.GetLastPosition()
         self.SetInsertionPoint(last)
         self.SetSelection(0, last)
         self.SetBackgroundColour(self.Second)
 
-    def OnKillFocus(self, ev):
+    def _on_kill_focus(self, ev):
         self.SetSelection(0,0)
         self.SetBackgroundColour(self.First)
         
