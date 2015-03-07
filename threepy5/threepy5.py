@@ -4,6 +4,7 @@
 from wx.lib.pubsub import pub
 from collections import namedtuple
 import utils
+import Image as imglib
 
 
 ######################
@@ -336,9 +337,13 @@ class Image(Card):
         to resize the original image so that it fits in `self.rect`.
         """
         super(Image, self).__init__(rect=rect)
+        subscribe("path", self._on_update_path, self)
         self.path = path
         self.scale = scale
 
+
+    ### methods
+    
     def Dump(self):
         """Return a dict holding all this `Image`'s data.
 
@@ -358,6 +363,17 @@ class Image(Card):
         data["path"] = self.path
         data["scale"] = self.scale
 
+        
+    ### subscribers
+
+    def _on_update_path(self, val):
+        if val:
+            try:
+                img = imglib.open(val)
+                x, y = self.rect.left, self.rect.top
+                self.rect = utils.Rect(x, y, img.size[0], img.size[1])
+            except Exception as e:
+                print e
 
 
 ######################
