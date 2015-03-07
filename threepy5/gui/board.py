@@ -12,7 +12,6 @@ import wx.lib.expando as exp
 
 
 
-
 ######################
 # Class Selectable
 ######################
@@ -167,10 +166,14 @@ class Selectable(wx.Panel):
     def _on_mouse_event(self, ev):
         """Listens to `wx.EVT_MOUSE_EVENTS` in the main window and raises it again
         with EventObject set to this window."""
-        ev.EventObject = self
-        # wx.Event does not implement a __set__ for Position
-        ev.SetPosition(ev.Position + self._main.Position)
-        self.EventHandler.ProcessEvent(ev)
+        # we raise every click event, not the enter/leave window events
+        # because entering or leaving the main window is (almost) the same
+        # as entering or leaving the border window
+        if not ev.Leaving() and not ev.Entering():
+            ev.EventObject = self
+            # wx.Event does not implement a __set__ for Position
+            ev.SetPosition(ev.Position + self._main.Position)
+            self.EventHandler.ProcessEvent(ev)
 
 
 
@@ -296,7 +299,6 @@ class HeaderWin(CardWin):
     def _init_UI(self):
         """Overridden from `CardWin`."""
         head = wxutils.EditText(self)
-        # txt.Bind(wx.EVT_KEY_UP, self.OnKeyUp)
 
         vbox = wx.BoxSizer(wx.VERTICAL)
         vbox.Add(head, proportion=0, flag=wx.ALL|wx.EXPAND, border=CardWin.BORDER_WIDTH)
@@ -371,7 +373,9 @@ class ImagePlaceHolder(Selectable):
 ######################
 
 class ImageWin(CardWin):
-    """A `CardWin` that holds a single image."""
+    """A `CardWin` that holds a single image. Unlike other `Selectables`, one must
+    click the center of the window (the image) to select or move the `ImageWin`.
+    Click and dragging over the border will resize the window."""
     DEFAULT_SZ = py5.Image.DEFAULT_SZ
 
     def __init__(self, parent, card=None):
@@ -381,6 +385,10 @@ class ImageWin(CardWin):
         * `card: ` the `Card` object whose data we are showing.
         """
         super(ImageWin, self).__init__(parent, card=card)
+        
+        self.Bind(wx.EVT_ENTER_WINDOW, self._on_enter_border)
+        self.Bind(wx.EVT_LEAVE_WINDOW, self._on_leave_border)
+        self._main.Bind(wx.EVT_ENTER_WINDOW, self._on_leave_border)
 
 
     ### init methods
@@ -414,13 +422,59 @@ class ImageWin(CardWin):
     def _load_img(self):
         bmp = wx.Bitmap(self.Card.path)
         self._bmp.SetBitmap(bmp)
-        self.Fit()        
+        self.Fit()
+        
+        # we want to move the window by clicking on the image
+        self._bmp.Bind(wx.EVT_LEFT_DOWN, self._on_img_left_down)        
 
 
     ### subscribers
 
     def _update_path(self, val):
         self._load_img()
+
+
+    ### callbacks
+
+    def _on_img_left_down(self, ev):
+        ev.EventObject = self
+        ev.SetPosition(ev.Position + self._bmp.Position)
+        self.EventHandler.ProcessEvent(ev)
+
+    def _on_enter_border(self, ev):
+        self.Bind(wx.EVT_MOTION, self._on_motion_border)
+
+    def _on_motion_border(self, ev):
+        x, y =  ev.Position
+        win_w, win_h = self.Size
+
+        right  = abs(x - win_w) < self.BORDER_THICK
+        bottom = abs(y - win_h) < self.BORDER_THICK
+        top    = y < self.BORDER_THICK
+        left   = x < self.BORDER_THICK
+
+        if   (left and top) or (right and bottom):
+            self._resz_w = True
+            self._resz_h = True
+            self.SetCursor(wx.StockCursor(wx.CURSOR_SIZENWSE))
+        elif (right and top) or (left and bottom):
+            self._resz_w = True
+            self._resz_h = True
+            self.SetCursor(wx.StockCursor(wx.CURSOR_SIZENESW))
+        elif left or right:
+            self._resz_w = True
+            self.SetCursor(wx.StockCursor(wx.CURSOR_SIZEWE))
+        elif top or bottom:
+            self._resz_h = True
+            self.SetCursor(wx.StockCursor(wx.CURSOR_SIZENS))
+        else:
+            self._resz_h = False
+            self._resz_w = False
+            self.SetCursor(wx.NullCursor)
+
+    def _on_leave_border(self, ev):
+        self.Unbind(wx.EVT_MOTION)
+        self.SetCursor(wx.NullCursor)
 
 
 
