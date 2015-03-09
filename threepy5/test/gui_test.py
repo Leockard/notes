@@ -193,11 +193,12 @@ class testBoard(unittest.TestCase):
     def testHorizontalArrange(self):
         """`Board` should adequately arrange its Cards."""
         board = newgui.Board(self.frame)
+        num = 25
 
-        for a in xrange(100):
+        for a in xrange(num):
             board.Deck.NewCard("Content", pos=(randint(0,100),randint(0,100)))
             board.Selector.Select(board.Cards[-1])
-        self.assertTrue(len(board.Selection), 100)
+        self.assertTrue(len(board.Selection), num)
 
         board.ArrangeSelection(wx.HORIZONTAL)
         cards = board.Cards[:]
@@ -211,11 +212,12 @@ class testBoard(unittest.TestCase):
     def testVerticalArrange(self):
         """`Board` should adequately arrange its Cards."""
         board = newgui.Board(self.frame)
+        num = 25
 
-        for a in xrange(100):
+        for a in xrange(num):
             board.Deck.NewCard("Content", pos=(randint(0,100),randint(0,100)))
             board.Selector.Select(board.Cards[-1])
-        self.assertTrue(len(board.Selection), 100)
+        self.assertTrue(len(board.Selection), num)
 
         board.ArrangeSelection(wx.VERTICAL)
         cards = board.Cards[:]
@@ -225,6 +227,30 @@ class testBoard(unittest.TestCase):
         for c1, c2 in pairs:
             self.assertEqual(c1.Position.x, c2.Position.x)
             self.assertTrue(c1.Position.y <= c2.Position.y)
+
+    def testGroupAll(self):
+        board = newgui.Board(self.frame)
+        num = 25
+
+        for a in xrange(num):
+            board.Deck.NewCard("Content", pos=(randint(0,100),randint(0,100)))
+        
+        board.Selector.SelectAll()
+        self.assertTrue(len(board.Selection), num)
+
+    def testGroupSelected(self):
+        board = newgui.Board(self.frame)
+        num = 25
+
+        for a in xrange(num):
+            board.Deck.NewCard("Content", pos=(randint(0,100),randint(0,100)))
+        
+        board.Selector.SelectAll()
+        self.assertTrue(len(board.Selection), num)
+        
+        board.GroupSelected()
+        self.assertTrue(board.Groups, 1)
+        self.assertTrue(len(board.Groups[0].members), num)
 
     def tearDown(self):
         wx.CallAfter(self.app.Exit)
@@ -368,9 +394,10 @@ class testSelectionManager(unittest.TestCase):
         # self.app.MainLoop()        
 
 
-### test Board.GroupSelected, ScrollToCard, Copy/Paste
+### test Board: ScrollToCard, Copy/Paste
 ### test AutoSize class with a StaticBitmap
 ### test EditText colours
+### ImageWin: test drag resize
 
 
 if __name__ == "__main__":
