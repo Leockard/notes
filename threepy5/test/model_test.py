@@ -23,6 +23,7 @@ class listener(object):
         pub.subscribe(self.callback, topic)
 
 
+        
 class DefaultValues(unittest.TestCase):
     def testCardDefaultValues(self):
         """Card should assign the correct default values for all properties."""
@@ -91,7 +92,6 @@ class DefaultValues(unittest.TestCase):
         self.assertEqual(box.name, "")
         self.assertEqual(box.path, "")
         self.assertEqual(box.decks, [])
-
 
 
 class InitValues(unittest.TestCase):
@@ -206,7 +206,6 @@ class InitValues(unittest.TestCase):
         self.assertEqual(box.name, test_name)
         self.assertEqual(box.path, test_path)
         self.assertEqual(box.decks, test_decks)
-
 
 
 class GetSetPub(unittest.TestCase):
@@ -483,7 +482,6 @@ class GetSetPub(unittest.TestCase):
         self.assertEqual(calls, lis.calls)
 
         
-
 class NonOverlappingAttributes(unittest.TestCase):
 
     def testCardOverlapping(self):
@@ -653,7 +651,6 @@ class NonOverlappingAttributes(unittest.TestCase):
         self.assertNotEqual(box1.decks, box2.decks)
 
 
-                        
 class AddRemove(unittest.TestCase):
 
     def testCardGroupAddRemove(self):
@@ -739,8 +736,6 @@ class AddRemove(unittest.TestCase):
         self.assertEqual(box.decks, [])
         self.assertEqual(calls, lis.calls)
 
-        
-
 
 class CardMethods(unittest.TestCase):
     test_pt1 = (3,4)
@@ -806,7 +801,6 @@ class CardMethods(unittest.TestCase):
         self.assertEqual(data["id"], card._id)
         self.assertEqual(list(data["rect"]), list(card.rect))
 
-
         
 class HeaderMethods(unittest.TestCase):
     
@@ -833,7 +827,6 @@ class HeaderMethods(unittest.TestCase):
         self.assertEqual(data["header"], head.header)
 
 
-                        
 class ContentMethods(unittest.TestCase):
     
     def testDumpLoad(self):
@@ -868,8 +861,6 @@ class ContentMethods(unittest.TestCase):
         self.assertEqual(data["rating"], cont.rating)
         self.assertEqual(data["content"], cont.content)
         self.assertEqual(data["collapsed"], cont.collapsed)
-
-        
 
 
 class ImageMethods(unittest.TestCase):
