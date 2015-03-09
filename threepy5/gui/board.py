@@ -434,7 +434,6 @@ class ImageWin(CardWin):
         self._bmp.Bind(wx.EVT_LEFT_DOWN, self._on_img_left_down)
 
     def _resize_init(self):
-        self.CaptureMouse()                
         self.Bind(wx.EVT_MOTION, self._on_border_motion)
         self.Bind(wx.EVT_LEFT_UP, self._on_border_left_up)
 
@@ -446,7 +445,6 @@ class ImageWin(CardWin):
         if self._resz_right  : rect.right  = pos.x
         if self._resz_top    : rect.top    = pos.y
         if self._resz_bottom : rect.bottom = pos.y
-        print rect.width
         self.Parent._paint_rect(rect)
 
     def _resize_end(self, pos):
@@ -472,7 +470,6 @@ class ImageWin(CardWin):
         
         self.Unbind(wx.EVT_MOTION,  handler=self._on_border_motion)
         self.Unbind(wx.EVT_LEFT_UP, handler=self._on_border_left_up)
-        self.ReleaseMouse()        
 
 
     ### subscribers
@@ -520,12 +517,14 @@ class ImageWin(CardWin):
         self.SetCursor(wx.NullCursor)
 
     def _on_border_left_down(self, ev):
+        self.CaptureMouse()                
         self._resize_init()
 
     def _on_border_left_up(self, ev):
         # since we captured the mouse, pos is in coordinates relative to
         # this window, while we need it relative to the board
         self._resize_end(self.Position + ev.Position)
+        self.ReleaseMouse()        
 
     def _on_border_motion(self, ev):
         # since we captured the mouse, pos is in coordinates relative to
