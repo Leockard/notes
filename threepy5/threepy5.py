@@ -329,15 +329,14 @@ class Image(Card):
     path = LoudSetterPath()
     scale = LoudSetterScale()
 
-    def __init__(self, rect=NO_RECT, path="", scale=DEFAULT_SCALE):
+    def __init__(self, path="", scale=DEFAULT_SCALE):
         """Constructor.
 
-        * `rect: ` (x, y, w, h), accepts floats.
         * `path: ` the path to the image on disk.
         * `scale: ` the scale at which we show the image. This is the float by which we need
         to resize the original image so that it fits in `self.rect`.
         """
-        super(Image, self).__init__(rect=rect)
+        super(Image, self).__init__()
         subscribe("path", self._on_update_path, self)
         self.path = path
         self.scale = scale
