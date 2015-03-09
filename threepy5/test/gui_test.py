@@ -228,7 +228,8 @@ class testBoard(unittest.TestCase):
             self.assertEqual(c1.Position.x, c2.Position.x)
             self.assertTrue(c1.Position.y <= c2.Position.y)
 
-    def testGroupAll(self):
+    def testSelectAll(self):
+        """`Board` should correctly select all cards."""
         board = newgui.Board(self.frame)
         num = 25
 
@@ -239,6 +240,7 @@ class testBoard(unittest.TestCase):
         self.assertTrue(len(board.Selection), num)
 
     def testGroupSelected(self):
+        """`Board` should correctly group all selected cards."""
         board = newgui.Board(self.frame)
         num = 25
 
@@ -251,6 +253,24 @@ class testBoard(unittest.TestCase):
         board.GroupSelected()
         self.assertTrue(board.Groups, 1)
         self.assertTrue(len(board.Groups[0].members), num)
+
+    def testScrollToCard(self):
+        box = wx.BoxSizer(wx.HORIZONTAL)
+        self.frame.Sizer = box
+        board = newgui.Board(self.frame)
+        box.Add(board, flag=wx.EXPAND)
+        num = 25
+
+        for a in xrange(num):
+            board.Deck.NewCard("Content", pos=(randint(0,100),randint(0,100)))
+            w = board.Cards[-1]
+            board.ScrollToCard(w)
+
+            virt_rect = wx.Rect(board.Position.x, board.Position.x, board.VirtualSize[0], board.VirtualSize[1])
+            self.assertTrue(virt_rect.Contains(w.Rect.TopLeft))
+            self.assertTrue(virt_rect.Contains(w.Rect.TopRight))
+            self.assertTrue(virt_rect.Contains(w.Rect.BottomLeft))
+            self.assertTrue(virt_rect.Contains(w.Rect.BottomRight))
 
     def tearDown(self):
         wx.CallAfter(self.app.Exit)
@@ -394,10 +414,34 @@ class testSelectionManager(unittest.TestCase):
         # self.app.MainLoop()        
 
 
-### test Board: ScrollToCard, Copy/Paste
+class testImageWin(unittest.TestCase):
+
+    def setUp(self):
+        self.app = wx.App()
+        self.frame = TestFrame(None)
+        # self.app.MainLoop()
+
+    def testDragResize(self):
+        pass
+        # """ImageWin should correctly resize when its borders are click and dragged."""
+        # board = newgui.Board(self.frame)
+        # board.Deck.NewCard("Image", pos=(0,0))
+        # w = board.Cards[-1]
+
+        # w._resize_init()
+        # for i in range(29):
+        #     w._resize_update(True, wx.Point(i,i))
+        # w._resize_end(wx.Point(30,30))
+
+    def tearDown(self):
+        wx.CallAfter(self.app.Exit)
+        # self.app.MainLoop()
+
+
+### finish testImageWin.testDragResize
+### test Board: Copy/Paste
 ### test AutoSize class with a StaticBitmap
 ### test EditText colours
-### ImageWin: test drag resize
 
 
 if __name__ == "__main__":
