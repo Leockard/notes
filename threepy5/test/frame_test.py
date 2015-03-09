@@ -4,6 +4,7 @@ import wx
 import threepy5.threepy5 as py5
 import threepy5
 import threepy5.utils as utils
+import threepy5.gui.wxutils as wxutils
 from threepy5.gui import board as newgui
 
 
@@ -21,14 +22,15 @@ class TestFrame(wx.Frame):
 
         box.Add(hbox, proportion=0)
 
-        dbg_it = wx.MenuItem(None, wx.ID_ANY, "Debug")
+        menu = wx.Menu()
+        dbg_it = wx.MenuItem(menu, wx.ID_ANY, "Debug")
+        self.Bind(wx.EVT_MENU, self.OnDebug, dbg_it)
         accels = [wx.AcceleratorEntry(wx.ACCEL_CTRL, ord("D") , dbg_it.GetId())]
         self.SetAcceleratorTable(wx.AcceleratorTable(accels))
 
     def OnDebug(self, ev):
         print "------DEBUG-----"
-        c = self.ctrl.Cards[-1]
-        print c._title.GetNumberOfLines()
+        wxutils.DumpSizerChildren(self.ctrl.Cards[-1].Sizer)
 
 
 if __name__ == "__main__":
@@ -43,9 +45,11 @@ if __name__ == "__main__":
     frame.Sizer.Add(ctrl, proportion=1, flag=wx.EXPAND)
     frame.ctrl = ctrl
 
-    frame.ctrl.Deck.NewCard("Content", pos=(15,15))
-    c1 = ctrl.Cards[0]
+    # frame.ctrl.Deck.NewCard("Image", pos=(15,15))
+    # c1 = ctrl.Cards[0]
     # ctrl.Selector.Select(c1)
+
+    c = newgui.ImagePlaceHolder(ctrl)
 
     # lis = utils.listener(topics=[utils.pub.ALL_TOPICS])
 

@@ -329,14 +329,16 @@ class Image(Card):
     path = LoudSetterPath()
     scale = LoudSetterScale()
 
-    def __init__(self, path="", scale=DEFAULT_SCALE):
+    def __init__(self, path="", scale=DEFAULT_SCALE, rect=NO_RECT):
         """Constructor.
 
         * `path: ` the path to the image on disk.
         * `scale: ` the scale at which we show the image. This is the float by which we need
         to resize the original image so that it fits in `self.rect`.
+        * `rect: ` any `rect` init argument will be overridden as soon as a `path` is provided.
+        `Image` accepts a `rect` argument only for compatibility with its ancestor.
         """
-        super(Image, self).__init__()
+        super(Image, self).__init__(rect=rect)
         subscribe("path", self._on_update_path, self)
         self.path = path
         self.scale = scale
@@ -477,7 +479,7 @@ class Deck(utils.Publisher):
     AddGroup = utils.LoudAppend("groups")
     RemoveGroup = utils.LoudRemove("groups")
 
-    def __init__(self, name="", cards=[], groups=[]):
+    def __init__(self, name=""):
         """Constructor.
 
         * `name: ` the name of this `Deck`.
@@ -486,8 +488,8 @@ class Deck(utils.Publisher):
         """
         super(Deck, self).__init__()
         self.name = name
-        self.cards = cards
-        self.groups = groups
+        self.cards = []  # cards
+        self.groups = [] # groups
 
 
     ### methods
@@ -560,7 +562,7 @@ class Deck(utils.Publisher):
 class AnnotatedDeck(Deck):
     """A collection of `Card`s that can be annotated on."""
 
-    def __init__(self, name="", cards=[], groups=[], lines=[]):
+    def __init__(self, name=""):
         """Constructor.
 
         * `name: ` the name of this `Deck`.
@@ -568,8 +570,8 @@ class AnnotatedDeck(Deck):
         * `groups: ` a list of `CardGroup`s.
         * `lines: ` a list of `Line`s.
         """
-        super(AnnotatedDeck, self).__init__(name=name, cards=cards, groups=groups)
-        self.annotation = Annotation(lines=lines)
+        super(AnnotatedDeck, self).__init__(name=name)
+        self.annotation = Annotation()
 
 
 
