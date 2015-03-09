@@ -321,8 +321,9 @@ class Header(Card):
 
 class Image(Card):
     """A `Card` that holds a single image. Note that this class doesn't
-    actually load the image from disk. If the application needs to display
-    the image, it must load it by itself.
+    hold a reference to the image. If the application needs to display
+    the image, it must load it by itself. However, `Image` does handle
+    its size according to the assigned image.
     """
     DEFAULT_SZ = (50, 50)
     path = LoudSetterPath()
