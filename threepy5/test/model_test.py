@@ -96,7 +96,7 @@ class DefaultValues(unittest.TestCase):
 
 class InitValues(unittest.TestCase):
     test_id = 3
-    test_rect = (1,2,3,4)
+    test_rect = utils.Rect(1,2,3,4)
     test_members = [-1, 3, 10001]
     test_pts = [(1,2), (3,4), (-1,-1), (0,0), (2,-4)]
     test_lines = [test_pts, [(x+1, y-1) for x,y in test_pts]]
@@ -137,12 +137,10 @@ class InitValues(unittest.TestCase):
 
     def testImageInitValues(self):
         """Image should assign the correct init values for all properties."""
-        test_rect = self.test_rect
-        test_path = "/home/leo/code/1233.bmp"
+        test_path = "/home/leo/research/reading_notes/Kandel - Principles of Neural Science/brain.bmp"
         test_scale = 0.5
 
-        img = py5.Image(rect=test_rect, path=test_path, scale=test_scale)
-        self.assertEqual(img.rect, test_rect)
+        img = py5.Image(path=test_path, scale=test_scale)
         self.assertEqual(img.path, test_path)
         self.assertEqual(img.scale, test_scale)
 
@@ -213,7 +211,7 @@ class InitValues(unittest.TestCase):
 
 class GetSetPub(unittest.TestCase):
     test_id = 3
-    test_rect = (1,2,3,4)
+    test_rect = utils.Rect(1,2,3,4)
     test_members = [-1, 3, 10001]
     test_pts = [(1,2), (3,4), (-1,-1), (0,0), (2,-4)]
     test_lines = [test_pts, [(x+1, y-1) for x,y in test_pts]]
@@ -322,7 +320,7 @@ class GetSetPub(unittest.TestCase):
         """Image should publish every call to its property getters."""
         test_id = self.test_id
         test_rect = self.test_rect
-        test_path = "/home/leo/code/1233.bmp"
+        test_path = "/home/leo/research/reading_notes/Kandel - Principles of Neural Science/brain.bmp"
         test_scale = 0.5
 
         img = py5.Image()
@@ -493,8 +491,8 @@ class NonOverlappingAttributes(unittest.TestCase):
         card1 = py5.Card()
         card2 = py5.Card()
         
-        card1.rect = (1,2,3,4)
-        card2.rect = (2,3,4,5)
+        card1.rect = utils.Rect(1,2,3,4)
+        card2.rect = utils.Rect(2,3,4,5)
                 
         self.assertNotEqual(card1._id, card2._id)
         self.assertNotEqual(card1.rect, card2.rect)
@@ -504,8 +502,8 @@ class NonOverlappingAttributes(unittest.TestCase):
         cont1 = py5.Content()
         cont2 = py5.Content()
         
-        cont2.rect = (0,0,1,0)
-        cont1.rect = (1,2,3,1)
+        cont2.rect = utils.Rect(0,0,1,0)
+        cont1.rect = utils.Rect(1,2,3,1)
         cont2.kind = "C"
         cont1.kind = "F"
         cont2.rating = 0
@@ -544,12 +542,12 @@ class NonOverlappingAttributes(unittest.TestCase):
         img1 = py5.Image()
         img2 = py5.Image()
         
-        img2.rect = (1,29,1,0)
-        img1.rect = (1,39,1,0)
+        img2.rect = utils.Rect(1,29,1,0)
+        img1.rect = utils.Rect(1,39,1,0)
         img2.scale = 1.5
         img1.scale = 0.25
-        img2.path = "/home/leo/"
-        img1.path = "/home/leo/code"
+        img2.path = "/home/leo/research/reading_notes/Kandel - Principles of Neural Science/bipolar_cell.png"
+        img1.path = "/home/leo/research/reading_notes/Kandel - Principles of Neural Science/brain.bmp"
         
         self.assertNotEqual(img1._id, img2._id)
         self.assertNotEqual(img1.rect, img2.rect)
@@ -561,8 +559,8 @@ class NonOverlappingAttributes(unittest.TestCase):
         line1 = py5.Line()
         line2 = py5.Line()
         
-        line2.colour = (15,15,15,0)
-        line1.colour = (15,15,10,0)
+        line2.colour = utils.Rect(15,15,15,0)
+        line1.colour = utils.Rect(15,15,10,0)
         line2.thickness = 1
         line1.thickness = 4
         line2.pts = [(1,2), (3,4), (-1,-1), (0,0), (2,-4)]
@@ -653,8 +651,6 @@ class NonOverlappingAttributes(unittest.TestCase):
         self.assertNotEqual(box1.name, box2.name)
         self.assertNotEqual(box1.path, box2.path)
         self.assertNotEqual(box1.decks, box2.decks)
-
-
 
 
                         
