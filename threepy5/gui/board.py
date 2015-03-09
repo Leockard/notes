@@ -385,6 +385,12 @@ class ImageWin(CardWin):
         * `card: ` the `Card` object whose data we are showing.
         """
         super(ImageWin, self).__init__(parent, card=card)
+
+        self._resizing = False
+        self._resz_right  = False
+        self._resz_bottom = False
+        self._resz_top    = False
+        self._resz_left   = False
         
         self.Bind(wx.EVT_ENTER_WINDOW, self._on_enter_border)
         self.Bind(wx.EVT_LEAVE_WINDOW, self._on_leave_border)
@@ -425,7 +431,48 @@ class ImageWin(CardWin):
         self.Fit()
         
         # we want to move the window by clicking on the image
-        self._bmp.Bind(wx.EVT_LEFT_DOWN, self._on_img_left_down)        
+        self._bmp.Bind(wx.EVT_LEFT_DOWN, self._on_img_left_down)
+
+    def _resize_init(self):
+        self.CaptureMouse()                
+        self.Bind(wx.EVT_MOTION, self._on_border_motion)
+        self.Bind(wx.EVT_LEFT_UP, self._on_border_left_up)
+
+    def _resize_update(self, dragging, pos):
+        self._resizing = dragging
+        
+        rect = self.Rect
+        if self._resz_left   : rect.left   = pos.x
+        if self._resz_right  : rect.right  = pos.x
+        if self._resz_top    : rect.top    = pos.y
+        if self._resz_bottom : rect.bottom = pos.y
+        print rect.width
+        self.Parent._paint_rect(rect)
+
+    def _resize_end(self, pos):
+        if self._resizing:
+            left, top     = self.Card.rect.left, self.Card.rect.top
+            bottom, right = self.Card.rect.bottom, self.Card.rect.right
+
+            pad = self.BORDER_THICK
+            if self._resz_left   : left   = max(0, pos.x - pad)
+            if self._resz_right  : right  = max(0, pos.x - pad)
+            if self._resz_top    : top    = max(0, pos.y - pad)
+            if self._resz_bottom : bottom = max(0, pos.y - pad)
+
+            self.Card.rect = utils.Rect(left, top,
+                                        max(2 * pad, right - left),
+                                        max(2 * pad, bottom - top))
+
+        self._resizing    = False
+        self._resz_right  = False
+        self._resz_bottom = False
+        self._resz_top    = False
+        self._resz_left   = False
+        
+        self.Unbind(wx.EVT_MOTION,  handler=self._on_border_motion)
+        self.Unbind(wx.EVT_LEFT_UP, handler=self._on_border_left_up)
+        self.ReleaseMouse()        
 
 
     ### subscribers
@@ -437,45 +484,54 @@ class ImageWin(CardWin):
     ### callbacks
 
     def _on_img_left_down(self, ev):
+        # we raise the clicks on the image as clicks on the Selectable
         ev.EventObject = self
         ev.SetPosition(ev.Position + self._bmp.Position)
         self.EventHandler.ProcessEvent(ev)
 
     def _on_enter_border(self, ev):
         self.Bind(wx.EVT_MOTION, self._on_motion_border)
+        self.Bind(wx.EVT_LEFT_DOWN, self._on_border_left_down)
 
     def _on_motion_border(self, ev):
         x, y =  ev.Position
         win_w, win_h = self.Size
 
-        right  = abs(x - win_w) < self.BORDER_THICK
-        bottom = abs(y - win_h) < self.BORDER_THICK
-        top    = y < self.BORDER_THICK
-        left   = x < self.BORDER_THICK
+        self._resz_right  = abs(x - win_w) < self.BORDER_THICK
+        self._resz_bottom = abs(y - win_h) < self.BORDER_THICK
+        self._resz_top    = y < self.BORDER_THICK
+        self._resz_left   = x < self.BORDER_THICK
 
-        if   (left and top) or (right and bottom):
-            self._resz_w = True
-            self._resz_h = True
+        if   (self._resz_left and self._resz_top) or (self._resz_right and self._resz_bottom):
             self.SetCursor(wx.StockCursor(wx.CURSOR_SIZENWSE))
-        elif (right and top) or (left and bottom):
-            self._resz_w = True
-            self._resz_h = True
+        elif (self._resz_right and self._resz_top) or (self._resz_left and self._resz_bottom):
             self.SetCursor(wx.StockCursor(wx.CURSOR_SIZENESW))
-        elif left or right:
-            self._resz_w = True
+        elif self._resz_left or self._resz_right:
             self.SetCursor(wx.StockCursor(wx.CURSOR_SIZEWE))
-        elif top or bottom:
-            self._resz_h = True
+        elif self._resz_top or self._resz_bottom:
             self.SetCursor(wx.StockCursor(wx.CURSOR_SIZENS))
         else:
-            self._resz_h = False
-            self._resz_w = False
             self.SetCursor(wx.NullCursor)
+        ev.Skip()
 
     def _on_leave_border(self, ev):
-        self.Unbind(wx.EVT_MOTION)
+        self.Unbind(wx.EVT_MOTION, handler=self._on_motion_border)
+        self.Unbind(wx.EVT_LEFT_DOWN, handler=self._on_border_left_down)
         self.SetCursor(wx.NullCursor)
 
+    def _on_border_left_down(self, ev):
+        self._resize_init()
+
+    def _on_border_left_up(self, ev):
+        # since we captured the mouse, pos is in coordinates relative to
+        # this window, while we need it relative to the board
+        self._resize_end(self.Position + ev.Position)
+
+    def _on_border_motion(self, ev):
+        # since we captured the mouse, pos is in coordinates relative to
+        # this window, while we need it relative to the board
+        self._resize_update(ev.Dragging(), self.Position + ev.Position)
+        
 
 
 ######################
