@@ -5,6 +5,7 @@ import threepy5.utils as utils
 import unittest
 from wx.lib.pubsub import pub
 from collections import defaultdict
+from random import randint, sample
 
 
 class listener(object):
@@ -25,6 +26,7 @@ class listener(object):
 
         
 class DefaultValues(unittest.TestCase):
+    
     def testCardDefaultValues(self):
         """Card should assign the correct default values for all properties."""
         card = py5.Card()
@@ -73,6 +75,7 @@ class DefaultValues(unittest.TestCase):
     def testDeckDefaultValues(self):
         """Deck should assign the correct default values for all properties."""
         deck = py5.Deck()
+        
         self.assertEqual(deck.name, "")
         self.assertEqual(deck.cards, [])
         self.assertEqual(deck.groups, [])
@@ -176,10 +179,8 @@ class InitValues(unittest.TestCase):
         test_members = self.test_members
         test_groups = [py5.CardGroup(members=test_members.append(2*j)) for j in range(3)]
 
-        deck = py5.Deck(name=test_name, cards=test_cards, groups=test_groups)
+        deck = py5.Deck(name=test_name)
         self.assertEqual(deck.name, test_name)
-        self.assertEqual(deck.cards, test_cards)
-        self.assertEqual(deck.groups, test_groups)
 
     def testAnnotatedDeckInitValues(self):
         """AnnotatedDeck should assign the correct init values for all properties."""
@@ -189,18 +190,16 @@ class InitValues(unittest.TestCase):
         test_groups = [py5.CardGroup(members=test_members.append(2*j)) for j in range(3)]
         test_lines = self.test_lines
 
-        annodk = py5.AnnotatedDeck(name=test_name, cards=test_cards, groups=test_groups, lines=test_lines)
+        annodk = py5.AnnotatedDeck(name=test_name)
         self.assertEqual(annodk.name, test_name)
-        self.assertEqual(annodk.cards, test_cards)
-        self.assertEqual(annodk.groups, test_groups)
-        self.assertEqual(annodk.annotation.lines, test_lines)
 
     def testBoxInitValues(self):
         """Box should assign the correct init values for all properties."""
         test_name = self.test_name
         test_path = "/home/leo/research/foobar.aaa"
         test_cards = self.test_cards
-        test_decks = [py5.AnnotatedDeck(cards=test_cards) for j in range(5)]
+        test_decks = [py5.AnnotatedDeck() for j in range(5)]
+        for d in test_decks: d.cards = test_cards
 
         box = py5.Box(name=test_name, path=test_path, decks=test_decks)
         self.assertEqual(box.name, test_name)
@@ -457,7 +456,8 @@ class GetSetPub(unittest.TestCase):
         test_name = self.test_name
         test_path = "/home/leo/research/foobar.aaa"
         test_cards = self.test_cards
-        test_decks = [py5.AnnotatedDeck(cards=test_cards) for j in range(5)]
+        test_decks = [py5.AnnotatedDeck() for j in range(5)]
+        for d in test_decks: d.cards = test_cards
 
         box = py5.Box()
         topic = box._root
@@ -640,7 +640,8 @@ class NonOverlappingAttributes(unittest.TestCase):
         box2.path = "/home/leo/"
         box1.path = "/home/leo/code"
         test_cards = [py5.Card() for j in range(3)]
-        test_decks = [py5.AnnotatedDeck(cards=test_cards) for j in range(5)]
+        test_decks = [py5.AnnotatedDeck() for j in range(5)]
+        for d in test_decks: d.cards = test_cards
         box2.decks = test_decks
         test_decks2 = test_decks[:]
         test_decks2.append(py5.Card())
@@ -892,7 +893,36 @@ class ImageMethods(unittest.TestCase):
         self.assertEqual(data["scale"], img.scale)
         
 
-### test Deck dump, load
+class DeckMethods(unittest.TestCase):
+
+    def _r_class(self):
+        return ["Content", "Header", "Image"][randint(0, 2)]
+
+    def _r_pos(self):
+        return (randint(0,100), randint(0,100))
+
+    def testDumpLoad(self):
+        "Deck should correctly dump and load all information it contains."
+        deck = py5.Deck()
+        num = 25
+        
+        for i in range(num):
+            deck.NewCard(self._r_class(), self._r_pos())
+        data = deck.Dump()
+        
+        for c in deck.cards:
+            li = [d for d in data["cards"] if d["id"] == c._id]
+            self.assertEqual(len(li), 1)
+            c_data = li[0]
+            self.assertEqual(c.Dump(), c_data)
+
+        count = 0
+        for i in range(num):
+            ids = sample([d["id"] for d in data["cards"]], randint(1, 25))
+            deck.AddGroup(py5.CardGroup(members=ids))
+            count +=1
+            self.assertEqual(len(deck.groups), count)
+            self.assertEqual(deck.groups[-1].members, ids)
 
 
 
