@@ -523,14 +523,14 @@ class ImageWin(CardWin):
 
     def _on_capture_lost(self, ev):
         self.ReleaseMouse()
-        self.Unbind(wx.EVT_MOUSE_CAPTURE_LOST, self._on_capture_lost)
+        self.Unbind(wx.EVT_MOUSE_CAPTURE_LOST, handler=self._on_capture_lost)
         
     def _on_border_left_up(self, ev):
         # since we captured the mouse, pos is in coordinates relative to
         # this window, while we need it relative to the board
         self._resize_end(self.Position + ev.Position)
         self.ReleaseMouse()
-        self.Unbind(wx.EVT_MOUSE_CAPTURE_LOST, self._on_capture_lost)
+        self.Unbind(wx.EVT_MOUSE_CAPTURE_LOST, handler=self._on_capture_lost)
 
     def _on_border_motion(self, ev):
         # since we captured the mouse, pos is in coordinates relative to
