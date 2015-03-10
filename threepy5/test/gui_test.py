@@ -126,7 +126,7 @@ class testBoard(unittest.TestCase):
 
         # simulate a click-drag from (0,0) to (30,30)
         # which should end up selecting both cards
-        board._drag_init(wx.Point(0,0))
+        board._drag_start(wx.Point(0,0))
         for i in range(29):
             board._drag_update(wx.Point(i,i))
         board._drag_end(wx.Point(30,30))
@@ -160,7 +160,7 @@ class testBoard(unittest.TestCase):
         # simulate a click-drag from the top left corner of the first card
         # to the point (1000, 1000)
         start = cards[0].Position + wx.Point(3,3)
-        board._move_init(cards[0], wx.Point(*start))
+        board._move_start(cards[0], wx.Point(*start))
         for i in range(999):
             board._move_update(wx.Point(i,i))
         pad = cards[0].BORDER_WIDTH
@@ -503,6 +503,7 @@ class testAutoSize(unittest.TestCase):
                 
 ### finish testImageWin.testDragResize
 ### test coloured text
+### test resize/rescale
 
 
 if __name__ == "__main__":
