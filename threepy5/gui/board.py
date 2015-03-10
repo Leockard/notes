@@ -18,6 +18,7 @@ import wx.lib.expando as exp
 
 class Selectable(wx.Panel):
     """A Selectable is the parent for all `Board` child windows that allow selection.
+    A window should be `Selectable` if it should be selected by click-dragging, for example.
 
     The important feature of `Selectable` is that it consists of an underlying window, the
     "border" window, which is the same colour of the parent `Board`. When the `Selectable`
@@ -33,6 +34,9 @@ class Selectable(wx.Panel):
     rectangle around a window (in this case, to show selection), is by putting it into a
     bigger window and setting that window's background, which in actuality looks like a
     paint-able border or shadow.
+
+    Another feature of `Selectable` is that it facilitates window resizing by click-dragging
+    from the edges. By default, it's off. Set `Resizable` to `True` to activate it.
 
     We must take care to make the `Selectable` object behave appropriately according to its
     border and main windows. For example, we override `wx.Winwdow.Children` to return the
@@ -55,11 +59,13 @@ class Selectable(wx.Panel):
         """Constructor.
 
         * `parent: ` the parent `Board`.
+        * `size: ` the window size.
         """
         super(Selectable, self).__init__(parent, size=size)
         self._selected = False
         self._main = None
         self._init_border()
+        self._init_resize()
 
 
     ### init methods
@@ -82,6 +88,14 @@ class Selectable(wx.Panel):
         # use Sizer to get the "real" control sizer
         super(Selectable, self).SetSizer(box)
         self._main = main
+
+    def _init_resize(self):
+        self._resizing = False
+        self._resz_right  = False
+        self._resz_bottom = False
+        self._resz_top    = False
+        self._resz_left   = False
+        self.Resizable = False
 
 
     ### properties
@@ -160,12 +174,102 @@ class Selectable(wx.Panel):
             self.BorderColour = self.Parent.BackgroundColour
             self._selected = False
 
+    @property
+    def Resizable(self):
+        """Set to `True` to activate resizing by click-dragging on edges."""
+        return self._Resizable
+
+    @Resizable.setter
+    def Resizable(self, val):
+        self._Resizable = val
+        if val:
+            self.Bind(wx.EVT_ENTER_WINDOW, self._on_enter_border)
+            self.Bind(wx.EVT_LEAVE_WINDOW, self._on_leave_border)
+            self._main.Bind(wx.EVT_ENTER_WINDOW, self._on_leave_border)
+        else:
+            self._resizing = False
+            self._resz_right  = False
+            self._resz_bottom = False
+            self._resz_top    = False
+            self._resz_left   = False
+            
+            self.Unbind(wx.EVT_ENTER_WINDOW)
+            self.Unbind(wx.EVT_LEAVE_WINDOW)
+            self._main.Unbind(wx.EVT_ENTER_WINDOW)
+
+            
+    ### methods
+
+    def _hover_start(self):
+        pass
+
+    def _hover_update(self, pos):
+        x, y = pos
+        win_w, win_h = self.Size
+
+        self._resz_right  = abs(x - win_w) < self.BORDER_THICK
+        self._resz_bottom = abs(y - win_h) < self.BORDER_THICK
+        self._resz_top    = y < self.BORDER_THICK
+        self._resz_left   = x < self.BORDER_THICK
+
+        if   (self._resz_left and self._resz_top) or (self._resz_right and self._resz_bottom):
+            self.SetCursor(wx.StockCursor(wx.CURSOR_SIZENWSE))
+        elif (self._resz_right and self._resz_top) or (self._resz_left and self._resz_bottom):
+            self.SetCursor(wx.StockCursor(wx.CURSOR_SIZENESW))
+        elif self._resz_left or self._resz_right:
+            self.SetCursor(wx.StockCursor(wx.CURSOR_SIZEWE))
+        elif self._resz_top or self._resz_bottom:
+            self.SetCursor(wx.StockCursor(wx.CURSOR_SIZENS))
+        else:
+            self.SetCursor(wx.NullCursor)
+
+    def _hover_end(self):
+        pass
+
+    def _resize_start(self):
+        self.Bind(wx.EVT_MOTION, self._on_border_motion)
+        self.Bind(wx.EVT_LEFT_UP, self._on_border_left_up)
+
+    def _resize_update(self, dragging, pos):
+        self._resizing = dragging
+        
+        rect = self.Rect
+        if self._resz_left   : rect.left   = pos.x
+        if self._resz_right  : rect.right  = pos.x
+        if self._resz_top    : rect.top    = pos.y
+        if self._resz_bottom : rect.bottom = pos.y
+        self.Parent._paint_rect(rect)
+
+    def _resize_end(self, pos):
+        if self._resizing:
+            left, top     = self.Card.rect.left, self.Card.rect.top
+            bottom, right = self.Card.rect.bottom, self.Card.rect.right
+
+            pad = self.BORDER_THICK
+            if self._resz_left   : left   = max(0, pos.x - pad)
+            if self._resz_right  : right  = max(0, pos.x - pad)
+            if self._resz_top    : top    = max(0, pos.y - pad)
+            if self._resz_bottom : bottom = max(0, pos.y - pad)
+
+            self.Card.rect = utils.Rect(left, top,
+                                        max(2 * pad, right - left),
+                                        max(2 * pad, bottom - top))
+
+        self._resizing    = False
+        self._resz_right  = False
+        self._resz_bottom = False
+        self._resz_top    = False
+        self._resz_left   = False
+        
+        self.Unbind(wx.EVT_MOTION,  handler=self._on_border_motion)
+        self.Unbind(wx.EVT_LEFT_UP, handler=self._on_border_left_up)
+
 
     ### callbacks
 
     def _on_mouse_event(self, ev):
-        """Listens to `wx.EVT_MOUSE_EVENTS` in the main window and raises it again
-        with EventObject set to this window."""
+        """Listens to mouse click events in the main window and raises it again
+        with `EventObject` set to this window."""
         # we raise every click event, not the enter/leave window events
         # because entering or leaving the main window is (almost) the same
         # as entering or leaving the border window
@@ -175,8 +279,43 @@ class Selectable(wx.Panel):
             ev.SetPosition(ev.Position + self._main.Position)
             self.EventHandler.ProcessEvent(ev)
 
+    def _on_enter_border(self, ev):
+        self.Bind(wx.EVT_MOTION, self._on_motion_border)
+        self.Bind(wx.EVT_LEFT_DOWN, self._on_border_left_down)
+        self._hover_start()
 
+    def _on_motion_border(self, ev):
+        self._hover_update(ev.Position)
+        ev.Skip()
 
+    def _on_leave_border(self, ev):
+        self.Unbind(wx.EVT_MOTION, handler=self._on_motion_border)
+        self.Unbind(wx.EVT_LEFT_DOWN, handler=self._on_border_left_down)
+        self.SetCursor(wx.NullCursor)
+        self._hover_end()
+
+    def _on_border_left_down(self, ev):
+        self.CaptureMouse()
+        self.Bind(wx.EVT_MOUSE_CAPTURE_LOST, self._on_capture_lost)
+        self._resize_start()
+        
+    def _on_border_motion(self, ev):
+        # since we captured the mouse, pos is in coordinates relative to
+        # this window, while we need it relative to the board
+        self._resize_update(ev.Dragging(), self.Position + ev.Position)
+        
+    def _on_border_left_up(self, ev):
+        # since we captured the mouse, pos is in coordinates relative to
+        # this window, while we need it relative to the board
+        self.ReleaseMouse()
+        self.Unbind(wx.EVT_MOUSE_CAPTURE_LOST, handler=self._on_capture_lost)
+        self._resize_end(self.Position + ev.Position)        
+
+    def _on_capture_lost(self, ev):
+        self.ReleaseMouse()
+        self.Unbind(wx.EVT_MOUSE_CAPTURE_LOST, handler=self._on_capture_lost)
+
+        
 
 ######################
 # Class CardWin
@@ -385,17 +524,7 @@ class ImageWin(CardWin):
         * `card: ` the `Card` object whose data we are showing.
         """
         super(ImageWin, self).__init__(parent, card=card)
-
-        self._resizing = False
-        self._resz_right  = False
-        self._resz_bottom = False
-        self._resz_top    = False
-        self._resz_left   = False
-        
-        self.Bind(wx.EVT_ENTER_WINDOW, self._on_enter_border)
-        self.Bind(wx.EVT_LEAVE_WINDOW, self._on_leave_border)
-        self._main.Bind(wx.EVT_ENTER_WINDOW, self._on_leave_border)
-
+        self.Resizable = True
 
     ### init methods
 
@@ -433,44 +562,6 @@ class ImageWin(CardWin):
         # we want to move the window by clicking on the image
         self._bmp.Bind(wx.EVT_LEFT_DOWN, self._on_img_left_down)
 
-    def _resize_init(self):
-        self.Bind(wx.EVT_MOTION, self._on_border_motion)
-        self.Bind(wx.EVT_LEFT_UP, self._on_border_left_up)
-
-    def _resize_update(self, dragging, pos):
-        self._resizing = dragging
-        
-        rect = self.Rect
-        if self._resz_left   : rect.left   = pos.x
-        if self._resz_right  : rect.right  = pos.x
-        if self._resz_top    : rect.top    = pos.y
-        if self._resz_bottom : rect.bottom = pos.y
-        self.Parent._paint_rect(rect)
-
-    def _resize_end(self, pos):
-        if self._resizing:
-            left, top     = self.Card.rect.left, self.Card.rect.top
-            bottom, right = self.Card.rect.bottom, self.Card.rect.right
-
-            pad = self.BORDER_THICK
-            if self._resz_left   : left   = max(0, pos.x - pad)
-            if self._resz_right  : right  = max(0, pos.x - pad)
-            if self._resz_top    : top    = max(0, pos.y - pad)
-            if self._resz_bottom : bottom = max(0, pos.y - pad)
-
-            self.Card.rect = utils.Rect(left, top,
-                                        max(2 * pad, right - left),
-                                        max(2 * pad, bottom - top))
-
-        self._resizing    = False
-        self._resz_right  = False
-        self._resz_bottom = False
-        self._resz_top    = False
-        self._resz_left   = False
-        
-        self.Unbind(wx.EVT_MOTION,  handler=self._on_border_motion)
-        self.Unbind(wx.EVT_LEFT_UP, handler=self._on_border_left_up)
-
 
     ### subscribers
 
@@ -486,56 +577,6 @@ class ImageWin(CardWin):
         ev.SetPosition(ev.Position + self._bmp.Position)
         self.EventHandler.ProcessEvent(ev)
 
-    def _on_enter_border(self, ev):
-        self.Bind(wx.EVT_MOTION, self._on_motion_border)
-        self.Bind(wx.EVT_LEFT_DOWN, self._on_border_left_down)
-
-    def _on_motion_border(self, ev):
-        x, y =  ev.Position
-        win_w, win_h = self.Size
-
-        self._resz_right  = abs(x - win_w) < self.BORDER_THICK
-        self._resz_bottom = abs(y - win_h) < self.BORDER_THICK
-        self._resz_top    = y < self.BORDER_THICK
-        self._resz_left   = x < self.BORDER_THICK
-
-        if   (self._resz_left and self._resz_top) or (self._resz_right and self._resz_bottom):
-            self.SetCursor(wx.StockCursor(wx.CURSOR_SIZENWSE))
-        elif (self._resz_right and self._resz_top) or (self._resz_left and self._resz_bottom):
-            self.SetCursor(wx.StockCursor(wx.CURSOR_SIZENESW))
-        elif self._resz_left or self._resz_right:
-            self.SetCursor(wx.StockCursor(wx.CURSOR_SIZEWE))
-        elif self._resz_top or self._resz_bottom:
-            self.SetCursor(wx.StockCursor(wx.CURSOR_SIZENS))
-        else:
-            self.SetCursor(wx.NullCursor)
-        ev.Skip()
-
-    def _on_leave_border(self, ev):
-        self.Unbind(wx.EVT_MOTION, handler=self._on_motion_border)
-        self.Unbind(wx.EVT_LEFT_DOWN, handler=self._on_border_left_down)
-        self.SetCursor(wx.NullCursor)
-
-    def _on_border_left_down(self, ev):
-        self.CaptureMouse()
-        self.Bind(wx.EVT_MOUSE_CAPTURE_LOST, self._on_capture_lost)
-        self._resize_init()
-
-    def _on_capture_lost(self, ev):
-        self.ReleaseMouse()
-        self.Unbind(wx.EVT_MOUSE_CAPTURE_LOST, handler=self._on_capture_lost)
-        
-    def _on_border_left_up(self, ev):
-        # since we captured the mouse, pos is in coordinates relative to
-        # this window, while we need it relative to the board
-        self._resize_end(self.Position + ev.Position)
-        self.ReleaseMouse()
-        self.Unbind(wx.EVT_MOUSE_CAPTURE_LOST, handler=self._on_capture_lost)
-
-    def _on_border_motion(self, ev):
-        # since we captured the mouse, pos is in coordinates relative to
-        # this window, while we need it relative to the board
-        self._resize_update(ev.Dragging(), self.Position + ev.Position)
         
 
 
@@ -832,11 +873,6 @@ class ContentWin(CardWin):
         self._content.Value  = card.content
         # self._collapsed      = card.collapsed
 
-        # pub.subscribe(self._update_title     , "UPDATE_TITLE")
-        # pub.subscribe(self._update_kind      , "UPDATE_KIND")
-        # pub.subscribe(self._update_rating    , "UPDATE_RATING")
-        # pub.subscribe(self._update_content   , "UPDATE_CONTENT")
-        # pub.subscribe(self._update_collapsed , "UPDATE_COLLAPSED")
         py5.subscribe("title", self._update_title, card)
         py5.subscribe("kind", self._update_kind, card)
         py5.subscribe("rating", self._update_rating, card)
@@ -955,14 +991,6 @@ class Board(wxutils.AutoSize):
     WIN_PADDING = py5.Deck.PADDING
     BACKGROUND_CL = "#CCCCCC"
     MOVING_RECT_THICKNESS = 1
-
-
-    ################################
-    # maybe private!!!
-    # RemoveCard  = RemoveDesc("Cards")
-    # AddGroup    = AddDesc("Cards")
-    # RemoveGroup = RemoveDesc("Cards")
-    ################################
 
 
     ##################################
@@ -1239,7 +1267,7 @@ class Board(wxutils.AutoSize):
         # see the property Groups
         # self.Groups = []
 
-        self._drag_init_pos = None
+        self._drag_start_pos = None
         """The position where we started dragging the mouse."""
 
         self._drag_cur_pos = None
@@ -1317,30 +1345,15 @@ class Board(wxutils.AutoSize):
 
         # edit actions
         copy_it = wx.MenuItem(menu, wx.ID_COPY, "Copy Selection")
-        self.Bind(wx.EVT_MENU, self._on_copy, copy_it)
-        
         past_it = wx.MenuItem(menu, wx.ID_PASTE, "Paste")
+        
+        self.Bind(wx.EVT_MENU, self._on_copy, copy_it)
         self.Bind(wx.EVT_MENU, self._on_paste, past_it)
-
-        # # insert actions
-        # cont_it = wx.MenuItem(menu, wx.ID_ANY, "Insert Content")
-        # self.Bind(wx.EVT_MENU, self._on_ctrl_ret, cont_it)
-        # head_it = wx.MenuItem(menu, wx.ID_ANY, "Insert Header")
-        # self.Bind(wx.EVT_MENU, self._on_alt_ret, head_it)
-        # img_it = wx.MenuItem(menu, wx.ID_ANY, "Insert Image")
-        # self.Bind(wx.EVT_MENU, lambda ev: ImagePlaceHolder(self, pos=self._menu_pos), img_it)
-        # # # tab actions
-        # # close_it = wx.MenuItem(menu, wx.ID_ANY, "Close")
-        # # self.Bind(wx.EVT_MENU, self.OnClose, close_it)
-
+        
         menu.AppendItem(copy_it)
         menu.AppendItem(past_it)
-        # menu.AppendItem(cont_it)
-        # menu.AppendItem(head_it)
-        # menu.AppendItem(img_it)
-        # # menu.AppendSeparator()
-        # # menu.AppendItem(close_it)
 
+        
         self.menu = menu
         self._menu_pos = (0, 0)        
 
@@ -1705,7 +1718,7 @@ class Board(wxutils.AutoSize):
         rect = rect.Inflate(2 * thick, 2 * thick)
         self._paint_rect(rect, thick=thick, style=wx.TRANSPARENT, refresh=refresh)
 
-    def _drag_init(self, pos):
+    def _drag_start(self, pos):
         """Prepare for drag-select.
 
         * `pos: ` mouse click position, relative to the Board.
@@ -1713,7 +1726,7 @@ class Board(wxutils.AutoSize):
         self.Selector.UnselectAll()
         self.Selector.SetFocus()
 
-        self._drag_init_pos = pos
+        self._drag_start_pos = pos
         self._drag_cur_pos = pos
         # note we don't set self._dragging to True until the user actually drags the
         # mouse, this is done in self._on_drag_motion
@@ -1723,14 +1736,14 @@ class Board(wxutils.AutoSize):
         self._dragging = True
 
         # erase the last one selection rect
-        self._paint_rect(wx.Rect(self._drag_init_pos[0], self._drag_init_pos[1],
+        self._paint_rect(wx.Rect(self._drag_start_pos[0], self._drag_start_pos[1],
                                  self._drag_cur_pos[0],  self._drag_cur_pos[1]),
                          style = wx.TRANSPARENT,
                          refresh = False)
 
         # and draw the current one
-        final_pos = pos - self._drag_init_pos
-        self._paint_rect(wx.Rect(self._drag_init_pos[0], self._drag_init_pos[1],
+        final_pos = pos - self._drag_start_pos
+        self._paint_rect(wx.Rect(self._drag_start_pos[0], self._drag_start_pos[1],
                                  final_pos[0], final_pos[1]),
                          refresh = False)
 
@@ -1739,11 +1752,11 @@ class Board(wxutils.AutoSize):
     def _drag_end(self, pos):
         """Clean up the drag-select task. Called on wx.EVT_LEFT_UP while we are dragging."""
         # erase the last selection rect
-        final_rect = wxutils.MakeEncirclingRect(self._drag_init_pos, self._drag_init_pos + self._drag_cur_pos)
+        final_rect = wxutils.MakeEncirclingRect(self._drag_start_pos, self._drag_start_pos + self._drag_cur_pos)
         self._paint_rect(final_rect, style=wx.TRANSPARENT)
 
         self._dragging = False
-        self._drag_init_pos = None
+        self._drag_start_pos = None
         self._drag_cur_pos = None
         self.FitToChildren()
         self.Selector.SetFocus()
@@ -1753,7 +1766,7 @@ class Board(wxutils.AutoSize):
         for w in selected:
             self.Selector.Select(w)
 
-    def _move_init(self, card, pos):
+    def _move_start(self, card, pos):
         """Prepare for moving the selected cards.
 
         * `card: ` the clicked card that will (probably) be moved.
@@ -1864,7 +1877,7 @@ class Board(wxutils.AutoSize):
         self.Deck.NewCard("Content", pos=pos)
 
     def _on_left_down(self, ev):
-        self._drag_init(ev.Position)
+        self._drag_start(ev.Position)
         self.Bind(wx.EVT_MOTION, self._on_drag_motion)
 
     def _on_drag_motion(self, ev):
@@ -1904,7 +1917,7 @@ class Board(wxutils.AutoSize):
         self.Bind(wx.EVT_LEFT_UP, self._on_card_left_up)
         self.Bind(wx.EVT_MOTION, self._on_moving_motion)
         self.CaptureMouse()
-        self._move_init(ev.EventObject, pos)
+        self._move_start(ev.EventObject, pos)
 
     def _on_card_child_left_down(self, ev):
         self.Selector.Active = False
