@@ -14,12 +14,19 @@ used outside of `threepy5`.
 from wx.lib.pubsub import pub
 
 class listener(object):
+    """Helper class that subscribes to pubsub messges. Used for debugging."""
+    
     def __init__(self, topics=[]):
+        """Constructor.
+
+        * `topics: ` a list of topic names to subscribe.
+        """
         self.calls = {}
         for t in topics:
             pub.subscribe(self.callback, t)
         
     def callback(self, topic=pub.AUTO_TOPIC, **kwargs):
+        """The callback for all subscribed methods."""
         name = topic.getName()
         print name
         if not name in self.calls.keys():
@@ -27,6 +34,7 @@ class listener(object):
         self.calls[name] += 1
 
     def addTopic(self, topic):
+        """Add a new topic to subscribe to."""
         pub.subscribe(self.callback, topic)
 
 
@@ -37,6 +45,8 @@ class listener(object):
 import recordtype
 
 class Rect(recordtype.recordtype('Rect', [('left', 0), ('top', 0), ("width", 0), ("height", 0)])):
+    """Minimal rectanble functionality. Used in `Card` classes."""
+    
     @property
     def right(self):
         return self.left + self.width
@@ -72,13 +82,24 @@ from weakref import WeakKeyDictionary as weakdict
 from wx.lib.pubsub import pub
 
 class LoudObj(object):
+    """Abstract class. An object that sends messages to pubsub."""
 
     def __init__(self, subtopic):
+        """Constructor.
+
+        * `subtopic: ` the subtopic for all messages from this object.
+        """
         super(LoudObj, self).__init__()
         self._subtopic = subtopic
         self._loud = True
 
     def silently(self, call, *args, **kwargs):
+        """Do something without publishing a message.
+
+        * `call: ` callable to execute without sending message.
+        * `args: ` arguments to pass to `call`.
+        * `kwargs: ` keyword arguments to pass to `call`.
+        """
         self._loud = False
         call(*args, **kwargs)
         self._loud = True
@@ -146,6 +167,7 @@ class LoudSetter(LoudObj):
             pub.sendMessage(topic, val=value)
 
     def silently(self, instance, value):
+        """Overridden from `LoudObj`. Calls `__set__` without publishing a message."""
         super(LoudSetter, self).silently(self.__set__, instance=instance, value=value)
 
 
@@ -153,6 +175,11 @@ class LoudSetter(LoudObj):
 def makeLoudSetter(name, default):
     """Creates a `LoudSetter` class. The new class will be called "LoudSetter'Name'",
     and it will publish its calls with the subtopic "UPDATE_'NAME'".
+
+    * `name: ` the name of the new `LoudSetter` subclass.
+    * `default: ` the default value for the attributes created with the new `LoudSetter` class.
+
+    `returns: ` a `LoudSetter` class.
     """
     class newLoudSetter(LoudSetter):
         def __init__(self, default=default):
@@ -165,10 +192,12 @@ def makeLoudSetter(name, default):
 ########################
 # Publisher class
 ########################
+
 NO_ID = -1
 LoudSetterID = makeLoudSetter("ID", NO_ID)
 
 class Publisher(WithId):
+    """A class that holds `LoudObj`s. Manages the root topic for all its attributes. """
     _id = LoudSetterID()
 
     def __init__(self):
@@ -194,18 +223,29 @@ class Publisher(WithId):
         """Called when the _id of this object changes loudly."""
         pub.subscribe(self._on_set_id, self._root + "." + "UPDATE_ID")
 
-
+        
 
 #########################
-# Add/Remove descriptors
+# LoudMethod class
 #########################
 
 class LoudMethod(LoudObj):
-    """Assumes the owner is a Publisher with a _root."""
+    """Descriptor class for a method that publishes its calls. Assumes the
+    owner has a `_root` attribute (e.g. a `Publisher`) that will be used as
+    the root topic for the messages.
+
+    For example, if foo is a `Publisher` object with a list attribute called `li`
+    and `LoudAppend` is a subclass of `LoudMethod`, then any call of the form
+    `foo.li.append(...)` will publish a message with a root topic taken from the
+    `Publisher` object and a subtopic taken from this class.
+    """
+    
     def __init__(self, attr, method, subtopic):
         """Constructor.
 
-        * `name: ` the name of the attribute we are going to append to.
+        * `attr: ` the name of the attribute on which `method` is called.
+        * `method: ` the `method` whose calls are published.
+        * `subtopic: ` subtopic to publish the calls with.
         """
         super(LoudMethod, self).__init__(subtopic=subtopic)
         self._attr = attr
@@ -213,6 +253,13 @@ class LoudMethod(LoudObj):
         self._name = self.__class__.__name__[4:]
 
     def __get__(self, instance, owner):
+        """Get the modified method.
+
+        * `instance: ` the `Publisher` object.
+        * `owner: ` the class of `instance`.
+
+        * `returns: ` a function that calls the usual method and publishes it afterward.
+        """
         if instance is None:
             return self
             
@@ -228,10 +275,16 @@ class LoudMethod(LoudObj):
         return func
 
 class LoudAppend(LoudMethod):
+    """A `LoudMethod` class for the `append` method in a list attribute.
+    Publishes the calls with the topic "NEW_<ATTR>" where <ATTR> is the name
+    of the list attribute in uppercase."""
     def __init__(self, attr):
         super(LoudAppend, self).__init__(attr, "append", "NEW_" + attr[:-1].upper())
 
 class LoudRemove(LoudMethod):
+    """A `LoudMethod` class for the `remove` method in a list attribute.
+    Publishes the calls with the topic "POP_<ATTR>" where <ATTR> is the name
+    of the list attribute in uppercase."""
     def __init__(self, attr):
         super(LoudRemove, self).__init__(attr, "remove", "POP_" + attr[:-1].upper())
 
@@ -279,7 +332,6 @@ def dist(p1, p2):
 
 
 
-
 ###########################
 # pdoc documentation setup
 ###########################
@@ -294,20 +346,50 @@ __pdoc__["field"] = None
 # mehods, and not the ones coming from the base classes,
 # we first set to None every method in the base class.
 for field in dir(object):
+    __pdoc__['listener.%s' % field] = None
+for field in dir(recordtype.recordtype):
+    __pdoc__['Rect.%s' % field] = None
+for field in dir(object):
+    __pdoc__['WithId.%s' % field] = None
+for field in dir(object):
+    __pdoc__['LoudObj.%s' % field] = None    
+for field in dir(LoudObj):
     __pdoc__['LoudSetter.%s' % field] = None
-for field in dir(object):
-    __pdoc__['AddDesc.%s' % field] = None
-for field in dir(object):
-    __pdoc__['RemoveDesc.%s' % field] = None
+for field in dir(WithId):
+    __pdoc__['Publisher.%s' % field] = None
+for field in dir(LoudObj):
+    __pdoc__['LoudMethod.%s' % field] = None    
+for field in dir(LoudMethod):
+    __pdoc__['LoudAppend.%s' % field] = None
+for field in dir(LoudMethod):
+    __pdoc__['LoudRemove.%s' % field] = None
 
 # Then, we have to add again the methods that we have
 # overriden. See https://github.com/BurntSushi/pdoc/issues/15.
+for field in listener.__dict__.keys():
+    if 'listener.%s' % field in __pdoc__.keys():
+        del __pdoc__['listener.%s' % field]
+for field in Rect.__dict__.keys():
+    if 'Rect.%s' % field in __pdoc__.keys():
+        del __pdoc__['Rect.%s' % field]
+for field in WithId.__dict__.keys():
+    if 'WithId.%s' % field in __pdoc__.keys():
+        del __pdoc__['WithId.%s' % field]
+for field in LoudObj.__dict__.keys():
+    if 'LoudObj.%s' % field in __pdoc__.keys():
+        del __pdoc__['LoudObj.%s' % field]        
 for field in LoudSetter.__dict__.keys():
     if 'LoudSetter.%s' % field in __pdoc__.keys():
         del __pdoc__['LoudSetter.%s' % field]
-# for field in LoudAppend.__dict__.keys():
-#     if 'LoudAppend.%s' % field in __pdoc__.keys():
-#         del __pdoc__['LoudAppend.%s' % field]
-# for field in LoudRemove.__dict__.keys():
-#     if 'LoudRemove.%s' % field in __pdoc__.keys():
-#         del __pdoc__['LoudRemove.%s' % field]
+for field in Publisher.__dict__.keys():
+    if 'Publisher.%s' % field in __pdoc__.keys():
+        del __pdoc__['Publisher.%s' % field]
+for field in LoudMethod.__dict__.keys():
+    if 'LoudMethod.%s' % field in __pdoc__.keys():
+        del __pdoc__['LoudMethod.%s' % field]
+for field in LoudAppend.__dict__.keys():
+    if 'LoudAppend.%s' % field in __pdoc__.keys():
+        del __pdoc__['LoudAppend.%s' % field]
+for field in LoudRemove.__dict__.keys():
+    if 'LoudRemove.%s' % field in __pdoc__.keys():
+        del __pdoc__['LoudRemove.%s' % field]
