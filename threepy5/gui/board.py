@@ -200,6 +200,10 @@ class Selectable(wx.Panel):
             
     ### methods
 
+    def MoveBy(self, dx, dy):
+        pt = self.Position + wx.Point(dx, dy)
+        self.Move(pt)
+
     def _hover_start(self):
         pass
 
@@ -377,6 +381,11 @@ class CardWin(Selectable):
 
 
     ### methods
+
+    def MoveBy(self, dx, dy):
+        """Overridden from `Selectable`. Change the `Card`'s position, not the window's.
+        The window's position will update automatically since it's subscribed to Card.rect. """
+        self.Card.MoveBy(dx, dy)
 
     def _navigate_out(self, forward):
         """Simulate TAB navigation.
@@ -1152,7 +1161,7 @@ class Board(wxutils.AutoSize):
             `dy: ` the amount of pixels to move in the Y direction.
             """
             for c in self.Selection:
-                c.Card.MoveBy(dx, dy)
+                c.MoveBy(dx, dy)
 
         def DeleteSelection(self):
             """Deletes every `Card` currently selected."""
