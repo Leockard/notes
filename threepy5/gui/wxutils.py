@@ -268,8 +268,10 @@ class EditText(ColouredText):
 ######################        
 
 class CanvasBase(wx.StaticBitmap):
-    """`CanvasBase` is a `wx.StaticBitmap` over which the user can draw by free-hand."""
-    
+    """`CanvasBase` is a `wx.StaticBitmap` over which the user can draw by
+    free-hand.  Some code copied from wxPython demo code app doodle.py:
+    http://www.wxpython.org/download.php.
+    """
     def __init__(self, parent, bitmap=wx.NullBitmap):
         """Constructor.
 
@@ -277,37 +279,41 @@ class CanvasBase(wx.StaticBitmap):
         * `bitmap: ` the wx.Bitmap to set as background. By default is `wx.NullBitmap`.
         """
         super(CanvasBase, self).__init__(parent, bitmap=bitmap, style=wx.BORDER_NONE)
-        self.thickness = 1
-        self.colour = "BLACK"
-        self.pen = wx.Pen(self.colour, self.thickness, wx.SOLID)
-        self.lines = []
-        self.pos = wx.Point(0,0)
-        self.buffer = wx.EmptyBitmap(1, 1)
-        self.offset = wx.Point(0, 0)
+        self._thickness = 1
+        self._colour = "BLACK"
+        self._pen = wx.Pen(self.colour, self._thickness, wx.SOLID)
+        self._pos = wx.Point(0,0)
+        self._offset = wx.Point(0, 0)
+        self._cur_line = []
         
-        self.InitBuffer()
+        self._buffer = wx.EmptyBitmap(1, 1)        
+        self._init_buffer()
 
         self.Bind(wx.EVT_LEFT_DOWN, self.OnLeftDown)
         self.Bind(wx.EVT_LEFT_UP, self.OnLeftUp)
         self.Bind(wx.EVT_MOTION, self.OnMotion)
 
+        self.lines = []
+
         
-    ### Behavior functions
+    ### init methods
     
-    def SetOffset(self, pt):
-        """Set the offset.
+    def _init_buffer(self):
+        """Initialize the bitmap used for buffering the display."""
+        size = self.ClientSize
+        buf = wx.EmptyBitmap(max(1, size.width), max(1, size.height))
+        dc = wx.BufferedDC(None, buf)
 
-        * `pt: ` a (x, y) point.
-        """
-        self.offset = pt
+        # clear everything by painting over with bg colour        
+        dc.Background = wx.Brush(self.BackgroundColour)
+        dc.Clear()
 
-    def GetOffset(self):
-        """Get the current offset.
+        self.DrawLines()
+        self._buffer = buf
 
-        `returns: ` a (x, y) point.
-        """
-        return self.offset
-
+        
+    ### methods
+    
     def DrawLines(self):
         """Redraws all the lines that have been drawn already."""
         dc = wx.MemoryDC(self.GetBitmap())
@@ -315,7 +321,7 @@ class CanvasBase(wx.StaticBitmap):
 
         for colour, thickness, line in self.lines:
             pen = wx.Pen(colour, thickness, wx.SOLID)
-            dc.SetPen(pen)
+            dc.Pen = pen
             for coords in line:
                 x1, y1, x2, y2 = coords
                 # draw the lines relative to the current offset
@@ -326,36 +332,17 @@ class CanvasBase(wx.StaticBitmap):
         self.SetBitmap(dc.GetAsBitmap())
 
         
-    ### Auxiliary functions
-    
-    def InitBuffer(self):
-        """Initialize the bitmap used for buffering the display."""
-        size = self.GetClientSize()
-        buf = wx.EmptyBitmap(max(1, size.width), max(1, size.height))
-        dc = wx.BufferedDC(None, buf)
+    ### callbacks
 
-        # clear everything by painting over with bg colour        
-        dc.SetBackground(wx.Brush(self.GetBackgroundColour()))
-        dc.Clear()
+    def _on_left_down(self, ev):
+        self._cur_line = []
+        self._pos = ev.Position
 
-        self.DrawLines()
-        self.buffer = buf
-
-        
-    ### Callbacks
-
-    def OnLeftDown(self, ev):
-        """Listens to `wx.EVT_LEFT_DOWN` events."""
-        self.curLine = []
-        self.pos = ev.GetPosition()
-
-    def OnLeftUp(self, ev):
-        """Listens to `wx.EVT_LEFT_UP` events."""
-        self.lines.append((self.colour, self.thickness, self.curLine))
-        self.curLine = []
+    def _on_left_up(self, ev):
+        self.lines.append((self._colour, self._thickness, self._cur_line))
+        self._cur_line = []
             
-    def OnMotion(self, ev):
-        """Listens to `wx.EVT_MOTION` events."""
+    def _on_motion(self, ev):
         if ev.Dragging() and ev.LeftIsDown():
             # BufferedDC will paint first over self.GetBitmap()
             # and then copy everything to ClientDC(self)
@@ -363,17 +350,17 @@ class CanvasBase(wx.StaticBitmap):
             dc.BeginDrawing()
             
             dc.SetPen(self.pen)
-            new_pos = ev.GetPosition()
+            new_pos = ev.Position
 
             # draw the lines with relative coordinates to the current view
-            coords = (self.pos.x, self.pos.y, new_pos.x, new_pos.y)
+            coords = (self._pos.x, self._pos.y, new_pos.x, new_pos.y)
             dc.DrawLine(*coords)
 
             # but store them in absolute coordinates
-            coords = (self.pos.x + self.offset.x, self.pos.y + self.offset.y,
+            coords = (self._pos.x + self.offset.x, self._pos.y + self.offset.y,
                       new_pos.x  + self.offset.x,  new_pos.y + self.offset.y)
-            self.curLine.append(coords)
-            self.pos = new_pos
+            self._cur_line.append(coords)
+            self._pos = new_pos
             
             dc.EndDrawing()
             self.SetBitmap(dc.GetAsBitmap())
