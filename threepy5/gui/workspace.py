@@ -5,8 +5,9 @@ Also contains the `Workspace` class, which holds functionality to change between
 `AnnotatedDeck`.
 """
 import wx
-import threepy5.threepy5 as py5
+import wxutils
 import board
+import threepy5.threepy5 as py5
 
 
 ######################
@@ -16,47 +17,31 @@ import board
 class Canvas(wxutils.AutoSize):
     """An `AutoSize` object which holds a `Canvas` as its only child."""
     
-    def __init__(self, parent, size=wx.DefaultSize, pos=wx.DefaultPosition):
+    def __init__(self, parent):
         """Constructor.
 
         * `parent: ` the parent `wx.Window`.
-        * `pos: ` by default, is `wx.DefaultSize`.
-        * `size: ` by default, is `wx.DefaultPosition`.
         """
         super(Canvas, self).__init__(parent)
+        self._init_UI()
+        self.Bind(wx.EVT_SHOW, self._on_show)
 
-        # controls        
-        ctrl = CanvasBase(self, bitmap=wx.NullBitmap)
 
-        # boxes
+    ### init methods
+
+    def _init_UI(self):
+        ctrl = wxutils.CanvasBase(self, bitmap=wx.NullBitmap)
+        
         box = wx.BoxSizer(wx.VERTICAL)
-        self.SetSizer(box)
-        box.Add(ctrl, proportion=1)
+        box.Add(ctrl, proportion=1, flag=wx.EXPAND)
+        
+        self.Sizer = box
+        self.ctrl = ctrl        
 
-        # bindings
-        self.Bind(wx.EVT_SHOW, self.OnShow)
+                        
+    ### methods
 
-        # finish up        
-        self.ctrl = ctrl
-
-                
-    ### Behavior functions
-
-    def SetOffset(self, pt):
-        """Set the offset.
-
-        * `pt: ` a (x, y) point.
-        """
-        self.ctrl.SetOffset(pt)
-
-    def GetOffset(self):
-        """Get the current offset.
-
-        `returns: ` a (x, y) point.
-        """
-        return self.ctrl.GetOffset()
-
-    def SetBackground(self, bmp):
+    def SetBackgroundBMP(self, bmp):
         """Set the background over which to draw.
 
         * `bmp: ` a `wx.Bitmap` to serve as background.
@@ -66,23 +51,9 @@ class Canvas(wxutils.AutoSize):
             self.FitToChildren()
 
             
-    ### Auxiliary functions
+    ### callbacks
 
-    def Dump(self):
-        """Returns a `list` with all the info contained in this `Canvas`.
-
-        `returns: ` a `list` of the form [(colour1, thickness1, [pt11, pt12, ...]), (colour2, thickness2, [pt21, pt22, ...]), ...].
-        """
-        return self.ctrl.lines
-
-    def Load(self, li):
-        """Load from a `list` returned by `Canvas.Dump`."""
-        self.ctrl.lines = li
-
-
-    ### Callbacks
-
-    def OnShow(self, ev):
+    def _on_show(self, ev):
         """Listens to `wx.EVT_SHOW` events."""
         if ev.IsShown():
             self.ctrl.DrawLines()

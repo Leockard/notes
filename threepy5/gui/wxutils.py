@@ -278,10 +278,13 @@ class CanvasBase(wx.StaticBitmap):
         * `parent: ` the parent `wx.Window`.
         * `bitmap: ` the wx.Bitmap to set as background. By default is `wx.NullBitmap`.
         """
+        self.lines = []
+        """The list of lines currently drawn."""
+        
         super(CanvasBase, self).__init__(parent, bitmap=bitmap, style=wx.BORDER_NONE)
         self._thickness = 1
         self._colour = "BLACK"
-        self._pen = wx.Pen(self.colour, self._thickness, wx.SOLID)
+        self._pen = wx.Pen(self._colour, self._thickness, wx.SOLID)
         self._pos = wx.Point(0,0)
         self._offset = wx.Point(0, 0)
         self._cur_line = []
@@ -289,11 +292,9 @@ class CanvasBase(wx.StaticBitmap):
         self._buffer = wx.EmptyBitmap(1, 1)        
         self._init_buffer()
 
-        self.Bind(wx.EVT_LEFT_DOWN, self.OnLeftDown)
-        self.Bind(wx.EVT_LEFT_UP, self.OnLeftUp)
-        self.Bind(wx.EVT_MOTION, self.OnMotion)
-
-        self.lines = []
+        self.Bind(wx.EVT_LEFT_DOWN, self._on_left_down)
+        self.Bind(wx.EVT_LEFT_UP, self._on_left_up)
+        self.Bind(wx.EVT_MOTION, self._on_motion)
 
         
     ### init methods
@@ -305,7 +306,7 @@ class CanvasBase(wx.StaticBitmap):
         dc = wx.BufferedDC(None, buf)
 
         # clear everything by painting over with bg colour        
-        dc.Background = wx.Brush(self.BackgroundColour)
+        dc.SetBackground(wx.Brush(self.BackgroundColour))
         dc.Clear()
 
         self.DrawLines()
@@ -349,7 +350,7 @@ class CanvasBase(wx.StaticBitmap):
             dc = wx.BufferedDC(wx.ClientDC(self), self.GetBitmap())
             dc.BeginDrawing()
             
-            dc.SetPen(self.pen)
+            dc.SetPen(self._pen)
             new_pos = ev.Position
 
             # draw the lines with relative coordinates to the current view
@@ -357,8 +358,8 @@ class CanvasBase(wx.StaticBitmap):
             dc.DrawLine(*coords)
 
             # but store them in absolute coordinates
-            coords = (self._pos.x + self.offset.x, self._pos.y + self.offset.y,
-                      new_pos.x  + self.offset.x,  new_pos.y + self.offset.y)
+            coords = (self._pos.x + self._offset.x, self._pos.y + self._offset.y,
+                      new_pos.x  + self._offset.x,  new_pos.y + self._offset.y)
             self._cur_line.append(coords)
             self._pos = new_pos
             
