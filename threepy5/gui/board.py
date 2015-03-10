@@ -1615,7 +1615,10 @@ class Board(wxutils.AutoSize):
                 
                 if pos == wx.DefaultPosition:
                     # default position: a step away from the original
-                    card.Position = [i + self.Padding for i in d["pos"]]
+                    if "pos" in d.keys():
+                        card.Position = [i + self.Padding for i in d["pos"]]
+                    elif "rect" in d.keys():
+                        card.Position = [i + self.Padding for i in d["rect"][:2]]
                 else:
                     card.Position = pos
 
