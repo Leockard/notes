@@ -597,10 +597,11 @@ class ImageWin(CardWin):
         # when we reach this point, both this window and the underlying Card
         # have updated its rects to the new size
         # it only remains to sale the image accordingly
-        ratio_w = float(self.Size.width) / self._bmp.Size.width
-        ratio_h = float(self.Size.height) / self._bmp.Size.height        
-        scale = min(ratio_h, ratio_w)
-        self.Card.scale = scale
+        if not self._bmp.GetBitmap() == wx.NullBitmap:
+            ratio_w = float(self.Size.width) / self._bmp.Size.width
+            ratio_h = float(self.Size.height) / self._bmp.Size.height        
+            scale = min(ratio_h, ratio_w)
+            self.Card.scale = scale
 
         ev.Skip()
 
