@@ -1379,6 +1379,11 @@ class Board(wxutils.AutoSize):
     ### properties
 
     @property
+    def Selectables(self):
+        """The `Selectable`s in this `Board`."""
+        return [s for s in self.Children if isinstance(s, Selectable)]
+
+    @property
     def Groups(self):
         """The `CardGroup`s in this `Board`'s `Deck`."""
         return self.Deck.groups
@@ -1779,7 +1784,7 @@ class Board(wxutils.AutoSize):
         self.FitToChildren()
         self.Selector.SetFocus()
 
-        selected = [c for c in self.Cards if c.Rect.Intersects(final_rect)]
+        selected = [c for c in self.Selectables if c.Rect.Intersects(final_rect)]
         self.Selector.UnselectAll()
         for w in selected:
             self.Selector.Select(w)
