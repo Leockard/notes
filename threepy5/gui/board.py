@@ -1336,9 +1336,6 @@ class Board(wxutils.AutoSize):
         """Stores position information while moving `Card`s."""
 
         self.Deck = py5.Deck()
-        """The tracked `Deck`."""
-
-        py5.subscribeList("cards", self._on_new_card, self._on_pop_card, self.Deck)
 
         self.Bind(wx.EVT_LEFT_DCLICK, self._on_left_double)
         self.Bind(wx.EVT_LEFT_DOWN, self._on_left_down)
@@ -1412,6 +1409,16 @@ class Board(wxutils.AutoSize):
 
 
     ### properties
+
+    @property
+    def Deck(self):
+        """The tracked `Deck`."""
+        return self._Deck
+
+    @Deck.setter
+    def Deck(self, deck):
+        self._Deck = deck
+        py5.subscribeList("cards", self._on_new_card, self._on_pop_card, self._Deck)
 
     @property
     def Selectables(self):
