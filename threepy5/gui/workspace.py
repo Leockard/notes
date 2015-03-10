@@ -10,6 +10,86 @@ import board
 
 
 ######################
+# Class Canvas
+######################
+
+class Canvas(wxutils.AutoSize):
+    """An `AutoSize` object which holds a `Canvas` as its only child."""
+    
+    def __init__(self, parent, size=wx.DefaultSize, pos=wx.DefaultPosition):
+        """Constructor.
+
+        * `parent: ` the parent `wx.Window`.
+        * `pos: ` by default, is `wx.DefaultSize`.
+        * `size: ` by default, is `wx.DefaultPosition`.
+        """
+        super(Canvas, self).__init__(parent)
+
+        # controls        
+        ctrl = CanvasBase(self, bitmap=wx.NullBitmap)
+
+        # boxes
+        box = wx.BoxSizer(wx.VERTICAL)
+        self.SetSizer(box)
+        box.Add(ctrl, proportion=1)
+
+        # bindings
+        self.Bind(wx.EVT_SHOW, self.OnShow)
+
+        # finish up        
+        self.ctrl = ctrl
+
+                
+    ### Behavior functions
+
+    def SetOffset(self, pt):
+        """Set the offset.
+
+        * `pt: ` a (x, y) point.
+        """
+        self.ctrl.SetOffset(pt)
+
+    def GetOffset(self):
+        """Get the current offset.
+
+        `returns: ` a (x, y) point.
+        """
+        return self.ctrl.GetOffset()
+
+    def SetBackground(self, bmp):
+        """Set the background over which to draw.
+
+        * `bmp: ` a `wx.Bitmap` to serve as background.
+        """
+        if bmp:
+            self.ctrl.SetBitmap(bmp)
+            self.FitToChildren()
+
+            
+    ### Auxiliary functions
+
+    def Dump(self):
+        """Returns a `list` with all the info contained in this `Canvas`.
+
+        `returns: ` a `list` of the form [(colour1, thickness1, [pt11, pt12, ...]), (colour2, thickness2, [pt21, pt22, ...]), ...].
+        """
+        return self.ctrl.lines
+
+    def Load(self, li):
+        """Load from a `list` returned by `Canvas.Dump`."""
+        self.ctrl.lines = li
+
+
+    ### Callbacks
+
+    def OnShow(self, ev):
+        """Listens to `wx.EVT_SHOW` events."""
+        if ev.IsShown():
+            self.ctrl.DrawLines()
+
+
+                        
+######################
 # Class Workspace
 ######################
 
