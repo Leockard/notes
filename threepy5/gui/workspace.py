@@ -30,7 +30,7 @@ class Workspace(wx.Panel):
         super(Workspace, self).__init__(parent=parent)
         self.Deck = py5.AnnotatedDeck()
         self._init_board()
-        # self._init_canvas()        
+        self._init_canvas()        
         self._init_UI()
 
         
@@ -40,6 +40,10 @@ class Workspace(wx.Panel):
         self.Board = board.Board(self)
         self.Board.Deck = self.Deck
 
+    def _init_canvas(self):
+        self.Canvas = Canvas(self)
+        self.Canvas.Annotation = self.Deck.annotation
+
     def _init_UI(self):
         """Initialize this `Workspace`'s GUI and controls."""
         self._init_sizers()        
@@ -47,10 +51,10 @@ class Workspace(wx.Panel):
         # self._init_sidebar()
         # self._init_buttonBar()
 
-        # self.ShowBoard()
-        # self.Layout()
+        # self.WorkOn("Board")
 
     def _init_sizers(self):
+        # assumes all controls such as self.Board, self.Canvas, etc already exist
         work = wx.BoxSizer(wx.HORIZONTAL)
         work.Add(self.Board, proportion=1, flag=wx.EXPAND, border=0)
 
@@ -60,3 +64,6 @@ class Workspace(wx.Panel):
         self.Sizer = main        
         self.working_sizer = work
 
+    ### methods
+
+    # def WorkOn(self, name):
