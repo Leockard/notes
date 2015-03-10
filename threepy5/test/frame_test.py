@@ -30,7 +30,11 @@ class TestFrame(wx.Frame):
 
     def OnDebug(self, ev):
         print "------DEBUG-----"
-        wxutils.DumpSizerChildren(self.ctrl.Cards[-1].Sizer)
+        w = self.ctrl.Cards[-1]
+        for c in w.GetChildren():
+            print c.__class__
+            print c.Children
+        # print c.
 
 
 if __name__ == "__main__":
@@ -45,18 +49,16 @@ if __name__ == "__main__":
     frame.Sizer.Add(ctrl, proportion=1, flag=wx.EXPAND)
     frame.ctrl = ctrl
 
-    # frame.ctrl.Deck.NewCard("Image", pos=(15,15))
-    # c1 = ctrl.Cards[0]
-    # ctrl.Selector.Select(c1)
+    # frame.ctrl.Deck.NewCard("Content", pos=(15,15))
 
-    c = newgui.ImagePlaceHolder(ctrl)
+    w = newgui.ImagePlaceHolder(ctrl)
 
     # lis = utils.listener(topics=[utils.pub.ALL_TOPICS])
 
     ####################
     # end code here
     ####################
-    
+
     frame.Show()
     app.MainLoop()
 
