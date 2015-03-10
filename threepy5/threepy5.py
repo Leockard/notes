@@ -76,10 +76,21 @@ def subscribe(attr, call, obj):
     pub.subscribe(call, topic)
 
 def track(call, obj):
+    """Call to subscribe to the DESTROY message from an object.
+
+    * `call: ` the callable for the `DESTROY` message.
+    * `obj: ` the object to track."""
     topic = ".".join([obj._root, "DESTROY"])
     pub.subscribe(call, topic)
 
 def subscribeList(attr, new, pop, obj):
+    """Call to subscribe to the new and remove messages from a `LoudSetter` list.
+
+    * `attr: ` the name of the list attribute.
+    * `new: ` the callable for the `NEW_*` message.
+    * `pop: ` the callable for the `POP_*` message.
+    * `obj: ` the object whose list we're subscribing to.
+    """
     topic = ".".join([obj._root, "NEW_" + attr[:-1].upper()])
     pub.subscribe(new, topic)
     topic = ".".join([obj._root, "POP_" + attr[:-1].upper()])
@@ -599,3 +610,70 @@ class Box(utils.Publisher):
         self.name = name
         self.path = path
         self.decks = decks
+
+
+
+
+
+
+###########################
+# pdoc documentation setup
+###########################
+# __pdoc__ is the special variable from the automatic
+# documentation generator pdoc.
+# By setting pdoc[class.method] to None, we are telling
+# pdoc to not generate documentation for said method.
+__pdoc__ = {}
+__pdoc__["field"] = None
+
+# Since we only want to generate documentation for our own
+# mehods, and not the ones coming from the base classes,
+# we first set to None every method in the base class.
+for field in dir(utils.Publisher):
+    __pdoc__['Card.%s' % field] = None
+for field in dir(Card):
+    __pdoc__['Content.%s' % field] = None
+for field in dir(Card):
+    __pdoc__['Header.%s' % field] = None
+for field in dir(Card):
+    __pdoc__['Image.%s' % field] = None
+for field in dir(utils.Publisher):
+    __pdoc__['Annotation.%s' % field] = None
+for field in dir(utils.Publisher):
+    __pdoc__['CardGroup.%s' % field] = None
+for field in dir(utils.Publisher):
+    __pdoc__['Deck.%s' % field] = None
+for field in dir(Deck):
+    __pdoc__['AnnotatedDeck.%s' % field] = None
+for field in dir(utils.Publisher):
+    __pdoc__['Box.%s' % field] = None            
+
+# Then, we have to add again the methods that we have
+# overriden. See https://github.com/BurntSushi/pdoc/issues/15.
+for field in Card.__dict__.keys():
+    if 'Card.%s' % field in __pdoc__.keys():
+        del __pdoc__['Card.%s' % field]
+for field in Content.__dict__.keys():
+    if 'Content.%s' % field in __pdoc__.keys():
+        del __pdoc__['Content.%s' % field]
+for field in Header.__dict__.keys():
+    if 'Header.%s' % field in __pdoc__.keys():
+        del __pdoc__['Header.%s' % field]
+for field in Image.__dict__.keys():
+    if 'Image.%s' % field in __pdoc__.keys():
+        del __pdoc__['Image.%s' % field]
+for field in Annotation.__dict__.keys():
+    if 'Annotation.%s' % field in __pdoc__.keys():
+        del __pdoc__['Annotation.%s' % field]
+for field in CardGroup.__dict__.keys():
+    if 'CardGroup.%s' % field in __pdoc__.keys():
+        del __pdoc__['CardGroup.%s' % field]
+for field in Deck.__dict__.keys():
+    if 'Deck.%s' % field in __pdoc__.keys():
+        del __pdoc__['Deck.%s' % field]
+for field in AnnotatedDeck.__dict__.keys():
+    if 'AnnotatedDeck.%s' % field in __pdoc__.keys():
+        del __pdoc__['AnnotatedDeck.%s' % field]
+for field in Box.__dict__.keys():
+    if 'Box.%s' % field in __pdoc__.keys():
+        del __pdoc__['Box.%s' % field]
