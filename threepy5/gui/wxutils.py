@@ -75,9 +75,11 @@ class AutoSize(wx.ScrolledWindow):
         self.Scroll(0, 0)
 
         # calculate children extension
-        rects = [c.Rect for c in self.Children]
-        right  = max(rects, key=lambda r: r.right).right
-        bottom = max(rects, key=lambda r: r.bottom).bottom
+        rect = wx.Rect()
+        for c in self.Children:
+            rect = rect.Union(c.Rect)
+        right  = rect.right + 1
+        bottom = rect.bottom + 1
 
         # compare and update
         sz = self._virtual_sz
