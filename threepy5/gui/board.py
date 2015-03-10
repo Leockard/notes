@@ -1,4 +1,12 @@
 # -*- coding: utf-8 -*-
+"""Contains the `CardWin` class and its derived subclasses. Each `CardWin`
+is a window that shows the data from a `Card` and listens to GUI events
+to modify said data.
+
+Also contains the `Board` class, which is the parent of all `CardWin`s. `Board`
+is the GUI element that represents the "infinite surface" where all `Card`s are
+placed.
+"""
 import wx
 import wxutils
 import json
@@ -201,6 +209,11 @@ class Selectable(wx.Panel):
     ### methods
 
     def MoveBy(self, dx, dy):
+        """Moves this window by the offsets given.
+
+        * `dx: `, pixels to move in the horizontal direction.
+        * `dy: `, pixels to move in the vertical direction.
+        """
         pt = self.Position + wx.Point(dx, dy)
         self.Move(pt)
 
@@ -384,7 +397,11 @@ class CardWin(Selectable):
 
     def MoveBy(self, dx, dy):
         """Overridden from `Selectable`. Change the `Card`'s position, not the window's.
-        The window's position will update automatically since it's subscribed to Card.rect. """
+        The window's position will update automatically since it's subscribed to `Card.rect`.
+
+        * `dx: `, pixels to move in the horizontal direction.
+        * `dy: `, pixels to move in the vertical direction.        
+        """
         self.Card.MoveBy(dx, dy)
 
     def _navigate_out(self, forward):
@@ -624,6 +641,12 @@ class ContentWin(CardWin):
     # see threepy5/img/Color palette by Paletton.com.html
     # downloaded on 26/feb/2015
     COLOURS = {}
+    """A `dict` of the form
+    
+        "concept_lbl": {"stong": cl, "soft": cl},
+        
+    containing the strong and soft colours for the color scheme of a concept.
+    """
     COLOURS[py5.DEFAULT_KIND]                = {"strong": (220, 218, 213, 255), "soft": (255, 255, 255, 255)}
     COLOURS[py5.Content.KIND_LBL_CONCEPT]    = {"strong": (149, 246, 214, 255), "soft": (242, 254, 250, 255)}
     COLOURS[py5.Content.KIND_LBL_ASSUMPTION] = {"strong": (255, 188, 154, 255), "soft": (255, 247, 243, 255)}
@@ -1016,9 +1039,11 @@ class Board(wxutils.AutoSize):
     and listens to individual Cards' events, so that `Box` only needs to listen
     to `Deck` events.
     """
+    BACKGROUND_CL = "#CCCCCC"    
     WIN_PADDING = py5.Deck.PADDING
-    BACKGROUND_CL = "#CCCCCC"
+    """The default space between two windows."""
     MOVING_RECT_THICKNESS = 1
+    """When moving cards and painting the hint floating rects, paint them with this thickness."""
 
 
     ##################################
@@ -1279,7 +1304,7 @@ class Board(wxutils.AutoSize):
         * `style: ` by default is `wx.BORDER_NONE`.
         """
         super(Board, self).__init__(parent, style=style)
-        self.BackgroundColour = Board.BACKGROUND_CL
+        self.SetBackgroundColour(Board.BACKGROUND_CL)
         self._init_accels()
         self._init_menu()
 
@@ -1418,7 +1443,7 @@ class Board(wxutils.AutoSize):
 
     @property
     def Selection(self):
-        """The `Card`s currently selected."""
+        """The `Selectable`s currently selected."""
         return self.Selector.Selection
 
 
@@ -1986,12 +2011,13 @@ __pdoc__["field"] = None
 # Since we only want to generate documentation for our own
 # mehods, and not the ones coming from the base classes,
 # we first set to None every method in the base class.
-for field in dir(wx.Panel)   : __pdoc__['Selectable.%s' % field] = None
-for field in dir(Selectable) : __pdoc__['CardWin.%s' % field] = None
-for field in dir(CardWin)    : __pdoc__['HeaderWin.%s' % field] = None
-for field in dir(CardWin)    : __pdoc__['ImageWin.%s' % field] = None
-for field in dir(CardWin)    : __pdoc__['ContentWin.%s' % field] = None
-for field in dir(Selectable) : __pdoc__['ImagePlaceHolder.%s' % field] = None
+for field in dir(wx.Panel)         : __pdoc__['Selectable.%s' % field] = None
+for field in dir(Selectable)       : __pdoc__['CardWin.%s' % field] = None
+for field in dir(CardWin)          : __pdoc__['HeaderWin.%s' % field] = None
+for field in dir(CardWin)          : __pdoc__['ImageWin.%s' % field] = None
+for field in dir(CardWin)          : __pdoc__['ContentWin.%s' % field] = None
+for field in dir(Selectable)       : __pdoc__['ImagePlaceHolder.%s' % field] = None
+for field in dir(wxutils.AutoSize) : __pdoc__['Board.%s' % field] = None
 
 
 # Then, we have to add again the methods that we have
@@ -2014,3 +2040,6 @@ for field in ContentWin.__dict__.keys():
 for field in ImagePlaceHolder.__dict__.keys():
     if 'ImagePlaceHolder.%s' % field in __pdoc__.keys():
         del __pdoc__['ImagePlaceHolder.%s' % field]
+for field in Board.__dict__.keys():
+    if 'Board.%s' % field in __pdoc__.keys():
+        del __pdoc__['Board.%s' % field]

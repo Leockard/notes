@@ -23,6 +23,7 @@ class AutoSize(wx.ScrolledWindow):
     of virtual size.
     """
     SCROLL_STEP = 10
+    """Pixels to scroll per scroll unit."""
 
     def __init__(self, *args, **kwargs):
         """Constructor."""
