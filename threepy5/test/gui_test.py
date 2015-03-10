@@ -255,10 +255,8 @@ class testBoard(unittest.TestCase):
         self.assertTrue(len(board.Groups[0].members), num)
 
     def testScrollToCard(self):
-        box = wx.BoxSizer(wx.HORIZONTAL)
-        self.frame.Sizer = box
+        """`Board` should put the whole `Card` into view."""
         board = newgui.Board(self.frame)
-        box.Add(board, flag=wx.EXPAND)
         num = 25
 
         for a in xrange(num):
@@ -266,11 +264,25 @@ class testBoard(unittest.TestCase):
             w = board.Cards[-1]
             board.ScrollToCard(w)
 
-            virt_rect = wx.Rect(board.Position.x, board.Position.x, board.VirtualSize[0], board.VirtualSize[1])
+            virt_rect = wx.Rect(board.Position.y, board.Position.x, board.VirtualSize[0], board.VirtualSize[1])
             self.assertTrue(virt_rect.Contains(w.Rect.TopLeft))
             self.assertTrue(virt_rect.Contains(w.Rect.TopRight))
             self.assertTrue(virt_rect.Contains(w.Rect.BottomLeft))
             self.assertTrue(virt_rect.Contains(w.Rect.BottomRight))
+
+    def testCopyPaste(self):
+        """`Board` should copy and paste cards correctly."""
+        board = newgui.Board(self.frame)
+        num = 25
+        
+        for a in xrange(num):
+            class_ = ["Content", "Image", "Header"][randint(0,2)]
+            board.Deck.NewCard(class_, pos=(randint(0,100),randint(0,100)))
+        board.Selector.SelectAll()
+
+        board.CopySelection()
+        board.PasteFromClipboard()
+        self.assertTrue(len(board.Deck.cards), 2 * num)
 
     def tearDown(self):
         wx.CallAfter(self.app.Exit)
@@ -462,10 +474,34 @@ class testEditText(unittest.TestCase):
         # self.app.MainLoop()
 
 
+        
+class testAutoSize(unittest.TestCase):
+
+    def setUp(self):
+        self.app = wx.App()
+        self.frame = TestFrame(None)
+        # self.app.MainLoop()
+
+    def testSize(self):
+        """`AutoSize` should correctly set its size to fit its children."""
+        auto = newgui.wxutils.AutoSize(self.frame)
+        test_path = "/home/leo/research/reading_notes/Kandel - Principles of Neural Science/brain.bmp"
+        bmp = wx.Bitmap(test_path)
+        static = wx.StaticBitmap(auto, bitmap=bmp)
+        auto.FitToChildren()
+
+        virt_rect = wx.Rect(auto.Position.y, auto.Position.x, auto.VirtualSize[0], auto.VirtualSize[1])
+        self.assertTrue(virt_rect.Contains(static.Rect.TopLeft))
+        self.assertTrue(virt_rect.Contains(static.Rect.TopRight))
+        self.assertTrue(virt_rect.Contains(static.Rect.BottomLeft))
+        self.assertTrue(virt_rect.Contains(static.Rect.BottomRight))
+
+    def tearDown(self):
+        wx.CallAfter(self.app.Exit)
+        # self.app.MainLoop()
+        
                 
 ### finish testImageWin.testDragResize
-### test Board: Copy/Paste
-### test AutoSize class with a StaticBitmap
 ### test coloured text
 
 
