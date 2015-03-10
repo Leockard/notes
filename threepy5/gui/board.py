@@ -55,13 +55,13 @@ class Selectable(wx.Panel):
     BORDER_THICK = 5
     SELECT_CL = (0, 0, 0, 0)
 
-    def __init__(self, parent, size=(0,0)):
+    def __init__(self, parent, size=(0,0), style=0):
         """Constructor.
 
         * `parent: ` the parent `Board`.
         * `size: ` the window size.
         """
-        super(Selectable, self).__init__(parent, size=size)
+        super(Selectable, self).__init__(parent, size=size, style=0)
         self._selected = False
         self._main = None
         self._init_border()
@@ -309,7 +309,7 @@ class Selectable(wx.Panel):
         # this window, while we need it relative to the board
         self.ReleaseMouse()
         self.Unbind(wx.EVT_MOUSE_CAPTURE_LOST, handler=self._on_capture_lost)
-        self._resize_end(self.Position + ev.Position)        
+        self._resize_end(self.Position + ev.Position)
 
     def _on_capture_lost(self, ev):
         self.ReleaseMouse()
@@ -332,9 +332,8 @@ class CardWin(Selectable):
         * `card: ` the `Card` object whose data we are showing.
         * `style: ` the style for this window.
         """
-        super(Selectable, self).__init__(parent, style=style)
+        super(CardWin, self).__init__(parent, style=style)
         self._selected = False
-        self._init_border()
         self._init_UI()
         
         self.Card = card
@@ -525,6 +524,7 @@ class ImageWin(CardWin):
         """
         super(ImageWin, self).__init__(parent, card=card)
         self.Resizable = True
+        self.Bind(wx.EVT_SIZE, self._on_size)
 
     ### init methods
 
@@ -576,6 +576,9 @@ class ImageWin(CardWin):
         ev.EventObject = self
         ev.SetPosition(ev.Position + self._bmp.Position)
         self.EventHandler.ProcessEvent(ev)
+
+    def _on_size(self, ev):
+        ev.Skip()
 
         
 
