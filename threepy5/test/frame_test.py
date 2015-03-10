@@ -5,7 +5,7 @@ import threepy5.threepy5 as py5
 import threepy5
 import threepy5.utils as utils
 import threepy5.gui.wxutils as wxutils
-from threepy5.gui import board as newgui
+import threepy5.gui as newgui
 
 
 class TestFrame(wx.Frame):
@@ -30,11 +30,10 @@ class TestFrame(wx.Frame):
 
     def OnDebug(self, ev):
         print "------DEBUG-----"
-        w = self.ctrl.Cards[-1]
-        for c in w.GetChildren():
-            print c.__class__
-            print c.Children
-        # print c.
+        print "work size:  ", self.ctrl.Size
+        print "board size: ", self.ctrl.Board.Size
+        print "children: ", len(self.ctrl.Board.Selectables)
+        print "cards: ", self.ctrl.Deck.cards
 
 
 if __name__ == "__main__":
@@ -45,13 +44,13 @@ if __name__ == "__main__":
     # write code here
     ####################
 
-    ctrl = newgui.Board(frame)
+    ctrl = newgui.workspace.Workspace(frame)
     frame.Sizer.Add(ctrl, proportion=1, flag=wx.EXPAND)
     frame.ctrl = ctrl
 
     # frame.ctrl.Deck.NewCard("Content", pos=(15,15))
 
-    w = newgui.ImagePlaceHolder(ctrl)
+    w = newgui.board.ImagePlaceHolder(ctrl.Board)
 
     # lis = utils.listener(topics=[utils.pub.ALL_TOPICS])
 
