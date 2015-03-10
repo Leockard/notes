@@ -550,6 +550,7 @@ class ImageWin(CardWin):
             self._load_img()
 
         py5.subscribe("path", self._update_path, card)
+        py5.subscribe("scale", self._update_scale, card)
 
 
     ### methods
@@ -568,6 +569,12 @@ class ImageWin(CardWin):
     def _update_path(self, val):
         self._load_img()
 
+    def _update_scale(self, val):
+        img = self._bmp.GetBitmap().ConvertToImage()
+        w, h = [i * val for i in self._bmp.Size]
+        img.Rescale(w, h, quality=wx.IMAGE_QUALITY_HIGH)
+        self._bmp.SetBitmap(wx.BitmapFromImage(img))
+
 
     ### callbacks
 
@@ -578,6 +585,14 @@ class ImageWin(CardWin):
         self.EventHandler.ProcessEvent(ev)
 
     def _on_size(self, ev):
+        # when we reach this point, both this window and the underlying Card
+        # have updated its rects to the new size
+        # it only remains to sale the image accordingly
+        ratio_w = float(self.Size.width) / self._bmp.Size.width
+        ratio_h = float(self.Size.height) / self._bmp.Size.height        
+        scale = min(ratio_h, ratio_w)
+        self.Card.scale = scale
+
         ev.Skip()
 
         
