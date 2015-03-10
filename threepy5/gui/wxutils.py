@@ -119,6 +119,10 @@ class AutoSize(wx.ScrolledWindow):
         ev.Skip()
 
 
+        
+######################
+# Class ColouredText
+######################
 
 class ColouredText(wx.TextCtrl):
     """
@@ -171,6 +175,10 @@ class ColouredText(wx.TextCtrl):
             self.SetStyle(i, i+1, attr)
 
 
+            
+######################
+# Class EditText
+######################
 
 class EditText(ColouredText):
     """`EditText` is a `wx.TextCtrl` that changes background colour when it has
@@ -253,6 +261,126 @@ class EditText(ColouredText):
         self.SetSelection(0,0)
         self.SetBackgroundColour(self.First)
         
+
+
+######################
+# Class CanvasBase
+######################        
+
+class CanvasBase(wx.StaticBitmap):
+    """`CanvasBase` is a `wx.StaticBitmap` over which the user can draw by free-hand."""
+    
+    def __init__(self, parent, bitmap=wx.NullBitmap):
+        """Constructor.
+
+        * `parent: ` the parent `wx.Window`.
+        * `bitmap: ` the wx.Bitmap to set as background. By default is `wx.NullBitmap`.
+        """
+        super(CanvasBase, self).__init__(parent, bitmap=bitmap, style=wx.BORDER_NONE)
+        self.thickness = 1
+        self.colour = "BLACK"
+        self.pen = wx.Pen(self.colour, self.thickness, wx.SOLID)
+        self.lines = []
+        self.pos = wx.Point(0,0)
+        self.buffer = wx.EmptyBitmap(1, 1)
+        self.offset = wx.Point(0, 0)
+        
+        self.InitBuffer()
+
+        self.Bind(wx.EVT_LEFT_DOWN, self.OnLeftDown)
+        self.Bind(wx.EVT_LEFT_UP, self.OnLeftUp)
+        self.Bind(wx.EVT_MOTION, self.OnMotion)
+
+        
+    ### Behavior functions
+    
+    def SetOffset(self, pt):
+        """Set the offset.
+
+        * `pt: ` a (x, y) point.
+        """
+        self.offset = pt
+
+    def GetOffset(self):
+        """Get the current offset.
+
+        `returns: ` a (x, y) point.
+        """
+        return self.offset
+
+    def DrawLines(self):
+        """Redraws all the lines that have been drawn already."""
+        dc = wx.MemoryDC(self.GetBitmap())
+        dc.BeginDrawing()
+
+        for colour, thickness, line in self.lines:
+            pen = wx.Pen(colour, thickness, wx.SOLID)
+            dc.SetPen(pen)
+            for coords in line:
+                x1, y1, x2, y2 = coords
+                # draw the lines relative to the current offset
+                dc.DrawLine(x1 - self.offset.x, y1 - self.offset.y,
+                            x2 - self.offset.x, y2 - self.offset.y)
+        
+        dc.EndDrawing()
+        self.SetBitmap(dc.GetAsBitmap())
+
+        
+    ### Auxiliary functions
+    
+    def InitBuffer(self):
+        """Initialize the bitmap used for buffering the display."""
+        size = self.GetClientSize()
+        buf = wx.EmptyBitmap(max(1, size.width), max(1, size.height))
+        dc = wx.BufferedDC(None, buf)
+
+        # clear everything by painting over with bg colour        
+        dc.SetBackground(wx.Brush(self.GetBackgroundColour()))
+        dc.Clear()
+
+        self.DrawLines()
+        self.buffer = buf
+
+        
+    ### Callbacks
+
+    def OnLeftDown(self, ev):
+        """Listens to `wx.EVT_LEFT_DOWN` events."""
+        self.curLine = []
+        self.pos = ev.GetPosition()
+
+    def OnLeftUp(self, ev):
+        """Listens to `wx.EVT_LEFT_UP` events."""
+        self.lines.append((self.colour, self.thickness, self.curLine))
+        self.curLine = []
+            
+    def OnMotion(self, ev):
+        """Listens to `wx.EVT_MOTION` events."""
+        if ev.Dragging() and ev.LeftIsDown():
+            # BufferedDC will paint first over self.GetBitmap()
+            # and then copy everything to ClientDC(self)
+            dc = wx.BufferedDC(wx.ClientDC(self), self.GetBitmap())
+            dc.BeginDrawing()
+            
+            dc.SetPen(self.pen)
+            new_pos = ev.GetPosition()
+
+            # draw the lines with relative coordinates to the current view
+            coords = (self.pos.x, self.pos.y, new_pos.x, new_pos.y)
+            dc.DrawLine(*coords)
+
+            # but store them in absolute coordinates
+            coords = (self.pos.x + self.offset.x, self.pos.y + self.offset.y,
+                      new_pos.x  + self.offset.x,  new_pos.y + self.offset.y)
+            self.curLine.append(coords)
+            self.pos = new_pos
+            
+            dc.EndDrawing()
+            self.SetBitmap(dc.GetAsBitmap())
+
+        
+
+
         
 
 #####################################################
