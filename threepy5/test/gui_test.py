@@ -179,7 +179,7 @@ class testBoard(unittest.TestCase):
         board = newgui.Board(self.frame)
         rect = board.Rect
 
-        for a in xrange(100):
+        for a in xrange(25):
             board.Deck.NewCard("Content", pos=(randint(0,1000),randint(0,1000)))
             c = board.Cards[-1]
             rect = rect.Union(c.Rect)
@@ -438,10 +438,35 @@ class testImageWin(unittest.TestCase):
         # self.app.MainLoop()
 
 
+
+class testEditText(unittest.TestCase):
+
+    def setUp(self):
+        self.app = wx.App()
+        self.frame = TestFrame(None)
+        # self.app.MainLoop()
+
+    def testColours(self):
+        """`EditText` should correctly set and show its colours."""
+        text = newgui.wxutils.EditText(self.frame)
+
+        text.Input()
+        self.assertEqual(text.BackgroundColour, text.Second)
+        
+        text.Static()
+        self.assertEqual(text.BackgroundColour, text.First)
+        
+
+    def tearDown(self):
+        wx.CallAfter(self.app.Exit)
+        # self.app.MainLoop()
+
+
+                
 ### finish testImageWin.testDragResize
 ### test Board: Copy/Paste
 ### test AutoSize class with a StaticBitmap
-### test EditText colours
+### test coloured text
 
 
 if __name__ == "__main__":
