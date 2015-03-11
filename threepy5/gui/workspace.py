@@ -213,6 +213,25 @@ class Workspace(wx.Panel):
 
     ### methods
 
+    def _get_board_bmp(self):
+        """Returns a screenshot BMP of the `Board`."""
+        sz = self.Board.ClientSize
+        bmp = None
+
+        if sz.width > -1 and sz.height > -1:
+            bmp = wx.EmptyBitmap(sz.width, sz.height)
+            dc = wx.MemoryDC()
+            
+            dc.SelectObject(bmp)
+            dc.Blit(0, 0,                         # pos
+                    sz.x, sz.y,                   # size
+                    wx.ClientDC(self.Board),      # src
+                    0, 0)                         # offset
+            bmp = dc.GetAsBitmap()
+            dc.SelectObject(wx.NullBitmap)
+
+        return bmp
+
     def WorkOn(self, ctrl):
         """Call to show ctrl in the working sizer.
         
@@ -220,6 +239,9 @@ class Workspace(wx.Panel):
         """
         if getattr(self, ctrl) in self._contents:
             window = getattr(self, ctrl)
+            if window is self.Canvas:
+                window.SetBackgroundBMP(self._get_board_bmp())
+                
             self._working_sizer.Clear()
             self._working_sizer.Add(window, proportion=1, flag=wx.EXPAND, border=0)
             for w in self._contents: w.Hide()

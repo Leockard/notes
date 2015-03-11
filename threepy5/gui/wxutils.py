@@ -346,9 +346,7 @@ class CanvasBase(wx.StaticBitmap):
 
     def _on_motion(self, ev):
         if ev.Dragging() and ev.LeftIsDown():
-            # dc = wx.BufferedDC(wx.ClientDC(self), self._buffer)
             dc = wx.MemoryDC(self._buffer)
-            
             dc.SetPen(self._pen)
             new_pos = ev.Position
 
@@ -367,6 +365,20 @@ class CanvasBase(wx.StaticBitmap):
     def _on_left_up(self, ev):
         self.lines.append((self._colour, self._thickness, self._cur_line))
         self._cur_line = []
+        self.Bind(wx.EVT_IDLE, self._on_idle)
+
+    def _on_idle(self, ev):
+        self.Unbind(wx.EVT_IDLE, handler=self._on_idle)
+
+        dc = wx.MemoryDC()
+        dc.SelectObject(self._buffer)
+        sz = self.Size
+        
+        dc.Blit(0, 0,                      # pos
+                sz.x, sz.y,                # size
+                wx.ClientDC(self),         # src
+                0, 0)                      # offset
+        dc.SelectObject(wx.NullBitmap)
 
             
 
