@@ -278,10 +278,11 @@ class CanvasBase(wx.StaticBitmap):
         * `parent: ` the parent `wx.Window`.
         * `bitmap: ` the wx.Bitmap to set as background. By default is `wx.NullBitmap`.
         """
+        super(CanvasBase, self).__init__(parent, bitmap=bitmap, style=wx.BORDER_NONE)
+        
         self.lines = []
         """The list of lines currently drawn."""
-        
-        super(CanvasBase, self).__init__(parent, bitmap=bitmap, style=wx.BORDER_NONE)
+
         self._thickness = 1
         self._colour = "BLACK"
         self._pen = wx.Pen(self._colour, self._thickness, wx.SOLID)
@@ -295,6 +296,7 @@ class CanvasBase(wx.StaticBitmap):
         self.Bind(wx.EVT_LEFT_DOWN, self._on_left_down)
         self.Bind(wx.EVT_LEFT_UP, self._on_left_up)
         self.Bind(wx.EVT_MOTION, self._on_motion)
+        self.Bind(wx.EVT_SIZE, self._on_size)
 
         
     ### init methods
@@ -326,8 +328,8 @@ class CanvasBase(wx.StaticBitmap):
             for coords in line:
                 x1, y1, x2, y2 = coords
                 # draw the lines relative to the current offset
-                dc.DrawLine(x1 - self.offset.x, y1 - self.offset.y,
-                            x2 - self.offset.x, y2 - self.offset.y)
+                dc.DrawLine(x1 - self._offset.x, y1 - self._offset.y,
+                            x2 - self._offset.x, y2 - self._offset.y)
         
         dc.EndDrawing()
         self.SetBitmap(dc.GetAsBitmap())
@@ -335,41 +337,39 @@ class CanvasBase(wx.StaticBitmap):
         
     ### callbacks
 
+    def _on_size(self, ev):
+        self._init_buffer()
+
     def _on_left_down(self, ev):
         self._cur_line = []
         self._pos = ev.Position
 
-    def _on_left_up(self, ev):
-        self.lines.append((self._colour, self._thickness, self._cur_line))
-        self._cur_line = []
-            
     def _on_motion(self, ev):
         if ev.Dragging() and ev.LeftIsDown():
-            # BufferedDC will paint first over self.GetBitmap()
-            # and then copy everything to ClientDC(self)
-            dc = wx.BufferedDC(wx.ClientDC(self), self.GetBitmap())
-            dc.BeginDrawing()
+            # dc = wx.BufferedDC(wx.ClientDC(self), self._buffer)
+            dc = wx.MemoryDC(self._buffer)
             
             dc.SetPen(self._pen)
             new_pos = ev.Position
 
-            # draw the lines with relative coordinates to the current view
             coords = (self._pos.x, self._pos.y, new_pos.x, new_pos.y)
             dc.DrawLine(*coords)
 
-            # but store them in absolute coordinates
-            coords = (self._pos.x + self._offset.x, self._pos.y + self._offset.y,
-                      new_pos.x  + self._offset.x,  new_pos.y + self._offset.y)
+            # store lines in absolute coordinates
+            coords = (self._pos.x + self._offset.x,
+                      self._pos.y + self._offset.y,
+                      new_pos.x + self._offset.x,
+                      new_pos.y + self._offset.y)
             self._cur_line.append(coords)
             self._pos = new_pos
+            self.SetBitmap(self._buffer)            
+
+    def _on_left_up(self, ev):
+        self.lines.append((self._colour, self._thickness, self._cur_line))
+        self._cur_line = []
+
             
-            dc.EndDrawing()
-            self.SetBitmap(dc.GetAsBitmap())
 
-        
-
-
-        
 
 #####################################################
 #             Reusable wx functions                 #
