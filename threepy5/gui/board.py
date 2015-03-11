@@ -1180,7 +1180,7 @@ class Board(wxutils.AutoSize):
         def SelectAll(self):
             """Selects every `CardWin` in the `Board`."""
             self.UnselectAll()
-            for w in self.Parent.Cards:
+            for w in self.Parent.Selectables:
                 self.Select(w)
 
         def Unselect(self, card):
@@ -1920,10 +1920,10 @@ class Board(wxutils.AutoSize):
         for ch in win.Children:
             ch.Bind(wx.EVT_LEFT_DOWN, self._on_card_child_left_down)
 
-        # make sure the new card is visible
-        if scroll:
-            if not self.Rect.Contains(win.Rect.TopLeft) or not self.Rect.Contains(win.Rect.BottomRight):
-                self.ScrollToCard(win)
+        # # make sure the new card is visible
+        # if scroll:
+        #     if not self.Rect.Contains(win.Rect.TopLeft) or not self.Rect.Contains(win.Rect.BottomRight):
+        #         self.ScrollToCard(win)
 
         self.Cards.append(win)
         self.FitToChildren(pad=self.Padding * 2)
