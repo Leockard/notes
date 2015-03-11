@@ -143,6 +143,7 @@ class Workspace(wx.Panel):
         self._init_board()
         self._init_canvas()        
         self._init_UI()
+        self._init_accels()
         
         self.WorkOn("Board")
 
@@ -184,20 +185,30 @@ class Workspace(wx.Panel):
     def _init_toolbar(self):
         # assumes the panel's sizer is already set
         bar = wx.ToolBar(self, style=wx.TB_HORIZONTAL|wx.TB_BOTTOM)
-        getBMP = wx.ArtProvider.GetBitmap
-
-        togg = bar.AddLabelTool(wx.ID_ANY, "toggle", bitmap=getBMP(wx.ART_CLOSE), kind=wx.ITEM_NORMAL)
-        zoom = bar.AddControl(self.ZoomCombo(bar))
-        
-        self.Bind(wx.EVT_TOOL, self._on_toggle, togg)
-
         box = wx.BoxSizer(wx.HORIZONTAL)
         box.Add(bar, proportion=1, flag=wx.EXPAND, border=0)
         self.Sizer.Add(box, proportion=0, flag=wx.EXPAND, border=0)
+        
+        getBMP = wx.ArtProvider.GetBitmap
+
+        togg = bar.AddLabelTool(wx.ID_ANY, "toggle", bitmap=getBMP(wx.ART_CLOSE), kind=wx.ITEM_NORMAL)
+        self.Bind(wx.EVT_TOOL, self._on_toolbar_toggle, togg)
+        
+        zoom = bar.AddControl(self.ZoomCombo(bar))
 
         bar.Realize()
         self._bar = bar
         self.zoom = zoom
+
+    def _init_accels(self):
+        accels = []
+        ghost = wx.Menu()
+        
+        ctrle = wx.MenuItem(ghost, wx.ID_ANY, "ctrle")
+        self.Bind(wx.EVT_MENU, self._on_ctrl_e, ctrle)
+        accels.append(wx.AcceleratorEntry(wx.ACCEL_CTRL, ord("E"), ctrle.GetId()))
+
+        self.SetAcceleratorTable(wx.AcceleratorTable(accels))
         
 
     ### methods
@@ -215,6 +226,7 @@ class Workspace(wx.Panel):
             window.Show()
             self.CurrentControl = window
 
+            window.SetFocus()
             self.Layout()
 
     def Zoom(self, new_scale):
@@ -228,8 +240,17 @@ class Workspace(wx.Panel):
         self.zoom.Value = str(int(new_scale * 100)) + "%"
         self.Scale = new_scale            
 
+    def _toggle_board_canvas(self):
+        if self.CurrentControl is self.Board:
+            self.WorkOn("Canvas")
+        elif self.CurrentControl is self.Canvas:
+            self.WorkOn("Board")
+        
             
     ### callbacks
 
-    def _on_toggle(self, ev):
-        print "toggle"
+    def _on_toolbar_toggle(self, ev):
+        self._toggle_board_canvas()
+
+    def _on_ctrl_e(self, ev):
+        self._toggle_board_canvas()
