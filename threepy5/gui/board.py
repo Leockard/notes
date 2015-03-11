@@ -63,7 +63,7 @@ class Selectable(wx.Panel):
     BORDER_THICK = 5
     SELECT_CL = (0, 0, 0, 0)
 
-    def __init__(self, parent, size=(0,0), style=0):
+    def __init__(self, parent, size=(0,0), style=0, scale=1.0):
         """Constructor.
 
         * `parent: ` the parent `Board`.
@@ -74,6 +74,8 @@ class Selectable(wx.Panel):
         self._main = None
         self._init_border()
         self._init_resize()
+        
+        self.Scale = scale
 
 
     ### init methods
@@ -181,6 +183,23 @@ class Selectable(wx.Panel):
         else:
             self.BorderColour = self.Parent.BackgroundColour
             self._selected = False
+
+    @property
+    def Scale(self):
+        """The scale at which this window is displayed."""
+        return self._scale
+
+    @Scale.setter
+    def Scale(self, scale):
+        if hasattr(self, "_scale"):
+            prev_scale = self._scale
+        else:
+            prev_scale = 1.0
+
+        factor = scale / prev_scale
+        self.Rect = wx.Rect(*[i * factor for i in self.Rect])
+        
+        self._scale = float(scale)
 
     @property
     def Resizable(self):
@@ -417,7 +436,8 @@ class CardWin(Selectable):
     ### subscribers: listen to changes in the underlying Card object
 
     def _update_rect(self, val):
-        self.Rect = wx.Rect(val.left, val.top, val.width, val.height)
+        rect = [i * self._scale for i in [val.left, val.top, val.width, val.height]]
+        self.Rect = wx.Rect(*rect)
 
 
     ### callbacks
@@ -1311,14 +1331,8 @@ class Board(wxutils.AutoSize):
         self.Selector = Board.SelectionManager(self)
         """The `SelectionManager`."""
 
-        self.Scale = 1.0
-        """The current zoom scale."""
-
         self.Cards = []
         """The `CardWin`s in this `Board`."""
-
-        # see the property Groups
-        # self.Groups = []
 
         self._drag_start_pos = None
         """The position where we started dragging the mouse."""
@@ -1334,6 +1348,8 @@ class Board(wxutils.AutoSize):
 
         self._moving_cards_pos = []
         """Stores position information while moving `Card`s."""
+
+        self.Scale = 1.0
 
         self.Deck = py5.Deck()
 
@@ -1452,6 +1468,32 @@ class Board(wxutils.AutoSize):
     def Selection(self):
         """The `Selectable`s currently selected."""
         return self.Selector.Selection
+
+    @property
+    def Scale(self):
+        return self._scale
+
+    @Scale.setter
+    def Scale(self, scale):
+        """The scale at which this window is displayed."""
+        if hasattr(self, "_scale"):
+            prev_scale = self._scale
+        else:
+            prev_scale = 1.0
+
+        scroll_pos = self.GetViewStart()
+        self.Scroll(0, 0)
+
+        factor = scale / prev_scale
+        scaled_sz = [int(i * factor) for i in self._virtual_sz]
+        self._virtual_sz = wx.Size(*scaled_sz)
+        self.SetVirtualSize(self._virtual_sz)
+
+        for w in self.Selectables:
+            w.Scale = scale
+
+        self.Scroll(*scroll_pos)
+        self._scale = float(scale)
 
 
     ### methods
@@ -1870,28 +1912,21 @@ class Board(wxutils.AutoSize):
         
     ### subscribers
 
-    def _on_new_card(self, val):
+    def _on_new_card(self, val, scroll=True):
         win = globals()[val.__class__.__name__ + "Win"](self, card=val)
-        # win.Stretch(self.scale)
+        win.Scale = self.Scale
 
         win.Bind(wx.EVT_LEFT_DOWN, self._on_card_left_down)
-        # win.Bind(card.Card.EVT_COLLAPSE, self.OnCardCollapse)
-        # win.Bind(card.Card.EVT_REQUEST_VIEW, self.OnCardRequest)
         for ch in win.Children:
             ch.Bind(wx.EVT_LEFT_DOWN, self._on_card_child_left_down)
 
-        # make enough space and breathing room for the new card
-        self.FitToChildren(pad=self.Padding * 2)
-
         # make sure the new card is visible
-        # if scroll:
-        #     rect = win.Rect
-        #     brd = self.Rect
-        #     if rect.bottom > brd.bottom or rect.right > brd.right or rect.left < 0 or rect.top < 0:
-        #         self.ScrollToCard(win)
+        if scroll:
+            if not self.Rect.Contains(win.Rect.TopLeft) or not self.Rect.Contains(win.Rect.BottomRight):
+                self.ScrollToCard(win)
 
         self.Cards.append(win)
-        # self.Selector.Active = False
+        self.FitToChildren(pad=self.Padding * 2)
         win.SetFocus()
 
     def _on_pop_card(self, val):
