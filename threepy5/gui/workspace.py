@@ -240,6 +240,7 @@ class Workspace(wx.Panel):
         if getattr(self, ctrl) in self._contents:
             window = getattr(self, ctrl)
             if window is self.Canvas:
+                self.Canvas.ctrl._offset = wx.Point(*self.Board.GetViewStartPixels())
                 window.SetBackgroundBMP(self._get_board_bmp())
                 
             self._working_sizer.Clear()
