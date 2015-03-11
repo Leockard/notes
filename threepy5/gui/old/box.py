@@ -1,34 +1,34 @@
-# -*- coding: utf-8 -*-
-"""
-A `Box` is a window that holds both a `Deck` and a `Canvas` to draw over that `Deck`.
-It also has facilities for closer inspection of individual objects (from the module view).
-"""
+# # -*- coding: utf-8 -*-
+# """
+# A `Box` is a window that holds both a `Deck` and a `Canvas` to draw over that `Deck`.
+# It also has facilities for closer inspection of individual objects (from the module view).
+# """
 
-import wx
-import view
-import card
-from deck import Deck
-from canvas import Canvas
-from card import KindButton as kindb
-import wx.lib.newevent as ne
+# import wx
+# import view
+# import card
+# from deck import Deck
+# from canvas import Canvas
+# from card import KindButton as kindb
+# import wx.lib.newevent as ne
 
 
-######################
-# Box class
-######################
+# ######################
+# # Box class
+# ######################
 
-class Box(wx.Panel):
-    """A `Box` holds all the main items to create, edit and visualize a collection of `Card`s.
-    The window that takes center stage in a `Box` by default is a `Deck`. Associated to it is
-    a `Canvas`, and one can toggle between the two with a button in the button bar. `Box` also
-    handles the sidebars (`TagView`), the "minimap" (`DeckView`), and the `Card` inspection
-    view (`CardView`).
+# class Box(wx.Panel):
+#     """A `Box` holds all the main items to create, edit and visualize a collection of `Card`s.
+#     The window that takes center stage in a `Box` by default is a `Deck`. Associated to it is
+#     a `Canvas`, and one can toggle between the two with a button in the button bar. `Box` also
+#     handles the sidebars (`TagView`), the "minimap" (`DeckView`), and the `Card` inspection
+#     view (`CardView`).
 
-    The `Deck`, `Canvas` and `CardView` (and possibly others) seemingly hold the same position
-    in the `Box`. This is achieved by having a sizer for them (`content_sizer`) and constantly
-    adding and deleting these objects from it. All the objects that can be shown in this main sizer
-    are stored in the attribute `contents`.
-    """
+#     The `Deck`, `Canvas` and `CardView` (and possibly others) seemingly hold the same position
+#     in the `Box`. This is achieved by having a sizer for them (`content_sizer`) and constantly
+#     adding and deleting these objects from it. All the objects that can be shown in this main sizer
+#     are stored in the attribute `contents`.
+#     """
     
     CARD_PADDING = Deck.CARD_PADDING
     PIXELS_PER_SCROLL = 20
@@ -66,27 +66,27 @@ class Box(wx.Panel):
         
     ### Behavior functions
 
-    def GetCurrentContent(self):
-        """Get the class of the object currently residing in `content_sizer`.
+    # def GetCurrentContent(self):
+    #     """Get the class of the object currently residing in `content_sizer`.
 
-        `returns: ` the __class__ attribute of the object.
-        """
-        return self.content_sizer.GetChildren()[0].GetWindow().__class__
+    #     `returns: ` the __class__ attribute of the object.
+    #     """
+    #     return self.content_sizer.GetChildren()[0].GetWindow().__class__
 
-    def ShowContent(self, ctrl):
-        """Assings the object to show inside `content_sizer`.
+    # def ShowContent(self, ctrl):
+    #     """Assings the object to show inside `content_sizer`.
 
-        * `ctrl: ` any element of self.contents.
-        """
-        # remove all children and add only ctrl in the content area
-        # ctrl should be a member of self.contents
-        self.content_sizer.Clear()
-        self.content_sizer.Add(ctrl, proportion=1, flag=wx.EXPAND, border=1)
+    #     * `ctrl: ` any element of self.contents.
+    #     """
+    #     # remove all children and add only ctrl in the content area
+    #     # ctrl should be a member of self.contents
+    #     self.content_sizer.Clear()
+    #     self.content_sizer.Add(ctrl, proportion=1, flag=wx.EXPAND, border=1)
         
-        for c in self.contents: c.Hide()
-        ctrl.Show()
-        self.Layout()
-        self.GetTopLevelParent().SetFocus()
+    #     for c in self.contents: c.Hide()
+    #     ctrl.Show()
+    #     self.Layout()
+    #     self.GetTopLevelParent().SetFocus()
 
     def ViewCards(self, cards):
         """Set up the children to show the `CardView`.
@@ -131,37 +131,37 @@ class Box(wx.Panel):
         self.ShowDeck()
         self.view.SetLabel("View")
 
-    def ShowDeck(self):
-        """Show the `Deck` in the `content_sizer`."""
-        # remember that self.deck is a Deck
-        # but we added the parent Deck object to our Sizer
-        self.ShowContent(self.deck)
-        cards = self.deck.GetCards()
-        if cards:
-            cards[0].SetFocus()
+    # def ShowDeck(self):
+    #     """Show the `Deck` in the `content_sizer`."""
+    #     # remember that self.deck is a Deck
+    #     # but we added the parent Deck object to our Sizer
+    #     self.ShowContent(self.deck)
+    #     cards = self.deck.GetCards()
+    #     if cards:
+    #         cards[0].SetFocus()
 
-    def ShowCanvas(self):
-        """Show the `Canvas` in the `content_sizer`."""
-        self.ShowContent(self.canvas)
-        view = self.deck.GetViewStart()
-        self.canvas.Scroll(view)
+    # def ShowCanvas(self):
+    #     """Show the `Canvas` in the `content_sizer`."""
+    #     self.ShowContent(self.canvas)
+    #     view = self.deck.GetViewStart()
+    #     self.canvas.Scroll(view)
 
-    def ShowMinimap(self):
-        """Show the `DeckView`. Note that the minimap is not in `self.contents`, so it
-        isn't added to `content_sizer`. Be sure to use this method and not self.minimap.Show(),
-        as we also calculate the position before showing.
-        """
-        self.minimap.Show()
+    # def ShowMinimap(self):
+    #     """Show the `DeckView`. Note that the minimap is not in `self.contents`, so it
+    #     isn't added to `content_sizer`. Be sure to use this method and not self.minimap.Show(),
+    #     as we also calculate the position before showing.
+    #     """
+    #     self.minimap.Show()
 
-    def HideMinimap(self):
-        """Hide the `DeckView` minimap. Note that the minimap is not in `self.contents`."""
-        self.minimap.Hide()
+    # def HideMinimap(self):
+    #     """Hide the `DeckView` minimap. Note that the minimap is not in `self.contents`."""
+    #     self.minimap.Hide()
 
-    def ToggleMinimap(self):
-        """Hide/Show the `DeckView` minimap. Note that the minimap is not in `self.contents`."""
-        mp = self.minimap
-        if mp.IsShown(): self.HideMinimap()
-        else:            self.ShowMinimap()
+    # def ToggleMinimap(self):
+    #     """Hide/Show the `DeckView` minimap. Note that the minimap is not in `self.contents`."""
+    #     mp = self.minimap
+    #     if mp.IsShown(): self.HideMinimap()
+    #     else:            self.ShowMinimap()
 
     def ShowButtonBar(self, show=True):
         """Show the button bar at the bottom of the `Box`."""
@@ -231,48 +231,48 @@ class Box(wx.Panel):
                         
     ### Auxiliary functions
     
-    def Dump(self):
-        """Returns a `dict` with all the info contained in this `Box`.
+    # def Dump(self):
+    #     """Returns a `dict` with all the info contained in this `Box`.
 
-        `returns: ` a `dict` of the form {"deck": Deck.Dump(), "canvas": Canvas.Dump()}.
-        """
-        # get the deck dump dict and process it
-        deck_di = self.deck.Dump()
+    #     `returns: ` a `dict` of the form {"deck": Deck.Dump(), "canvas": Canvas.Dump()}.
+    #     """
+    #     # get the deck dump dict and process it
+    #     deck_di = self.deck.Dump()
         
-        # if we're viewing, restore the cards, dump and then return to the view
-        viewing = []
-        if self.GetCurrentContent() == view.CardView:
-            viewing = self.view_card.GetCards()
-            self.view_card.Restore()
+    #     # if we're viewing, restore the cards, dump and then return to the view
+    #     viewing = []
+    #     if self.GetCurrentContent() == view.CardView:
+    #         viewing = self.view_card.GetCards()
+    #         self.view_card.Restore()
 
-        # dump the real coordinates
-        for id, card in deck_di.iteritems():
-            if "pos" in card.keys():
-                card["pos"] = tuple([int(k / self.scale) for k in card["pos"]])
-            if "width" in card.keys():
-                card["width"] = int(card["width"] / self.scale)
-            if "height" in card.keys():
-                card["height"] = int(card["height"] / self.scale)
+    #     # dump the real coordinates
+    #     for id, card in deck_di.iteritems():
+    #         if "pos" in card.keys():
+    #             card["pos"] = tuple([int(k / self.scale) for k in card["pos"]])
+    #         if "width" in card.keys():
+    #             card["width"] = int(card["width"] / self.scale)
+    #         if "height" in card.keys():
+    #             card["height"] = int(card["height"] / self.scale)
 
-        # restore view
-        if viewing:
-            self.ViewCards(viewing)
+    #     # restore view
+    #     if viewing:
+    #         self.ViewCards(viewing)
 
-        # get the canvas dump dict
-        canvas_di = self.canvas.Dump()
+    #     # get the canvas dump dict
+    #     canvas_di = self.canvas.Dump()
 
-        # join the two
-        di = {"deck": deck_di, "canvas": canvas_di}
+    #     # join the two
+    #     di = {"deck": deck_di, "canvas": canvas_di}
 
-        return di
+    #     return di
 
-    def Load(self, di):
-        """Read a `dict` and load all its data.
+    # def Load(self, di):
+    #     """Read a `dict` and load all its data.
 
-        * `di: ` a `dict` in the format returned by `Dump`.
-        """
-        self.deck.Load(di["deck"])
-        self.canvas.Load(di["canvas"])
+    #     * `di: ` a `dict` in the format returned by `Dump`.
+    #     """
+    #     self.deck.Load(di["deck"])
+    #     self.canvas.Load(di["canvas"])
 
     def CleanUpUI(self):
         """Helper function for `InitUI`. Resets all control members.
@@ -289,90 +289,90 @@ class Box(wx.Panel):
 
         return sz
     
-    def InitUI(self):
-        """Initialize this `Box`'s GUI and controls."""
-        # cleanup the previous UI, if any
-        if self.ui_ready:
-            sz = self.CleanUpUI()
-        else:
-            sz = self.DEFAULT_SZ
+    # def InitUI(self):
+    #     """Initialize this `Box`'s GUI and controls."""
+    #     # cleanup the previous UI, if any
+    #     if self.ui_ready:
+    #         sz = self.CleanUpUI()
+    #     else:
+    #         sz = self.DEFAULT_SZ
 
-        # make new UI
-        self.InitSizers()
-        self.InitDeck(sz)
-        self.InitCanvas()
-        self.InitView()
-        self.InitSidebar()
-        # execute only the first time
-        if not self.ui_ready: self.InitButtonBar()
+    #     # make new UI
+    #     self.InitSizers()
+    #     self.InitDeck(sz)
+    #     self.InitCanvas()
+    #     self.InitView()
+    #     self.InitSidebar()
+    #     # execute only the first time
+    #     if not self.ui_ready: self.InitButtonBar()
 
-        # content sizer takes all available space for content
-        # always use the individual ShowXXX() controls
-        self.ShowDeck()
-        self.Layout()
-        self.ui_ready = True
+    #     # content sizer takes all available space for content
+    #     # always use the individual ShowXXX() controls
+    #     self.ShowDeck()
+    #     self.Layout()
+    #     self.ui_ready = True
 
-    def InitAccels(self):
-        """Initializes the `wx.AcceleratorTable`."""
-        # we create ghost menus so that we can
-        # bind its items to some accelerators
-        accels = []
-        ghost = wx.Menu()
+    # def InitAccels(self):
+    #     """Initializes the `wx.AcceleratorTable`."""
+    #     # we create ghost menus so that we can
+    #     # bind its items to some accelerators
+    #     accels = []
+    #     ghost = wx.Menu()
 
-        # show/hide sidebar        
-        sbar = wx.MenuItem(ghost, wx.ID_ANY, "View sidebar", kind=wx.ITEM_CHECK)
-        self.Bind(wx.EVT_MENU, self.OnToggleSidebar, sbar)
-        accels.append(wx.AcceleratorEntry(wx.ACCEL_NORMAL, wx.WXK_F9, sbar.GetId()))
+    #     # show/hide sidebar        
+    #     sbar = wx.MenuItem(ghost, wx.ID_ANY, "View sidebar", kind=wx.ITEM_CHECK)
+    #     self.Bind(wx.EVT_MENU, self.OnToggleSidebar, sbar)
+    #     accels.append(wx.AcceleratorEntry(wx.ACCEL_NORMAL, wx.WXK_F9, sbar.GetId()))
 
-        self.SetAcceleratorTable(wx.AcceleratorTable(accels))
+    #     self.SetAcceleratorTable(wx.AcceleratorTable(accels))
 
-    def InitSizers(self):
-        """Initializes `sidebar_sizer` and `content_sizer`."""
-        # main sizer, with two main regions: data (dbox) and buttons (bbox)
-        vbox = wx.BoxSizer(wx.VERTICAL)
-        dbox = wx.BoxSizer(wx.HORIZONTAL)
-        bbox = wx.BoxSizer(wx.HORIZONTAL)
-        vbox.Add(dbox, proportion=1, flag=wx.ALL|wx.EXPAND, border=1)
-        vbox.Add(bbox, proportion=0, flag=wx.ALL|wx.EXPAND, border=1)
-        self.SetSizer(vbox)
-        self.buttonbar = bbox
+    # def InitSizers(self):
+    #     """Initializes `sidebar_sizer` and `content_sizer`."""
+    #     # main sizer, with two main regions: data (dbox) and buttons (bbox)
+    #     vbox = wx.BoxSizer(wx.VERTICAL)
+    #     dbox = wx.BoxSizer(wx.HORIZONTAL)
+    #     bbox = wx.BoxSizer(wx.HORIZONTAL)
+    #     vbox.Add(dbox, proportion=1, flag=wx.ALL|wx.EXPAND, border=1)
+    #     vbox.Add(bbox, proportion=0, flag=wx.ALL|wx.EXPAND, border=1)
+    #     self.SetSizer(vbox)
+    #     self.buttonbar = bbox
 
-        # the data sizer contains the sidebar (sbox) and the
-        # contents sizer (cbox), which in turn contains the deck/canvas/view controls.
-        # the contents sizer takes all available space for content
-        # always use the individual ShowXXX() methods
-        sbox = wx.BoxSizer(wx.VERTICAL)
-        cbox = wx.BoxSizer(wx.HORIZONTAL)
-        dbox.Add(sbox, proportion=1, flag=wx.ALL|wx.EXPAND, border=1)
-        dbox.Add(cbox, proportion=4, flag=wx.ALL|wx.EXPAND, border=1)        
-        self.sidebar_sizer = sbox
-        self.content_sizer = cbox
+    #     # the data sizer contains the sidebar (sbox) and the
+    #     # contents sizer (cbox), which in turn contains the deck/canvas/view controls.
+    #     # the contents sizer takes all available space for content
+    #     # always use the individual ShowXXX() methods
+    #     sbox = wx.BoxSizer(wx.VERTICAL)
+    #     cbox = wx.BoxSizer(wx.HORIZONTAL)
+    #     dbox.Add(sbox, proportion=1, flag=wx.ALL|wx.EXPAND, border=1)
+    #     dbox.Add(cbox, proportion=4, flag=wx.ALL|wx.EXPAND, border=1)        
+    #     self.sidebar_sizer = sbox
+    #     self.content_sizer = cbox
 
-    def InitDeck(self, size=wx.DefaultSize):
-        """Initializes `Deck`."""
-        # make deck
-        dk = Deck(self, size=size)
+    # def InitDeck(self, size=wx.DefaultSize):
+    #     """Initializes `Deck`."""
+    #     # make deck
+    #     dk = Deck(self, size=size)
         
-        # bindings
-        dk.Bind(Deck.EVT_REQUEST_VIEW, self.OnRequestView)
-        dk.Bind(Deck.EVT_DEL_CARD, self.OnDelete)
+    #     # bindings
+    #     dk.Bind(Deck.EVT_REQUEST_VIEW, self.OnRequestView)
+    #     dk.Bind(Deck.EVT_DEL_CARD, self.OnDelete)
 
-        # init also the viewing control
-        ins = view.DeckView(self, dk)
-        ins.Hide()
-        self.minimap = ins
+    #     # init also the viewing control
+    #     ins = view.DeckView(self, dk)
+    #     ins.Hide()
+    #     self.minimap = ins
 
-        # finish up
-        self.deck = dk
-        dk.Hide()
-        self.contents.append(dk)        
+    #     # finish up
+    #     self.deck = dk
+    #     dk.Hide()
+    #     self.contents.append(dk)        
 
-    def InitCanvas(self, size=wx.DefaultSize):
-        """Initializes `Canvas`."""
-        cv = Canvas(self, size=size)
-        self.canvas = cv
-        self.canvas.Hide()
-        self.contents.append(cv)
+    # def InitCanvas(self, size=wx.DefaultSize):
+    #     """Initializes `Canvas`."""
+    #     cv = Canvas(self, size=size)
+    #     self.canvas = cv
+    #     self.canvas.Hide()
+    #     self.contents.append(cv)
 
     def InitView(self, size=wx.DefaultSize):
         """Initializes `CardView`."""
@@ -424,131 +424,131 @@ class Box(wx.Panel):
         box.Add(zbox,      proportion=1, flag=wx.ALIGN_RIGHT|wx.EXPAND, border=1)        
 
 
-    ### Callbacks
+    # ### Callbacks
 
-    def OnToggleSidebar(self, ev):
-        """Listens to `F9`."""
-        self.ShowSidebar(not self.tags_sb.IsShown())
+    # def OnToggleSidebar(self, ev):
+    #     """Listens to `F9`."""
+    #     self.ShowSidebar(not self.tags_sb.IsShown())
 
-    def OnRequestView(self, ev):
-        """Listens to `Deck.EVT_REQUEST_VIEW` from `Deck`."""
-        card = ev.GetEventObject()
-        self.deck.SelectCard(card, True)
-        self.ViewCards([card])
+    # def OnRequestView(self, ev):
+    #     """Listens to `Deck.EVT_REQUEST_VIEW` from `Deck`."""
+    #     card = ev.GetEventObject()
+    #     self.deck.SelectCard(card, True)
+    #     self.ViewCards([card])
 
-    def OnCancelView(self, ev):
-        """Listens to `Card.EVT_CANCEL_VIEW` from `Card`s that are being viewed."""
-        self.CancelView()
-        ev.GetEventObject().SetFocus()
+    # def OnCancelView(self, ev):
+    #     """Listens to `Card.EVT_CANCEL_VIEW` from `Card`s that are being viewed."""
+    #     self.CancelView()
+    #     ev.GetEventObject().SetFocus()
         
-    def OnDelete(self, ev):
-        """Listens to `Deck.EVT_DEL_CARD`."""
-        event = self.DeleteEvent(id=wx.ID_ANY, number=ev.number)
-        event.SetEventObject(self)
-        self.GetEventHandler().ProcessEvent(event)
+    # def OnDelete(self, ev):
+    #     """Listens to `Deck.EVT_DEL_CARD`."""
+    #     event = self.DeleteEvent(id=wx.ID_ANY, number=ev.number)
+    #     event.SetEventObject(self)
+    #     self.GetEventHandler().ProcessEvent(event)
 
-    def OnView(self, ev):
-        """Listens to `wx.EVT_BUTTON` from the view button in the button bar."""
-        content = self.GetCurrentContent()
-        if content == Deck:
-            sel = self.deck.GetSelection()
-            if sel:
-                self.ViewCards(sel)
-        elif content == view.CardView:
-            # don't call self.CancelView()
-            # instead, tell the viewed cards that they should request
-            # a cancelation
-            self.view_card.GetCards()[-1].CancelView()
+    # def OnView(self, ev):
+    #     """Listens to `wx.EVT_BUTTON` from the view button in the button bar."""
+    #     content = self.GetCurrentContent()
+    #     if content == Deck:
+    #         sel = self.deck.GetSelection()
+    #         if sel:
+    #             self.ViewCards(sel)
+    #     elif content == view.CardView:
+    #         # don't call self.CancelView()
+    #         # instead, tell the viewed cards that they should request
+    #         # a cancelation
+    #         self.view_card.GetCards()[-1].CancelView()
 
-    def OnToggle(self, ev):
-        """Listents to `wx.EVT_BUTTON` from the `Deck`/`Canvas` button in the button bar"""
-        if self.GetCurrentContent() == Deck:
-            self.SetupCanvas()
-            self.ShowCanvas()
-        else:
-            self.ShowDeck()
+    # def OnToggle(self, ev):
+    #     """Listents to `wx.EVT_BUTTON` from the `Deck`/`Canvas` button in the button bar"""
+    #     if self.GetCurrentContent() == Deck:
+    #         self.SetupCanvas()
+    #         self.ShowCanvas()
+    #     else:
+    #         self.ShowDeck()
 
-        # never forget to Layout after Sizer operations            
-        self.Layout()
+    #     # never forget to Layout after Sizer operations            
+    #     self.Layout()
 
-    def GetScaleFromStr(self, s):
-        """Parses a string to extract a scale.
+    # def GetScaleFromStr(self, s):
+    #     """Parses a string to extract a scale.
         
-        * `s: ` is be a string of the type "\d\d\d?%?" (eg, "100%" or "75").
+    #     * `s: ` is be a string of the type "\d\d\d?%?" (eg, "100%" or "75").
         
-        `returns: `the float corresponding to the scale.
-        """
-        scale = 1.0
-        if wxutils.isnumber(s):
-            scale = float(s)/100
-        elif isnumber(s[:-1]) and s[-1] == "%":
-            scale = float(s[:-1])/100
-        return scale
+    #     `returns: `the float corresponding to the scale.
+    #     """
+    #     scale = 1.0
+    #     if wxutils.isnumber(s):
+    #         scale = float(s)/100
+    #     elif isnumber(s[:-1]) and s[-1] == "%":
+    #         scale = float(s[:-1])/100
+    #     return scale
         
-    def OnZoomCombo(self, ev):
-        """Listens to `wx.EVT_COMBOBOX` from the zoom combo box in the button bar."""
-        self.Zoom(self.GetScaleFromStr(ev.GetString()))
+    # def OnZoomCombo(self, ev):
+    #     """Listens to `wx.EVT_COMBOBOX` from the zoom combo box in the button bar."""
+    #     self.Zoom(self.GetScaleFromStr(ev.GetString()))
 
-    def OnZoomEnter(self, ev):
-        """Listens to `wx.EVT_TEXT_ENTER` from the zoom combo box in the button bar."""
-        self.Zoom(self.GetScaleFromStr(ev.GetString()))
+    # def OnZoomEnter(self, ev):
+    #     """Listens to `wx.EVT_TEXT_ENTER` from the zoom combo box in the button bar."""
+    #     self.Zoom(self.GetScaleFromStr(ev.GetString()))
 
-    def Zoom(self, new_scale):
-        """Zoom in or out the current `Deck`. Effectively changes the scale of all
-        relevant coordinates.
+    # def Zoom(self, new_scale):
+    #     """Zoom in or out the current `Deck`. Effectively changes the scale of all
+    #     relevant coordinates.
 
-        * `new_scale: ` the new scale for all `Card`s.
-        """
-        # save the scroll position and go to origin
-        # so that all the cards' coordinates are absolute
-        scroll_pos = self.deck.GetViewStart()
-        self.deck.Scroll(0, 0)
+    #     * `new_scale: ` the new scale for all `Card`s.
+    #     """
+    #     # save the scroll position and go to origin
+    #     # so that all the cards' coordinates are absolute
+    #     scroll_pos = self.deck.GetViewStart()
+    #     self.deck.Scroll(0, 0)
 
-        # scale cards
-        for c in self.deck.GetCards():
-            c.Stretch(new_scale / self.scale)
+    #     # scale cards
+    #     for c in self.deck.GetCards():
+    #         c.Stretch(new_scale / self.scale)
 
-        # scale content size
-        self.deck.content_sz  = wx.Size(*[i / self.scale * new_scale for i in self.deck.content_sz])
-        self.deck.SetVirtualSize(self.deck.content_sz)
+    #     # scale content size
+    #     self.deck.content_sz  = wx.Size(*[i / self.scale * new_scale for i in self.deck.content_sz])
+    #     self.deck.SetVirtualSize(self.deck.content_sz)
 
-        # return to previous scroll position
-        self.deck.Scroll(*scroll_pos)
+    #     # return to previous scroll position
+    #     self.deck.Scroll(*scroll_pos)
 
-        # make sure the combo text matches the new scale
-        self.zoom.SetValue(str(int(new_scale * 100)) + "%")
+    #     # make sure the combo text matches the new scale
+    #     self.zoom.SetValue(str(int(new_scale * 100)) + "%")
 
-        # setup members
-        self.deck.scale = new_scale
-        self.canvas.scale = new_scale
-        self.scale = new_scale            
+    #     # setup members
+    #     self.deck.scale = new_scale
+    #     self.canvas.scale = new_scale
+    #     self.scale = new_scale            
 
-    def ZoomIn(self):
-        """Zoom in to the next greater scale in `self.ZOOM_CHOICES`."""
-        chs = self.ZOOM_CHOICES
-        new = chs.index(self.zoom.GetValue()) - 1
-        if new > -1 and new < len(chs):
-            self.Zoom(self.GetScaleFromStr(chs[new]))
+    # def ZoomIn(self):
+    #     """Zoom in to the next greater scale in `self.ZOOM_CHOICES`."""
+    #     chs = self.ZOOM_CHOICES
+    #     new = chs.index(self.zoom.GetValue()) - 1
+    #     if new > -1 and new < len(chs):
+    #         self.Zoom(self.GetScaleFromStr(chs[new]))
 
-    def ZoomOut(self):
-        """Zoom out to the next smaller scale in `self.ZOOM_CHOICES`."""
-        chs = self.ZOOM_CHOICES
-        new = chs.index(self.zoom.GetValue()) + 1
-        if new > -1 and new < len(chs):
-            self.Zoom(self.GetScaleFromStr(chs[new]))
+    # def ZoomOut(self):
+    #     """Zoom out to the next smaller scale in `self.ZOOM_CHOICES`."""
+    #     chs = self.ZOOM_CHOICES
+    #     new = chs.index(self.zoom.GetValue()) + 1
+    #     if new > -1 and new < len(chs):
+    #         self.Zoom(self.GetScaleFromStr(chs[new]))
 
-    def OnView(self, ev):
-        """Listens to `wx.EVT_CHOICE` from the view contents by kind combo box in the button bar."""
-        s = ev.GetString()
-        if s == "All":
-            show = self.deck.GetCards()
-        else:
-            show = self.deck.GetContentsByKind(s)
+    # def OnView(self, ev):
+    #     """Listens to `wx.EVT_CHOICE` from the view contents by kind combo box in the button bar."""
+    #     s = ev.GetString()
+    #     if s == "All":
+    #         show = self.deck.GetCards()
+    #     else:
+    #         show = self.deck.GetContentsByKind(s)
             
-        show = list(set(show) | set(self.deck.GetHeaders()))
-        hide = list(set(self.deck.GetCards()) - set(show))
-        for c in show: c.Show()
-        for c in hide: c.Hide()
+    #     show = list(set(show) | set(self.deck.GetHeaders()))
+    #     hide = list(set(self.deck.GetCards()) - set(show))
+    #     for c in show: c.Show()
+    #     for c in hide: c.Hide()
 
 
 
