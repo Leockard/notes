@@ -146,33 +146,36 @@ class testBoard(unittest.TestCase):
     def testDragMove(self):
         """`Board` should move all `Card`s when click-dragging."""
         board = newgui.Board(self.frame)
+        num = 20
         cards = []
         start_pos = {}
-        for i in range(20):
+        
+        for i in range(num):
             pos = wx.Point(randint(1, 1000), randint(1, 1000))
             board.Deck.NewCard("Content", pos=pos)
-            c = board.Cards[-1]
-            cards.append(c)
-            start_pos[c] = pos
-        board.Selector.SelectGroup(py5.CardGroup(members=[c.Card._id for c in cards]))
+            w = board.Cards[-1]
+            cards.append(w)
+            start_pos[w] = pos
+            board.Selector.Select(w)
         self.assertEqual(len(board.Selection), len(cards))
 
         # simulate a click-drag from the top left corner of the first card
-        # to the point (1000, 1000)
+        # to the point (100, 100)
         start = cards[0].Position + wx.Point(3,3)
         board._move_start(cards[0], wx.Point(*start))
-        for i in range(999):
+        for i in range(99):
             board._move_update(wx.Point(i,i))
         pad = cards[0].BORDER_WIDTH
-        board._move_end(start + wx.Point(1000,1000) + wx.Point(pad,pad))
+        board._move_end(start + wx.Point(100,100) + wx.Point(pad,pad))
         self.assertEqual(len(board.Selection), len(cards))
 
+        board.Scroll(0,0)
         final_pos = {}
         for c in board.Cards:
             final_pos[c] = c.Position
 
         for c in cards:
-            self.assertEqual(start_pos[c] + (1000,1000), final_pos[c])
+            self.assertEqual(start_pos[c] + (100,100), final_pos[c])
 
     def testFitToChildren(self):
         """`Board` should adequately enlarge its virtual size to fit all children."""
@@ -349,8 +352,12 @@ class testSelectionManager(unittest.TestCase):
         board.Deck.NewCard("Content", pos=(300,200))
 
         tl, bl, tr, br = board.Cards
-        board.Selector.Select(tl)
+        tl.Card.title = "tl"
+        bl.Card.title = "bl"
+        tr.Card.title = "tr"
+        br.Card.title = "br"
 
+        board.Selector.Select(tl)
         self.assertEqual(len(board.Selection), 1)
 
         board.Selector.SelectNearest(wx.WXK_RIGHT, new_sel=True)
@@ -396,9 +403,10 @@ class testSelectionManager(unittest.TestCase):
     def testMoveSelection(self):
         """`SelectionManager` should move the selected cards correctly."""
         board = newgui.Board(self.frame)
+        num = 10
         step = 10
 
-        for i in range(10):
+        for i in range(num):
             board.Deck.NewCard("Content", pos=(randint(1, 10),randint(1, 10)))
             crd = board.Cards[-1]
             board.Selector.Select(crd, new_sel=False)
