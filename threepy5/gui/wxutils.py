@@ -311,6 +311,13 @@ class CanvasBase(wx.StaticBitmap):
         dc.SetBackground(wx.Brush(self.BackgroundColour))
         dc.Clear()
 
+        if hasattr(self, "_buffer"):
+            sz = self._buffer.Size
+            dc.Blit(0, 0,                            # pos
+                    sz.x, sz.y,                      # size
+                    wx.MemoryDC(self._buffer),       # src
+                    0, 0)                            # offset
+
         self.DrawLines()
         self._buffer = buf
 
@@ -333,7 +340,44 @@ class CanvasBase(wx.StaticBitmap):
         
         dc.EndDrawing()
         self.SetBitmap(dc.GetAsBitmap())
+        self._buffer = dc.GetAsBitmap()
 
+    def _stroke_start(self, pos):
+        self._cur_line = []
+        self._pos = pos
+
+    def _stroke_update(self, pos):
+        dc = wx.MemoryDC(self._buffer)
+        dc.SetPen(self._pen)
+
+        coords = (self._pos.x, self._pos.y, pos.x, pos.y)
+        dc.DrawLine(*coords)
+
+        # store lines in absolute coordinates
+        coords = (self._pos.x + self._offset.x,
+                  self._pos.y + self._offset.y,
+                  pos.x       + self._offset.x,
+                  pos.y       + self._offset.y)
+        self._cur_line.append(coords)
+        self._pos = pos
+        self.SetBitmap(self._buffer)
+
+    def _stroke_end(self):
+        self.lines.append((self._colour, self._thickness, self._cur_line))
+        self._cur_line = []
+
+    def _save_bmp(self):
+        dc = wx.MemoryDC()
+        dc.SelectObject(self._buffer)
+        
+        sz = self.Size
+        dc.Blit(0, 0,                      # pos
+                sz.x, sz.y,                # size
+                wx.ClientDC(self),         # src
+                0, 0)                      # offset
+                
+        dc.SelectObject(wx.NullBitmap)
+        
         
     ### callbacks
 
@@ -341,44 +385,23 @@ class CanvasBase(wx.StaticBitmap):
         self._init_buffer()
 
     def _on_left_down(self, ev):
-        self._cur_line = []
-        self._pos = ev.Position
+        self._stroke_start(ev.Position)
 
     def _on_motion(self, ev):
         if ev.Dragging() and ev.LeftIsDown():
-            dc = wx.MemoryDC(self._buffer)
-            dc.SetPen(self._pen)
-            new_pos = ev.Position
-
-            coords = (self._pos.x, self._pos.y, new_pos.x, new_pos.y)
-            dc.DrawLine(*coords)
-
-            # store lines in absolute coordinates
-            coords = (self._pos.x + self._offset.x,
-                      self._pos.y + self._offset.y,
-                      new_pos.x + self._offset.x,
-                      new_pos.y + self._offset.y)
-            self._cur_line.append(coords)
-            self._pos = new_pos
-            self.SetBitmap(self._buffer)            
+            self._stroke_update(ev.Position)
 
     def _on_left_up(self, ev):
-        self.lines.append((self._colour, self._thickness, self._cur_line))
-        self._cur_line = []
+        self._stroke_end()
+        # after each stroke: wait for IDLE
         self.Bind(wx.EVT_IDLE, self._on_idle)
 
     def _on_idle(self, ev):
+        # on idle: save the lines to the buffer
+        # we unbind this callback since we only need to save things
+        # after a stroke
+        self._save_bmp()
         self.Unbind(wx.EVT_IDLE, handler=self._on_idle)
-
-        dc = wx.MemoryDC()
-        dc.SelectObject(self._buffer)
-        sz = self.Size
-        
-        dc.Blit(0, 0,                      # pos
-                sz.x, sz.y,                # size
-                wx.ClientDC(self),         # src
-                0, 0)                      # offset
-        dc.SelectObject(wx.NullBitmap)
 
             
 
