@@ -49,13 +49,13 @@ class Canvas(wxutils.AutoSize):
         """
         if bmp:
             self.ctrl.SetBitmap(bmp)
+            self.ctrl._buffer = bmp
             self.FitToChildren()
 
             
     ### callbacks
 
     def _on_show(self, ev):
-        """Listens to `wx.EVT_SHOW` events."""
         if ev.IsShown():
             self.ctrl.DrawLines()
 
