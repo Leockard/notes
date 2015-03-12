@@ -175,40 +175,40 @@
         """
         return self.buttonbar
 
-    def GetDeckBmp(self):
-        """Get the currently visible part of the `Deck` as a wx.Bitmap.
+    # def GetDeckBmp(self):
+    #     """Get the currently visible part of the `Deck` as a wx.Bitmap.
 
-        `returns: ` a `wx.Bitmap`.
-        """
-        # get the current deck as a bitmap
-        sz = self.deck.GetClientSize()
-        bmp = None
+    #     `returns: ` a `wx.Bitmap`.
+    #     """
+    #     # get the current deck as a bitmap
+    #     sz = self.deck.GetClientSize()
+    #     bmp = None
 
-        if sz.width > -1 and sz.height > -1:
-            bmp = wx.EmptyBitmap(sz.width, sz.height)
-            dc = wx.MemoryDC()
+    #     if sz.width > -1 and sz.height > -1:
+    #         bmp = wx.EmptyBitmap(sz.width, sz.height)
+    #         dc = wx.MemoryDC()
             
-            dc.SelectObject(bmp)
-            dc.Blit(0, 0,                         # pos
-                    sz.x, sz.y,                   # size
-                    wx.ClientDC(self.deck),      # src
-                    0, 0)                         # offset
-            bmp = dc.GetAsBitmap()
-            dc.SelectObject(wx.NullBitmap)
+    #         dc.SelectObject(bmp)
+    #         dc.Blit(0, 0,                         # pos
+    #                 sz.x, sz.y,                   # size
+    #                 wx.ClientDC(self.deck),       # src
+    #                 0, 0)                         # offset
+    #         bmp = dc.GetAsBitmap()
+    #         dc.SelectObject(wx.NullBitmap)
 
-        return bmp
+    #     return bmp
 
-    def SetupCanvas(self):
-        """Setup the `Canvas` background. Always call before showing the `Canvas`."""
-        # set sizes
-        self.canvas.SetSize(self.deck.GetSize())
-        sz = self.deck.content_sz
-        self.canvas.SetVirtualSize(sz)
-        self.canvas.content_sz = sz
+    # def SetupCanvas(self):
+    #     """Setup the `Canvas` background. Always call before showing the `Canvas`."""
+    #     # set sizes
+    #     self.canvas.SetSize(self.deck.GetSize())
+    #     sz = self.deck.content_sz
+    #     self.canvas.SetVirtualSize(sz)
+    #     self.canvas.content_sz = sz
 
-        # pass the bitmap to canvas
-        self.canvas.SetOffset(self.deck.GetViewStartPixels())
-        self.canvas.SetBackground(self.GetDeckBmp())
+    #     # pass the bitmap to canvas
+    #     self.canvas.SetOffset(self.deck.GetViewStartPixels())
+    #     self.canvas.SetBackground(self.GetDeckBmp())
 
     def ShowSidebar(self, show=True):
         """Show/Hide the sidebar.
@@ -395,33 +395,33 @@
         self.sidebar_sizer.Add(tg, proportion=1, flag=wx.EXPAND)
         self.sidebars.append(tg)
 
-    def InitButtonBar(self):
-        """Initializes the button bar."""
-        # controls
-        self.view = wx.Button(self, label = "View")
-        self.view.Bind(wx.EVT_BUTTON, self.OnView)
+    # def InitButtonBar(self):
+    #     """Initializes the button bar."""
+    #     # controls
+    #     self.view = wx.Button(self, label = "View")
+    #     self.view.Bind(wx.EVT_BUTTON, self.OnView)
 
-        self.toggle = wx.Button(self, label = "Toggle")
-        self.toggle.Bind(wx.EVT_BUTTON, self.OnToggle)
+    #     self.toggle = wx.Button(self, label = "Toggle")
+    #     self.toggle.Bind(wx.EVT_BUTTON, self.OnToggle)
 
-        self.bykind = wx.Choice(self, choices=Box.VIEW_CHOICES)
-        self.bykind.SetSelection(0)
-        self.bykind.Bind(wx.EVT_CHOICE, self.OnView)
+    #     self.bykind = wx.Choice(self, choices=Box.VIEW_CHOICES)
+    #     self.bykind.SetSelection(0)
+    #     self.bykind.Bind(wx.EVT_CHOICE, self.OnView)
                     
-        chs = self.ZOOM_CHOICES
-        self.zoom = wx.ComboBox(self, value=chs[1], choices=chs, style=wx.TE_PROCESS_ENTER)
-        self.zoom.SetSelection(1)
-        self.zoom.Bind(wx.EVT_COMBOBOX, self.OnZoomCombo)
-        self.zoom.Bind(wx.EVT_TEXT_ENTER, self.OnZoomEnter)
-        zbox = wx.BoxSizer(wx.VERTICAL) # must be vertical so that ALIGN_RIGHT works
-        zbox.Add(self.zoom, proportion=1, flag=wx.ALIGN_RIGHT, border=1)        
+    #     chs = self.ZOOM_CHOICES
+    #     self.zoom = wx.ComboBox(self, value=chs[1], choices=chs, style=wx.TE_PROCESS_ENTER)
+    #     self.zoom.SetSelection(1)
+    #     self.zoom.Bind(wx.EVT_COMBOBOX, self.OnZoomCombo)
+    #     self.zoom.Bind(wx.EVT_TEXT_ENTER, self.OnZoomEnter)
+    #     zbox = wx.BoxSizer(wx.VERTICAL) # must be vertical so that ALIGN_RIGHT works
+    #     zbox.Add(self.zoom, proportion=1, flag=wx.ALIGN_RIGHT, border=1)        
 
-        # boxing
-        box = self.buttonbar
-        box.Add(self.view,   proportion=0, flag=wx.LEFT|wx.EXPAND, border=1)
-        box.Add(self.toggle, proportion=0, flag=wx.LEFT|wx.EXPAND, border=1)
-        box.Add(self.bykind, proportion=0, flag=wx.LEFT|wx.EXPAND, border=1)
-        box.Add(zbox,      proportion=1, flag=wx.ALIGN_RIGHT|wx.EXPAND, border=1)        
+    #     # boxing
+    #     box = self.buttonbar
+    #     box.Add(self.view,   proportion=0, flag=wx.LEFT|wx.EXPAND, border=1)
+    #     box.Add(self.toggle, proportion=0, flag=wx.LEFT|wx.EXPAND, border=1)
+    #     box.Add(self.bykind, proportion=0, flag=wx.LEFT|wx.EXPAND, border=1)
+    #     box.Add(zbox,      proportion=1, flag=wx.ALIGN_RIGHT|wx.EXPAND, border=1)        
 
 
     # ### Callbacks
@@ -706,30 +706,30 @@ class BoxSet(wx.Notebook):
 
 
         
-###########################
-# pdoc documentation setup
-###########################
-# __pdoc__ is the special variable from the automatic
-# documentation generator pdoc.
-# By setting pdoc[class.method] to None, we are telling
-# pdoc to not generate documentation for said method.
-__pdoc__ = {}
-__pdoc__["field"] = None
+# ###########################
+# # pdoc documentation setup
+# ###########################
+# # __pdoc__ is the special variable from the automatic
+# # documentation generator pdoc.
+# # By setting pdoc[class.method] to None, we are telling
+# # pdoc to not generate documentation for said method.
+# __pdoc__ = {}
+# __pdoc__["field"] = None
 
-# Since we only want to generate documentation for our own
-# mehods, and not the ones coming from the base classes,
-# we first set to None every method in the base class.
-for field in dir(wx.Panel):
-    __pdoc__['Box.%s' % field] = None
-for field in dir(wx.Notebook):
-    __pdoc__['BoxSet.%s' % field] = None
+# # Since we only want to generate documentation for our own
+# # mehods, and not the ones coming from the base classes,
+# # we first set to None every method in the base class.
+# for field in dir(wx.Panel):
+#     __pdoc__['Box.%s' % field] = None
+# for field in dir(wx.Notebook):
+#     __pdoc__['BoxSet.%s' % field] = None
 
-# Then, we have to add again the methods that we have
-# overriden. See https://github.com/BurntSushi/pdoc/issues/15.
-for field in Box.__dict__.keys():
-    if 'Box.%s' % field in __pdoc__.keys():
-        del __pdoc__['Box.%s' % field]
-for field in BoxSet.__dict__.keys():
-    if 'BoxSet.%s' % field in __pdoc__.keys():
-        del __pdoc__['BoxSet.%s' % field]
+# # Then, we have to add again the methods that we have
+# # overriden. See https://github.com/BurntSushi/pdoc/issues/15.
+# for field in Box.__dict__.keys():
+#     if 'Box.%s' % field in __pdoc__.keys():
+#         del __pdoc__['Box.%s' % field]
+# for field in BoxSet.__dict__.keys():
+#     if 'BoxSet.%s' % field in __pdoc__.keys():
+#         del __pdoc__['BoxSet.%s' % field]
         
