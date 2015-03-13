@@ -30,38 +30,38 @@
 #     are stored in the attribute `contents`.
 #     """
     
-    CARD_PADDING = Deck.CARD_PADDING
-    PIXELS_PER_SCROLL = 20
-    DEFAULT_SZ = (20, 20)
-    ZOOM_CHOICES = ["50%", "100%", "150%", "200%"]
-    VIEW_CH_DEF = "View"
-    VIEW_CHOICES = ("All", kindb.CONCEPT_LBL_LONG, kindb.ASSUMPTION_LBL_LONG, kindb.RESEARCH_LBL_LONG, kindb.FACT_LBL_LONG)
+    # CARD_PADDING = Deck.CARD_PADDING
+    # PIXELS_PER_SCROLL = 20
+    # DEFAULT_SZ = (20, 20)
+    # ZOOM_CHOICES = ["50%", "100%", "150%", "200%"]
+    # VIEW_CH_DEF = "View"
+    # VIEW_CHOICES = ("All", kindb.CONCEPT_LBL_LONG, kindb.ASSUMPTION_LBL_LONG, kindb.RESEARCH_LBL_LONG, kindb.FACT_LBL_LONG)
 
-    ViewEvent, EVT_VIEW = ne.NewEvent()
-    CancelViewEvent, EVT_CANCEL_VIEW = ne.NewEvent()
-    DeleteEvent, EVT_DEL_CARD = ne.NewEvent()
+    # ViewEvent, EVT_VIEW = ne.NewEvent()
+    # CancelViewEvent, EVT_CANCEL_VIEW = ne.NewEvent()
+    # DeleteEvent, EVT_DEL_CARD = ne.NewEvent()
 
-    def __init__(self, parent, pos=wx.DefaultPosition, size = wx.DefaultSize):
-        """Constructor.
+    # def __init__(self, parent, pos=wx.DefaultPosition, size = wx.DefaultSize):
+    #     """Constructor.
 
-        * `parent: ` the parent `BoxSet`.
-        * `pos: ` by default, is `wx.DefaultSize`.
-        * `size: ` by default, is `wx.DefaultSize`.
-        """
-        super(Box, self).__init__(parent, pos=pos, size=size)
+    #     * `parent: ` the parent `BoxSet`.
+    #     * `pos: ` by default, is `wx.DefaultSize`.
+    #     * `size: ` by default, is `wx.DefaultSize`.
+    #     """
+    #     super(Box, self).__init__(parent, pos=pos, size=size)
 
-        # members
-        self.contents = []
-        self.sidebars = []
-        self.scale = 1.0
-        self.content_size = wx.Size(size[0], size[1])
+    #     # members
+    #     self.contents = []
+    #     self.sidebars = []
+    #     self.scale = 1.0
+    #     self.content_size = wx.Size(size[0], size[1])
 
-        # GUI
-        self.ui_ready = False        
-        self.InitUI()
-        self.InitAccels()
+    #     # GUI
+    #     self.ui_ready = False        
+    #     self.InitUI()
+    #     self.InitAccels()
 
-        # bindings
+    #     # bindings
 
         
     ### Behavior functions
@@ -552,157 +552,157 @@
 
 
 
-######################
-# BoxSet class
-######################            
+# ######################
+# # BoxSet class
+# ######################            
 
-class BoxSet(wx.Notebook):
-    """
-    A `BoxSet` holds various `Box`es, and is the equivalent of a file at
-    application level: every `BoxSet` is stored in one file and every file loads
-    one `BoxSet`. It is implemented as a `wx.Notebook`, showing every `Box`as
-    a "page".
-    """
+# class BoxSet(wx.Notebook):
+#     """
+#     A `BoxSet` holds various `Box`es, and is the equivalent of a file at
+#     application level: every `BoxSet` is stored in one file and every file loads
+#     one `BoxSet`. It is implemented as a `wx.Notebook`, showing every `Box`as
+#     a "page".
+#     """
 
-    NewBoxEvent, EVT_BK_NEW_BOX = ne.NewEvent()
+#     NewBoxEvent, EVT_BK_NEW_BOX = ne.NewEvent()
 
-    def __init__(self, parent, pos=wx.DefaultPosition, size=wx.DefaultSize):
-        """Constructor.
+#     def __init__(self, parent, pos=wx.DefaultPosition, size=wx.DefaultSize):
+#         """Constructor.
 
-        * `parent: ` the parent `ThreePyFiveFrame`.
-        * `pos: ` by default, is `wx.DefaultSize`.
-        * `size: ` by default, is `wx.DefaultSize`.
-        """
-        super(BoxSet, self).__init__(parent, pos=pos, size=size)
-        self.InitMenu()
-
-        
-    ### Behavior functions
-
-    def GetCurrentBox(self):
-        """Get the `Box` currently in view.
-
-        `returns: ` a `Box`.
-        """
-        return self.GetCurrentPage()
-
-    def NewBox(self):
-        """Creates a new `Box`, by asking the user for the `Box` name.
-
-        `returns: ` `True` if a new `Box` was succesfully created.
-        """
-        dlg = wx.TextEntryDialog(self, "New box title: ")
-        if dlg.ShowModal() == wx.ID_OK:
-            pg = Box(self)
-            self.AddBox(pg, dlg.GetValue(), select=True)
-            pg.SetFocus()
-            return True
-        else:
-            return False
-
-    def AddBox(self, box, text, select=False, imageId=wx.Notebook.NO_IMAGE):
-        """Overridden from `wx.Notebook`. Raises the `Bool.EVT_NB_NEW_BOX` event."""
-        super(BoxSet, self).AddPage(box, text, select, imageId)
-        
-        event = self.NewBoxEvent(id=wx.ID_ANY, box=box, title=text)
-        event.SetEventObject(self)
-        self.GetEventHandler().ProcessEvent(event)
+#         * `parent: ` the parent `ThreePyFiveFrame`.
+#         * `pos: ` by default, is `wx.DefaultSize`.
+#         * `size: ` by default, is `wx.DefaultSize`.
+#         """
+#         super(BoxSet, self).__init__(parent, pos=pos, size=size)
+#         self.InitMenu()
 
         
-    ### Auxiliary functions
+#     ### Behavior functions
 
-    def InitMenu(self):
-        """Initialize this `BoxSet`'s context menu."""
-        # make menu items
-        menu = wx.Menu()
-        self.Bind(wx.EVT_RIGHT_DOWN, self.OnRightDown)
+#     def GetCurrentBox(self):
+#         """Get the `Box` currently in view.
+
+#         `returns: ` a `Box`.
+#         """
+#         return self.GetCurrentPage()
+
+#     def NewBox(self):
+#         """Creates a new `Box`, by asking the user for the `Box` name.
+
+#         `returns: ` `True` if a new `Box` was succesfully created.
+#         """
+#         dlg = wx.TextEntryDialog(self, "New box title: ")
+#         if dlg.ShowModal() == wx.ID_OK:
+#             pg = Box(self)
+#             self.AddBox(pg, dlg.GetValue(), select=True)
+#             pg.SetFocus()
+#             return True
+#         else:
+#             return False
+
+#     def AddBox(self, box, text, select=False, imageId=wx.Notebook.NO_IMAGE):
+#         """Overridden from `wx.Notebook`. Raises the `Bool.EVT_NB_NEW_BOX` event."""
+#         super(BoxSet, self).AddPage(box, text, select, imageId)
         
-        # change box name
-        name = wx.MenuItem(menu, wx.ID_ANY, "Change current box name")
-        self.Bind(wx.EVT_MENU, self.OnNameChange, name)
+#         event = self.NewBoxEvent(id=wx.ID_ANY, box=box, title=text)
+#         event.SetEventObject(self)
+#         self.GetEventHandler().ProcessEvent(event)
 
-        # box close
-        close = wx.MenuItem(menu, wx.ID_CLOSE, "Close box")
-        self.Bind(wx.EVT_MENU, self.OnClose, close)
-
-        # box ordering
-        pg_forward = wx.MenuItem(menu, wx.ID_ANY, "Move box forward")
-        self.Bind(wx.EVT_MENU, self.OnBoxForward, pg_forward)
-
-        # setup (order matters)
-        menu.AppendItem(name)
-        menu.AppendItem(pg_forward)
-        menu.AppendItem(close)
-
-        # setup accelerators        
-        accels = []
-        accels.append(wx.AcceleratorEntry(wx.ACCEL_CTRL, ord("W"), close.GetId()))
-
-        self.SetAcceleratorTable(wx.AcceleratorTable(accels))
-        self.close_item = close
-        self.menu = menu
         
-    def Dump(self):
-        """Return a `dict` holding all this `BoxSet`'s data.
+#     ### Auxiliary functions
+
+#     def InitMenu(self):
+#         """Initialize this `BoxSet`'s context menu."""
+#         # make menu items
+#         menu = wx.Menu()
+#         self.Bind(wx.EVT_RIGHT_DOWN, self.OnRightDown)
         
-        `returns: ` a `dict` of the form `{"box title 1": data1, "box title 2": data2, ...}`,
-        where `data*` are the objects returned by each `Box`'s `Dump`.
-        """
-        di = {}
-        for i in range(self.GetPageCount()):
-            pg = self.GetPage(i)
-            di[self.GetPageText(i)] = pg.Dump()
-        return di
+#         # change box name
+#         name = wx.MenuItem(menu, wx.ID_ANY, "Change current box name")
+#         self.Bind(wx.EVT_MENU, self.OnNameChange, name)
 
-    def Load(self, di):
-        """Read data from a `dict` and load it into this `BoxSet` for displaying.
+#         # box close
+#         close = wx.MenuItem(menu, wx.ID_CLOSE, "Close box")
+#         self.Bind(wx.EVT_MENU, self.OnClose, close)
 
-        * `di: ` must be a `dict`in the format returned by `Dump`.
-        """
-        for title, box in di.iteritems():
-            pg = Box(self)
-            pg.Hide()        # hide while all data is loaded
-            pg.Load(box)
-            pg.Show()        # then show everything at the same time
-            self.AddBox(pg, title, select=False)
-        self.SetSelection(0)
+#         # box ordering
+#         pg_forward = wx.MenuItem(menu, wx.ID_ANY, "Move box forward")
+#         self.Bind(wx.EVT_MENU, self.OnBoxForward, pg_forward)
 
+#         # setup (order matters)
+#         menu.AppendItem(name)
+#         menu.AppendItem(pg_forward)
+#         menu.AppendItem(close)
 
-    ### Callbacks
+#         # setup accelerators        
+#         accels = []
+#         accels.append(wx.AcceleratorEntry(wx.ACCEL_CTRL, ord("W"), close.GetId()))
 
-    def OnBoxForward(self, ev):
-        """Listens to `wx.EVT_MENU` from "Move box forward" from the context menu."""
-        # if we're already on the last box, don't do anything
-        index = self.GetSelection()
-        if index == self.GetPageCount()-1:
-            return
+#         self.SetAcceleratorTable(wx.AcceleratorTable(accels))
+#         self.close_item = close
+#         self.menu = menu
         
-        pg = self.GetCurrentPage()
-        print pg
-        self.DeletePage(index)
-        print pg
-        self.InsertPage(index + 1, pg, self.GetPageText(index), select=True)
-        print "OnBoxForward: ", pg
+#     def Dump(self):
+#         """Return a `dict` holding all this `BoxSet`'s data.
+        
+#         `returns: ` a `dict` of the form `{"box title 1": data1, "box title 2": data2, ...}`,
+#         where `data*` are the objects returned by each `Box`'s `Dump`.
+#         """
+#         di = {}
+#         for i in range(self.GetPageCount()):
+#             pg = self.GetPage(i)
+#             di[self.GetPageText(i)] = pg.Dump()
+#         return di
 
-    def OnClose(self, ev):
-        """Listens to `wx.EVT_MENU` from "Close box" from the context menu."""
-        cur = self.GetSelection()
-        title = self.GetPageText(cur)
-        dlg = wx.MessageDialog(self, "Are you sure you want to delete " + title + " box?", style=wx.YES_NO)
-        if dlg.ShowModal() == wx.ID_YES:
-            self.DeletePage(cur)
+#     def Load(self, di):
+#         """Read data from a `dict` and load it into this `BoxSet` for displaying.
 
-    def OnNameChange(self, ev):
-        """Listens to `wx.EVT_MENU` from "Change current box name" from the context menu."""
-        dlg = wx.TextEntryDialog(self, "New box title: ")
-        if dlg.ShowModal() == wx.ID_OK:
-            cur = self.GetSelection()
-            self.SetPageText(cur, dlg.GetValue())            
+#         * `di: ` must be a `dict`in the format returned by `Dump`.
+#         """
+#         for title, box in di.iteritems():
+#             pg = Box(self)
+#             pg.Hide()        # hide while all data is loaded
+#             pg.Load(box)
+#             pg.Show()        # then show everything at the same time
+#             self.AddBox(pg, title, select=False)
+#         self.SetSelection(0)
+
+
+#     ### Callbacks
+
+#     def OnBoxForward(self, ev):
+#         """Listens to `wx.EVT_MENU` from "Move box forward" from the context menu."""
+#         # if we're already on the last box, don't do anything
+#         index = self.GetSelection()
+#         if index == self.GetPageCount()-1:
+#             return
+        
+#         pg = self.GetCurrentPage()
+#         print pg
+#         self.DeletePage(index)
+#         print pg
+#         self.InsertPage(index + 1, pg, self.GetPageText(index), select=True)
+#         print "OnBoxForward: ", pg
+
+#     def OnClose(self, ev):
+#         """Listens to `wx.EVT_MENU` from "Close box" from the context menu."""
+#         cur = self.GetSelection()
+#         title = self.GetPageText(cur)
+#         dlg = wx.MessageDialog(self, "Are you sure you want to delete " + title + " box?", style=wx.YES_NO)
+#         if dlg.ShowModal() == wx.ID_YES:
+#             self.DeletePage(cur)
+
+#     def OnNameChange(self, ev):
+#         """Listens to `wx.EVT_MENU` from "Change current box name" from the context menu."""
+#         dlg = wx.TextEntryDialog(self, "New box title: ")
+#         if dlg.ShowModal() == wx.ID_OK:
+#             cur = self.GetSelection()
+#             self.SetPageText(cur, dlg.GetValue())            
             
-    def OnRightDown(self, ev):
-        """Listens to `wx.wx.EVT_RIGHT_DOWN`."""
-        self.menu_position = ev.GetPosition()
-        self.PopupMenu(self.menu, ev.GetPosition())
+#     def OnRightDown(self, ev):
+#         """Listens to `wx.wx.EVT_RIGHT_DOWN`."""
+#         self.menu_position = ev.GetPosition()
+#         self.PopupMenu(self.menu, ev.GetPosition())
 
 
         
