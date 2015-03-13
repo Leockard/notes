@@ -377,7 +377,6 @@ class DeckView(wxutils.AutoSize):
 
     def _on_pop_card(self, val):
         self.RemoveCard(val)
-        ev.Skip()
 
     # def _on_content_kind(self, val):
     #     card = ev.GetEventObject()
