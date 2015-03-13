@@ -303,8 +303,10 @@ class DeckView(wxutils.AutoSize):
         step = bd.GetScrollPixelsPerUnit()
         self.SetScrollRate(step[0] / self._factor, step[1] / self._factor)
 
-        # deck.Bind(Deck.EVT_NEW_CARD, self.OnNewCard)
         bd.Bind(wx.EVT_SIZE, self._on_board_size)
+
+        py5.subscribeList("cards", self._on_new_card, self._on_pop_card, bd.Deck)
+        # deck.Bind(Deck.EVT_NEW_CARD, self.OnNewCard)
         # deck.Bind(wx.EVT_SCROLLWIN, self.OnDeckScroll)
         
         self._board = bd
@@ -321,11 +323,11 @@ class DeckView(wxutils.AutoSize):
 
         * `card: ` a `CardWin`.
         """
-        r = wx.Rect(*[i / self.factor for i in card.Rect])
-        mini = MiniCard(self, pos=(r.left, r.top), size=(r.width, r.height))
+        r = wx.Rect(*[i / self._factor for i in card.rect])
+        mini = DeckView.MiniCard(self, pos=(r.left, r.top), size=(r.width, r.height))
 
-        if isinstance(win, ContentWin):
-            mini.BackgroundColour = card.BackgroundColour
+        # if isinstance(card, Content):
+        #     mini.BackgroundColour = card.BackgroundColour
 
         # card.Bind(Card.EVT_DELETE, self.OnDeleteCard)
         # if isinstance(card, ContentWin):
@@ -354,7 +356,8 @@ class DeckView(wxutils.AutoSize):
 
     def _on_show(self, ev):
         """Listens to `wx.EVT_SHOW`."""
-        self.AutoPosition()
+        if ev.IsShown():
+            self.AutoPosition()
 
     def _on_board_scroll(self, ev):
         """Listens to `wx.EVT_SCROLLWIN` from the underlying `Board`."""
@@ -366,17 +369,17 @@ class DeckView(wxutils.AutoSize):
         self.SetSize([i / self._factor + 30 for i in self.Board.Size])
         self.AutoPosition()
 
-    # def _on_new_card(self, ev):
-    #     """Listens to `Deck.EVT_NEW_CARD`."""
-    #     self.AddCard(ev.GetEventObject())
+        
+    ### subscribers
+    
+    def _on_new_card(self, val):
+        self.AddCard(val)
 
-    # def _on_delete_card(self, ev):
-    #     """Listens to `Card.EVT_DELETE` from each `Card` on the `Deck`."""
-    #     self.RemoveCard(ev.GetEventObject())
-    #     ev.Skip()
+    def _on_pop_card(self, val):
+        self.RemoveCard(val)
+        ev.Skip()
 
-    # def _on_content_kind(self, ev):
-    #     """Listens to `Content.EVT_CONT_KIND` events from each `Content`."""
+    # def _on_content_kind(self, val):
     #     card = ev.GetEventObject()
     #     self.cards[card].SetBackgroundColour(card.GetBackgroundColour())
 
