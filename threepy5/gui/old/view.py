@@ -10,129 +10,129 @@
 # import wxutils
 
 
-######################
-# DeckView Class
-######################
+# ######################
+# # DeckView Class
+# ######################
 
-class DeckView(wxutils.AutoSize):
-    """Displays a "minimap" of the current `Deck`. Uses `MiniCard` to represent a `Card` on the `Deck`."""
+# class DeckView(wxutils.AutoSize):
+#     """Displays a "minimap" of the current `Deck`. Uses `MiniCard` to represent a `Card` on the `Deck`."""
 
-    DEFAULT_FACTOR  = 5
-    BACKGROUND_CL   = (255, 255, 255, 255)
-    DEFAULT_MINI_CL = (220, 218, 213, 255)
+#     DEFAULT_FACTOR  = 5
+#     BACKGROUND_CL   = (255, 255, 255, 255)
+#     DEFAULT_MINI_CL = (220, 218, 213, 255)
     
-    def __init__(self, parent, deck=None, pos=wx.DefaultPosition, size=wx.DefaultSize):
-        """Constructor.
+#     def __init__(self, parent, deck=None, pos=wx.DefaultPosition, size=wx.DefaultSize):
+#         """Constructor.
 
-        * `parent: ` the parent `Box`.
-        * `deck: ` the `Deck` we are viewing.
-        * `pos: ` by default, is `wx.DefaultSize`.
-        * `size: ` by default, is `wx.DefaultSize`.
-        """
-        super(DeckView, self).__init__(parent, pos=pos, size=size)
+#         * `parent: ` the parent `Box`.
+#         * `deck: ` the `Deck` we are viewing.
+#         * `pos: ` by default, is `wx.DefaultSize`.
+#         * `size: ` by default, is `wx.DefaultSize`.
+#         """
+#         super(DeckView, self).__init__(parent, pos=pos, size=size)
 
-        # members        
-        self.factor = DeckView.DEFAULT_FACTOR
-        self.cards = {}
-        self.SetBackgroundColour(self.BACKGROUND_CL)
-        self.SetDeck(deck)
+#         # members        
+#         self.factor = DeckView.DEFAULT_FACTOR
+#         self.cards = {}
+#         self.SetBackgroundColour(self.BACKGROUND_CL)
+#         self.SetDeck(deck)
 
-        # bindings
-        self.Bind(wx.EVT_SHOW, self.OnShow)
+#         # bindings
+#         self.Bind(wx.EVT_SHOW, self.OnShow)
 
 
-    ## Behavior functions
+#     ## Behavior functions
 
-    def Clear(self):
-        """Delete all `MiniCard`s from this view."""
-        self.cards = {}
+#     def Clear(self):
+#         """Delete all `MiniCard`s from this view."""
+#         self.cards = {}
 
-    def SetDeck(self, deck):
-        """Sets the `Deck` we are going to view.
+#     def SetDeck(self, deck):
+#         """Sets the `Deck` we are going to view.
         
-        * `deck: ` a `Deck`.
-        """
-        self.Clear()
-        for c in deck.GetCards():
-            self.AddCard(c)
+#         * `deck: ` a `Deck`.
+#         """
+#         self.Clear()
+#         for c in deck.GetCards():
+#             self.AddCard(c)
 
-        # set size, fixed for scale/zoom
-        sz = [i / self.factor for i in deck.GetSize()]
-        self.SetSize(sz)
-        self.UpdateContentSize(deck.content_sz)
+#         # set size, fixed for scale/zoom
+#         sz = [i / self.factor for i in deck.GetSize()]
+#         self.SetSize(sz)
+#         self.UpdateContentSize(deck.content_sz)
 
-        step = deck.GetScrollPixelsPerUnit()
-        self.SetScrollRate(step[0] / self.factor, step[1] / self.factor)
+#         step = deck.GetScrollPixelsPerUnit()
+#         self.SetScrollRate(step[0] / self.factor, step[1] / self.factor)
 
-        deck.Bind(Deck.EVT_NEW_CARD, self.OnNewCard)
-        deck.Bind(wx.EVT_SIZE, self.OnDeckSize)
-        deck.Bind(wx.EVT_SCROLLWIN, self.OnDeckScroll)
+#         deck.Bind(Deck.EVT_NEW_CARD, self.OnNewCard)
+#         deck.Bind(wx.EVT_SIZE, self.OnDeckSize)
+#         deck.Bind(wx.EVT_SCROLLWIN, self.OnDeckScroll)
         
-        self.deck = deck
+#         self.deck = deck
     
-    def AddCard(self, card):
-        """Adds a new `MiniCard`."""
-        r = wx.Rect(*[i / self.factor for i in card.GetRect()])
-        mini = MiniCard(self, pos=(r.left, r.top), size=(r.width, r.height))
+#     def AddCard(self, card):
+#         """Adds a new `MiniCard`."""
+#         r = wx.Rect(*[i / self.factor for i in card.GetRect()])
+#         mini = MiniCard(self, pos=(r.left, r.top), size=(r.width, r.height))
 
-        if isinstance(card, Content):
-            mini.SetBackgroundColour(card.GetBackgroundColour())
-        else:
-            mini.SetBackgroundColour(self.DEFAULT_MINI_CL)
+#         if isinstance(card, Content):
+#             mini.SetBackgroundColour(card.GetBackgroundColour())
+#         else:
+#             mini.SetBackgroundColour(self.DEFAULT_MINI_CL)
 
-        card.Bind(Card.EVT_DELETE, self.OnDeleteCard)
-        if isinstance(card, Content):
-            card.Bind(Content.EVT_CONT_KIND, self.OnContentKind)
+#         card.Bind(Card.EVT_DELETE, self.OnDeleteCard)
+#         if isinstance(card, Content):
+#             card.Bind(Content.EVT_CONT_KIND, self.OnContentKind)
 
-        # retain a reference to the original, for deleting
-        self.cards[card] = mini
+#         # retain a reference to the original, for deleting
+#         self.cards[card] = mini
 
-    def RemoveCard(self, card):
-        """Remove a `MiniCard`."""
-        if card in self.cards.keys():
-            mini = self.cards[card]
-            mini.Hide()
-            mini.Destroy()
-            del self.cards[card]
+#     def RemoveCard(self, card):
+#         """Remove a `MiniCard`."""
+#         if card in self.cards.keys():
+#             mini = self.cards[card]
+#             mini.Hide()
+#             mini.Destroy()
+#             del self.cards[card]
 
-    def SetPosition(self):
-        """Calculates position relative to the `Deck`."""
-        w, h = self.GetSize()
-        rect = self.deck.GetClientRect()
-        pos = (rect.right - w, rect.bottom - h)
-        self.Move(pos)
+#     def SetPosition(self):
+#         """Calculates position relative to the `Deck`."""
+#         w, h = self.GetSize()
+#         rect = self.deck.GetClientRect()
+#         pos = (rect.right - w, rect.bottom - h)
+#         self.Move(pos)
 
 
-    ### Callbacks
+#     ### Callbacks
 
-    def OnShow(self, ev):
-        """Listens to `wx.EVT_SHOW`."""
-        self.SetPosition()
+#     def OnShow(self, ev):
+#         """Listens to `wx.EVT_SHOW`."""
+#         self.SetPosition()
 
-    def OnDeckScroll(self, ev):
-        """Listens to `wx.EVT_SCROLLWIN` from the underlying `Deck`."""
-        view = ev.GetEventObject().GetViewStart()
-        self.Scroll(view.x / self.factor, view.y / self.factor)
+#     def OnDeckScroll(self, ev):
+#         """Listens to `wx.EVT_SCROLLWIN` from the underlying `Deck`."""
+#         view = ev.GetEventObject().GetViewStart()
+#         self.Scroll(view.x / self.factor, view.y / self.factor)
 
-    def OnDeckSize(self, ev):
-        """Listens to `wx.EVT_SIZE` from the underlying `Deck`."""
-        self.SetSize([i / self.factor + 30 for i in self.deck.GetSize()])
-        self.SetPosition()
+#     def OnDeckSize(self, ev):
+#         """Listens to `wx.EVT_SIZE` from the underlying `Deck`."""
+#         self.SetSize([i / self.factor + 30 for i in self.deck.GetSize()])
+#         self.SetPosition()
 
-    def OnNewCard(self, ev):
-        """Listens to `Deck.EVT_NEW_CARD`."""
-        self.AddCard(ev.GetEventObject())
+#     def OnNewCard(self, ev):
+#         """Listens to `Deck.EVT_NEW_CARD`."""
+#         self.AddCard(ev.GetEventObject())
 
-    def OnDeleteCard(self, ev):
-        """Listens to `Card.EVT_DELETE` from each `Card` on the `Deck`."""
-        self.RemoveCard(ev.GetEventObject())
-        # dont' consume it! Deck also needs it
-        ev.Skip()
+#     def OnDeleteCard(self, ev):
+#         """Listens to `Card.EVT_DELETE` from each `Card` on the `Deck`."""
+#         self.RemoveCard(ev.GetEventObject())
+#         # dont' consume it! Deck also needs it
+#         ev.Skip()
 
-    def OnContentKind(self, ev):
-        """Listens to `Content.EVT_CONT_KIND` events from each `Content`."""
-        card = ev.GetEventObject()
-        self.cards[card].SetBackgroundColour(card.GetBackgroundColour())
+#     def OnContentKind(self, ev):
+#         """Listens to `Content.EVT_CONT_KIND` events from each `Content`."""
+#         card = ev.GetEventObject()
+#         self.cards[card].SetBackgroundColour(card.GetBackgroundColour())
             
 
 
@@ -234,23 +234,23 @@ class DeckView(wxutils.AutoSize):
     
 
 
-######################
-# MiniCard Class
-######################        
+# ######################
+# # MiniCard Class
+# ######################        
 
-class MiniCard(wx.Window):
-    """The little cards shown in a `DeckView`"""
+# class MiniCard(wx.Window):
+#     """The little cards shown in a `DeckView`"""
     
-    def __init__(self, parent, pos=wx.DefaultPosition, size=wx.DefaultSize):
-        """Constructor.
+#     def __init__(self, parent, pos=wx.DefaultPosition, size=wx.DefaultSize):
+#         """Constructor.
 
-        * `parent: ` the parent `DeckView`.
-        * `pos: ` by default, is `wx.DefaultSize`.
-        * `size: ` by default, is `wx.DefaultSize`.
-        """
-        super(MiniCard, self).__init__(parent, pos=pos, size=size)
+#         * `parent: ` the parent `DeckView`.
+#         * `pos: ` by default, is `wx.DefaultSize`.
+#         * `size: ` by default, is `wx.DefaultSize`.
+#         """
+#         super(MiniCard, self).__init__(parent, pos=pos, size=size)
         
-        self.SetBackgroundColour("#FFFFFF")
+#         self.SetBackgroundColour("#FFFFFF")
 
 
 
