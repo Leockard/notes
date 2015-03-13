@@ -259,7 +259,31 @@ class DeckView(wxutils.AutoSize):
             * `size: ` by default, is `wx.DefaultSize`.
             """
             super(DeckView.MiniCard, self).__init__(parent, pos=pos, size=size)
-            self.BackgroundColour = (220, 218, 213, 255)
+            self.BackgroundColour = self.DEFAULT_CL
+
+            
+    #########################
+    # ContentMiniCard Class
+    #########################     
+    
+    class ContentMiniCard(MiniCard):
+        """A `MiniCard` specialized in `Content`s."""
+        COLOURS = board.ContentWin.COLOURS
+        
+        def __init__(self, parent, card, pos=wx.DefaultPosition, size=wx.DefaultSize):
+            """Constructor.
+    
+            * `parent: ` the parent `DeckView`.
+            * `pos: ` by default, is `wx.DefaultSize`.
+            * `size: ` by default, is `wx.DefaultSize`.
+            """
+            super(DeckView.ContentMiniCard, self).__init__(parent, pos=pos, size=size)
+            self._card = card
+            py5.subscribe("kind", self._on_update_kind, card)
+
+        def _on_update_kind(self, val):
+            self.BackgroundColour = self.COLOURS[val]["strong"]
+            
         
 
     #############
@@ -324,14 +348,12 @@ class DeckView(wxutils.AutoSize):
         * `card: ` a `CardWin`.
         """
         r = wx.Rect(*[i / self._factor for i in card.rect])
-        mini = DeckView.MiniCard(self, pos=(r.left, r.top), size=(r.width, r.height))
-
-        # if isinstance(card, Content):
-        #     mini.BackgroundColour = card.BackgroundColour
-
-        # card.Bind(Card.EVT_DELETE, self.OnDeleteCard)
-        # if isinstance(card, ContentWin):
-        #     card.Bind(Content.EVT_CONT_KIND, self.OnContentKind)
+        pos = (r.left, r.top)
+        size = (r.width, r.height)
+        if isinstance(card, py5.Content):
+            mini = DeckView.ContentMiniCard(self, card, pos=pos, size=size)
+        else:
+            mini = DeckView.MiniCard(self, pos=pos, size=size)
 
         # retain a reference to the original, for deleting
         self._cards[card] = mini
@@ -377,10 +399,6 @@ class DeckView(wxutils.AutoSize):
 
     def _on_pop_card(self, val):
         self.RemoveCard(val)
-
-    # def _on_content_kind(self, val):
-    #     card = ev.GetEventObject()
-    #     self.cards[card].SetBackgroundColour(card.GetBackgroundColour())
 
         
                         
