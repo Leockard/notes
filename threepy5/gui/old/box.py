@@ -88,48 +88,48 @@
     #     self.Layout()
     #     self.GetTopLevelParent().SetFocus()
 
-    def ViewCards(self, cards):
-        """Set up the children to show the `CardView`.
-        Raises `Box.EVT_VIEW`.
+    # def ViewCards(self, cards):
+    #     """Set up the children to show the `CardView`.
+    #     Raises `Box.EVT_VIEW`.
 
-        * `cards: ` a list of `Card`s.
-        """
-        toview = cards[:]
+    #     * `cards: ` a list of `Card`s.
+    #     """
+    #     toview = cards[:]
 
-        # make sure to first SetCards() and then Deactivate()
-        self.ShowContent(self.view_card)
-        self.view_card.SetCards(toview)
+    #     # make sure to first SetCards() and then Deactivate()
+    #     self.ShowContent(self.view_card)
+    #     self.view_card.SetCards(toview)
 
-        # clean up
-        self.deck.UnselectAll()
-        self.deck.selec.Deactivate()
-        self.view.SetLabel("Save and return")
+    #     # clean up
+    #     self.deck.UnselectAll()
+    #     self.deck.selec.Deactivate()
+    #     self.view.SetLabel("Save and return")
         
-        # raise the event
-        number = len(toview)
-        title = ""
-        if number == 1:
-            title = toview[0].GetTitle()
-        event = self.ViewEvent(id=wx.ID_ANY, number=number, title=title)
-        event.SetEventObject(self)
-        self.GetEventHandler().ProcessEvent(event)
+    #     # raise the event
+    #     number = len(toview)
+    #     title = ""
+    #     if number == 1:
+    #         title = toview[0].GetTitle()
+    #     event = self.ViewEvent(id=wx.ID_ANY, number=number, title=title)
+    #     event.SetEventObject(self)
+    #     self.GetEventHandler().ProcessEvent(event)
 
-    def CancelView(self):
-        """Cleans up after a `Card` viewing. Raises `Box.EVT_CANCEL_VIEW`."""
-        # raise the event
-        cards = self.view_card.GetCards()
-        number = len(cards)
-        if number == 1:
-            title = cards[0].GetTitle()
-        else:
-            title = ""
-        event = self.CancelViewEvent(id=wx.ID_ANY, number=number, title=title)
-        event.SetEventObject(self)
-        self.GetEventHandler().ProcessEvent(event)
+    # def CancelView(self):
+    #     """Cleans up after a `Card` viewing. Raises `Box.EVT_CANCEL_VIEW`."""
+    #     # raise the event
+    #     cards = self.view_card.GetCards()
+    #     number = len(cards)
+    #     if number == 1:
+    #         title = cards[0].GetTitle()
+    #     else:
+    #         title = ""
+    #     event = self.CancelViewEvent(id=wx.ID_ANY, number=number, title=title)
+    #     event.SetEventObject(self)
+    #     self.GetEventHandler().ProcessEvent(event)
 
-        # clean up
-        self.ShowDeck()
-        self.view.SetLabel("View")
+    #     # clean up
+    #     self.ShowDeck()
+    #     self.view.SetLabel("View")
 
     # def ShowDeck(self):
     #     """Show the `Deck` in the `content_sizer`."""
@@ -163,17 +163,17 @@
     #     if mp.IsShown(): self.HideMinimap()
     #     else:            self.ShowMinimap()
 
-    def ShowButtonBar(self, show=True):
-        """Show the button bar at the bottom of the `Box`."""
-        self.GetSizer().Show(self.GetButtonBarSizer(), show=show, recursive=True)
-        self.Layout()
+    # def ShowButtonBar(self, show=True):
+    #     """Show the button bar at the bottom of the `Box`."""
+    #     self.GetSizer().Show(self.GetButtonBarSizer(), show=show, recursive=True)
+    #     self.Layout()
 
-    def GetButtonBarSizer(self):
-        """Get the button bar sizer.
+    # def GetButtonBarSizer(self):
+    #     """Get the button bar sizer.
 
-        `returns: ` a `wx.Sizer`.
-        """
-        return self.buttonbar
+    #     `returns: ` a `wx.Sizer`.
+    #     """
+    #     return self.buttonbar
 
     # def GetDeckBmp(self):
     #     """Get the currently visible part of the `Deck` as a wx.Bitmap.
@@ -210,23 +210,23 @@
     #     self.canvas.SetOffset(self.deck.GetViewStartPixels())
     #     self.canvas.SetBackground(self.GetDeckBmp())
 
-    def ShowSidebar(self, show=True):
-        """Show/Hide the sidebar.
+    # def ShowSidebar(self, show=True):
+    #     """Show/Hide the sidebar.
 
-        * `show: ` if `False`, hide the sidebar.
-        """
-        self.sidebar_sizer.Clear()
-        for c in self.sidebars: c.Hide()
+    #     * `show: ` if `False`, hide the sidebar.
+    #     """
+    #     self.sidebar_sizer.Clear()
+    #     for c in self.sidebars: c.Hide()
 
-        if show:
-            self.sidebar_sizer.Add(self.tags_sb, proportion=1, flag=wx.EXPAND, border=1)            
-            self.tags_sb.Show()
+    #     if show:
+    #         self.sidebar_sizer.Add(self.tags_sb, proportion=1, flag=wx.EXPAND, border=1)            
+    #         self.tags_sb.Show()
             
-        self.Layout()
+    #     self.Layout()
 
-    def HideSidebar(self):
-        """Same as ShowSidebar(False)."""
-        self.ShowSidebar(False)
+    # def HideSidebar(self):
+    #     """Same as ShowSidebar(False)."""
+    #     self.ShowSidebar(False)
 
                         
     ### Auxiliary functions
@@ -274,20 +274,20 @@
     #     self.deck.Load(di["deck"])
     #     self.canvas.Load(di["canvas"])
 
-    def CleanUpUI(self):
-        """Helper function for `InitUI`. Resets all control members.
+    # def CleanUpUI(self):
+    #     """Helper function for `InitUI`. Resets all control members.
 
-        `returns: ` the previous `Deck` size.
-        """
-        sz = self.deck.GetParent().GetSize()
-        self.deck.Hide() # important!
-        self.deck = None
-        self.deck_box = None
-        self.bmp_ctrl = None
-        self.bmp_box = None
-        self.SetSizer(None)
+    #     `returns: ` the previous `Deck` size.
+    #     """
+    #     sz = self.deck.GetParent().GetSize()
+    #     self.deck.Hide() # important!
+    #     self.deck = None
+    #     self.deck_box = None
+    #     self.bmp_ctrl = None
+    #     self.bmp_box = None
+    #     self.SetSizer(None)
 
-        return sz
+    #     return sz
     
     # def InitUI(self):
     #     """Initialize this `Box`'s GUI and controls."""
@@ -374,26 +374,26 @@
     #     self.canvas.Hide()
     #     self.contents.append(cv)
 
-    def InitView(self, size=wx.DefaultSize):
-        """Initializes `CardView`."""
-        vw = view.CardView(self, size=size)
-        self.view_card = vw
-        self.view_card.Hide()
-        self.contents.append(vw)
+    # def InitView(self, size=wx.DefaultSize):
+    #     """Initializes `CardView`."""
+    #     vw = view.CardView(self, size=size)
+    #     self.view_card = vw
+    #     self.view_card.Hide()
+    #     self.contents.append(vw)
 
-        # bindings
-        vw.Bind(card.Card.EVT_CANCEL_VIEW, self.OnCancelView)
+    #     # bindings
+    #     vw.Bind(card.Card.EVT_CANCEL_VIEW, self.OnCancelView)
 
-    def InitSidebar(self, size=wx.DefaultSize):
-        """Initializes `TagView`."""
-        tg = view.TagView(self, self.deck)
-        self.tags_sb = tg
-        self.tags_sb.Hide()
-        # doesn't go in contents since it can be shown
-        # alongside deck and view
-        # self.contents.append(tg)
-        self.sidebar_sizer.Add(tg, proportion=1, flag=wx.EXPAND)
-        self.sidebars.append(tg)
+    # def InitSidebar(self, size=wx.DefaultSize):
+    #     """Initializes `TagView`."""
+    #     tg = view.TagView(self, self.deck)
+    #     self.tags_sb = tg
+    #     self.tags_sb.Hide()
+    #     # doesn't go in contents since it can be shown
+    #     # alongside deck and view
+    #     # self.contents.append(tg)
+    #     self.sidebar_sizer.Add(tg, proportion=1, flag=wx.EXPAND)
+    #     self.sidebars.append(tg)
 
     # def InitButtonBar(self):
     #     """Initializes the button bar."""
