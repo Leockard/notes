@@ -189,7 +189,6 @@ class EditText(ColouredText):
     called "first colour". The colour it has when it looks like a regular `wx.TextCtrl`
     is the "second colour". The second colour is usually whie.
     """
-                
     DEFAULT_SZ = (200, 20)
     DEFAULT_STYLE = wx.BORDER_NONE|wx.TE_RICH|wx.TE_PROCESS_ENTER|wx.TE_MULTILINE|wx.TE_NO_VSCROLL
     DEFAULT_FONT = (12, wx.SWISS, wx.ITALIC, wx.BOLD)
