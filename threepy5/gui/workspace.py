@@ -26,6 +26,7 @@ class Canvas(wxutils.AutoSize):
         super(Canvas, self).__init__(parent)
         self._init_UI()
         self.Bind(wx.EVT_SHOW, self._on_show)
+        self.Bind(wx.EVT_IDLE, self._on_idle)
 
 
     ### init methods
@@ -52,12 +53,18 @@ class Canvas(wxutils.AutoSize):
             self.ctrl._buffer = bmp
             self.FitToChildren()
 
+    def _save_lines(self):
+        self.Annotation.lines = self.ctrl.lines
+
             
     ### callbacks
 
     def _on_show(self, ev):
         if ev.IsShown():
             self.ctrl.DrawLines()
+
+    def _on_idle(self, ev):
+        self._save_lines()
 
 
                         
