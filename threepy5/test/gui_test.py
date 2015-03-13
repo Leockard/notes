@@ -514,6 +514,9 @@ class testAutoSize(unittest.TestCase):
 ### test coloured text
 ### test resize/rescale
 ### Workspace: switch board/canvas, ctrl+ / ctrl-, Workspace.Canvas.Annotation.lines (¿?)
+###            while canvas is shown, selection manager should be active (no control focused)
+###            and selection should be []
+### CardView: add, set, restore, init
 
 
 if __name__ == "__main__":
