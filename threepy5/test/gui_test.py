@@ -517,6 +517,7 @@ class testAutoSize(unittest.TestCase):
 ###            while canvas is shown, selection manager should be active (no control focused)
 ###            and selection should be []
 ### CardView: add, set, restore, init
+### DeckView: position, show/hide, Minicard position, ContentMini background colour
 
 
 if __name__ == "__main__":
