@@ -1911,18 +1911,13 @@ class Board(wxutils.AutoSize):
         
     ### subscribers
 
-    def _on_new_card(self, val, scroll=True):
+    def _on_new_card(self, val):
         win = globals()[val.__class__.__name__ + "Win"](self, card=val)
         win.Scale = self.Scale
 
         win.Bind(wx.EVT_LEFT_DOWN, self._on_card_left_down)
         for ch in win.Children:
             ch.Bind(wx.EVT_LEFT_DOWN, self._on_card_child_left_down)
-
-        # # make sure the new card is visible
-        # if scroll:
-        #     if not self.Rect.Contains(win.Rect.TopLeft) or not self.Rect.Contains(win.Rect.BottomRight):
-        #         self.ScrollToCard(win)
 
         self.Cards.append(win)
         self.FitToChildren(pad=self.Padding * 2)
