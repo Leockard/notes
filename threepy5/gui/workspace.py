@@ -9,6 +9,7 @@ import wxutils
 import board
 import threepy5.threepy5 as py5
 import threepy5.utils as utils
+import re
 
 
 ######################
@@ -159,6 +160,74 @@ class CardView(wx.Panel):
         event.SetEventObject(ev.GetEventObject())
         self.GetEventHandler().ProcessEvent(event)
 
+
+        
+######################
+# TagView Class
+######################        
+
+class TagView(wx.Panel):
+    """A sidebar that displays a `Content`'s tags."""
+
+    TAGS_REGEX = "^(\w+):(.*)$"
+    """Regex used to extract tags from a `Content`'s content text."""
+    
+    def __init__(self, parent):
+        """Constructor.
+
+        * `parent: ` the parent `Box`.
+        * `deck: ` the parent `Deck` of the `Card`s we are viewing.
+        """
+        super(TagView, self).__init__(parent)
+        self._init_UI()
+
+        self.Bind(wx.EVT_SHOW, self._on_show)
+
+
+    ### init methods
+
+    def _init_UI(self):
+        """Initialize this window's GUI and controls."""
+        box = wx.BoxSizer(wx.VERTICAL)
+        self.SetSizer(box)
+
+        txt = wx.TextCtrl(self, style=wx.TE_MULTILINE)
+        self.txt = txt        
+        box.Add(txt, proportion=1, flag=wx.ALL|wx.EXPAND, border=1)
+    
+
+    ### methods
+
+    def ParseTags(self, txt):
+        """Parses a string looking for tags.
+
+        * `txt: ` a string, the contents of a `Content`.
+
+        `returns: ` a string to display in the `TagView` view, representing the tags found in `text`.
+        """
+        string = ""
+        results = re.findall(self.TAGS_REGEX, txt, re.MULTILINE)
+        for tag, val in results:
+            string += tag + ":" + val
+            string += "\n\n"
+        return string
+
+    def ShowTags(self):
+        """Shows the `card`'s tags.
+
+        * `card: ` a `Content`, whose contents will be parsed.
+        """
+        win = wxutils.GetCardAncestor(self.FindFocus())
+        if win and isinstance(win, board.ContentWin):
+            self.txt.SetValue(self.ParseTags(win.Card.content))
+    
+
+    ### callbacks
+
+    def _on_show(self, ev):
+        if ev.IsShown():
+            self.ShowTags()
+
         
                         
 ######################
@@ -249,10 +318,6 @@ class Workspace(wx.Panel):
         self.Scale = 1.0
         """The current zoom scale."""
         
-        self._init_board()
-        self._init_canvas()
-        self._init_viewer()
-        # self._init_sidebar()        
         self._init_UI()
         self._init_accels()
         
@@ -260,6 +325,15 @@ class Workspace(wx.Panel):
 
         
     ### init methods
+
+    def _init_UI(self):
+        """Initialize this `Workspace`'s GUI and controls."""
+        self._init_board()
+        self._init_canvas()
+        self._init_viewer()
+        self._init_sidebar()
+        self._init_sizers()        
+        self._init_toolbar()
 
     def _init_board(self):
         bd = board.Board(self)
@@ -281,21 +355,30 @@ class Workspace(wx.Panel):
         self._contents.append(vw)
         self.CardViewer = vw
 
-    def _init_UI(self):
-        """Initialize this `Workspace`'s GUI and controls."""
-        self._init_sizers()        
-        self._init_toolbar()
+    def _init_sidebar(self):
+        sb = TagView(self)
+        sb.Hide()
+        self.TagViewer = sb
 
     def _init_sizers(self):
         # assumes all controls such as self.Board, self.Canvas, etc already exist
+
         work = wx.BoxSizer(wx.HORIZONTAL)
         work.Add(self.Board, proportion=1, flag=wx.EXPAND, border=0)
+        
+        side = wx.BoxSizer(wx.VERTICAL)
+        side.Add(self.TagViewer, proportion=1, flag=wx.EXPAND, border=0)
+
+        upper = wx.BoxSizer(wx.HORIZONTAL)
+        upper.Add(side, proportion=0, flag=wx.EXPAND, border=0)
+        upper.Add(work, proportion=1, flag=wx.EXPAND, border=0)
 
         main = wx.BoxSizer(wx.VERTICAL)
-        main.Add(work, proportion=1, flag=wx.EXPAND, border=0)
+        main.Add(upper, proportion=1, flag=wx.EXPAND, border=0)
         
         self.Sizer = main        
         self._working_sizer = work
+        self._sidebar_sizer = side
         
     def _init_toolbar(self):
         # assumes the panel's sizer is already set
@@ -335,6 +418,10 @@ class Workspace(wx.Panel):
         ctrli = wx.MenuItem(ghost, wx.ID_ANY, "ctrli")
         self.Bind(wx.EVT_MENU, self._on_ctrl_i, ctrli)
         accels.append(wx.AcceleratorEntry(wx.ACCEL_CTRL, ord("I"), ctrli.GetId()))
+
+        fn9 = wx.MenuItem(ghost, wx.ID_ANY, "F9")
+        self.Bind(wx.EVT_MENU, self._on_fn_9, fn9)
+        accels.append(wx.AcceleratorEntry(wx.ACCEL_NORMAL, wx.WXK_F9, fn9.GetId()))
 
         self.SetAcceleratorTable(wx.AcceleratorTable(accels))
         
@@ -405,6 +492,19 @@ class Workspace(wx.Panel):
     def CancelViewCard(self):
         self.CardViewer.Restore()
         self.WorkOn("Board")
+
+    def ToggleSidebar(self):
+        """Show/Hide the sidebar."""
+        self._sidebar_sizer.Clear()
+        
+        if not self.TagViewer.IsShown():
+            self._sidebar_sizer.Add(self.TagViewer, proportion=1, flag=wx.EXPAND, border=1)            
+            self.TagViewer.Show()
+        else:
+            self._sidebar_sizer.Clear()
+            self.TagViewer.Hide()
+            
+        self.Layout()
         
             
     ### callbacks
@@ -446,3 +546,7 @@ class Workspace(wx.Panel):
         if index > 0:
             new_scale = scales[index - 1]
             self.Zoom(new_scale)
+
+    def _on_fn_9(self, ev):
+        self.ToggleSidebar()
+
