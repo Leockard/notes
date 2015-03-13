@@ -77,13 +77,15 @@ class Workspace(wx.Panel):
     the code.
     """
 
+    ZOOM_SCALES = ["50%", "100%", "150%", "200%"]
+
     ############################
     # helper Class ZoomCombo
     ############################
 
     class ZoomCombo(wx.ComboBox):
         """The `wx.ComboBox` for choosing the zoom scale."""
-            
+
         ZOOM_CHOICES = ["50%", "100%", "150%", "200%"]
 
         def __init__(self, parent, choices=ZOOM_CHOICES, style=wx.TE_PROCESS_ENTER):
@@ -94,6 +96,13 @@ class Workspace(wx.Panel):
             self.Bind(wx.EVT_COMBOBOX, self._on_combo)
             self.Bind(wx.EVT_TEXT_ENTER, self._on_enter)
 
+
+        ### properties
+
+        @property
+        def Scale(self):
+            return self.GetScaleFromStr(self.Value)
+        
 
         ### methods
 
@@ -194,7 +203,8 @@ class Workspace(wx.Panel):
         togg = bar.AddLabelTool(wx.ID_ANY, "toggle", bitmap=getBMP(wx.ART_CLOSE), kind=wx.ITEM_NORMAL)
         self.Bind(wx.EVT_TOOL, self._on_toolbar_toggle, togg)
         
-        zoom = bar.AddControl(self.ZoomCombo(bar))
+        zoom = self.ZoomCombo(bar)
+        bar.AddControl(zoom)
 
         bar.Realize()
         self._bar = bar
@@ -207,6 +217,14 @@ class Workspace(wx.Panel):
         ctrle = wx.MenuItem(ghost, wx.ID_ANY, "ctrle")
         self.Bind(wx.EVT_MENU, self._on_ctrl_e, ctrle)
         accels.append(wx.AcceleratorEntry(wx.ACCEL_CTRL, ord("E"), ctrle.GetId()))
+
+        ctrlp = wx.MenuItem(ghost, wx.ID_ANY, "ctrlp")
+        self.Bind(wx.EVT_MENU, self._on_ctrl_plus, ctrlp)
+        accels.append(wx.AcceleratorEntry(wx.ACCEL_CTRL, ord("+"), ctrlp.GetId()))
+
+        ctrlm = wx.MenuItem(ghost, wx.ID_ANY, "ctrlm")
+        self.Bind(wx.EVT_MENU, self._on_ctrl_minus, ctrlm)
+        accels.append(wx.AcceleratorEntry(wx.ACCEL_CTRL, ord("-"), ctrlm.GetId()))
 
         self.SetAcceleratorTable(wx.AcceleratorTable(accels))
         
@@ -277,3 +295,27 @@ class Workspace(wx.Panel):
 
     def _on_ctrl_e(self, ev):
         self._toggle_board_canvas()
+
+    def _on_ctrl_plus(self, ev):
+        scales = [self.zoom.GetScaleFromStr(s) for s in self.ZOOM_SCALES]
+        cur_scale = self.zoom.Scale
+        if cur_scale not in scales:
+            scales.append(self.zoom.Scale)
+            scales.sort()
+        index = scales.index(cur_scale)
+
+        if index < len(scales) - 1:
+            new_scale = scales[index + 1]
+            self.Zoom(new_scale)
+
+    def _on_ctrl_minus(self, ev):
+        scales = [self.zoom.GetScaleFromStr(s) for s in self.ZOOM_SCALES]
+        cur_scale = self.zoom.Scale
+        if cur_scale not in scales:
+            scales.append(self.zoom.Scale)
+            scales.sort()
+        index = scales.index(cur_scale)
+
+        if index > 0:
+            new_scale = scales[index - 1]
+            self.Zoom(new_scale)
