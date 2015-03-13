@@ -920,11 +920,8 @@ class ContentWin(CardWin):
         ghost = wx.Menu()
 
         coll = wx.MenuItem(ghost, wx.ID_ANY, "Toggle collapse")
-        insp = wx.MenuItem(ghost, wx.ID_ANY, "Request view")
         self.Bind(wx.EVT_MENU, self._on_ctrl_u, coll)
-        self.Bind(wx.EVT_MENU, self._on_ctrl_i, insp)
         accels.append(wx.AcceleratorEntry(wx.ACCEL_CTRL, ord("U"), coll.GetId()))
-        accels.append(wx.AcceleratorEntry(wx.ACCEL_CTRL, ord("I"), insp.GetId()))
 
         self.SetAcceleratorTable(wx.AcceleratorTable(accels))
 
@@ -971,9 +968,9 @@ class ContentWin(CardWin):
         ctrl = self.FindFocus()
         pos = None
 
-        if ctrl == self.title:
+        if ctrl == self._title:
             pos = ctrl.InsertionPoint
-        elif ctrl == self.content:
+        elif ctrl == self._content:
             pos = ctrl.InsertionPoint
         else:
             ctrl = None
@@ -982,12 +979,14 @@ class ContentWin(CardWin):
         return (ctrl, pos)
 
     @CaretPos.setter
-    def CaretPos(self, ctrl, pos):
+    def CaretPos(self, arg):
         """Accepts a tuple `(ctrl, pos)` where `ctrl` is a child `wx.TextCtrl` of this
         window and `pos` is the desired position of the caret within that control.
         """
-        ctrl.SetFocus()
-        ctrl.InsertionPoint = pos
+        ctrl, pos = arg
+        if ctrl in [self._title, self._content]:
+            ctrl.SetFocus()
+            ctrl.InsertionPoint = pos
 
 
     ### methods
@@ -1038,9 +1037,6 @@ class ContentWin(CardWin):
 
     def _on_ctrl_u(self, ev):
         self.Card.collapsed = not self.Card.collapsed
-
-    def _on_ctrl_i(self, ev):
-        print "ctrl i"
 
     # in the following callbacks, we need to set the value silently
     # otherwise, a new "UPDATE_*" message would be published and we would
