@@ -67,6 +67,99 @@ class Canvas(wxutils.AutoSize):
         self._save_lines()
 
 
+        
+######################
+# CardView Class
+######################        
+
+class CardView(wx.Panel):
+    """Displays a screen-sized `Content` `CardWin` to facilitate editing. While
+    viewing, the `Card` is `Reparent`ed to this window.
+    """
+    WIN_PADDING = board.Board.WIN_PADDING
+    BACKGROUND_CL = board.Board.BACKGROUND_CL
+    TITLE_FONT   = (18, wx.SWISS, wx.ITALIC, wx.BOLD)
+    CONTENT_FONT = (14, wx.FONTFAMILY_DEFAULT, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL)
+
+    def __init__(self, parent):
+        """Constructor.
+
+        * `parent: ` the parent `Box`.
+        """
+        super(CardView, self).__init__(parent)
+        self._cards = {}
+        self._init_UI()
+
+
+    ### init methods
+
+    def _init_UI(self):
+        self.BackgroundColour = self.BACKGROUND_CL
+        box = wx.BoxSizer(wx.HORIZONTAL)
+        self.SetSizer(box)
+
+
+    ### properties
+
+    @property
+    def Cards(self):
+        """The `Card`s currently under viewing."""
+        return self._cards.keys()
+
+    
+    ### methods
+
+    def AddCard(self, win):
+        """Adds one `CardWin` to the viewing control.
+
+        * `win: ` a `CardWin`.
+        """
+        self._cards[win] = {}
+        self._cards[win]["parent"] = win.Parent
+        self._cards[win]["rect"]   = win.Rect
+        pos = win.CaretPos
+        win.Reparent(self)
+        win.CaretPos = pos
+        
+        box = self.Sizer
+        box.Add(win, proportion=1, flag=wx.ALL|wx.EXPAND, border=self.WIN_PADDING)
+        box.Layout()
+
+    def SetCards(self, cards):
+        """Clears previous `Card`s and views the new ones.
+
+        * `cards: ` a `list` of `Card`s.
+        """
+        self.Clear()
+        for c in cards: self.AddCard(c)
+
+    def Restore(self):
+        """Restores the viewed `Card`s to their original parents and positions."""
+        for w in self._cards.keys():
+            pos = w.CaretPos
+            w.Reparent(self._cards[w]["parent"])
+            w.Rect = self._cards[w]["rect"]
+            w.CaretPos = pos
+        self.Clear()
+
+    def Clear(self):
+        """Clear all viewed `Card`s."""
+        self.Sizer.Clear()
+        # for c in self._cards.keys():
+        #     c.SetViewing(False)
+        self._cards = {}
+
+
+    ### callbacks
+
+    def _on_cancel_view(self, ev):
+        """Listens to `Card.EVT_CANCEL_VIEW` on every viewed `Card`."""
+        self.Restore()
+        event = card.Card.CancelViewEvent(id=wx.ID_ANY)
+        event.SetEventObject(ev.GetEventObject())
+        self.GetEventHandler().ProcessEvent(event)
+
+        
                         
 ######################
 # Class Workspace
@@ -157,7 +250,9 @@ class Workspace(wx.Panel):
         """The current zoom scale."""
         
         self._init_board()
-        self._init_canvas()        
+        self._init_canvas()
+        self._init_viewer()
+        # self._init_sidebar()        
         self._init_UI()
         self._init_accels()
         
@@ -180,11 +275,15 @@ class Workspace(wx.Panel):
         self._contents.append(cv)
         self.Canvas = cv
 
+    def _init_viewer(self):
+        vw = CardView(self)
+        vw.Hide()
+        self._contents.append(vw)
+        self.CardViewer = vw
+
     def _init_UI(self):
         """Initialize this `Workspace`'s GUI and controls."""
         self._init_sizers()        
-        # self._init_view()
-        # self._init_sidebar()
         self._init_toolbar()
 
     def _init_sizers(self):
@@ -233,6 +332,10 @@ class Workspace(wx.Panel):
         self.Bind(wx.EVT_MENU, self._on_ctrl_minus, ctrlm)
         accels.append(wx.AcceleratorEntry(wx.ACCEL_CTRL, ord("-"), ctrlm.GetId()))
 
+        ctrli = wx.MenuItem(ghost, wx.ID_ANY, "ctrli")
+        self.Bind(wx.EVT_MENU, self._on_ctrl_i, ctrli)
+        accels.append(wx.AcceleratorEntry(wx.ACCEL_CTRL, ord("I"), ctrli.GetId()))
+
         self.SetAcceleratorTable(wx.AcceleratorTable(accels))
         
 
@@ -264,6 +367,7 @@ class Workspace(wx.Panel):
         """
         if getattr(self, ctrl) in self._contents:
             window = getattr(self, ctrl)
+            
             if window is self.Canvas:
                 self.Canvas.ctrl._offset = wx.Point(*self.Board.GetViewStartPixels())
                 window.SetBackgroundBMP(self._get_board_bmp())
@@ -293,6 +397,14 @@ class Workspace(wx.Panel):
             self.WorkOn("Canvas")
         elif self.CurrentControl is self.Canvas:
             self.WorkOn("Board")
+
+    def ViewCard(self, win):
+        self.CardViewer.SetCards([win])
+        self.WorkOn("CardViewer")
+
+    def CancelViewCard(self):
+        self.CardViewer.Restore()
+        self.WorkOn("Board")
         
             
     ### callbacks
@@ -302,6 +414,14 @@ class Workspace(wx.Panel):
 
     def _on_ctrl_e(self, ev):
         self._toggle_board_canvas()
+
+    def _on_ctrl_i(self, ev):
+        if self.CurrentControl is self.Board:
+            win = self.Board.FindFocusOrSelection()
+            if win:
+                self.ViewCard(win)
+        elif self.CurrentControl is self.CardViewer:
+            self.CancelViewCard()
 
     def _on_ctrl_plus(self, ev):
         scales = [self.zoom.GetScaleFromStr(s) for s in self.ZOOM_SCALES]
