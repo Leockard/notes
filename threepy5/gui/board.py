@@ -1045,6 +1045,7 @@ class ContentWin(CardWin):
     def _on_content_entry(self, ev): py5.Content.content.silently(self.Card, self._content.Value)
 
 
+
 ######################
 # Class Board
 ######################
@@ -1055,9 +1056,11 @@ class Board(wxutils.AutoSize):
     and listens to individual Cards' events, so that `Box` only needs to listen
     to `Deck` events.
     """
-    BACKGROUND_CL = "#CCCCCC"    
+    BACKGROUND_CL = "#CCCCCC"
+    
     WIN_PADDING = py5.Deck.PADDING
     """The default space between two windows."""
+    
     MOVING_RECT_THICKNESS = 1
     """When moving cards and painting the hint floating rects, paint them with this thickness."""
 
