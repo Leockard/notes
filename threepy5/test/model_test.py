@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """Unit test for threepy5.py (model layer)."""
 
 import threepy5.threepy5 as py5
@@ -924,6 +925,8 @@ class DeckMethods(unittest.TestCase):
             self.assertEqual(len(deck.groups), count)
             self.assertEqual(deck.groups[-1].members, ids)
 
+
+### test AnnotatedDeck dump/load
 
 
 if __name__ == "__main__":

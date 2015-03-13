@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """Unit test for `threepy5` (gui layer)."""
 
 import threepy5.threepy5 as py5
@@ -512,6 +513,7 @@ class testAutoSize(unittest.TestCase):
 ### finish testImageWin.testDragResize
 ### test coloured text
 ### test resize/rescale
+### Workspace: switch board/canvas, ctrl+ / ctrl-, Workspace.Canvas.Annotation.lines (¿?)
 
 
 if __name__ == "__main__":
