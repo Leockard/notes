@@ -228,6 +228,158 @@ class TagView(wx.Panel):
         if ev.IsShown():
             self.ShowTags()
 
+
+
+######################
+# DeckView Class
+######################
+
+class DeckView(wxutils.AutoSize):
+    """Displays a "minimap" of the current `Board`."""
+    
+    DEFAULT_FACTOR  = 5
+    """Default miniaturization factor."""
+    
+    BACKGROUND_CL   = (255, 255, 255, 255)
+    
+    ######################
+    # MiniCard Class
+    ######################        
+    
+    class MiniCard(wx.Window):
+        """The little cards shown in a `DeckView`"""
+        
+        DEFAULT_CL = (220, 218, 213, 255)
+        
+        def __init__(self, parent, pos=wx.DefaultPosition, size=wx.DefaultSize):
+            """Constructor.
+    
+            * `parent: ` the parent `DeckView`.
+            * `pos: ` by default, is `wx.DefaultSize`.
+            * `size: ` by default, is `wx.DefaultSize`.
+            """
+            super(DeckView.MiniCard, self).__init__(parent, pos=pos, size=size)
+            self.BackgroundColour = (220, 218, 213, 255)
+        
+
+    #############
+    # DeckView
+    #############
+    
+    def __init__(self, parent, board, pos=wx.DefaultPosition, size=wx.DefaultSize):
+        """Constructor.
+
+        * `parent: ` the parent `Box`.
+        * `deck: ` the `Deck` we are viewing.
+        * `pos: ` by default, is `wx.DefaultSize`.
+        * `size: ` by default, is `wx.DefaultSize`.
+        """
+        super(DeckView, self).__init__(parent, pos=pos, size=size)
+        self.BackgroundColour = self.BACKGROUND_CL
+
+        self._factor = DeckView.DEFAULT_FACTOR
+        self._cards = {}
+        self.Board = board
+
+        self.Bind(wx.EVT_SHOW, self._on_show)
+
+
+    ### properties
+
+    @property
+    def Board(self):
+        """The tracked `Board`."""
+        return self._board
+
+    @Board.setter
+    def Board(self, bd):
+        self.Clear()
+        for w in bd.Cards:
+            self.AddCard(w)
+
+        self.Size = [i / self._factor for i in bd.Size]
+        self.UpdateVirtualSize(bd._virtual_sz)
+
+        step = bd.GetScrollPixelsPerUnit()
+        self.SetScrollRate(step[0] / self._factor, step[1] / self._factor)
+
+        # deck.Bind(Deck.EVT_NEW_CARD, self.OnNewCard)
+        bd.Bind(wx.EVT_SIZE, self._on_board_size)
+        # deck.Bind(wx.EVT_SCROLLWIN, self.OnDeckScroll)
+        
+        self._board = bd
+        
+
+    ### methods
+
+    def Clear(self):
+        """Delete all `MiniCard`s from this view."""
+        self._cards = {}
+    
+    def AddCard(self, card):
+        """Adds a new `MiniCard`.
+
+        * `card: ` a `CardWin`.
+        """
+        r = wx.Rect(*[i / self.factor for i in card.Rect])
+        mini = MiniCard(self, pos=(r.left, r.top), size=(r.width, r.height))
+
+        if isinstance(win, ContentWin):
+            mini.BackgroundColour = card.BackgroundColour
+
+        # card.Bind(Card.EVT_DELETE, self.OnDeleteCard)
+        # if isinstance(card, ContentWin):
+        #     card.Bind(Content.EVT_CONT_KIND, self.OnContentKind)
+
+        # retain a reference to the original, for deleting
+        self._cards[card] = mini
+
+    def RemoveCard(self, card):
+        """Remove a `MiniCard`."""
+        if card in self._cards.keys():
+            mini = self._cards[card]
+            mini.Hide()
+            mini.Destroy()
+            del self._cards[card]
+
+    def AutoPosition(self):
+        """Calculates position relative to the `Deck`."""
+        w, h = self.Size
+        rect = self.Board.ClientRect
+        pos = (rect.right - w, rect.bottom - h)
+        self.Move(pos)
+
+
+    ### callbacks
+
+    def _on_show(self, ev):
+        """Listens to `wx.EVT_SHOW`."""
+        self.AutoPosition()
+
+    def _on_board_scroll(self, ev):
+        """Listens to `wx.EVT_SCROLLWIN` from the underlying `Board`."""
+        view = ev.GetEventObject().GetViewStart()
+        self.Scroll(view.x / self._factor, view.y / self._factor)
+
+    def _on_board_size(self, ev):
+        """Listens to `wx.EVT_SIZE` from the underlying `Board`."""
+        self.SetSize([i / self._factor + 30 for i in self.Board.Size])
+        self.AutoPosition()
+
+    # def _on_new_card(self, ev):
+    #     """Listens to `Deck.EVT_NEW_CARD`."""
+    #     self.AddCard(ev.GetEventObject())
+
+    # def _on_delete_card(self, ev):
+    #     """Listens to `Card.EVT_DELETE` from each `Card` on the `Deck`."""
+    #     self.RemoveCard(ev.GetEventObject())
+    #     ev.Skip()
+
+    # def _on_content_kind(self, ev):
+    #     """Listens to `Content.EVT_CONT_KIND` events from each `Content`."""
+    #     card = ev.GetEventObject()
+    #     self.cards[card].SetBackgroundColour(card.GetBackgroundColour())
+
         
                         
 ######################
@@ -332,6 +484,7 @@ class Workspace(wx.Panel):
         self._init_canvas()
         self._init_viewer()
         self._init_sidebar()
+        self._init_minimap()
         self._init_sizers()        
         self._init_toolbar()
 
@@ -359,6 +512,11 @@ class Workspace(wx.Panel):
         sb = TagView(self)
         sb.Hide()
         self.TagViewer = sb
+
+    def _init_minimap(self):
+        mm = DeckView(self, self.Board)
+        mm.Hide()
+        self.Minimap = mm
 
     def _init_sizers(self):
         # assumes all controls such as self.Board, self.Canvas, etc already exist
@@ -422,6 +580,10 @@ class Workspace(wx.Panel):
         fn9 = wx.MenuItem(ghost, wx.ID_ANY, "F9")
         self.Bind(wx.EVT_MENU, self._on_fn_9, fn9)
         accels.append(wx.AcceleratorEntry(wx.ACCEL_NORMAL, wx.WXK_F9, fn9.GetId()))
+
+        ctrlm = wx.MenuItem(ghost, wx.ID_ANY, "ctrlm")
+        self.Bind(wx.EVT_MENU, self._on_ctrl_m, ctrlm)
+        accels.append(wx.AcceleratorEntry(wx.ACCEL_CTRL, ord("M"), ctrlm.GetId()))
 
         self.SetAcceleratorTable(wx.AcceleratorTable(accels))
         
@@ -550,3 +712,5 @@ class Workspace(wx.Panel):
     def _on_fn_9(self, ev):
         self.ToggleSidebar()
 
+    def _on_ctrl_m(self, ev):
+        self.Minimap.Show(not self.Minimap.IsShown())
