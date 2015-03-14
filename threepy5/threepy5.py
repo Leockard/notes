@@ -612,7 +612,7 @@ class Box(utils.Publisher):
         self.decks = decks
 
     def NewDeck(self, name=""):
-        self.AddDeck(Deck(name))
+        self.AddDeck(AnnotatedDeck(name))
 
 
 
