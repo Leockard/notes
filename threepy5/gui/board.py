@@ -1232,10 +1232,9 @@ class Board(wxutils.AutoSize):
             
         def _on_key_down(self, ev):
             if not self.Active or not self.Selection:
-                ev.Skip()
                 return
-    
-            key = ev.GetKeyCode()
+
+            key = ev.GetKeyCode()            
     
             if ev.AltDown():
                 bd = self.Parent
@@ -1247,12 +1246,9 @@ class Board(wxutils.AutoSize):
                     self.MoveSelection(0, -bd.SCROLL_STEP)
                 elif key == wx.WXK_DOWN:
                     self.MoveSelection(0, bd.SCROLL_STEP)
-                else:
-                    ev.Skip()
     
             elif ev.ControlDown():
                 if   key == ord("U"):
-                    pass
                     # since collapsing takes away focus, store selection
                     windows = self.Selection[:]
     
@@ -1266,17 +1262,11 @@ class Board(wxutils.AutoSize):
                     for w in windows:
                         self.Select(w)
                     
-                elif key == ord("I"):
-                    pass
-
                 elif key == ord("G"):
                     self.Parent.GroupSelected()
-
-                else:
-                    ev.Skip()
     
-            elif ev.MetaDown():
-                ev.Skip()
+            # elif ev.MetaDown():
+            #     ev.Skip()
     
             elif ev.ShiftDown():
                 if   key == wx.WXK_LEFT:
@@ -1287,11 +1277,11 @@ class Board(wxutils.AutoSize):
                     self.SelectNearest(wx.WXK_UP, new_sel=False)
                 elif key == wx.WXK_DOWN:
                     self.SelectNearest(wx.WXK_DOWN, new_sel=False)
-                else:
-                    ev.Skip()
+                # else:
+                #     ev.Skip()
     
-            elif wxutils.IsFunctionKey(key):
-                ev.Skip()
+            # elif wxutils.IsFunctionKey(key):
+            #     ev.Skip()
     
             else:
                 if   key == wx.WXK_LEFT:
