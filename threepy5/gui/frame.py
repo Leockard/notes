@@ -72,6 +72,7 @@ class Shelf(wx.Notebook):
         super(Shelf, self).__init__(parent)
         self._init_box()
         self._init_menu()
+        self._init_accels()
 
 
     ### init methods
@@ -100,30 +101,44 @@ class Shelf(wx.Notebook):
         menu.AppendItem(pg_forward)
         menu.AppendItem(close)
 
+    def _init_accels(self):
+        accels = []
+        ghost = wx.Menu()
+
+        ctrln = wx.MenuItem(ghost, wx.ID_ANY, "ctrln")
+        self.Bind(wx.EVT_MENU, self._on_ctrl_n, ctrln)
+        accels.append(wx.AcceleratorEntry(wx.ACCEL_CTRL, ord("N") , ctrln.GetId()))
+
+        self.SetAcceleratorTable(wx.AcceleratorTable(accels))
+
 
     ### properties
     
     @property
-    def CurrentBox(self):
+    def CurrentWorkspace(self):
         """The `Workspace` currently in view."""
         return self.GetCurrentPage()
 
     
     ### methods    
 
-    def NewBox(self):
-        """Creates a new `Box`, by asking the user for the `Box` name.
+    def NewDeck(self):
+        """Creates a new `AnnotatedDeck`, by asking the user for the name.
 
-        `returns: ` `True` if a new `Box` was succesfully created.
+        `returns: ` `True` if a new `Deck` was succesfully created.
         """
-        dlg = wx.TextEntryDialog(self, "New box title: ")
+        dlg = wx.TextEntryDialog(self, "New deck name: ")
         if dlg.ShowModal() == wx.ID_OK:
-            pg = Box(self)
-            self.AddBox(pg, dlg.GetValue(), select=True)
-            pg.SetFocus()
+            self.Box.NewDeck(dlg.Value)
             return True
         else:
             return False
+
+
+    ### callbacks
+
+    def _on_ctrl_n(self, ev):
+        self.NewDeck()
 
 
     ### subscribers
@@ -131,7 +146,8 @@ class Shelf(wx.Notebook):
     def _on_new_deck(self, val):
         ws = workspace.Workspace(self)
         ws.Deck = val
-        self.AddPage(ws, val.name)
+        self.AddPage(ws, val.name, select=True)
+        ws.Board.SetFocus()
 
     def _on_pop_deck(self, val):
         print "pop deck"
