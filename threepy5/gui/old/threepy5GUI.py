@@ -17,36 +17,36 @@
 
 
 class ThreePyFiveFrame(wx.Frame):
-    """
-    A `ThreePyFiveFrame` holds a `WelcomePage` at startup, until a `BoxSet` is loaded.
-    """
-    DEFAULT_SZ = (800, 600)
-    DEFAULT_BOX_NAME = "Untitled Notes"
-    CLEAN_STATUS_BAR_AFTER_MS = 5000
+    # """
+    # A `ThreePyFiveFrame` holds a `WelcomePage` at startup, until a `BoxSet` is loaded.
+    # """
+    # DEFAULT_SZ = (800, 600)
+    # DEFAULT_BOX_NAME = "Untitled Notes"
+    # CLEAN_STATUS_BAR_AFTER_MS = 5000
 
-    def __init__(self, parent, title="3py5", size=DEFAULT_SZ, style=wx.DEFAULT_FRAME_STYLE|wx.NO_FULL_REPAINT_ON_RESIZE):
-        """Constructor.
+    # def __init__(self, parent, title="3py5", size=DEFAULT_SZ, style=wx.DEFAULT_FRAME_STYLE|wx.NO_FULL_REPAINT_ON_RESIZE):
+    #     """Constructor.
 
-        * `parent: ` the parent window.
-        * `title: ` the title of this `ThreePyFiveFrame`.
-        * `size: ` by default, is `ThreePyFiveFrame.DEFAULT_SZ`.
-        * `style: ` by default, is `wx.DEFAULT_FRAME_STYLE|wx.NO_FULL_REPAINT_ON_RESIZE`.
-        """
-        super(ThreePyFiveFrame, self).__init__(parent, title=title, size=size, style=style)
+    #     * `parent: ` the parent window.
+    #     * `title: ` the title of this `ThreePyFiveFrame`.
+    #     * `size: ` by default, is `ThreePyFiveFrame.DEFAULT_SZ`.
+    #     * `style: ` by default, is `wx.DEFAULT_FRAME_STYLE|wx.NO_FULL_REPAINT_ON_RESIZE`.
+    #     """
+    #     super(ThreePyFiveFrame, self).__init__(parent, title=title, size=size, style=style)
 
-        self.SetTitle(self.DEFAULT_BOX_NAME)
-        self.cur_file = ""
-        self.search_find = []
-        self.search_str = ""
-        self.boxset = None
-        self.welcome = None
-        self.search_head = None    # contains the current search index
-                                   # when not searching, set to None
-        self.ui_ready = False
-        self.InitUI()              # sets up the sizer and the buttons' bindings
+    #     self.SetTitle(self.DEFAULT_BOX_NAME)
+    #     self.cur_file = ""
+    #     self.search_find = []
+    #     self.search_str = ""
+    #     self.boxset = None
+    #     self.welcome = None
+    #     self.search_head = None    # contains the current search index
+    #                                # when not searching, set to None
+    #     self.ui_ready = False
+    #     self.InitUI()              # sets up the sizer and the buttons' bindings
 
-        # Done.
-        self.Show()
+    #     # Done.
+    #     self.Show()
 
         
     ### Behavior Functions
@@ -450,76 +450,76 @@ class ThreePyFiveFrame(wx.Frame):
         self.Bind(wx.EVT_TOOL, self.OnPaste, pas_it)
         self.Bind(wx.EVT_TOOL, self.OnDelete, del_it)        
 
-    def InitUI(self):
-        """Initialize the GUI and controls."""
-        sz = (20, 20)
-        # # cleanup the previous UI, if any
-        if self.ui_ready:
-            pg = self.GetCurrentBox()
-            sz = pg.GetSize()
-            pg.Hide()
-            self.sheet = None
-            self.SetSizer(None)
+    # def InitUI(self):
+    #     """Initialize the GUI and controls."""
+    #     sz = (20, 20)
+    #     # # cleanup the previous UI, if any
+    #     if self.ui_ready:
+    #         pg = self.GetCurrentBox()
+    #         sz = pg.GetSize()
+    #         pg.Hide()
+    #         self.sheet = None
+    #         self.SetSizer(None)
 
-        # make new UI
-        vbox = wx.BoxSizer(wx.VERTICAL)
-        self.SetSizer(vbox)
+    #     # make new UI
+    #     vbox = wx.BoxSizer(wx.VERTICAL)
+    #     self.SetSizer(vbox)
 
-        # execute only the first time; order matters
-        if not self.ui_ready:
-            self.InitMenuBar()
-            self.CreateStatusBar()
-            self.InitWelcome()
-            self.InitSearchBar()
-            self.InitToolBar()
+    #     # execute only the first time; order matters
+    #     if not self.ui_ready:
+    #         self.InitMenuBar()
+    #         self.CreateStatusBar()
+    #         self.InitWelcome()
+    #         self.InitSearchBar()
+    #         self.InitToolBar()
 
-        self.ui_ready = True
+    #     self.ui_ready = True
 
-    def InitWelcome(self):
-        """Initialize the `WelcomPage` shown at startup."""
-        panel = WelcomePage(self)
-        vbox = self.GetSizer()
-        vbox.Add(panel, proportion=1, flag=wx.EXPAND)
-        self.welcome = panel
+    # def InitWelcome(self):
+    #     """Initialize the `WelcomPage` shown at startup."""
+    #     panel = WelcomePage(self)
+    #     vbox = self.GetSizer()
+    #     vbox.Add(panel, proportion=1, flag=wx.EXPAND)
+    #     self.welcome = panel
 
-    def InitBoxset(self, size=wx.DefaultSize):
-        """Initialize the `BoxSet` and delete the `WelcomePage`."""
-        # delete the welcome page
-        # at this point, self.GetSizer() should only have the WelcomePage
-        box = self.GetSizer()
-        if self.welcome:
-            self.welcome.Hide()
-        box.Clear()
-        self.welcome = None
+    # def InitBoxset(self, size=wx.DefaultSize):
+    #     """Initialize the `BoxSet` and delete the `WelcomePage`."""
+    #     # delete the welcome page
+    #     # at this point, self.GetSizer() should only have the WelcomePage
+    #     box = self.GetSizer()
+    #     if self.welcome:
+    #         self.welcome.Hide()
+    #     box.Clear()
+    #     self.welcome = None
 
-        # create and setup the boxset
-        nb = BoxSet(self, size=size)
+    #     # create and setup the boxset
+    #     nb = BoxSet(self, size=size)
 
-        # bindings: make sure to Bind EVT_BK_NEW_BOX before creating any boxes!
-        nb.Bind(BoxSet.EVT_BK_NEW_BOX, self.OnNewBox)
+    #     # bindings: make sure to Bind EVT_BK_NEW_BOX before creating any boxes!
+    #     nb.Bind(BoxSet.EVT_BK_NEW_BOX, self.OnNewBox)
 
-        # UI setup
-        nb_box = wx.BoxSizer(wx.HORIZONTAL)
-        nb_box.Add(nb, proportion=1,   flag=wx.ALL|wx.EXPAND, border=1)
-        box.Add(nb_box, proportion=1, flag=wx.ALL|wx.EXPAND, border=1)
+    #     # UI setup
+    #     nb_box = wx.BoxSizer(wx.HORIZONTAL)
+    #     nb_box.Add(nb, proportion=1,   flag=wx.ALL|wx.EXPAND, border=1)
+    #     box.Add(nb_box, proportion=1, flag=wx.ALL|wx.EXPAND, border=1)
 
-        # finish up
-        box.Layout()
-        self.boxset = nb
+    #     # finish up
+    #     box.Layout()
+    #     self.boxset = nb
 
-    def Log(self, s):
-        """Log the string `s` into the status bar.
+    # def Log(self, s):
+    #     """Log the string `s` into the status bar.
 
-        `s: ` a string.
-        """
-        self.StatusBar.SetStatusText(s)
-        wx.CallLater(self.CLEAN_STATUS_BAR_AFTER_MS,
-                     self.StatusBar.SetStatusText, "")
+    #     `s: ` a string.
+    #     """
+    #     self.StatusBar.SetStatusText(s)
+    #     wx.CallLater(self.CLEAN_STATUS_BAR_AFTER_MS,
+    #                  self.StatusBar.SetStatusText, "")
 
-    def OnDebug(self, ev):
-        """CTRL+D"""
-        print "---DEBUG---"
-        print self.GetCurrentBox().Dump()
+    # def OnDebug(self, ev):
+    #     """CTRL+D"""
+    #     print "---DEBUG---"
+    #     print self.GetCurrentBox().Dump()
 
     def Save(self, out_file):
         """Save the current `BoxSet` to disk.
@@ -542,12 +542,12 @@ class ThreePyFiveFrame(wx.Frame):
         
     ### Callbacks
 
-    def OnNewBox(self, ev):
-        """Listens to `BoxSet.EVT_BK_NEW_BOX`."""
-        ev.box.Bind(Box.EVT_VIEW, self.OnView)
-        ev.box.Bind(Box.EVT_CANCEL_VIEW, self.OnCancelView)
-        ev.box.deck.Bind(Deck.EVT_DEL_CARD, self.AfterDelete)
-        ev.box.deck.Bind(Deck.EVT_NEW_CARD, self.AfterCardCreated)
+    # def OnNewBox(self, ev):
+    #     """Listens to `BoxSet.EVT_BK_NEW_BOX`."""
+    #     ev.box.Bind(Box.EVT_VIEW, self.OnView)
+    #     ev.box.Bind(Box.EVT_CANCEL_VIEW, self.OnCancelView)
+    #     ev.box.deck.Bind(Deck.EVT_DEL_CARD, self.AfterDelete)
+    #     ev.box.deck.Bind(Deck.EVT_NEW_CARD, self.AfterCardCreated)
 
     # def OnZoomIn(self, ev):
     #     """Listens to `wx.EVT_MENU` from the zoom controls in the view menu."""
@@ -835,87 +835,86 @@ class ThreePyFiveFrame(wx.Frame):
 
 
 
-######################
-# WelcomePage class
-######################
+# ######################
+# # WelcomePage class
+# ######################
 
-class WelcomePage(wx.Panel):
-    """
-    The panel that is displayed as soon as the user starts the
-    application. Gives options to load a file or start a new one.
-    """
+# class WelcomePage(wx.Panel):
+#     """
+#     The panel that is displayed as soon as the user starts the
+#     application. Gives options to load a file or start a new one.
+#     """
     
-    def __init__(self, parent):
-        """Constructor.
+#     def __init__(self, parent):
+#         """Constructor.
 
-        * `parent: ` the parent `ThreePyFiveFrame`.
-        """
-        super(WelcomePage, self).__init__(parent)
-        self.InitUI()
+#         * `parent: ` the parent `ThreePyFiveFrame`.
+#         """
+#         super(WelcomePage, self).__init__(parent)
+#         self.InitUI()
         
 
-    ### Auxiliary functions
+#     ### Auxiliary functions
 
-    def InitUI(self):
-        """Initialize the GUI and controls."""
-        # controls
-        newb  = wx.Button(self, label="New box set")
-        loadb = wx.Button(self, label="Load box set")
+#     def InitUI(self):
+#         """Initialize the GUI and controls."""
+#         # controls
+#         newb  = wx.Button(self, label="New box set")
+#         loadb = wx.Button(self, label="Load box set")
 
-        # boxing
-        box = wx.BoxSizer(wx.VERTICAL)
-        self.SetSizer(box)
-        box.Add(newb, proportion=0)
-        box.Add(loadb, proportion=0)
+#         # boxing
+#         box = wx.BoxSizer(wx.VERTICAL)
+#         self.SetSizer(box)
+#         box.Add(newb, proportion=0)
+#         box.Add(loadb, proportion=0)
         
-        # bindings
-        newb.Bind(wx.EVT_BUTTON, self.OnNewBoxSet)
-        loadb.Bind(wx.EVT_BUTTON, self.OnLoadBoxSet)
+#         # bindings
+#         newb.Bind(wx.EVT_BUTTON, self.OnNewBoxSet)
+#         loadb.Bind(wx.EVT_BUTTON, self.OnLoadBoxSet)
 
 
-    ### Callbacks
+    # ### Callbacks
 
-    def OnNewBoxSet(self, ev):
-        """Listens to `wx.EVT_BUTTON` from the "New box set" button."""
-        self.GetParent().InitBoxset()
-        self.GetParent().boxset.NewBox()
+    # def OnNewBoxSet(self, ev):
+    #     """Listens to `wx.EVT_BUTTON` from the "New box set" button."""
+    #     self.GetParent().InitBoxset()
+    #     self.GetParent().boxset.NewBox()
 
-    def OnLoadBoxSet(self, ev):
-        """Listens to `wx.EVT_BUTTON` from the "Load box set" button."""
-        self.GetParent().OnOpen(None)
-
-
-
-###########################
-# pdoc documentation setup
-###########################
-# __pdoc__ is the special variable from the automatic
-# documentation generator pdoc.
-# By setting pdoc[class.method] to None, we are telling
-# pdoc to not generate documentation for said method.
-__pdoc__ = {}
-__pdoc__["field"] = None
-
-# Since we only want to generate documentation for our own
-# mehods, and not the ones coming from the base classes,
-# we first set to None every method in the base class.
-for field in dir(wx.Frame):
-    __pdoc__['ThreePyFiveFrame.%s' % field] = None
-for field in dir(wx.Panel):
-    __pdoc__['WelcomePage.%s' % field] = None
-
-# Then, we have to add again the methods that we have
-# overriden. See https://github.com/BurntSushi/pdoc/issues/15.
-for field in ThreePyFiveFrame.__dict__.keys():
-    if 'ThreePyFiveFrame.%s' % field in __pdoc__.keys():
-        del __pdoc__['ThreePyFiveFrame.%s' % field]
-for field in WelcomePage.__dict__.keys():
-    if 'WelcomePage.%s' % field in __pdoc__.keys():
-        del __pdoc__['WelcomePage.%s' % field]    
-        
+    # def OnLoadBoxSet(self, ev):
+    #     """Listens to `wx.EVT_BUTTON` from the "Load box set" button."""
+    #     self.GetParent().OnOpen(None)
 
 
-if __name__ == "__main__":
-    app = wx.App()
-    frame = MyFrame(None)
-    app.MainLoop()
+
+# ###########################
+# # pdoc documentation setup
+# ###########################
+# # __pdoc__ is the special variable from the automatic
+# # documentation generator pdoc.
+# # By setting pdoc[class.method] to None, we are telling
+# # pdoc to not generate documentation for said method.
+# __pdoc__ = {}
+# __pdoc__["field"] = None
+
+# # Since we only want to generate documentation for our own
+# # mehods, and not the ones coming from the base classes,
+# # we first set to None every method in the base class.
+# for field in dir(wx.Frame):
+#     __pdoc__['ThreePyFiveFrame.%s' % field] = None
+# for field in dir(wx.Panel):
+#     __pdoc__['WelcomePage.%s' % field] = None
+
+# # Then, we have to add again the methods that we have
+# # overriden. See https://github.com/BurntSushi/pdoc/issues/15.
+# for field in ThreePyFiveFrame.__dict__.keys():
+#     if 'ThreePyFiveFrame.%s' % field in __pdoc__.keys():
+#         del __pdoc__['ThreePyFiveFrame.%s' % field]
+# for field in WelcomePage.__dict__.keys():
+#     if 'WelcomePage.%s' % field in __pdoc__.keys():
+#         del __pdoc__['WelcomePage.%s' % field]    
+
+
+# if __name__ == "__main__":
+#     app = wx.App()
+#     frame = MyFrame(None)
+#     app.MainLoop()
