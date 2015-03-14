@@ -227,15 +227,13 @@ class ThreePyFiveFrame(wx.Frame):
 
     def _init_shelf(self):
         self._welcome.Hide()
-
+        
         shelf = Shelf(self)
-        
-        # self.Sizer.Add(shelf, proportion=1, flag=wx.EXPAND, border=0)
-        self.Sizer.Replace(self._welcome, shelf)
-        
-        self.Sizer.Layout()
-        
         self.Shelf = shelf
+
+        self.Sizer.Clear()                
+        self.Sizer.Add(shelf, proportion=1, flag=wx.EXPAND, border=0)
+        self.Sizer.Layout()
 
 
     ### callbacks
