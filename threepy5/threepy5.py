@@ -611,6 +611,9 @@ class Box(utils.Publisher):
         self.path = path
         self.decks = decks
 
+    def NewDeck(self, name=""):
+        self.AddDeck(Deck(name))
+
 
 
 
