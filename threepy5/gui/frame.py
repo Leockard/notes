@@ -109,6 +109,14 @@ class Shelf(wx.Notebook):
         self.Bind(wx.EVT_MENU, self._on_ctrl_n, ctrln)
         accels.append(wx.AcceleratorEntry(wx.ACCEL_CTRL, ord("N") , ctrln.GetId()))
 
+        ctrlpgu = wx.MenuItem(ghost, wx.ID_ANY, "ctrl page up")
+        self.Bind(wx.EVT_MENU, self._on_ctrl_pg_up, ctrlpgu)
+        accels.append(wx.AcceleratorEntry(wx.ACCEL_CTRL, wx.WXK_PAGEUP , ctrlpgu.GetId()))
+
+        ctrlpgd = wx.MenuItem(ghost, wx.ID_ANY, "ctrl page down")
+        self.Bind(wx.EVT_MENU, self._on_ctrl_pg_down, ctrlpgd)
+        accels.append(wx.AcceleratorEntry(wx.ACCEL_CTRL, wx.WXK_PAGEDOWN , ctrlpgd.GetId()))
+
         self.SetAcceleratorTable(wx.AcceleratorTable(accels))
 
 
@@ -139,6 +147,16 @@ class Shelf(wx.Notebook):
 
     def _on_ctrl_n(self, ev):
         self.NewDeck()
+
+    def _on_ctrl_pg_up(self, ev):
+        sel = self.Selection
+        if sel > 0:
+            self.Selection = sel - 1
+
+    def _on_ctrl_pg_down(self, ev):
+        sel = self.Selection
+        if sel < self.PageCount - 1:
+            self.Selection = sel + 1
 
 
     ### subscribers
@@ -232,6 +250,8 @@ class ThreePyFiveFrame(wx.Frame):
         self.Sizer.Add(welp, proportion=1, flag=wx.EXPAND)
         self._welcome = welp
 
+        self.CreateStatusBar()
+
     def _init_accels(self):
         ghost = wx.Menu()
         
@@ -250,6 +270,16 @@ class ThreePyFiveFrame(wx.Frame):
         self.Sizer.Clear()                
         self.Sizer.Add(shelf, proportion=1, flag=wx.EXPAND, border=0)
         self.Sizer.Layout()
+
+
+    ### methods
+    
+    def Log(self, s):
+        """Log the string `s` into the status bar.
+
+        `s: ` a string.
+        """
+        self.StatusBar.SetStatusText(s)
 
 
     ### callbacks
