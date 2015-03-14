@@ -675,19 +675,19 @@ class ThreePyFiveFrame(wx.Frame):
     #     else:
     #         ev.Skip()
 
-    def OnCtrlPgUp(self, ev):
-        """Listens to "CTRL+PAGEUP."""
-        nb = self.boxset
-        sel = nb.GetSelection()
-        if sel > 0:
-            nb.SetSelection(nb.GetSelection()-1)
+    # def OnCtrlPgUp(self, ev):
+    #     """Listens to "CTRL+PAGEUP."""
+    #     nb = self.boxset
+    #     sel = nb.GetSelection()
+    #     if sel > 0:
+    #         nb.SetSelection(nb.GetSelection()-1)
 
-    def OnCtrlPgDw(self, ev):
-        """Listens to "CTRL+PAGEDOWN."""
-        nb = self.boxset
-        sel = nb.GetSelection()
-        if sel < nb.GetPageCount() - 1:
-            nb.SetSelection(nb.GetSelection()+1)
+    # def OnCtrlPgDw(self, ev):
+    #     """Listens to "CTRL+PAGEDOWN."""
+    #     nb = self.boxset
+    #     sel = nb.GetSelection()
+    #     if sel < nb.GetPageCount() - 1:
+    #         nb.SetSelection(nb.GetSelection()+1)
 
     # def OnHArrange(self, ev):
     #     """Listens to `wx.EVT_MENU` from "Arrange Horizontally" in the "selection" menu."""
