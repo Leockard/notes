@@ -1,26 +1,25 @@
-# -*- coding: utf-8 -*-
-"""
-Main frame object for note taking application `threepy5`.
-"""
+# # -*- coding: utf-8 -*-
+# """
+# Main frame object for note taking application `threepy5`.
+# """
 
-import wx
-import os
-import pickle
-import json
-import re
-import wx.richtext as rt
-from box import *
-from card import *
-from canvas import *
-from deck import *
-from view import *
+# import wx
+# import os
+# import pickle
+# import json
+# import re
+# import wx.richtext as rt
+# from box import *
+# from card import *
+# from canvas import *
+# from deck import *
+# from view import *
 
 
 class ThreePyFiveFrame(wx.Frame):
     """
     A `ThreePyFiveFrame` holds a `WelcomePage` at startup, until a `BoxSet` is loaded.
     """
-    
     DEFAULT_SZ = (800, 600)
     DEFAULT_BOX_NAME = "Untitled Notes"
     CLEAN_STATUS_BAR_AFTER_MS = 5000
@@ -52,25 +51,25 @@ class ThreePyFiveFrame(wx.Frame):
         
     ### Behavior Functions
 
-    def GetCurrentBox(self):
-        """Get the `Box` currently selected in the loaded `BoxSet`.
+    # def GetCurrentBox(self):
+    #     """Get the `Box` currently selected in the loaded `BoxSet`.
 
-        `returns: ` a `Box` or `None`.
-        """
-        result = None
-        if self.boxset:
-            result = self.boxset.GetCurrentBox()
-        return result
+    #     `returns: ` a `Box` or `None`.
+    #     """
+    #     result = None
+    #     if self.boxset:
+    #         result = self.boxset.GetCurrentBox()
+    #     return result
 
-    def GetCurrentDeck(self):
-        """Get the `Deck` from the `Box` currently selected.
+    # def GetCurrentDeck(self):
+    #     """Get the `Deck` from the `Box` currently selected.
 
-        `returns: ` a `Deck`, or `None`."""
-        result = None
-        pg = self.GetCurrentBox()
-        if pg and hasattr(pg, "deck"):
-            result = pg.deck
-        return result
+    #     `returns: ` a `Deck`, or `None`."""
+    #     result = None
+    #     pg = self.GetCurrentBox()
+    #     if pg and hasattr(pg, "deck"):
+    #         result = pg.deck
+    #     return result
 
     def Search(self):
         """Search the current text in the search bar in all of the Cards'
@@ -550,131 +549,131 @@ class ThreePyFiveFrame(wx.Frame):
         ev.box.deck.Bind(Deck.EVT_DEL_CARD, self.AfterDelete)
         ev.box.deck.Bind(Deck.EVT_NEW_CARD, self.AfterCardCreated)
 
-    def OnZoomIn(self, ev):
-        """Listens to `wx.EVT_MENU` from the zoom controls in the view menu."""
-        self.GetCurrentBox().ZoomIn()
+    # def OnZoomIn(self, ev):
+    #     """Listens to `wx.EVT_MENU` from the zoom controls in the view menu."""
+    #     self.GetCurrentBox().ZoomIn()
 
-    def OnZoomOut(self, ev):
-        """Listens to `wx.EVT_MENU` from the zoom controls in the view menu."""
-        self.GetCurrentBox().ZoomOut()
+    # def OnZoomOut(self, ev):
+    #     """Listens to `wx.EVT_MENU` from the zoom controls in the view menu."""
+    #     self.GetCurrentBox().ZoomOut()
 
-    def OnGroupSelection(self, ev):
-        """Listens to `wx.EVT_MENU` from "Group selection" in the "selection" menu."""
-        self.GetCurrentDeck().GroupSelected()
+    # def OnGroupSelection(self, ev):
+    #     """Listens to `wx.EVT_MENU` from "Group selection" in the "selection" menu."""
+    #     self.GetCurrentDeck().GroupSelected()
 
-    def OnToggleMinimap(self, ev):
-        """Listens to `wx.EVT_MENU` from "Show map" in the "view" menu."""
-        self.GetCurrentBox().ToggleMinimap()
+    # def OnToggleMinimap(self, ev):
+    #     """Listens to `wx.EVT_MENU` from "Show map" in the "view" menu."""
+    #     self.GetCurrentBox().ToggleMinimap()
 
-    def OnToggleCollapse(self, ev):
-        """Listens to `wx.EVT_MENU` from "Toggle collapse" in the "view" menu and to
-        "Toggle collapse" tool in the tool bar.."""
-        for c in [t for t in self.GetCurrentDeck().GetSelection() if isinstance(t, Content)]:
-            c.ToggleCollapse()
+    # def OnToggleCollapse(self, ev):
+    #     """Listens to `wx.EVT_MENU` from "Toggle collapse" in the "view" menu and to
+    #     "Toggle collapse" tool in the tool bar.."""
+    #     for c in [t for t in self.GetCurrentDeck().GetSelection() if isinstance(t, Content)]:
+    #         c.ToggleCollapse()
 
-    def OnViewBoxBar(self, ev):
-        """Listens to `wx.EVT_MENU` from "Show Box button bar" in the "view" menu."""
-        self.GetCurrentBox().ShowButtonBar(show=ev.IsChecked())
+    # def OnViewBoxBar(self, ev):
+    #     """Listens to `wx.EVT_MENU` from "Show Box button bar" in the "view" menu."""
+    #     self.GetCurrentBox().ShowButtonBar(show=ev.IsChecked())
 
-    def OnMenuViewCard(self, ev):
-        """Listens to `wx.EVT_MENU` from "View card" in the "view" menu."""
-        pg = self.GetCurrentBox()
-        cont = pg.GetCurrentContent()
+    # def OnMenuViewCard(self, ev):
+    #     """Listens to `wx.EVT_MENU` from "View card" in the "view" menu."""
+    #     pg = self.GetCurrentBox()
+    #     cont = pg.GetCurrentContent()
 
-        # toggle between Deck and View modes        
-        if cont == Deck:
-            sel = pg.deck.GetSelection()
-            if len(sel) > 0:
-                cards = [c for c in sel if isinstance(c, Content)]
-                if cards:
-                    pg.ViewCards(cards)
-                    if len(cards) == 1:
-                        self.Log("Viewing \"" + cards[0].GetTitle() + "\".")
-                    else:
-                        self.Log("Viewing " + str(len(cards)) + " cards.")
-        elif cont == CardView:
-            pg.CancelView()
-            self.Log("Done viewing.")
+    #     # toggle between Deck and View modes        
+    #     if cont == Deck:
+    #         sel = pg.deck.GetSelection()
+    #         if len(sel) > 0:
+    #             cards = [c for c in sel if isinstance(c, Content)]
+    #             if cards:
+    #                 pg.ViewCards(cards)
+    #                 if len(cards) == 1:
+    #                     self.Log("Viewing \"" + cards[0].GetTitle() + "\".")
+    #                 else:
+    #                     self.Log("Viewing " + str(len(cards)) + " cards.")
+    #     elif cont == CardView:
+    #         pg.CancelView()
+    #         self.Log("Done viewing.")
 
-    def OnView(self, ev):
-        """Listens to `Box.EVT_VIEW` from every `Box` in the `BoxSet`."""
-        if ev.number == 1:
-            self.Log("Viewing \"" + ev.title + "\".")
-        else:
-            self.Log("Viewing " + str(ev.number) + " cards.")
+    # def OnView(self, ev):
+    #     """Listens to `Box.EVT_VIEW` from every `Box` in the `BoxSet`."""
+    #     if ev.number == 1:
+    #         self.Log("Viewing \"" + ev.title + "\".")
+    #     else:
+    #         self.Log("Viewing " + str(ev.number) + " cards.")
 
-    def OnCancelView(self, ev):
-        """Listens to `Box.EVT_CANCEL_VIEW` from every `Box` in the `BoxSet`."""
-        self.Log("Done viewing.")
+    # def OnCancelView(self, ev):
+    #     """Listens to `Box.EVT_CANCEL_VIEW` from every `Box` in the `BoxSet`."""
+    #     self.Log("Done viewing.")
 
-    def OnSelectAll(self, ev):
-        """Listens to `wx.EVT_MENU` from "Select All" in the "selection" menu."""
-        deck = self.GetCurrentDeck()
-        deck.UnselectAll()
-        for c in deck.GetCards():
-            deck.SelectCard(c)
+    # def OnSelectAll(self, ev):
+    #     """Listens to `wx.EVT_MENU` from "Select All" in the "selection" menu."""
+    #     deck = self.GetCurrentDeck()
+    #     deck.UnselectAll()
+    #     for c in deck.GetCards():
+    #         deck.SelectCard(c)
 
-    def OnSelectCurrent(self, ev):
-        """Listens to `wx.EVT_MENU` from "Select Current" in the "selection" menu."""
-        ctrl = self.FindFocus()
-        parent = ctrl.GetParent()
-        if isinstance(parent, Card):
-            self.GetCurrentDeck().SelectCard(parent, new_sel=True)
-            parent.SetFocusIgnoringChildren()
+    # def OnSelectCurrent(self, ev):
+    #     """Listens to `wx.EVT_MENU` from "Select Current" in the "selection" menu."""
+    #     ctrl = self.FindFocus()
+    #     parent = ctrl.GetParent()
+    #     if isinstance(parent, Card):
+    #         self.GetCurrentDeck().SelectCard(parent, new_sel=True)
+    #         parent.SetFocusIgnoringChildren()
 
-    def OnSelectNone(self, ev):
-        """Listens to `wx.EVT_MENU` from "Select None" in the "selection" menu."""
-        self.GetCurrentDeck().UnselectAll()
-        self.GetCurrentDeck().SetFocusIgnoringChildren()
+    # def OnSelectNone(self, ev):
+    #     """Listens to `wx.EVT_MENU` from "Select None" in the "selection" menu."""
+    #     self.GetCurrentDeck().UnselectAll()
+    #     self.GetCurrentDeck().SetFocusIgnoringChildren()
 
-    def OnEsc(self, ev):
-        """Listens to ESC."""
-        # if searching: cancel search
-        if self.FindFocus() == self.search_ctrl:
-            self.CancelSearch()
-            return
+    # def OnEsc(self, ev):
+    #     """Listens to ESC."""
+    #     # if searching: cancel search
+    #     if self.FindFocus() == self.search_ctrl:
+    #         self.CancelSearch()
+    #         return
 
-        # if on welcome page: nil
-        if self.welcome:
-            return
+    #     # if on welcome page: nil
+    #     if self.welcome:
+    #         return
 
-        # if viewing: nil
-        pg = self.GetCurrentBox()
-        if pg:
-            content = pg.GetCurrentContent()
-            if content and content == CardView:
-                return
+    #     # if viewing: nil
+    #     pg = self.GetCurrentBox()
+    #     if pg:
+    #         content = pg.GetCurrentContent()
+    #         if content and content == CardView:
+    #             return
 
-        # if on deck: cycle selection
-        # none (cursor inside a card) -> card -> group -> box title label -> none (cursor inside the same card)
-        content = pg.GetCurrentContent()
-        if content == Deck:
-            bd = self.GetCurrentDeck()
-            sel = bd.GetSelection()
+    #     # if on deck: cycle selection
+    #     # none (cursor inside a card) -> card -> group -> box title label -> none (cursor inside the same card)
+    #     content = pg.GetCurrentContent()
+    #     if content == Deck:
+    #         bd = self.GetCurrentDeck()
+    #         sel = bd.GetSelection()
 
-            if isinstance(sel, list) and len(sel) > 1:
-                # selecting a group: there's no more to select
-                # so just cancel selection; when SelectionManager
-                # is deactivated, it will return focus to the last
-                # card that was selected
-                bd.UnselectAll()
-            elif len(sel) == 1:
-                # selecting a card: select group (if any)
-                card = sel[0]
-                if bd.GetContainingGroups(card):
-                    bd.SelectGroup(bd.GetContainingGroups(card)[0], True)
-                # if no group, cancel selection
-                else:
-                    bd.UnselectAll()
-            elif wxutils.GetCardAncestor(self.FindFocus()):
-                # inside a card: select the card
-                card = wxutils.GetCardAncestor(self.FindFocus())
-                bd.SelectCard(card, True)
-                bd.SetFocus()
-            else:
-                ev.Skip()
-        else:
-            ev.Skip()
+    #         if isinstance(sel, list) and len(sel) > 1:
+    #             # selecting a group: there's no more to select
+    #             # so just cancel selection; when SelectionManager
+    #             # is deactivated, it will return focus to the last
+    #             # card that was selected
+    #             bd.UnselectAll()
+    #         elif len(sel) == 1:
+    #             # selecting a card: select group (if any)
+    #             card = sel[0]
+    #             if bd.GetContainingGroups(card):
+    #                 bd.SelectGroup(bd.GetContainingGroups(card)[0], True)
+    #             # if no group, cancel selection
+    #             else:
+    #                 bd.UnselectAll()
+    #         elif wxutils.GetCardAncestor(self.FindFocus()):
+    #             # inside a card: select the card
+    #             card = wxutils.GetCardAncestor(self.FindFocus())
+    #             bd.SelectCard(card, True)
+    #             bd.SetFocus()
+    #         else:
+    #             ev.Skip()
+    #     else:
+    #         ev.Skip()
 
     def OnCtrlPgUp(self, ev):
         """Listens to "CTRL+PAGEUP."""
@@ -690,41 +689,41 @@ class ThreePyFiveFrame(wx.Frame):
         if sel < nb.GetPageCount() - 1:
             nb.SetSelection(nb.GetSelection()+1)
 
-    def OnHArrange(self, ev):
-        """Listens to `wx.EVT_MENU` from "Arrange Horizontally" in the "selection" menu."""
-        self.GetCurrentDeck().ArrangeSelection(Deck.HORIZONTAL)
-        self.Log("Horizontal arrange.")
+    # def OnHArrange(self, ev):
+    #     """Listens to `wx.EVT_MENU` from "Arrange Horizontally" in the "selection" menu."""
+    #     self.GetCurrentDeck().ArrangeSelection(Deck.HORIZONTAL)
+    #     self.Log("Horizontal arrange.")
 
-    def OnVArrange(self, ev):
-        """Listens to `wx.EVT_MENU` from "Arrange Vertically" in the "selection" menu."""
-        self.GetCurrentDeck().ArrangeSelection(Deck.VERTICAL)
-        self.Log("Vertical arrange.")
+    # def OnVArrange(self, ev):
+    #     """Listens to `wx.EVT_MENU` from "Arrange Vertically" in the "selection" menu."""
+    #     self.GetCurrentDeck().ArrangeSelection(Deck.VERTICAL)
+    #     self.Log("Vertical arrange.")
 
-    def OnCopy(self, ev):
-        """Listens to `wx.EVT_MENU` from "Copy" in the "selection" menu and to
-        `wx.EVT_TOOL` from "Copy" in the toolbar.
-        """
-        sel = self.GetCurrentDeck().GetSelection()
-        if sel:
-            self.GetCurrentDeck().CopySelected()
-            self.Log("Copy " + str(len(sel)) + " Cards.")
+    # def OnCopy(self, ev):
+    #     """Listens to `wx.EVT_MENU` from "Copy" in the "selection" menu and to
+    #     `wx.EVT_TOOL` from "Copy" in the toolbar.
+    #     """
+    #     sel = self.GetCurrentDeck().GetSelection()
+    #     if sel:
+    #         self.GetCurrentDeck().CopySelected()
+    #         self.Log("Copy " + str(len(sel)) + " Cards.")
 
-    def OnPaste(self, ev):
-        """Listens to `wx.EVT_MENU` from "Paste" in the "selection" menu and to
-        `wx.EVT_TOOL` from "Paste" in the toolbar.
-        """
-        self.GetCurrentDeck().PasteFromClipboard()
-        self.Log("Paste " + str(len(self.GetCurrentDeck().GetSelection())) + " Cards.")
+    # def OnPaste(self, ev):
+    #     """Listens to `wx.EVT_MENU` from "Paste" in the "selection" menu and to
+    #     `wx.EVT_TOOL` from "Paste" in the toolbar.
+    #     """
+    #     self.GetCurrentDeck().PasteFromClipboard()
+    #     self.Log("Paste " + str(len(self.GetCurrentDeck().GetSelection())) + " Cards.")
 
-    def OnDelete(self, ev):
-        """Requests deck to delete some cards, raised from the menu. See AfterDelete."""
-        bd = self.GetCurrentDeck()
-        sel = len(bd.GetSelection())
-        bd.DeleteSelected()
+    # def OnDelete(self, ev):
+    #     """Requests deck to delete some cards, raised from the menu. See AfterDelete."""
+    #     bd = self.GetCurrentDeck()
+    #     sel = len(bd.GetSelection())
+    #     bd.DeleteSelected()
 
-    def AfterDelete(self, ev):
-        """Listens to `Deck.EVT_DEL_CARD`."""
-        self.Log("Delete " + str(ev.number) + " Cards.")
+    # def AfterDelete(self, ev):
+    #     """Listens to `Deck.EVT_DEL_CARD`."""
+    #     self.Log("Delete " + str(ev.number) + " Cards.")
 
     def OnCtrlF(self, ev):
         """Listens to CTRL+F."""
@@ -754,29 +753,29 @@ class ThreePyFiveFrame(wx.Frame):
         """Listens to SHIFT+CTRL+G."""
         self.PrevSearchResult()
 
-    def OnInsertContentRight(self, ev):
-        """Listens to `wx.EVT_MENU` from "New Card: Right" in the "insert" menu."""
-        self.GetCurrentDeck().PlaceNewCard("Content", below=False)
+    # def OnInsertContentRight(self, ev):
+    #     """Listens to `wx.EVT_MENU` from "New Card: Right" in the "insert" menu."""
+    #     self.GetCurrentDeck().PlaceNewCard("Content", below=False)
 
-    def OnInsertContentBelow(self, ev):
-        """Listens to `wx.EVT_MENU` from "New Card: Below" in the "insert" menu."""
-        self.GetCurrentDeck().PlaceNewCard("Content", below=True)
+    # def OnInsertContentBelow(self, ev):
+    #     """Listens to `wx.EVT_MENU` from "New Card: Below" in the "insert" menu."""
+    #     self.GetCurrentDeck().PlaceNewCard("Content", below=True)
 
-    def OnInsertHeaderRight(self, ev):
-        """Listens to `wx.EVT_MENU` from "New Header: Right" in the "insert" menu."""
-        self.GetCurrentDeck().PlaceNewCard("Header", below=False)
+    # def OnInsertHeaderRight(self, ev):
+    #     """Listens to `wx.EVT_MENU` from "New Header: Right" in the "insert" menu."""
+    #     self.GetCurrentDeck().PlaceNewCard("Header", below=False)
 
-    def OnInsertHeaderBelow(self, ev):
-        """Listens to `wx.EVT_MENU` from "New Header: Below" in the "insert" menu."""
-        self.GetCurrentDeck().PlaceNewCard("Header", below=True)        
+    # def OnInsertHeaderBelow(self, ev):
+    #     """Listens to `wx.EVT_MENU` from "New Header: Below" in the "insert" menu."""
+    #     self.GetCurrentDeck().PlaceNewCard("Header", below=True)        
         
-    def OnInsertImage(self, ev):
-        """Listens to `wx.EVT_MENU` from "Insert image" in the "insert" menu."""
-        self.GetCurrentDeck().PlaceNewCard("Image", below=False)
+    # def OnInsertImage(self, ev):
+    #     """Listens to `wx.EVT_MENU` from "Insert image" in the "insert" menu."""
+    #     self.GetCurrentDeck().PlaceNewCard("Image", below=False)
 
-    def AfterCardCreated(self, ev):
-        """Listens to `Deck.EVT_NEW_CARD` from the `Deck` of every `Box`."""
-        self.Log("Created new " + ev.subclass + " card.")
+    # def AfterCardCreated(self, ev):
+    #     """Listens to `Deck.EVT_NEW_CARD` from the `Deck` of every `Box`."""
+    #     self.Log("Created new " + ev.subclass + " card.")
 
     def OnNew(self, ev):
         """Listens to `wx.EVT_TOOL` from "New" in the toolbar."""
@@ -838,7 +837,7 @@ class ThreePyFiveFrame(wx.Frame):
 
 ######################
 # WelcomePage class
-######################            
+######################
 
 class WelcomePage(wx.Panel):
     """
