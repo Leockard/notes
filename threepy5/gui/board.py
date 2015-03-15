@@ -431,6 +431,7 @@ class CardWin(Selectable):
         for p in wxutils.GetAncestors(self):
             if hasattr(p, "Navigate"):
                 p.Navigate(forward)
+                break
 
 
     ### subscribers: listen to changes in the underlying Card object
@@ -443,11 +444,14 @@ class CardWin(Selectable):
     ### callbacks
 
     def _on_tab(self, ev):
-        """Not bound to any event, called by children when simulating TAB traversal."""
-        ctrl = ev.GetEventObject()
-        forward = not ev.ShiftDown()
-        index = self.Children.index(ctrl)
+        """Not bound to any event, called by children when simulating TAB traversal.
 
+        * `ev: ` the `wx.KeyEvent` caught by the child window.
+        """
+        index = self.Children.index(ev.EventObject)
+        forward = not ev.ShiftDown()
+
+        print index
         if index == 0 and not forward:
             self._navigate_out(forward)
         elif index == len(self.Children)-1 and forward:
