@@ -648,7 +648,7 @@ class Box(utils.Publisher):
         * `obj: ` must be a `dict` in the format returned by `Dump`.
         """
         for d in data["decks"]:
-            dck = self.NewDeck()
+            dck = self.NewDeck(d["name"])
             dck.Load(d)
 
 
