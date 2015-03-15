@@ -165,13 +165,6 @@ class CardView(wx.Panel):
 
     ### callbacks
 
-    def _on_cancel_view(self, ev):
-        """Listens to `Card.EVT_CANCEL_VIEW` on every viewed `Card`."""
-        self.Restore()
-        event = card.Card.CancelViewEvent(id=wx.ID_ANY)
-        event.SetEventObject(ev.GetEventObject())
-        self.GetEventHandler().ProcessEvent(event)
-
 
         
 ######################

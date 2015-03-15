@@ -1301,7 +1301,7 @@ class Board(wxutils.AutoSize):
                     
                 # all other keys cancel selection
                 else:
-                    self.Ative = False
+                    self.Active = False
 
 
 
