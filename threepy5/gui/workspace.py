@@ -27,7 +27,6 @@ class Canvas(wxutils.AutoSize):
         super(Canvas, self).__init__(parent)
         self._init_UI()
         self.Bind(wx.EVT_SHOW, self._on_show)
-        self.Bind(wx.EVT_IDLE, self._on_idle)
 
 
     ### init methods
@@ -40,6 +39,19 @@ class Canvas(wxutils.AutoSize):
         
         self.Sizer = box
         self.ctrl = ctrl        
+
+
+    ### properties
+
+    @property
+    def Annotation(self):
+        """The tracked `Annotation`."""
+        return self._annot
+
+    @Annotation.setter
+    def Annotation(self, annot):
+        self._annot = annot
+        self.Bind(wx.EVT_IDLE, self._on_idle)
 
                         
     ### methods
@@ -55,7 +67,7 @@ class Canvas(wxutils.AutoSize):
             self.FitToChildren()
 
     def _save_lines(self):
-        self.Annotation.lines = self.ctrl.lines
+        self._annot.lines = self.ctrl.lines
 
             
     ### callbacks
@@ -475,11 +487,9 @@ class Workspace(wx.Panel):
     # Workspace
     ##############
 
-    def __init__(self, parent):
+    def __init__(self, parent, deck=None):
         """Constructor."""
         super(Workspace, self).__init__(parent=parent)
-        self.Deck = py5.AnnotatedDeck()
-        """The tracked `AnnotatedDeck`."""
         
         self._contents = []
         """A list of all controls that can be shown in the working sizer."""
@@ -489,10 +499,10 @@ class Workspace(wx.Panel):
 
         self.Scale = 1.0
         """The current zoom scale."""
-        
+
+        self.Deck = deck
         self._init_UI()
         self._init_accels()
-        
         self.WorkOn("Board")
 
         
@@ -504,21 +514,19 @@ class Workspace(wx.Panel):
         self._init_canvas()
         self._init_viewer()
         self._init_sidebar()
-        self._init_minimap()
+        # self._init_minimap()
         self._init_sizers()        
         self._init_toolbar()
 
     def _init_board(self):
         bd = board.Board(self)
         bd.Hide()
-        bd.Deck = self.Deck
         self._contents.append(bd)
         self.Board = bd
 
     def _init_canvas(self):
         cv = Canvas(self)
         cv.Hide()
-        cv.Annotation = self.Deck.annotation
         self._contents.append(cv)
         self.Canvas = cv
 
@@ -607,6 +615,20 @@ class Workspace(wx.Panel):
 
         self.SetAcceleratorTable(wx.AcceleratorTable(accels))
         
+
+    ### properties
+
+    @property
+    def Deck(self):
+        """The tracked `AnnotatedDeck`."""
+        return self._deck
+
+    @Deck.setter
+    def Deck(self, deck):
+        self._deck = deck
+        if deck is not None:
+            self.Board.Deck = deck
+            self.Canvas.Annotation = deck.annotation
 
     ### methods
 
