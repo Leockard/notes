@@ -619,10 +619,11 @@ class ImageWin(CardWin):
         self._load_img()
 
     def _update_scale(self, val):
-        img = self._bmp.GetBitmap().ConvertToImage()
-        w, h = [i * val for i in self._bmp.Size]
-        img.Rescale(w, h, quality=wx.IMAGE_QUALITY_HIGH)
-        self._bmp.SetBitmap(wx.BitmapFromImage(img))
+        if self._bmp.GetBitmap().IsOk():
+            img = self._bmp.GetBitmap().ConvertToImage()
+            w, h = [i * val for i in self._bmp.Size]
+            img.Rescale(w, h, quality=wx.IMAGE_QUALITY_HIGH)
+            self._bmp.SetBitmap(wx.BitmapFromImage(img))
 
 
     ### callbacks
