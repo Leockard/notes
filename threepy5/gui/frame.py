@@ -437,12 +437,15 @@ class ThreePyFiveFrame(wx.Frame):
         path = "/home/leo/research/reading_notes/Kandel - Principles of Neural Science"
         format_str = "P files (*.p)|*.p|All files|*.*"
         fd = wx.FileDialog(self, "Open", path, "", format_str, wx.FD_OPEN|wx.FD_FILE_MUST_EXIST)
-        
+
         if fd.ShowModal() == wx.ID_OK:
             with open(fd.GetPath(), "r") as f:
                 self._file_name = fd.GetPath()
                 self._init_shelf(placeholder=False)
+                
+                self.Shelf.Hide()
                 self.Shelf.Box.Load(pickle.load(f))
+                self.Shelf.Show()
             self.Shelf.SetFocus()
 
     def Save(self):
