@@ -870,7 +870,7 @@ class ImageMethods(unittest.TestCase):
     def testDumpLoad(self):
         """Image.Dump and Load should correctly give and read all info."""
         img = py5.Image()
-        
+
         data = img.Dump()
         self.assertEqual(data["id"], img._id)
         self.assertEqual(list(data["rect"]), list(img.rect))
@@ -878,8 +878,9 @@ class ImageMethods(unittest.TestCase):
         self.assertEqual(data["scale"], img.scale)
         
         data["id"] = 3
-        data["rect"] = (1,2,3,4)
-        data["path"] = "/foo/bar/baz"
+        data["path"] = "/home/leo/code/threepy5/threepy5/img/brain.bmp"
+        # img size = 760x668
+        data["rect"] = [0,0,760,668]
         data["scale"] = 2.0
         
         img.Load(data)
