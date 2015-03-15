@@ -658,7 +658,7 @@ class ContentWin(CardWin):
     and shown by `*View` objects.
     """
     # sizes
-    DEFAULT_SZ   = py5.Content.DEFAULT_RECT[2:]
+    DEFAULT_SZ   = (py5.Content.DEFAULT_RECT.width, py5.Content.DEFAULT_RECT.height)
     COLLAPSED_SZ = (250, 30)
 
     # colours; thanks paletton.com!
