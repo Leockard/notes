@@ -188,16 +188,11 @@ class CustomSearchCtrl(wx.SearchCtrl):
         * `old: ` a valid index in the internal search result list (`self._match`).
         * `new: ` idem.
         """
-        # s = self.search_ctrl.Value
-        s = self._str
+        ctrl, pos = self._match[old]
+        ctrl.SetStyle(pos, pos + len(self._str), wx.TextAttr(None, wx.YELLOW))
 
-        ctrl = self._match[old][0]
-        pos = self._match[old][1]
-        ctrl.SetStyle(pos, pos + len(s), wx.TextAttr(None, wx.YELLOW))
-
-        ctrl = self._match[new][0]
-        pos = self._match[new][1]
-        ctrl.SetStyle(pos, pos + len(s), wx.TextAttr(None, wx.RED))
+        ctrl, pos = self._match[new]
+        ctrl.SetStyle(pos, pos + len(self._str), wx.TextAttr(None, wx.RED))
 
         # make sure the matching ctrl is visible
         win = wxutils.GetCardAncestor(ctrl)
