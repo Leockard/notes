@@ -51,6 +51,9 @@ class Canvas(wxutils.AutoSize):
     @Annotation.setter
     def Annotation(self, annot):
         self._annot = annot
+        self.ctrl.lines = annot.lines
+
+        py5.subscribe("lines", self._update_lines, annot)
         self.Bind(wx.EVT_IDLE, self._on_idle)
 
                         
@@ -67,7 +70,7 @@ class Canvas(wxutils.AutoSize):
             self.FitToChildren()
 
     def _save_lines(self):
-        self._annot.lines = self.ctrl.lines
+        py5.Annotation.lines.silently(self._annot, self.ctrl.lines)
 
             
     ### callbacks
@@ -78,6 +81,12 @@ class Canvas(wxutils.AutoSize):
 
     def _on_idle(self, ev):
         self._save_lines()
+
+        
+    ### subscribers
+
+    def _update_lines(self, val):
+        self.ctrl.lines = val
 
 
         
