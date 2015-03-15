@@ -518,6 +518,7 @@ class testAutoSize(unittest.TestCase):
 ###            and selection should be []
 ### CardView: add, set, restore, init
 ### DeckView: position, show/hide, Minicard position, ContentMini background colour
+### CardWin _on_tab
 
 
 if __name__ == "__main__":
