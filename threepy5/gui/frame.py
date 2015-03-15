@@ -188,7 +188,7 @@ class Shelf(wx.Notebook):
     a `Shelf` notebook stores multiple `Workspaces`, each in one page.
     """
     
-    def __init__(self, parent):
+    def __init__(self, parent, placeholder=True):
         """Constructor.
 
         * `parent: ` the parent `ThreePyFiveFrame`.
@@ -198,13 +198,15 @@ class Shelf(wx.Notebook):
         self._init_menu()
         self._init_accels()
 
+        if placeholder:
+            self.Box.NewDeck("Untitled Deck")
+
 
     ### init methods
 
-    def _init_box(self):
+    def _init_box(self, placeholder=True):
         box = py5.Box()
         py5.subscribeList("decks", self._on_new_deck, self._on_pop_deck, box)
-        box.NewDeck("foo bar")
         self.Box = box                
 
     def _init_menu(self):
@@ -332,7 +334,7 @@ class WelcomePage(wx.Panel):
 
     def _on_new(self, ev):
         parent = self.Parent
-        parent._init_shelf()
+        parent._init_shelf(placeholder=True)
 
     def _on_load(self, ev):
         self.Parent._on_open(None)
@@ -418,10 +420,10 @@ class ThreePyFiveFrame(wx.Frame):
         ctrl.Hide()
         self._search_ctrl = ctrl
 
-    def _init_shelf(self):
+    def _init_shelf(self, placeholder):
         self._welcome.Hide()
         
-        shelf = Shelf(self)
+        shelf = Shelf(self, placeholder)
         self.Shelf = shelf
 
         self.Sizer.Clear()                
@@ -439,7 +441,7 @@ class ThreePyFiveFrame(wx.Frame):
         if fd.ShowModal() == wx.ID_OK:
             with open(fd.GetPath(), "r") as f:
                 self._file_name = fd.GetPath()
-                self._init_shelf()
+                self._init_shelf(placeholder=False)
                 self.Shelf.Box.Load(pickle.load(f))
             self.Shelf.SetFocus()
 
