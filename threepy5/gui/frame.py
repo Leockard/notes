@@ -512,5 +512,5 @@ class ThreePyFiveFrame(wx.Frame):
     def _on_debug(self, ev):
         print "------DEBUG-----"
         # c = self.Shelf.Box.decks[0].cards[-1]
-        print self.Shelf.Box.decks[0].cards
+        print self.FindFocus()
 
