@@ -225,7 +225,7 @@ class Content(Card):
 
     RATING_MAX = 3
     DEFAULT_SZ = (250, 150)
-    DEFAULT_RECT = (0,0,250,150)
+    DEFAULT_RECT = utils.Rect(0,0,250,150)
 
     title = LoudSetterTitle()
     kind = LoudSetterKind()
