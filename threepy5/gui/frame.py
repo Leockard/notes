@@ -165,7 +165,6 @@ class CustomSearchCtrl(wx.SearchCtrl):
         
     def PrevSearchResult(self):
         """Highlights the previous search result."""
-        print "prev"
         if self._head != None:
             old = i = self._head
             new = i - 1
@@ -175,7 +174,6 @@ class CustomSearchCtrl(wx.SearchCtrl):
 
     def NextSearchResult(self):
         """Highlights the next search result with a strong highlight and scrolls it into view."""
-        print "next"
         if self._head != None:
             old = i = self._head
             new = i + 1
@@ -204,7 +202,6 @@ class CustomSearchCtrl(wx.SearchCtrl):
         # make sure the matching ctrl is visible
         win = wxutils.GetCardAncestor(ctrl)
         if win:
-            # self.GetCurrentDeck().ScrollToCard(win)
             self.Parent.Shelf.CurrentWorkspace.Board.ScrollToCard(win)
             if isinstance(win, board.ContentWin):
                 if win.Card.collapsed:
