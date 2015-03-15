@@ -999,7 +999,7 @@ class ContentWin(CardWin):
 
         * `pos: ` the position for the specified character.
         """
-        self.content.ShowPosition(pos)
+        self._content.ShowPosition(pos)
 
     def _collapse(self, val):
         if self.CollapseEnabled:
