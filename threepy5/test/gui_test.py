@@ -6,7 +6,7 @@ import threepy5.gui.wxutils as wxutils
 import unittest
 import wx
 import threepy5.utils as utils
-from threepy5.gui import board as newgui
+import threepy5.gui as gui
 from frame_test import TestFrame
 from random import randint
 
@@ -30,7 +30,7 @@ class CardWinInit(unittest.TestCase):
     def testCardWinInit(self):
         """`CardWin` should properly track `Card` properties."""
         card = py5.Card()
-        win = newgui.CardWin(self.frame, card)
+        win = gui.board.CardWin(self.frame, card)
 
         card.rect = self.test_rect
 
@@ -39,7 +39,7 @@ class CardWinInit(unittest.TestCase):
     def testContentWinInit(self):
         """`ContentWin` should properly track `Card` properties."""
         card = py5.Content()
-        win = newgui.ContentWin(self.frame, card)
+        win = gui.board.ContentWin(self.frame, card)
 
         card.rect      = self.test_rect
         card.title     = self.test_title
@@ -56,7 +56,7 @@ class CardWinInit(unittest.TestCase):
     def testHeaderWinInit(self):
         """`HeaderWin` should properly track `Header` properties."""
         card = py5.Header()
-        win = newgui.HeaderWin(self.frame, card)
+        win = gui.board.HeaderWin(self.frame, card)
 
         card.rect = self.test_rect
         card.header = self.test_title
@@ -67,7 +67,7 @@ class CardWinInit(unittest.TestCase):
     def testImageWinInit(self):
         """`ImageWin` should properly track `Image` properties."""
         card = py5.Image()
-        win = newgui.ImageWin(self.frame, card)
+        win = gui.board.ImageWin(self.frame, card)
 
         card.rect = self.test_rect
 
@@ -86,7 +86,7 @@ class testKindSelectMenu(unittest.TestCase):
 
     def testNumberOfItems(self):
         """`KindSelectMenu` should have one item for every kind type, with the right label."""
-        menu = newgui.ContentWin.KindButton.KindSelectMenu()
+        menu = gui.board.ContentWin.KindButton.KindSelectMenu()
 
         menu_labels = set([it.Label for it in menu.MenuItems])
 
@@ -108,7 +108,7 @@ class testBoard(unittest.TestCase):
 
     def testAddCard(self):
         """`Board` should add all its `Card`s to its tracked `Deck`."""
-        board = newgui.Board(self.frame, py5.Deck())
+        board = gui.board.Board(self.frame, py5.Deck())
         board.Deck.NewCard("Content")
         board.Deck.NewCard("Header", pos=(10,10))
         board.Deck.NewCard("Image", pos=(20,20))
@@ -118,7 +118,7 @@ class testBoard(unittest.TestCase):
 
     def testDragSelect(self):
         """`Board` should select all `Card`s under the drag-select rect."""
-        board = newgui.Board(self.frame, py5.Deck())
+        board = gui.board.Board(self.frame, py5.Deck())
         board.Deck.NewCard("Header", pos=(10,10))
         board.Deck.NewCard("Image", pos=(20,20))
 
@@ -143,7 +143,7 @@ class testBoard(unittest.TestCase):
 
     def testDragMove(self):
         """`Board` should move all `Card`s when click-dragging."""
-        board = newgui.Board(self.frame, py5.Deck())
+        board = gui.board.Board(self.frame, py5.Deck())
         num = 20
         cards = []
         start_pos = {}
@@ -177,7 +177,7 @@ class testBoard(unittest.TestCase):
 
     def testFitToChildren(self):
         """`Board` should adequately enlarge its virtual size to fit all children."""
-        board = newgui.Board(self.frame, py5.Deck())
+        board = gui.board.Board(self.frame, py5.Deck())
         rect = board.Rect
 
         for a in xrange(25):
@@ -193,7 +193,7 @@ class testBoard(unittest.TestCase):
 
     def testHorizontalArrange(self):
         """`Board` should adequately arrange its Cards."""
-        board = newgui.Board(self.frame, py5.Deck())
+        board = gui.board.Board(self.frame, py5.Deck())
         num = 25
 
         for a in xrange(num):
@@ -212,7 +212,7 @@ class testBoard(unittest.TestCase):
 
     def testVerticalArrange(self):
         """`Board` should adequately arrange its Cards."""
-        board = newgui.Board(self.frame, py5.Deck())
+        board = gui.board.Board(self.frame, py5.Deck())
         num = 25
 
         for a in xrange(num):
@@ -231,7 +231,7 @@ class testBoard(unittest.TestCase):
 
     def testSelectAll(self):
         """`Board` should correctly select all cards."""
-        board = newgui.Board(self.frame, py5.Deck())
+        board = gui.board.Board(self.frame, py5.Deck())
         num = 25
 
         for a in xrange(num):
@@ -242,7 +242,7 @@ class testBoard(unittest.TestCase):
 
     def testGroupSelected(self):
         """`Board` should correctly group all selected cards."""
-        board = newgui.Board(self.frame, py5.Deck())
+        board = gui.board.Board(self.frame, py5.Deck())
         num = 25
 
         for a in xrange(num):
@@ -257,7 +257,7 @@ class testBoard(unittest.TestCase):
 
     def testScrollToCard(self):
         """`Board` should put the whole `Card` into view."""
-        board = newgui.Board(self.frame, py5.Deck())
+        board = gui.board.Board(self.frame, py5.Deck())
         num = 25
 
         for a in xrange(num):
@@ -273,7 +273,7 @@ class testBoard(unittest.TestCase):
 
     def testCopyPaste(self):
         """`Board` should copy and paste cards correctly."""
-        board = newgui.Board(self.frame, py5.Deck())
+        board = gui.board.Board(self.frame, py5.Deck())
         num = 25
         
         for a in xrange(num):
@@ -298,7 +298,7 @@ class testSelectionManager(unittest.TestCase):
 
     def testActive(self):
         """`SelectionManager` should handle its `Active` attribute according to focus and selection."""
-        board = newgui.Board(self.frame, py5.Deck())
+        board = gui.board.Board(self.frame, py5.Deck())
         board.Deck.NewCard("Content")
         board.Deck.NewCard("Header", pos=(10,10))
         board.Deck.NewCard("Image", pos=(20,20))
@@ -341,7 +341,7 @@ class testSelectionManager(unittest.TestCase):
 
     def testSelectNearest(self):
         """`SelectionManager` should select the nearest card correctly."""
-        board = newgui.Board(self.frame, py5.Deck())
+        board = gui.board.Board(self.frame, py5.Deck())
         board.Deck.NewCard("Content", pos=(15,15))
         board.Deck.NewCard("Content", pos=(15,200))
         board.Deck.NewCard("Content", pos=(300,15))
@@ -370,7 +370,7 @@ class testSelectionManager(unittest.TestCase):
         
     def testExtendSelection(self):
         """`SelectionManager` should extend the selection to the nearest card correctly."""
-        board = newgui.Board(self.frame, py5.Deck())
+        board = gui.board.Board(self.frame, py5.Deck())
         board.Deck.NewCard("Content", pos=(15,15))
         board.Deck.NewCard("Content", pos=(15,200))
         board.Deck.NewCard("Content", pos=(300,15))
@@ -398,7 +398,7 @@ class testSelectionManager(unittest.TestCase):
 
     def testMoveSelection(self):
         """`SelectionManager` should move the selected cards correctly."""
-        board = newgui.Board(self.frame, py5.Deck())
+        board = gui.board.Board(self.frame, py5.Deck())
         num = 10
         step = 10
 
@@ -413,7 +413,7 @@ class testSelectionManager(unittest.TestCase):
 
     def testDeleteSelection(self):
         """`SelectionManager` should delete the selected cards correctly."""
-        board = newgui.Board(self.frame, py5.Deck())
+        board = gui.board.Board(self.frame, py5.Deck())
 
         for i in range(10):
             c = board.Deck.NewCard("Content", pos=(randint(1, 10),randint(1, 10)))
@@ -438,7 +438,7 @@ class testImageWin(unittest.TestCase):
     def testDragResize(self):
         pass
         # """ImageWin should correctly resize when its borders are click and dragged."""
-        # board = newgui.Board(self.frame)
+        # board = gui.board.Board(self.frame)
         # board.Deck.NewCard("Image", pos=(0,0))
         # w = board.Cards[-1]
 
@@ -460,7 +460,7 @@ class testEditText(unittest.TestCase):
 
     def testColours(self):
         """`EditText` should correctly set and show its colours."""
-        text = newgui.wxutils.EditText(self.frame)
+        text = gui.board.wxutils.EditText(self.frame)
 
         text.Input()
         self.assertEqual(text.BackgroundColour, text.Second)
@@ -482,7 +482,7 @@ class testAutoSize(unittest.TestCase):
 
     def testSize(self):
         """`AutoSize` should correctly set its size to fit its children."""
-        auto = newgui.wxutils.AutoSize(self.frame)
+        auto = gui.board.wxutils.AutoSize(self.frame)
         test_path = "/home/leo/research/reading_notes/Kandel - Principles of Neural Science/brain.bmp"
         bmp = wx.Bitmap(test_path)
         static = wx.StaticBitmap(auto, bitmap=bmp)
@@ -496,7 +496,6 @@ class testAutoSize(unittest.TestCase):
 
     def tearDown(self):
         wx.CallAfter(self.app.Exit)
-
 
                 
 ### finish testImageWin.testDragResize
