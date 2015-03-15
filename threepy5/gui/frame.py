@@ -58,6 +58,14 @@ class CustomSearchCtrl(wx.SearchCtrl):
         self.Bind(wx.EVT_MENU, self._on_esc, esc)
         accels.append(wx.AcceleratorEntry(wx.ACCEL_NORMAL, 27 , esc.GetId()))
 
+        prev = wx.MenuItem(ghost, wx.ID_ANY, "previous")
+        self.Bind(wx.EVT_MENU, self._on_shft_ctrl_g, prev)
+        accels.append(wx.AcceleratorEntry(wx.ACCEL_SHIFT|wx.ACCEL_CTRL, ord("G") , prev.GetId()))
+
+        nxt = wx.MenuItem(ghost, wx.ID_ANY, "next")
+        self.Bind(wx.EVT_MENU, self._on_ctrl_g, nxt)
+        accels.append(wx.AcceleratorEntry(wx.ACCEL_CTRL, ord("G") , nxt.GetId()))
+
         self.SetAcceleratorTable(wx.AcceleratorTable(accels))
 
         
@@ -155,6 +163,54 @@ class CustomSearchCtrl(wx.SearchCtrl):
         else:
             self._set_status(self.FAILURE)
         
+    def PrevSearchResult(self):
+        """Highlights the previous search result."""
+        print "prev"
+        if self._head != None:
+            old = i = self._head
+            new = i - 1
+            if new < 0: new = len(self._match) - 1
+            self._jump_search_match(old, new)
+            self._head = new
+
+    def NextSearchResult(self):
+        """Highlights the next search result with a strong highlight and scrolls it into view."""
+        print "next"
+        if self._head != None:
+            old = i = self._head
+            new = i + 1
+            if new >= len(self._match): new = 0
+            self._jump_search_match(old, new)
+            self._head = new
+
+    def _jump_search_match(self, old, new):
+        """Unhighlights the `old` search result and highlights the `new` one. Don't use this
+        method directly, instead use `PrevSearchResult` and `NextSearchResult`.
+
+        * `old: ` a valid index in the internal search result list (`self._match`).
+        * `new: ` idem.
+        """
+        # s = self.search_ctrl.Value
+        s = self._str
+
+        ctrl = self._match[old][0]
+        pos = self._match[old][1]
+        ctrl.SetStyle(pos, pos + len(s), wx.TextAttr(None, wx.YELLOW))
+
+        ctrl = self._match[new][0]
+        pos = self._match[new][1]
+        ctrl.SetStyle(pos, pos + len(s), wx.TextAttr(None, wx.RED))
+
+        # make sure the matching ctrl is visible
+        win = wxutils.GetCardAncestor(ctrl)
+        if win:
+            # self.GetCurrentDeck().ScrollToCard(win)
+            self.Parent.Shelf.CurrentWorkspace.Board.ScrollToCard(win)
+            if isinstance(win, board.ContentWin):
+                if win.Card.collapsed:
+                    win.Card.collapsed = False
+                win.ScrollToChar(pos)
+
 
     ### callbacks
 
@@ -179,6 +235,11 @@ class CustomSearchCtrl(wx.SearchCtrl):
         if self.Value:
             self._search_update()
 
+    def _on_shft_ctrl_g(self, ev):
+        self.PrevSearchResult()
+
+    def _on_ctrl_g(self, ev):
+        self.NextSearchResult()
 
 
 
