@@ -63,13 +63,13 @@ class Selectable(wx.Panel):
     BORDER_THICK = 5
     SELECT_CL = (0, 0, 0, 0)
 
-    def __init__(self, parent, size=(0,0), style=0, scale=1.0):
+    def __init__(self, parent, pos=wx.DefaultPosition, size=(0,0), style=0, scale=1.0):
         """Constructor.
 
         * `parent: ` the parent `Board`.
         * `size: ` the window size.
         """
-        super(Selectable, self).__init__(parent, size=size, style=0)
+        super(Selectable, self).__init__(parent, pos=pos, size=size, style=0)
         self._selected = False
         self._main = None
         self._init_border()
@@ -520,12 +520,12 @@ class ImagePlaceHolder(Selectable):
     """A `Selectable` with a button to load an image from disk. Does not track any `Card`s."""
     DEFAULT_SZ = (50, 50)
 
-    def __init__(self, parent, size=DEFAULT_SZ):
+    def __init__(self, parent, pos=wx.DefaultPosition, size=DEFAULT_SZ):
         """Constructor.
 
         * `parent: ` the parent `Board`.
         """
-        super(ImagePlaceHolder, self).__init__(parent, size=size)
+        super(ImagePlaceHolder, self).__init__(parent, pos=pos, size=size)
         # only `CardWin`s call _init_UI, selectable doesn't!
         self._init_UI()
 
@@ -557,7 +557,7 @@ class ImagePlaceHolder(Selectable):
 ######################
 
 class ImageWin(CardWin):
-    """A `CardWin` that holds a single image. Unlike other `Selectables`, one must
+    """A `CardWin` that holds a single image. Unlike other `Selectable`s, one must
     click the center of the window (the image) to select or move the `ImageWin`.
     Click and dragging over the border will resize the window."""
     DEFAULT_SZ = py5.Image.DEFAULT_SZ
@@ -1408,6 +1408,12 @@ class Board(wxutils.AutoSize):
         menu.AppendItem(copy_it)
         menu.AppendItem(past_it)
 
+        # insert
+        ins_img = wx.MenuItem(menu, wx.ID_ANY, "Insert placeholder")
+        self.Bind(wx.EVT_MENU, self._on_ins_img, ins_img)
+        
+        menu.AppendSeparator()
+        menu.AppendItem(ins_img)
         
         self.menu = menu
         self._menu_pos = (0, 0)        
@@ -1987,6 +1993,9 @@ class Board(wxutils.AutoSize):
         
     def _on_paste(self, ev):
         self.PasteFromClipboard(self._menu_pos)
+
+    def _on_ins_img(self, ev):
+        ImagePlaceHolder(self, self._menu_pos)
 
     def _on_esc(self, ev):
         if not self.CycleSelection():
