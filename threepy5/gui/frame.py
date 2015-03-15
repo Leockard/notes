@@ -3,6 +3,7 @@
 
 import wx
 import re
+import os
 import pickle
 import wxutils
 import board
@@ -355,6 +356,10 @@ class ThreePyFiveFrame(wx.Frame):
         self._init_UI()
         self._init_search()
         self._init_accels()
+
+        self._file_name = ""
+        """Path to the ".p" file."""
+
         self.Show()
 
 
@@ -433,9 +438,42 @@ class ThreePyFiveFrame(wx.Frame):
         
         if fd.ShowModal() == wx.ID_OK:
             with open(fd.GetPath(), "r") as f:
+                self._file_name = fd.GetPath()
                 self._init_shelf()
                 self.Shelf.Box.Load(pickle.load(f))
             self.Shelf.SetFocus()
+
+    def Save(self):
+        print "save"
+        # remember focus to restore after saving
+        focus = self.FindFocus()
+        if isinstance(focus, wx.TextCtrl):
+            caret = focus.GetInsertionPoint()
+
+        # if we don't have a path yet, ask for one
+        path = ""
+        
+        print self._file_name
+        
+        if self._file_name == "":
+            fd = wx.FileDialog(self, "Save", os.getcwd(), "", "P files (*.p)|*.p",
+                               wx.FD_SAVE|wx.FD_OVERWRITE_PROMPT)
+            if fd.ShowModal() == wx.ID_CANCEL:
+                path = ""
+            else:
+                path = fd.GetPath()
+        else:
+            path = self._file_name
+
+        if path:
+            with open(path, 'w') as out:
+                pickle.dump(self.Shelf.Box.Dump(), out)
+            self._file_name = path
+
+        if focus:
+            focus.SetFocus()
+        if isinstance(focus, wx.TextCtrl):
+            focus.SetInsertionPoint(caret)
 
     def Log(self, s):
         """Log the string `s` into the status bar.
@@ -468,6 +506,6 @@ class ThreePyFiveFrame(wx.Frame):
 
     def _on_debug(self, ev):
         print "------DEBUG-----"
-        w = self.Shelf.Box.decks[0].cards[-1]
-        print w.Dump()
+        # c = self.Shelf.Box.decks[0].cards[-1]
+        print self.Shelf.Box.decks[0].cards
 
