@@ -26,7 +26,6 @@ class CardWinInit(unittest.TestCase):
     def setUp(self):
         self.app = wx.App()
         self.frame = TestFrame(None)
-        # self.app.MainLoop()
 
     def testCardWinInit(self):
         """`CardWin` should properly track `Card` properties."""
@@ -84,7 +83,6 @@ class testKindSelectMenu(unittest.TestCase):
     def setUp(self):
         self.app = wx.App()
         self.frame = TestFrame(None)
-        # self.app.MainLoop()
 
     def testNumberOfItems(self):
         """`KindSelectMenu` should have one item for every kind type, with the right label."""
@@ -98,7 +96,6 @@ class testKindSelectMenu(unittest.TestCase):
 
     def tearDown(self):
         wx.CallAfter(self.app.Exit)
-        # self.app.MainLoop()
 
 
 
@@ -290,7 +287,6 @@ class testBoard(unittest.TestCase):
 
     def tearDown(self):
         wx.CallAfter(self.app.Exit)
-        # self.app.MainLoop()
 
 
 
@@ -299,7 +295,6 @@ class testSelectionManager(unittest.TestCase):
     def setUp(self):
         self.app = wx.App()
         self.frame = TestFrame(None)
-        # self.app.MainLoop()
 
     def testActive(self):
         """`SelectionManager` should handle its `Active` attribute according to focus and selection."""
@@ -432,7 +427,6 @@ class testSelectionManager(unittest.TestCase):
 
     def tearDown(self):
         wx.CallAfter(self.app.Exit)
-        # self.app.MainLoop()        
 
 
 class testImageWin(unittest.TestCase):
@@ -440,7 +434,6 @@ class testImageWin(unittest.TestCase):
     def setUp(self):
         self.app = wx.App()
         self.frame = TestFrame(None)
-        # self.app.MainLoop()
 
     def testDragResize(self):
         pass
@@ -456,7 +449,6 @@ class testImageWin(unittest.TestCase):
 
     def tearDown(self):
         wx.CallAfter(self.app.Exit)
-        # self.app.MainLoop()
 
 
 
@@ -465,7 +457,6 @@ class testEditText(unittest.TestCase):
     def setUp(self):
         self.app = wx.App()
         self.frame = TestFrame(None)
-        # self.app.MainLoop()
 
     def testColours(self):
         """`EditText` should correctly set and show its colours."""
@@ -480,7 +471,6 @@ class testEditText(unittest.TestCase):
 
     def tearDown(self):
         wx.CallAfter(self.app.Exit)
-        # self.app.MainLoop()
 
 
         
@@ -489,7 +479,6 @@ class testAutoSize(unittest.TestCase):
     def setUp(self):
         self.app = wx.App()
         self.frame = TestFrame(None)
-        # self.app.MainLoop()
 
     def testSize(self):
         """`AutoSize` should correctly set its size to fit its children."""
@@ -507,8 +496,8 @@ class testAutoSize(unittest.TestCase):
 
     def tearDown(self):
         wx.CallAfter(self.app.Exit)
-        # self.app.MainLoop()
-        
+
+
                 
 ### finish testImageWin.testDragResize
 ### test coloured text
