@@ -373,8 +373,8 @@ class Image(Card):
         * `obj: ` must be a dict in the format returned by `Image.Dump`.
         """
         super(Image, self).Load(data)
-        data["path"] = self.path
-        data["scale"] = self.scale
+        self.path = data["path"]
+        self.scale = data["scale"]
 
         
     ### subscribers
