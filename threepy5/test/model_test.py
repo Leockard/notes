@@ -879,7 +879,6 @@ class ImageMethods(unittest.TestCase):
         
         data["id"] = 3
         data["path"] = "/home/leo/code/threepy5/threepy5/img/brain.bmp"
-        # img size = 760x668
         data["rect"] = [0,0,760,668]
         data["scale"] = 2.0
         
