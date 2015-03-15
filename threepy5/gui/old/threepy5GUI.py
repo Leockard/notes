@@ -71,104 +71,104 @@ class ThreePyFiveFrame(wx.Frame):
     #         result = pg.deck
     #     return result
 
-    def Search(self):
-        """Search the current text in the search bar in all of the Cards'
-        texts (titles, contents, etc). Cycle through finds with (SHIFT+)CTRL+G.
-        """
-        # search string in lower case
-        s = self.search_ctrl.GetValue().lower()
+    # def Search(self):
+    #     """Search the current text in the search bar in all of the Cards'
+    #     texts (titles, contents, etc). Cycle through finds with (SHIFT+)CTRL+G.
+    #     """
+    #     # search string in lower case
+    #     s = self.search_ctrl.GetValue().lower()
         
-        # if we were already searching, clear up highlighting
-        if self.search_find:
-            for c, i in self.search_find:
-                c.SetStyle(i, i + len(self.search_str), c.GetDefaultStyle())
+    #     # if we were already searching, clear up highlighting
+    #     if self.search_find:
+    #         for c, i in self.search_find:
+    #             c.SetStyle(i, i + len(self.search_str), c.GetDefaultStyle())
 
-        # if no search string, reset variables and quit
-        if not s:
-            self.search_ctrl.SetBackgroundColour(wx.WHITE)
-            self.search_find = []
-            self.search_str = ""
-            self.search_head = None
-            return
+    #     # if no search string, reset variables and quit
+    #     if not s:
+    #         self.search_ctrl.SetBackgroundColour(wx.WHITE)
+    #         self.search_find = []
+    #         self.search_str = ""
+    #         self.search_head = None
+    #         return
                 
-        # where are we searching?
-        cards = []
-        content = self.GetCurrentBox().GetCurrentContent()
-        if content == Deck:
-            cards = self.GetCurrentDeck().GetCards()
-        elif content == CardView:
-            cards = self.GetCurrentBox().view_card.GetCards()
+    #     # where are we searching?
+    #     cards = []
+    #     content = self.GetCurrentBox().GetCurrentContent()
+    #     if content == Deck:
+    #         cards = self.GetCurrentDeck().GetCards()
+    #     elif content == CardView:
+    #         cards = self.GetCurrentBox().view_card.GetCards()
 
-        # gather all (lower case) values in which to search
-        # including the control they appear in
-        txt_ctrls = []
-        for c in cards:
-            if isinstance(c, Content):
-                txt_ctrls.append((c.GetTitle().lower(),   c.title))
-                txt_ctrls.append((c.GetContent().lower(), c.content))
-            if isinstance(c, Header):
-                txt_ctrls.append((c.GetHeader().lower(),  c.header))
+    #     # gather all (lower case) values in which to search
+    #     # including the control they appear in
+    #     txt_ctrls = []
+    #     for c in cards:
+    #         if isinstance(c, Content):
+    #             txt_ctrls.append((c.GetTitle().lower(),   c.title))
+    #             txt_ctrls.append((c.GetContent().lower(), c.content))
+    #         if isinstance(c, Header):
+    #             txt_ctrls.append((c.GetHeader().lower(),  c.header))
 
-        # do the actual searching
-        finds = []
-        for txt, ctrl in txt_ctrls:
-            pos = [m.start() for m in re.finditer(s, txt)]
-            for p in pos:
-                finds.append((ctrl, p))
+    #     # do the actual searching
+    #     finds = []
+    #     for txt, ctrl in txt_ctrls:
+    #         pos = [m.start() for m in re.finditer(s, txt)]
+    #         for p in pos:
+    #             finds.append((ctrl, p))
 
-        # if success: highlight and setup vars for cycling
-        if finds:
-            self.search_ctrl.SetBackgroundColour(wx.YELLOW)
-            for c, i in finds:
-                c.SetStyle(i, i + len(s), wx.TextAttr(wx.NullColour, wx.YELLOW))
+    #     # if success: highlight and setup vars for cycling
+    #     if finds:
+    #         self.search_ctrl.SetBackgroundColour(wx.YELLOW)
+    #         for c, i in finds:
+    #             c.SetStyle(i, i + len(s), wx.TextAttr(wx.NullColour, wx.YELLOW))
 
-            self.search_find = finds
-            self.search_str = s
-            self.search_head = 0    # when done, set to None
+    #         self.search_find = finds
+    #         self.search_str = s
+    #         self.search_head = 0    # when done, set to None
 
-        # if not found: make sure variables are setup correctly too
-        else:
-            self.search_ctrl.SetBackgroundColour(wx.RED)
-            self.search_find = []
-            self.search_str = ""
-            self.search_head = None
+    #     # if not found: make sure variables are setup correctly too
+    #     else:
+    #         self.search_ctrl.SetBackgroundColour(wx.RED)
+    #         self.search_find = []
+    #         self.search_str = ""
+    #         self.search_head = None
 
-    def OnSearchText(self, ev):
-        """Listens to `wx.EVT_TEXT` from the search bar."""
-        self.Search()
+    # def OnSearchText(self, ev):
+    #     """Listens to `wx.EVT_TEXT` from the search bar."""
+    #     self.Search()
 
-    def OnCancelSearch(self, ev):
-        """Listens to `wx.EVT_SEARCHCTRL_CANCEL_BTN` from the search bar."""
-        self.CancelSearch()
+    # def OnCancelSearch(self, ev):
+    #     """Listens to `wx.EVT_SEARCHCTRL_CANCEL_BTN` from the search bar."""
+    #     self.CancelSearch()
 
-    def CancelSearch(self):
-        """Cancel the current search. Restores highliting  and hides the search bar."""
-        if self.search_find:
-            # erase all highlight
-            for c, i in self.search_find:
-                s = self.search_ctrl.GetValue()
-                c.SetStyle(i, i + len(s), c.GetDefaultStyle())
+    # def CancelSearch(self):
+    #     """Cancel the current search. Restores highliting  and hides the search bar."""
+    #     if self.search_find:
+    #         # erase all highlight
+    #         for c, i in self.search_find:
+    #             s = self.search_ctrl.GetValue()
+    #             c.SetStyle(i, i + len(s), c.GetDefaultStyle())
 
-            # set focus on last result
-            ctrl = self.search_find[self.search_head - 1][0]
-            pos = self.search_find[self.search_head - 1][1]
-            ctrl.SetFocus()
-            ctrl.SetSelection(pos, pos + len(self.search_str))
+    #         # set focus on last result
+    #         ctrl = self.search_find[self.search_head - 1][0]
+    #         pos = self.search_find[self.search_head - 1][1]
+    #         ctrl.SetFocus()
+    #         ctrl.SetSelection(pos, pos + len(self.search_str))
 
-            # clear up variables
-            self.search_find = []
-            self.search_head = None
-            self.search_str = ""
-        else:
-            # return the focus to the last selected card or to the deck
-            bd = self.GetCurrentDeck()
-            sel = bd.GetSelection()
-            if sel:
-                sel[-1].SetFocus()
-            else:
-                bd.SetFocusIgnoringChildren()
+    #         # clear up variables
+    #         self.search_find = []
+    #         self.search_head = None
+    #         self.search_str = ""
+    #     else:
+    #         # return the focus to the last selected card or to the deck
+    #         bd = self.GetCurrentDeck()
+    #         sel = bd.GetSelection()
+    #         if sel:
+    #             sel[-1].SetFocus()
+    #         else:
+    #             bd.SetFocusIgnoringChildren()
 
-        self.search_ctrl.Hide()
+    #     self.search_ctrl.Hide()
 
     def PrevSearchResult(self):
         """Highlights the previous search result."""
@@ -368,60 +368,60 @@ class ThreePyFiveFrame(wx.Frame):
         bar.Append(debug_menu, "&Debug")
         self.SetMenuBar(bar)
 
-        ## especial items
-        # These are ghost items created for the purpose of associating
-        # an accelerator to them. Usually, the accelerator is multifunctional.
-        # For example, we couldn't set ctrl + g as the callback and
-        # accelerator for next_it (next search result) because we also
-        # want to use ctrl + g for grouping. So we bind ctrl + G to a
-        # ghost item whose only task is to decide what action to take.
-        esp_menu = wx.Menu()
+        # ## especial items
+        # # These are ghost items created for the purpose of associating
+        # # an accelerator to them. Usually, the accelerator is multifunctional.
+        # # For example, we couldn't set ctrl + g as the callback and
+        # # accelerator for next_it (next search result) because we also
+        # # want to use ctrl + g for grouping. So we bind ctrl + G to a
+        # # ghost item whose only task is to decide what action to take.
+        # esp_menu = wx.Menu()
         
-        ctrlg = wx.MenuItem(esp_menu, wx.ID_ANY, "ctrlg")
-        esc   = wx.MenuItem(esp_menu, wx.ID_ANY, "esc")
-        ctrlpgup = wx.MenuItem(esp_menu, wx.ID_ANY, "ctrl page up")
-        ctrlpgdw = wx.MenuItem(esp_menu, wx.ID_ANY, "ctrl page down")
+        # ctrlg = wx.MenuItem(esp_menu, wx.ID_ANY, "ctrlg")
+        # esc   = wx.MenuItem(esp_menu, wx.ID_ANY, "esc")
+        # ctrlpgup = wx.MenuItem(esp_menu, wx.ID_ANY, "ctrl page up")
+        # ctrlpgdw = wx.MenuItem(esp_menu, wx.ID_ANY, "ctrl page down")
 
-        esp_menu.AppendItem(ctrlg)        
-        esp_menu.AppendItem(esc)
-        esp_menu.AppendItem(ctrlpgup)
-        esp_menu.AppendItem(ctrlpgdw)
+        # esp_menu.AppendItem(ctrlg)        
+        # esp_menu.AppendItem(esc)
+        # esp_menu.AppendItem(ctrlpgup)
+        # esp_menu.AppendItem(ctrlpgdw)
         
-        self.Bind(wx.EVT_MENU, self.OnCtrlG, ctrlg)
-        self.Bind(wx.EVT_MENU, self.OnEsc,   esc)
-        self.Bind(wx.EVT_MENU, self.OnCtrlPgUp, ctrlpgup)
-        self.Bind(wx.EVT_MENU, self.OnCtrlPgDw, ctrlpgdw)
+        # self.Bind(wx.EVT_MENU, self.OnCtrlG, ctrlg)
+        # self.Bind(wx.EVT_MENU, self.OnEsc,   esc)
+        # self.Bind(wx.EVT_MENU, self.OnCtrlPgUp, ctrlpgup)
+        # self.Bind(wx.EVT_MENU, self.OnCtrlPgDw, ctrlpgdw)
         
-        accels.append(wx.AcceleratorEntry(wx.ACCEL_CTRL, ord("G"), ctrlg.GetId()))
-        accels.append(wx.AcceleratorEntry(wx.ACCEL_NORMAL, 27, esc.GetId()))
-        accels.append(wx.AcceleratorEntry(wx.ACCEL_CTRL, wx.WXK_PAGEUP, ctrlpgup.GetId()))
-        accels.append(wx.AcceleratorEntry(wx.ACCEL_CTRL, wx.WXK_PAGEDOWN, ctrlpgdw.GetId()))
+        # accels.append(wx.AcceleratorEntry(wx.ACCEL_CTRL, ord("G"), ctrlg.GetId()))
+        # accels.append(wx.AcceleratorEntry(wx.ACCEL_NORMAL, 27, esc.GetId()))
+        # accels.append(wx.AcceleratorEntry(wx.ACCEL_CTRL, wx.WXK_PAGEUP, ctrlpgup.GetId()))
+        # accels.append(wx.AcceleratorEntry(wx.ACCEL_CTRL, wx.WXK_PAGEDOWN, ctrlpgdw.GetId()))
 
-        ## finally, create the table
-        self.SetAcceleratorTable(wx.AcceleratorTable(accels))
+        # ## finally, create the table
+        # self.SetAcceleratorTable(wx.AcceleratorTable(accels))
 
-    def InitSearchBar(self):
-        """Initializes the search bar, `self.search_ctrl`."""
-        if not self.ui_ready:
-            # make new
-            ctrl = wx.SearchCtrl(self, style=wx.TE_PROCESS_ENTER)
-            ctrl.Bind(wx.EVT_TEXT, self.OnSearchText)
-            ctrl.Bind(wx.EVT_SEARCHCTRL_CANCEL_BTN, self.OnCancelSearch)
-            ctrl.Bind(wx.EVT_TEXT_ENTER, self.OnSearchEnter)
-        else:
-            # or get the old one
-            ctrl = self.search_ctrl
+    # def InitSearchBar(self):
+    #     """Initializes the search bar, `self.search_ctrl`."""
+    #     if not self.ui_ready:
+    #         # make new
+    #         ctrl = wx.SearchCtrl(self, style=wx.TE_PROCESS_ENTER)
+    #         ctrl.Bind(wx.EVT_TEXT, self.OnSearchText)
+    #         ctrl.Bind(wx.EVT_SEARCHCTRL_CANCEL_BTN, self.OnCancelSearch)
+    #         ctrl.Bind(wx.EVT_TEXT_ENTER, self.OnSearchEnter)
+    #     else:
+    #         # or get the old one
+    #         ctrl = self.search_ctrl
 
-        # position
-        bd = self.GetCurrentDeck()
-        if bd:
-            top = bd.GetRect().top
-            right = bd.GetRect().right - ctrl.GetRect().width
-            ctrl.SetPosition((right, top))
+    #     # position
+    #     bd = self.GetCurrentDeck()
+    #     if bd:
+    #         top = bd.GetRect().top
+    #         right = bd.GetRect().right - ctrl.GetRect().width
+    #         ctrl.SetPosition((right, top))
 
-        # finish up
-        ctrl.Hide()
-        self.search_ctrl = ctrl
+    #     # finish up
+    #     ctrl.Hide()
+    #     self.search_ctrl = ctrl
 
     def InitToolBar(self):
         """Initializes the toolbar."""
@@ -521,23 +521,23 @@ class ThreePyFiveFrame(wx.Frame):
     #     print "---DEBUG---"
     #     print self.GetCurrentBox().Dump()
 
-    def Save(self, out_file):
-        """Save the current `BoxSet` to disk.
+    # def Save(self, out_file):
+    #     """Save the current `BoxSet` to disk.
 
-        * `out_file: ` path to the file.
-        """
-        di =  self.boxset.Dump()
-        with open(out_file, 'w') as out:
-            pickle.dump(di, out)
+    #     * `out_file: ` path to the file.
+    #     """
+    #     di =  self.boxset.Dump()
+    #     with open(out_file, 'w') as out:
+    #         pickle.dump(di, out)
 
-    def Load(self, path):
-        """Load a `BoxSet` from disk.
+    # def Load(self, path):
+    #     """Load a `BoxSet` from disk.
 
-        * `path: ` path to the file.
-        """
-        with open(path, 'r') as f: d = pickle.load(f)
-        self.boxset.Load(d)
-        self.boxset.SetFocus()
+    #     * `path: ` path to the file.
+    #     """
+    #     with open(path, 'r') as f: d = pickle.load(f)
+    #     self.boxset.Load(d)
+    #     self.boxset.SetFocus()
                 
         
     ### Callbacks
@@ -725,33 +725,33 @@ class ThreePyFiveFrame(wx.Frame):
     #     """Listens to `Deck.EVT_DEL_CARD`."""
     #     self.Log("Delete " + str(ev.number) + " Cards.")
 
-    def OnCtrlF(self, ev):
-        """Listens to CTRL+F."""
-        if not self.search_ctrl.IsShown():
-            self.InitSearchBar()
-            self.search_ctrl.Show()
-            self.search_ctrl.SetFocus()
-        else:
-            # make sure to call CancelSearch to clear up all variables
-            self.CancelSearch()
+    # def OnCtrlF(self, ev):
+    #     """Listens to CTRL+F."""
+    #     if not self.search_ctrl.IsShown():
+    #         self.InitSearchBar()
+    #         self.search_ctrl.Show()
+    #         self.search_ctrl.SetFocus()
+    #     else:
+    #         # make sure to call CancelSearch to clear up all variables
+    #         self.CancelSearch()
 
-    def OnSearchEnter(self, ev):
-        """Listens to `wx.EVT_TEXT_ENTER` from the serach bar."""
-        self.NextSearchResult()
+    # def OnSearchEnter(self, ev):
+    #     """Listens to `wx.EVT_TEXT_ENTER` from the serach bar."""
+    #     self.NextSearchResult()
 
-    def OnCtrlG(self, ev):
-        """Listens to CTRL+G."""
-        bd = self.GetCurrentDeck()
-        if self.search_ctrl.IsShown():
-            self.NextSearchResult()
-        elif bd.GetSelection():
-            sel = bd.GetSelection()
-            bd.GroupSelected()
-            self.Log("Grouped " + str(len(sel)) + " cards.")
+    # def OnCtrlG(self, ev):
+    #     """Listens to CTRL+G."""
+    #     bd = self.GetCurrentDeck()
+    #     if self.search_ctrl.IsShown():
+    #         self.NextSearchResult()
+    #     elif bd.GetSelection():
+    #         sel = bd.GetSelection()
+    #         bd.GroupSelected()
+    #         self.Log("Grouped " + str(len(sel)) + " cards.")
 
-    def OnCtrlShftG(self, ev):
-        """Listens to SHIFT+CTRL+G."""
-        self.PrevSearchResult()
+    # def OnCtrlShftG(self, ev):
+    #     """Listens to SHIFT+CTRL+G."""
+    #     self.PrevSearchResult()
 
     # def OnInsertContentRight(self, ev):
     #     """Listens to `wx.EVT_MENU` from "New Card: Right" in the "insert" menu."""
@@ -777,9 +777,9 @@ class ThreePyFiveFrame(wx.Frame):
     #     """Listens to `Deck.EVT_NEW_CARD` from the `Deck` of every `Box`."""
     #     self.Log("Created new " + ev.subclass + " card.")
 
-    def OnNew(self, ev):
-        """Listens to `wx.EVT_TOOL` from "New" in the toolbar."""
-        self.boxset.NewBox()
+    # def OnNew(self, ev):
+    #     """Listens to `wx.EVT_TOOL` from "New" in the toolbar."""
+    #     self.boxset.NewBox()
 
     def OnSave(self, ev):
         """Listens to `wx.EVT_MENU` from "Save" in the "file" menu."""
@@ -829,9 +829,9 @@ class ThreePyFiveFrame(wx.Frame):
         self.Load(self.cur_file)
         self.Log("Opened file" + self.cur_file)
 
-    def OnQuit(self, ev):
-        """Quit program."""
-        self.Close()
+    # def OnQuit(self, ev):
+    #     """Quit program."""
+    #     self.Close()
 
 
 
