@@ -1306,7 +1306,7 @@ class Board(wxutils.AutoSize):
     # Board
     ##############
 
-    def __init__(self, parent, style=wx.BORDER_NONE):
+    def __init__(self, parent, deck=None, style=wx.BORDER_NONE):
         """Constructor.
 
         * `parent: ` the parent window.
@@ -1340,7 +1340,7 @@ class Board(wxutils.AutoSize):
 
         self.Scale = 1.0
 
-        self.Deck = py5.Deck()
+        self.Deck = deck
 
         self.Bind(wx.EVT_LEFT_DCLICK, self._on_left_double)
         self.Bind(wx.EVT_LEFT_DOWN, self._on_left_down)
@@ -1423,7 +1423,8 @@ class Board(wxutils.AutoSize):
     @Deck.setter
     def Deck(self, deck):
         self._Deck = deck
-        py5.subscribeList("cards", self._on_new_card, self._on_pop_card, self._Deck)
+        if deck is not None:
+            py5.subscribeList("cards", self._on_new_card, self._on_pop_card, self._Deck)
 
     @property
     def Selectables(self):
