@@ -1487,6 +1487,7 @@ class Board(wxutils.AutoSize):
 
         for w in self.Selectables:
             w.Scale = scale
+            w.Layout()
 
         self.Scroll(*scroll_pos)
         self._scale = float(scale)
