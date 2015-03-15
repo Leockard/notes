@@ -111,7 +111,7 @@ class testBoard(unittest.TestCase):
 
     def testAddCard(self):
         """`Board` should add all its `Card`s to its tracked `Deck`."""
-        board = newgui.Board(self.frame)
+        board = newgui.Board(self.frame, py5.Deck())
         board.Deck.NewCard("Content")
         board.Deck.NewCard("Header", pos=(10,10))
         board.Deck.NewCard("Image", pos=(20,20))
@@ -121,7 +121,7 @@ class testBoard(unittest.TestCase):
 
     def testDragSelect(self):
         """`Board` should select all `Card`s under the drag-select rect."""
-        board = newgui.Board(self.frame)
+        board = newgui.Board(self.frame, py5.Deck())
         board.Deck.NewCard("Header", pos=(10,10))
         board.Deck.NewCard("Image", pos=(20,20))
 
@@ -146,7 +146,7 @@ class testBoard(unittest.TestCase):
 
     def testDragMove(self):
         """`Board` should move all `Card`s when click-dragging."""
-        board = newgui.Board(self.frame)
+        board = newgui.Board(self.frame, py5.Deck())
         num = 20
         cards = []
         start_pos = {}
@@ -180,7 +180,7 @@ class testBoard(unittest.TestCase):
 
     def testFitToChildren(self):
         """`Board` should adequately enlarge its virtual size to fit all children."""
-        board = newgui.Board(self.frame)
+        board = newgui.Board(self.frame, py5.Deck())
         rect = board.Rect
 
         for a in xrange(25):
@@ -196,7 +196,7 @@ class testBoard(unittest.TestCase):
 
     def testHorizontalArrange(self):
         """`Board` should adequately arrange its Cards."""
-        board = newgui.Board(self.frame)
+        board = newgui.Board(self.frame, py5.Deck())
         num = 25
 
         for a in xrange(num):
@@ -215,7 +215,7 @@ class testBoard(unittest.TestCase):
 
     def testVerticalArrange(self):
         """`Board` should adequately arrange its Cards."""
-        board = newgui.Board(self.frame)
+        board = newgui.Board(self.frame, py5.Deck())
         num = 25
 
         for a in xrange(num):
@@ -234,7 +234,7 @@ class testBoard(unittest.TestCase):
 
     def testSelectAll(self):
         """`Board` should correctly select all cards."""
-        board = newgui.Board(self.frame)
+        board = newgui.Board(self.frame, py5.Deck())
         num = 25
 
         for a in xrange(num):
@@ -245,7 +245,7 @@ class testBoard(unittest.TestCase):
 
     def testGroupSelected(self):
         """`Board` should correctly group all selected cards."""
-        board = newgui.Board(self.frame)
+        board = newgui.Board(self.frame, py5.Deck())
         num = 25
 
         for a in xrange(num):
@@ -260,7 +260,7 @@ class testBoard(unittest.TestCase):
 
     def testScrollToCard(self):
         """`Board` should put the whole `Card` into view."""
-        board = newgui.Board(self.frame)
+        board = newgui.Board(self.frame, py5.Deck())
         num = 25
 
         for a in xrange(num):
@@ -276,7 +276,7 @@ class testBoard(unittest.TestCase):
 
     def testCopyPaste(self):
         """`Board` should copy and paste cards correctly."""
-        board = newgui.Board(self.frame)
+        board = newgui.Board(self.frame, py5.Deck())
         num = 25
         
         for a in xrange(num):
@@ -303,7 +303,7 @@ class testSelectionManager(unittest.TestCase):
 
     def testActive(self):
         """`SelectionManager` should handle its `Active` attribute according to focus and selection."""
-        board = newgui.Board(self.frame)
+        board = newgui.Board(self.frame, py5.Deck())
         board.Deck.NewCard("Content")
         board.Deck.NewCard("Header", pos=(10,10))
         board.Deck.NewCard("Image", pos=(20,20))
@@ -346,7 +346,7 @@ class testSelectionManager(unittest.TestCase):
 
     def testSelectNearest(self):
         """`SelectionManager` should select the nearest card correctly."""
-        board = newgui.Board(self.frame)
+        board = newgui.Board(self.frame, py5.Deck())
         board.Deck.NewCard("Content", pos=(15,15))
         board.Deck.NewCard("Content", pos=(15,200))
         board.Deck.NewCard("Content", pos=(300,15))
@@ -375,7 +375,7 @@ class testSelectionManager(unittest.TestCase):
         
     def testExtendSelection(self):
         """`SelectionManager` should extend the selection to the nearest card correctly."""
-        board = newgui.Board(self.frame)
+        board = newgui.Board(self.frame, py5.Deck())
         board.Deck.NewCard("Content", pos=(15,15))
         board.Deck.NewCard("Content", pos=(15,200))
         board.Deck.NewCard("Content", pos=(300,15))
@@ -403,7 +403,7 @@ class testSelectionManager(unittest.TestCase):
 
     def testMoveSelection(self):
         """`SelectionManager` should move the selected cards correctly."""
-        board = newgui.Board(self.frame)
+        board = newgui.Board(self.frame, py5.Deck())
         num = 10
         step = 10
 
@@ -418,7 +418,7 @@ class testSelectionManager(unittest.TestCase):
 
     def testDeleteSelection(self):
         """`SelectionManager` should delete the selected cards correctly."""
-        board = newgui.Board(self.frame)
+        board = newgui.Board(self.frame, py5.Deck())
 
         for i in range(10):
             c = board.Deck.NewCard("Content", pos=(randint(1, 10),randint(1, 10)))
