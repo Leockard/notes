@@ -393,31 +393,6 @@ class Image(Card):
 # Annotation class
 ######################
 
-# class Line(object):
-#     """A `Line` represents a single stroke of the annotations or doodles the user draws in the
-#     infinite surface that the `Card`s are drawn on. These are drawn on top of the `Card`s.
-#     """
-
-#     # colour = LoudSetterColour()
-#     # thickness = LoudSetterThickness()
-#     # pts = LoudSetterPts()
-
-#     Add = utils.LoudAppend("pts")
-#     Remove = utils.LoudRemove("pts")
-
-#     def __init__(self, colour=DEFAULT_COLOUR, thickness=DEFAULT_THICKNESS, pts=[]):
-#         """Constructor.
-
-#         * `colour: ` a (r,g,b,alpha) tuple.
-#         * `thickness: ` an int representing the thickness of this stroke.
-#         * `pts: ` the points defining this polyline.
-#         """
-#         super(Line, self).__init__()
-#         self.colour = colour
-#         self.thickness = thickness
-#         self.pts = pts
-
-
 import recordtype
 Line = recordtype.recordtype('Line', [('colour', (0,0,0,0)), ('thickness', 1), ("pts", [])])
 """A `Line` represents a single stroke of the annotations or doodles the user draws in the
@@ -471,7 +446,15 @@ class CardGroup(utils.Publisher):
 
         `returns: ` a list holding data.
         """
-        return [m._id for m in self.members]
+        return {"id": self._id, "members": [m._id for m in self.members]}
+
+    def Load(self, data):
+        """Read data from an object and load it into this `CardGroup`.
+
+        * `obj: ` must be a `dict` in the format returned by `Dump`.
+        """
+        # self.members = data["members"]
+        self.members = data
 
 
 
@@ -558,11 +541,25 @@ class Deck(utils.Publisher):
 
         `returns: ` a dict holding data.
         """
-        return {"cards": [c.Dump() for c in self.cards],
+        return {"id": self._id, "name": self.name,
+                "cards": [c.Dump() for c in self.cards],
                 "groups": [g.Dump() for g in self.groups]}
 
     def Load(self, data):
-        pass
+        """Read data from an object and load it into this `Deck`.
+
+        * `obj: ` must be a `dict` in the format returned by `Dump`.
+        """
+        self.name   = data["name"]
+        
+        for d in data["cards"]:
+            crd = self.NewCard(d["class"])
+            crd.Load(d)
+            
+        for d in data["groups"]:
+            g = CardGroup()
+            g.Load(d)
+            self.AddGroup(g)
 
 
 
@@ -584,6 +581,25 @@ class AnnotatedDeck(Deck):
         super(AnnotatedDeck, self).__init__(name=name)
         self.annotation = Annotation()
 
+
+    ### methods
+
+    def Dump(self):
+        """Return a `dict` holding all this `Content`'s data.
+
+        `returns: ` a `dict`.
+        """
+        d = super(AnnotatedDeck, self).Dump()
+        d["lines"] = self.annotation.lines
+        return d
+
+    def Load(self, data):
+        """Read data from an object and load it into this `Content`.
+
+        * `obj: ` must be a `dict` in the format returned by `Dump`.
+        """
+        super(AnnotatedDeck, self).Load(data)
+        self.annotation.lines = data["lines"]
 
 
 
@@ -611,10 +627,29 @@ class Box(utils.Publisher):
         self.path = path
         self.decks = decks
 
+
+    ### methods
+
     def NewDeck(self, name=""):
-        self.AddDeck(AnnotatedDeck(name))
+        dck = AnnotatedDeck(name)
+        self.AddDeck(dck)
+        return dck
 
+    def Dump(self):
+        """Return a `dict` holding all this `Box`'s data.
 
+        `returns: ` a `dict`.
+        """
+        return {"decks": [d.Dump() for d in self.decks]}
+
+    def Load(self, data):
+        """Read data from an object and load it into this `Content`.
+
+        * `obj: ` must be a `dict` in the format returned by `Dump`.
+        """
+        for d in data["decks"]:
+            dck = self.NewDeck()
+            dck.Load(d)
 
 
 
