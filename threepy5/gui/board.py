@@ -451,7 +451,6 @@ class CardWin(Selectable):
         index = self.Children.index(ev.EventObject)
         forward = not ev.ShiftDown()
 
-        print index
         if index == 0 and not forward:
             self._navigate_out(forward)
         elif index == len(self.Children)-1 and forward:

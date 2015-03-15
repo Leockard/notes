@@ -449,7 +449,6 @@ class ThreePyFiveFrame(wx.Frame):
             self.Shelf.SetFocus()
 
     def Save(self):
-        print "save"
         # remember focus to restore after saving
         focus = self.FindFocus()
         if isinstance(focus, wx.TextCtrl):
@@ -457,9 +456,6 @@ class ThreePyFiveFrame(wx.Frame):
 
         # if we don't have a path yet, ask for one
         path = ""
-        
-        print self._file_name
-        
         if self._file_name == "":
             fd = wx.FileDialog(self, "Save", os.getcwd(), "", "P files (*.p)|*.p",
                                wx.FD_SAVE|wx.FD_OVERWRITE_PROMPT)
