@@ -2,7 +2,10 @@
 """Contains the `ThreePyFiveFrame` class, the main `wx.Frame` which handles user input"""
 
 import wx
+import re
+import pickle
 import wxutils
+import board
 import workspace
 import threepy5.threepy5 as py5
 
@@ -13,46 +16,166 @@ import threepy5.threepy5 as py5
 
 class CustomSearchCtrl(wx.SearchCtrl):
     """A specialized `wx.SearchCtrl` for `threepy5`."""
+    SUCCESS  = 2
+    FAILURE  = 4
+    EMPTY    = 8
+    _COLOURS = {SUCCESS: wx.YELLOW, FAILURE: wx.RED, EMPTY: wx.WHITE}
 
     def __init__(self, parent, style=wx.TE_PROCESS_ENTER):
         """Constructor."""
         super(CustomSearchCtrl, self).__init__(parent=parent, style=style)
 
-        self.search_find = []
-        self.search_str = ""
-        self.boxset = None
-        self.welcome = None
-        self.search_head = None    # contains the current search index
-                                   # when not searching, set to None
+        self._str = ""
+        """The current search string."""
+        
+        self._match = []
+        """A list of (ctrl, pos) tuples where `ctrl` is a text control and `pos` is
+        the position where there's a match of the current search string."""
+
+        self._head = None
+        """Points to the index in `self._match` of the currently focused search result."""
+
+        self._txt_ctrls = []
+        """A list of (str, ctrl) tuples where `ctrl` is a text control and `str` is its
+        contents at the time of initializing search. These are all the fields where search
+        is performed."""
 
         self.Bind(wx.EVT_TEXT, self._on_text)
         self.Bind(wx.EVT_SEARCHCTRL_CANCEL_BTN, self._on_cancel_btn)
         self.Bind(wx.EVT_TEXT_ENTER, self._on_enter)
+        self.Bind(wx.EVT_SHOW, self._on_show)
+        self._init_accels()        
 
+        
+    ### init methods
 
+    def _init_accels(self):
+        accels = []
+        ghost = wx.Menu()
+
+        esc = wx.MenuItem(ghost, wx.ID_ANY, "esc")
+        self.Bind(wx.EVT_MENU, self._on_esc, esc)
+        accels.append(wx.AcceleratorEntry(wx.ACCEL_NORMAL, 27 , esc.GetId()))
+
+        self.SetAcceleratorTable(wx.AcceleratorTable(accels))
+
+        
+    ### properties
+
+    @property
+    def Status(self):
+        """One of `CustomSearchCtrl.SUCCESS`, `FAILURE` or `EMPTY`."""
+        # this property doesn't have a setter to keep it private
+        # see self._set_status() instead
+        return self._status
+
+            
     ### methods
 
-    def AutoPosition(self, board):
-        """Position the search bar relative to a board.
+    def _set_status(self, status):
+        """Private setter for `self.Status`.
 
-        * `board: `, a `Board`.
+        * `status: ` one of `CustomSearchCtrl.SUCCESS`, `FAILURE` or `EMPTY`.
         """
-        top   = board.Rect.top
-        right = board.Rect.right - self.Rect.width
+        if status in self._COLOURS.keys():
+            self.BackgroundColour = self._COLOURS[status]
+        if status is self.SUCCESS:
+            for ctrl, index in self._match:
+                ctrl.SetStyle(index, index + len(self._str), wx.TextAttr(wx.NullColour, wx.YELLOW))
+        elif status is self.FAILURE:
+            self.BackgroundColour = wx.RED
+            self._match = []
+            self._str   = ""
+            self._head  = None
+        elif status is self.EMPTY:
+            self._search_cleanup()
+            self.BackgroundColour = wx.WHITE
+
+    def AutoPosition(self):
+        """Position the search bar relative to the parent."""
+        rect  = self.Parent.Shelf.CurrentWorkspace.Rect
+        top   = rect.top
+        right = rect.right - self.Rect.width
         self.Position = (right, top)
 
+    def _search_start(self):
+        self._match = []
+        self._str   = ""
+        self._head  = None
+
+        # where are we searching?
+        wins = self.Parent.Shelf.CurrentWorkspace.CurrentControl.Cards
+
+        # gather all (lower case) values in which to search
+        # including the control they appear in
+        txt_ctrls = []
+        for w in wins:
+            if isinstance(w, board.ContentWin):
+                txt_ctrls.append((w.Card.title.lower(),   w._title))
+                txt_ctrls.append((w.Card.content.lower(), w._content))
+            elif isinstance(w, board.HeaderWin):
+                txt_ctrls.append((w.Card.header.lower(),  w._header))
+
+        self._txt_ctrls = txt_ctrls
+
+    def CancelSearch(self):
+        self._search_cleanup()
+        self.Hide()
+        self.Parent.SetFocus()
+        # set focus on last result
+        # return the focus to the last selected card
+
+    def _search_cleanup(self):
+        """Clean up control highlighting."""
+        if self._match:
+            for ctrl, index in self._match:
+                ctrl.SetStyle(index, index + len(self._str), ctrl.DefaultStyle)
+
+    def _search_update(self):
+        """Search the current text in the search bar in all of the `Card`s'
+        texts (titles, contents, etc). Cycle through finds with (SHIFT+)CTRL+G.
+        """
+        self._search_cleanup()
+        s = self.Value.lower()
+
+        match = []
+        for txt, ctrl in self._txt_ctrls:
+            pos = [m.start() for m in re.finditer(s, txt)]
+            for p in pos:
+                match.append((ctrl, p))
+
+        if match:
+            self._match = match
+            self._str   = s
+            self._head  = 0
+            self._set_status(self.SUCCESS)
+        else:
+            self._set_status(self.FAILURE)
+        
 
     ### callbacks
 
+    def _on_show(self, ev):
+        if ev.IsShown():
+            self.AutoPosition()
+            self._search_start()
+
     def _on_text(self, ev):
-        pass
+        if ev.String:
+            self._search_update()
+        else:
+            self._set_status(self.EMPTY)
 
     def _on_cancel_btn(self, ev):
-        pass
+        self.CancelSearch()
+
+    def _on_esc(self, ev):
+        self.CancelSearch()
 
     def _on_enter(self, ev):
-        pass
-        
+        print "enter"
+
+
 
 
 ##########################
@@ -80,7 +203,6 @@ class Shelf(wx.Notebook):
     def _init_box(self):
         box = py5.Box()
         py5.subscribeList("decks", self._on_new_deck, self._on_pop_deck, box)
-
         box.NewDeck("foo bar")
         self.Box = box                
 
@@ -172,7 +294,6 @@ class Shelf(wx.Notebook):
 
 
 
-
 ######################
 # WelcomePage class
 ######################
@@ -231,11 +352,8 @@ class ThreePyFiveFrame(wx.Frame):
         """Constructor."""
         super(ThreePyFiveFrame, self).__init__(parent, title=title, size=size, style=style)
 
-        # self.cur_file = ""
         self._init_UI()
-
-        # self._init_shelf()
-
+        self._init_search()
         self._init_accels()
         self.Show()
 
@@ -250,7 +368,32 @@ class ThreePyFiveFrame(wx.Frame):
         self.Sizer.Add(welp, proportion=1, flag=wx.EXPAND)
         self._welcome = welp
 
+        self._init_menu()
         self.CreateStatusBar()
+
+    def _init_menu(self):
+        bar = wx.MenuBar()
+
+        file_menu = wx.Menu()
+        new = wx.MenuItem(file_menu, wx.ID_NEW,  "&New")
+        opn = wx.MenuItem(file_menu, wx.ID_OPEN, "&Open")
+        save = wx.MenuItem(file_menu, wx.ID_SAVE, "&Save")
+        quit = wx.MenuItem(file_menu, wx.ID_EXIT, "&Quit")
+
+        file_menu.AppendItem(new)
+        file_menu.AppendItem(opn)
+        file_menu.AppendItem(save)
+        file_menu.AppendSeparator()
+        file_menu.AppendItem(quit)
+
+        self.Bind(wx.EVT_MENU, self._on_new  , new)
+        self.Bind(wx.EVT_MENU, self._on_open , opn)
+        self.Bind(wx.EVT_MENU, self._on_save , save)
+        self.Bind(wx.EVT_MENU, self._on_exit , quit)
+        
+        
+        bar.Append(file_menu, "&File")
+        self.SetMenuBar(bar)
 
     def _init_accels(self):
         ghost = wx.Menu()
@@ -258,8 +401,17 @@ class ThreePyFiveFrame(wx.Frame):
         dbg = wx.MenuItem(ghost, wx.ID_ANY, "Debug")
         self.Bind(wx.EVT_MENU, self._on_debug, dbg)
         accels = [wx.AcceleratorEntry(wx.ACCEL_CTRL, ord("D") , dbg.GetId())]
-        
+
+        ctrlf = wx.MenuItem(ghost, wx.ID_ANY, "ctrlf")
+        self.Bind(wx.EVT_MENU, self._on_ctrl_f, ctrlf)
+        accels.append(wx.AcceleratorEntry(wx.ACCEL_CTRL, ord("F") , ctrlf.GetId()))
+
         self.SetAcceleratorTable(wx.AcceleratorTable(accels))
+
+    def _init_search(self):
+        ctrl = CustomSearchCtrl(self)
+        ctrl.Hide()
+        self._search_ctrl = ctrl
 
     def _init_shelf(self):
         self._welcome.Hide()
@@ -273,7 +425,18 @@ class ThreePyFiveFrame(wx.Frame):
 
 
     ### methods
-    
+
+    def Open(self):
+        path = "/home/leo/research/reading_notes/Kandel - Principles of Neural Science"
+        format_str = "P files (*.p)|*.p|All files|*.*"
+        fd = wx.FileDialog(self, "Open", path, "", format_str, wx.FD_OPEN|wx.FD_FILE_MUST_EXIST)
+        
+        if fd.ShowModal() == wx.ID_OK:
+            with open(fd.GetPath(), "r") as f:
+                self._init_shelf()
+                self.Shelf.Box.Load(pickle.load(f))
+            self.Shelf.SetFocus()
+
     def Log(self, s):
         """Log the string `s` into the status bar.
 
@@ -283,8 +446,28 @@ class ThreePyFiveFrame(wx.Frame):
 
 
     ### callbacks
+    
+    def _on_ctrl_f(self, ev):
+        if not self._search_ctrl.IsShown():
+            self._search_ctrl.Show()
+            self._search_ctrl.SetFocus()
+        else:
+            self._search_ctrl.CancelSearch()
+
+    def _on_new(self, ev):
+        self.Shelf.NewDeck()
+        
+    def _on_open(self, ev):
+        self.Open()
+        
+    def _on_save(self, ev):
+        self.Save()
+    
+    def _on_exit(self, ev):
+        self.Close()
 
     def _on_debug(self, ev):
         print "------DEBUG-----"
-        print self.FindFocus()
+        w = self.Shelf.Box.decks[0].cards[-1]
+        print w.Dump()
 
