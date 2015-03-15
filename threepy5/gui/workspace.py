@@ -158,8 +158,6 @@ class CardView(wx.Panel):
     def Clear(self):
         """Clear all viewed `Card`s."""
         self.Sizer.Clear()
-        # for c in self._cards.keys():
-        #     c.SetViewing(False)
         self._cards = {}
 
 
