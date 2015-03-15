@@ -130,7 +130,9 @@ class CustomSearchCtrl(wx.SearchCtrl):
         """Clean up control highlighting."""
         if self._match:
             for ctrl, index in self._match:
-                ctrl.SetStyle(index, index + len(self._str), ctrl.DefaultStyle)
+                attr = ctrl.DefaultStyle
+                attr.BackgroundColour = ctrl.BackgroundColour
+                ctrl.SetStyle(index, index + len(self._str), attr)
 
     def _search_update(self):
         """Search the current text in the search bar in all of the `Card`s'
@@ -174,7 +176,8 @@ class CustomSearchCtrl(wx.SearchCtrl):
         self.CancelSearch()
 
     def _on_enter(self, ev):
-        print "enter"
+        if self.Value:
+            self._search_update()
 
 
 
@@ -507,6 +510,9 @@ class ThreePyFiveFrame(wx.Frame):
 
     def _on_debug(self, ev):
         print "------DEBUG-----"
-        # c = self.Shelf.Box.decks[0].cards[-1]
-        print self.FindFocus()
-
+        win = self.Shelf.CurrentWorkspace.Board.Cards[-1]
+        ctrl = win._content
+        for i in range(len(ctrl.Value)):
+            attr = wx.TextAttr()
+            ctrl.GetStyle(i, attr)
+            print attr.BackgroundColour
