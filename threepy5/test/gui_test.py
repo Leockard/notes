@@ -497,15 +497,75 @@ class testAutoSize(unittest.TestCase):
     def tearDown(self):
         wx.CallAfter(self.app.Exit)
 
+
+        
+def _r_class():
+    return ["Content", "Header", "Image"][randint(0, 2)]
+
+def _r_pos():
+    return (randint(0,100), randint(0,100))
+
+
+
+class testZoom(unittest.TestCase):
+
+    def setUp(self):
+        self.app = wx.App()
+        self.frame = TestFrame(None)
+
+    def testZoomInOut(self):
+        """`Workspace` should correctly zoom in and out."""
+        wspc = gui.workspace.Workspace(self.frame, py5.AnnotatedDeck())
+        num = 25
+        
+        cards = [getattr(py5, _r_class())() for j in range(num)]
+        pos   = [_r_pos() for j in range(num)]
+        for j in range(num):
+            cards[j].Position = pos[j]
+            wspc.Deck.AddCard(cards[j])
+        rects = [c.rect for c in wspc.Deck.cards]
+
+        scale = 2.0
+        wspc.Board.Scale = scale
+        for w in wspc.Board.Cards:
+            self.assertEqual(list(w.Rect), [int(i * scale) for i in w.Card.rect])
+
+        scale = 0.5
+        wspc.Board.Scale = scale
+        for w in wspc.Board.Cards:
+            self.assertEqual(list(w.Rect), [int(i * scale) for i in w.Card.rect])
+    
+    def testZoomReturn(self):
+        """Every coordinate should return to its original value after zooming in and out the same amount."""
+        wspc = gui.workspace.Workspace(self.frame, py5.AnnotatedDeck())
+        num = 25
+        
+        cards = [getattr(py5, _r_class())() for j in range(num)]
+        pos   = [_r_pos() for j in range(num)]
+        for j in range(num):
+            cards[j].Position = pos[j]
+            wspc.Deck.AddCard(cards[j])
+        rects = [c.rect for c in wspc.Deck.cards]
+
+        scale = 2.0
+        scale = 1.0
+        
+        wspc.Board.Scale = scale
+        for w in wspc.Board.Cards:
+            self.assertEqual(list(w.Rect), [int(i) for i in w.Card.rect])
+
+    def tearDown(self):
+        wx.CallAfter(self.app.Exit)
+        
+        
                 
 ### finish testImageWin.testDragResize
 ### test coloured text
-### test resize/rescale
 ### Workspace: switch board/canvas, ctrl+ / ctrl-, Workspace.Canvas.Annotation.lines (¿?)
+###            return focus after hitting ctrl+e twice
 ###            while canvas is shown, selection manager should be active (no control focused)
 ###            and selection should be []
 ### CardView: add, set, restore, init
-### DeckView: position, show/hide, Minicard position, ContentMini background colour
 ### CardWin _on_tab
 
 
