@@ -418,6 +418,9 @@ class ThreePyFiveFrame(wx.Frame):
         self._file_name = ""
         """Path to the ".p" file."""
 
+        self._focus = None
+        self._caret = None
+
         self.Show()
 
 
@@ -489,6 +492,22 @@ class ThreePyFiveFrame(wx.Frame):
 
     ### methods
 
+    def SaveFocus(self):
+        """Stores the focus and, if applicable, the insertion point at the time of calling.
+        Call `RestoreFocus` to return focus to the control saved by this method.
+        """
+        self._focus = self.FindFocus()
+        if isinstance(self._focus, wx.TextCtrl):
+            self._caret = self._focus.GetInsertionPoint()
+
+    def RestoreFocus(self):
+        if self._focus:
+            self._focus.SetFocus()
+            self._focus = None
+        if isinstance(self._focus, wx.TextCtrl) and self._caret:
+            self._focus.SetInsertionPoint(self._caret)
+            self._caret = None
+
     def Open(self):
         path = "/home/leo/research/reading_notes/Kandel - Principles of Neural Science"
         format_str = "P files (*.p)|*.p|All files|*.*"
@@ -505,10 +524,7 @@ class ThreePyFiveFrame(wx.Frame):
             self.Shelf.SetFocus()
 
     def Save(self):
-        # remember focus to restore after saving
-        focus = self.FindFocus()
-        if isinstance(focus, wx.TextCtrl):
-            caret = focus.GetInsertionPoint()
+        self.SaveFocus()
 
         # if we don't have a path yet, ask for one
         path = ""
@@ -527,10 +543,7 @@ class ThreePyFiveFrame(wx.Frame):
                 pickle.dump(self.Shelf.Box.Dump(), out)
             self._file_name = path
 
-        if focus:
-            focus.SetFocus()
-        if isinstance(focus, wx.TextCtrl):
-            focus.SetInsertionPoint(caret)
+        self.RestoreFocus()
 
     def Log(self, s):
         """Log the string `s` into the status bar.
