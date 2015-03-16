@@ -75,8 +75,8 @@ class CardWinInit(unittest.TestCase):
 
     def tearDown(self):
         wx.CallAfter(self.app.Exit)
-        # self.app.MainLoop()
 
+    
 
 class testKindSelectMenu(unittest.TestCase):
 
@@ -557,7 +557,41 @@ class testZoom(unittest.TestCase):
     def tearDown(self):
         wx.CallAfter(self.app.Exit)
         
+
         
+class testCardView(unittest.TestCase):
+    test_kind = py5.Content.KIND_LBL_CONCEPT
+    test_rating = py5.Content.RATING_MAX
+    test_collapsed = True
+    test_title = "my test title"
+    test_content = "this is content\n\nand this is more.\n\n\nrtag1: foo bar."
+    
+    def setUp(self):
+        self.app = wx.App()
+        self.frame = TestFrame(None)
+
+    def testAdd(self):
+        vw = gui.workspace.CardView(self.frame)
+        bd = gui.board.Board(self.frame)
+        win = gui.board.ContentWin(bd, py5.Content())
+
+        self.assertEqual(win.Parent, bd)
+        vw.AddCard(win)
+        self.assertEqual(vw.Cards, [win])
+        self.assertEqual(win.Parent, vw)
+
+        win._title.Value = self.test_title
+        win._content.Value = self.test_content
+
+        self.assertEqual(win.Card.title, self.test_title)
+        self.assertEqual(win.Card.content, self.test_content)
+
+        vw.Restore()
+        self.assertEqual(win.Parent, bd)
+
+    def tearDown(self):
+        wx.CallAfter(self.app.Exit)
+
                 
 ### finish testImageWin.testDragResize
 ### test coloured text
@@ -565,8 +599,6 @@ class testZoom(unittest.TestCase):
 ###            return focus after hitting ctrl+e twice
 ###            while canvas is shown, selection manager should be active (no control focused)
 ###            and selection should be []
-### CardView: add, set, restore, init
-### CardWin _on_tab
 
 
 if __name__ == "__main__":
