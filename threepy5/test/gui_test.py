@@ -592,11 +592,51 @@ class testCardView(unittest.TestCase):
     def tearDown(self):
         wx.CallAfter(self.app.Exit)
 
-                
+
+
+        
+class testWorkspace(unittest.TestCase):
+    
+    def setUp(self):
+        self.app = wx.App()
+        self.frame = TestFrame(None)
+
+    ### The next two tests work correctly save for the fact that
+    ### Gdk spits a series of warning and errors because the GUI
+    ### hasn't fully initialized.
+
+    # def testSwitchControl(self):
+    #     """`Workspace` should switch between `Board`, `Canvas`, `CardView` correctly."""
+    #     wspc = gui.workspace.Workspace(self.frame, py5.AnnotatedDeck())
+        
+    #     self.assertEqual(wspc.CurrentControl, wspc.Board)
+
+    #     wspc.WorkOn("Canvas")
+    #     self.assertEqual(wspc.CurrentControl, wspc.Canvas)
+    #     wspc.WorkOn("CardViewer")
+    #     self.assertEqual(wspc.CurrentControl, wspc.CardViewer)
+    #     wspc.WorkOn("Board")
+    #     self.assertEqual(wspc.CurrentControl, wspc.Board)
+
+    # def testFocusSwitchBoardCanvas(self):
+    #     """`Workspace` should return focus after switchin from `Board` to `Canvas` and back."""
+    #     wspc = gui.workspace.Workspace(self.frame, py5.AnnotatedDeck())
+    #     wspc.Deck.NewCard("Content")
+    #     win = wspc.Board.Cards[-1]
+    #     win.SetFocus()
+
+    #     wspc._toggle_board_canvas()
+    #     wspc._toggle_board_canvas()
+    #     self.assertTrue(wspc.FindFocus(), win)
+
+    def tearDown(self):
+        wx.CallAfter(self.app.Exit)                
+
+
+                        
 ### finish testImageWin.testDragResize
 ### test coloured text
-### Workspace: switch board/canvas, ctrl+ / ctrl-, Workspace.Canvas.Annotation.lines (¿?)
-###            return focus after hitting ctrl+e twice
+### Workspace: ctrl+ / ctrl-, Workspace.Canvas.Annotation.lines (¿?)
 ###            while canvas is shown, selection manager should be active (no control focused)
 ###            and selection should be []
 
