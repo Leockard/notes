@@ -112,6 +112,7 @@ class Card(utils.Publisher):
     Weird things happen when you change _id, though it could be possible
     if done carefully.
     """
+    DEFAULT_SZ = (30, 30)
     rect = LoudSetterRect()
 
     def __init__(self, rect=NO_RECT):
@@ -120,8 +121,12 @@ class Card(utils.Publisher):
         * `rect: ` (x, y, w, h), accepts floats.
         """
         super(Card, self).__init__()
-        self.rect = rect
 
+        if rect == NO_RECT:
+            self.rect = utils.Rect(rect.top, rect.left, self.DEFAULT_SZ[0], self.DEFAULT_SZ[1])
+        else:
+            self.rect = rect
+            
         
     ### properties
 
