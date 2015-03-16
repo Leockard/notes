@@ -27,11 +27,14 @@ class listener(object):
 
         
 class DefaultValues(unittest.TestCase):
+
+    no_pos = (py5.NO_RECT.top, py5.NO_RECT.left)
     
     def testCardDefaultValues(self):
         """Card should assign the correct default values for all properties."""
         card = py5.Card()
-        self.assertEqual(card.rect, py5.NO_RECT)
+        self.assertEqual(card.Position, self.no_pos)
+        self.assertEqual(card.Size, card.DEFAULT_SZ)
 
     def testContentDefaultValues(self):
         """Content should assign the correct default values for all properties."""
@@ -46,13 +49,15 @@ class DefaultValues(unittest.TestCase):
     def testHeaderDefaultValues(self):
         """Header should assign the correct default values for all properties."""
         head = py5.Header()
-        self.assertEqual(head.rect, py5.NO_RECT)
+        self.assertEqual(head.Position, self.no_pos)
+        self.assertEqual(head.Size, head.DEFAULT_SZ)
         self.assertEqual(head.header, "")
 
     def testImageDefaultValues(self):
         """Image should assign the correct default values for all properties."""
         img = py5.Image()
-        self.assertEqual(img.rect, py5.NO_RECT)
+        self.assertEqual(img.Position, self.no_pos)
+        self.assertEqual(img.Size, img.DEFAULT_SZ)
         self.assertEqual(img.scale, py5.DEFAULT_SCALE)
         self.assertEqual(img.path, "")
 
