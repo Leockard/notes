@@ -632,6 +632,22 @@ class Workspace(wx.Panel):
 
     ### methods
 
+    def SaveFocus(self):
+        """Stores the focus and, if applicable, the insertion point at the time of calling.
+        Call `RestoreFocus` to return focus to the control saved by this method.
+        """
+        self._focus = self.FindFocus()
+        if isinstance(self._focus, wx.TextCtrl):
+            self._caret = self._focus.GetInsertionPoint()
+
+    def RestoreFocus(self):
+        if self._focus:
+            self._focus.SetFocus()
+            self._focus = None
+        if isinstance(self._focus, wx.TextCtrl) and self._caret:
+            self._focus.SetInsertionPoint(self._caret)
+            self._caret = None
+
     def _get_board_bmp(self):
         """Returns a screenshot BMP of the `Board`."""
         sz = self.Board.ClientSize
@@ -658,7 +674,7 @@ class Workspace(wx.Panel):
         """
         if getattr(self, ctrl) in self._contents:
             window = getattr(self, ctrl)
-            
+
             if window is self.Canvas:
                 self.Canvas.ctrl._offset = wx.Point(*self.Board.GetViewStartPixels())
                 window.SetBackgroundBMP(self._get_board_bmp())
@@ -685,9 +701,11 @@ class Workspace(wx.Panel):
 
     def _toggle_board_canvas(self):
         if self.CurrentControl is self.Board:
+            self.SaveFocus()
             self.WorkOn("Canvas")
         elif self.CurrentControl is self.Canvas:
             self.WorkOn("Board")
+            self.RestoreFocus()
 
     def ViewCard(self, win):
         self.CardViewer.SetCards([win])
