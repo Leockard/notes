@@ -500,9 +500,9 @@ class Workspace(wx.Panel):
         self.Scale = 1.0
         """The current zoom scale."""
 
-        self.Deck = deck
         self._init_UI()
         self._init_accels()
+        self.Deck = deck        
         self.WorkOn("Board")
 
         
