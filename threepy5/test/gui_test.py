@@ -11,6 +11,90 @@ from frame_test import TestFrame
 from random import randint
 
 
+def _r_class():
+    return ["Content", "Header", "Image"][randint(0, 2)]
+
+def _r_pos():
+    return (randint(0,100), randint(0,100))
+
+
+class testSelectable(unittest.TestCase):
+
+    def setUp(self):
+        self.app = wx.App()
+        self.frame = TestFrame(None)
+
+    def testChildrenSizer(self):
+        """`Selectable` should show its main window's Children as its own, once they're added to its sizer."""
+        sel = gui.board.Selectable(self.frame)
+        self.assertEqual(list(sel.Children), [])
+        
+        txt = wx.TextCtrl(sel)
+        self.assertEqual(list(sel.Children), [])
+
+        box = wx.BoxSizer(wx.HORIZONTAL)
+        box.Add(txt)
+        sel.Sizer = box
+
+        self.assertEqual(list(sel.Children), [txt])
+
+    def testBorderColour(self):
+        """`Selectable` should automatically set its border colour as its parent's."""
+        sel = gui.board.Selectable(self.frame)
+        self.assertEqual(sel.BorderColour, self.frame.BackgroundColour)
+
+    def testSelected(self):
+        """`Selectable` should change its border colour when selected."""
+        sel = gui.board.Selectable(self.frame)
+        self.assertFalse(sel.Selected)
+        self.assertEqual(sel.BorderColour, self.frame.BackgroundColour)
+
+        sel.Selected = True
+        self.assertTrue(sel.Selected)
+        self.assertEqual(sel.BorderColour, sel.SELECT_CL)
+
+        sel.Selected = False
+        self.assertFalse(sel.Selected)
+        self.assertEqual(sel.BorderColour, self.frame.BackgroundColour)
+
+    def testScale(self):
+        """`Selectable` should resize its rect according to its scale."""
+        sel = gui.board.Selectable(self.frame)
+        sel.Rect = wx.Rect(0,0,100,100)
+        self.assertEqual(sel.Scale, 1.0)
+        orig = sel.Rect
+
+        scale = 2.0
+        sel.Scale = scale
+        self.assertEqual(sel.Scale, scale)
+        self.assertEqual(list(sel.Rect), [i * scale for i in orig])
+
+        scale = 0.5
+        sel.Scale = scale
+        self.assertEqual(sel.Scale, scale)
+        self.assertEqual(list(sel.Rect), [i * scale for i in orig])
+
+    def testMoveBy(self):
+        """`Selectable.MoveBy` should move the window by the correct amount."""
+        sel = gui.board.Selectable(self.frame)
+        pos = _r_pos()
+        sel.Position = pos
+        
+        sel.MoveBy(0, 0)
+        self.assertTrue(list(sel.Position), pos)
+
+        num = 25
+        for i in range(num):
+            pos = sel.Position
+            dx, dy = _r_pos()
+            sel.MoveBy(dx, dy)
+            self.assertTrue(list(sel.Position), [dx + pos[0], dy + pos[1]])
+
+    def tearDown(self):
+        wx.CallAfter(self.app.Exit)        
+
+
+                
 class CardWinInit(unittest.TestCase):
     test_rect = utils.Rect(1,2,3,4)
     test_rating = 2
@@ -499,11 +583,6 @@ class testAutoSize(unittest.TestCase):
 
 
         
-def _r_class():
-    return ["Content", "Header", "Image"][randint(0, 2)]
-
-def _r_pos():
-    return (randint(0,100), randint(0,100))
 
 
 
@@ -593,7 +672,6 @@ class testCardView(unittest.TestCase):
         wx.CallAfter(self.app.Exit)
 
 
-
         
 class testWorkspace(unittest.TestCase):
     
@@ -635,10 +713,10 @@ class testWorkspace(unittest.TestCase):
 
                         
 ### finish testImageWin.testDragResize
+### test Selectable.Resizable (_hover_start/update/end) (_resize_start/update/end)
 ### test coloured text
 ### Workspace: ctrl+ / ctrl-, Workspace.Canvas.Annotation.lines (¿?)
-###            while canvas is shown, selection manager should be active (no control focused)
-###            and selection should be []
+### test adding cards while zoomed
 
 
 if __name__ == "__main__":
