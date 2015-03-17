@@ -416,6 +416,9 @@ def GetAncestors(ctrl):
     
     `returns: ` a list of all wx ancestors of `ctrl`.
     """
+    if ctrl is None:
+        return []
+    
     ancestors = []
     while ctrl:
         ancestors.append(ctrl.GetParent())
@@ -431,6 +434,9 @@ def GetCardAncestor(ctrl):
 
     `returns: ` The first `Card` ancestor of `ctrl`, or `None`.
     """
+    if ctrl is None:
+        return None
+    
     from board import CardWin
     cards = [p for p in GetAncestors(ctrl) if isinstance(p, CardWin)]
     if cards:
