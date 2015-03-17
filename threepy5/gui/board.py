@@ -375,7 +375,8 @@ class CardWin(Selectable):
         self.Card = card
         """The tracked `Card`."""
 
-        py5.track(self._on_destroy, self.Card)
+        if self.Card:
+            py5.track(self._on_destroy, self.Card)
 
 
     ### init methods
@@ -396,10 +397,11 @@ class CardWin(Selectable):
     @Card.setter
     def Card(self, card):
         """Set the `Card` to track."""
+        self._card = card
+        
         if card is None:
             return
 
-        self._card = card
         self.Rect = wx.Rect(*card.rect)
         py5.subscribe("rect", self._update_rect, card)
 
@@ -792,7 +794,7 @@ class ContentWin(CardWin):
             """
             super(ContentWin.KindButton, self).__init__(parent, label=label, size=size, style=style)
             self.SetOwnFont(wx.Font(*self.DEFAULT_FONT))
-            self.Bind(wx.EVT_BUTTON, self.OnPress)
+            self.Bind(wx.EVT_BUTTON, self._on_press)
             self.menu = self.KindSelectMenu()
             # don't Bind() to menu: let the containing ContentWin handle it
             # since EVT_MENU is a CommandEvent, the parent will get a EVT_MENU
@@ -811,7 +813,7 @@ class ContentWin(CardWin):
             """
             self.SetLabel(self.BUTTON_LBL[kind])
 
-        def OnPress(self, ev):
+        def _on_press(self, ev):
             """Listens to `wx.EVT_BUTTON`."""
             self.PopupMenu(self.menu, (self.Rect.width, self.Rect.height))
 
@@ -1013,10 +1015,11 @@ class ContentWin(CardWin):
 
     def _set_colours(self):
         """Set all controls' colours according to the `kind`."""
-        self.BackgroundColour          = self.COLOURS[self.Card.kind]["strong"]        
-        self._content.BackgroundColour = self.COLOURS[self.Card.kind]["soft"]
-        self._title.First              = self.COLOURS[self.Card.kind]["strong"]
-        self._title.Second             = self.COLOURS[self.Card.kind]["soft"]
+        colour = self.COLOURS[self.Card.kind]
+        self.BackgroundColour          = colour["strong"]        
+        self._content.BackgroundColour = colour["soft"]
+        self._title.First              = colour["strong"]
+        self._title.Second             = colour["soft"]
         self._title.Static()
 
 
