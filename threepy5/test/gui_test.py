@@ -357,6 +357,39 @@ class testBoard(unittest.TestCase):
         self.assertTrue(board.Groups, 1)
         self.assertTrue(len(board.Groups[0].members), num)
 
+    def testCycleSelection(self):
+        """`Board` should cycle selection from no selection to selecting a `CardWin` to
+        selecting a `CardGroup` to not focusing anything to returning the focus to the original
+        `CardWin`."""
+        board = gui.board.Board(self.frame, py5.Deck())
+        board.Deck.NewCard("Content")
+        
+        win = board.Cards[-1]
+        win.SetFocus()
+        self.assertEqual(board.FindFocusOrSelection(), win)
+        self.assertEqual(board.Selection, [])
+        self.assertFalse(win.Selected)
+
+        board.CycleSelection()
+        self.assertEqual(board.FindFocusOrSelection(), win)
+        self.assertEqual(board.Selection, [win])
+        self.assertTrue(win.Selected)
+
+        header = board.Deck.NewCard("Header")
+        win2 = board.Cards[-1]
+        board.Deck.AddGroup(py5.CardGroup(members=[win.Card._id, header._id]))
+        board.CycleSelection()
+        self.assertEqual(board.FindFocusOrSelection(), win)
+        self.assertEqual(board.Selection, [win, win2])
+        self.assertTrue(win.Selected)
+        self.assertTrue(win2.Selected)
+
+        board.CycleSelection()
+        self.assertEqual(board.Selection, [])
+        self.assertFalse(win.Selected)
+        self.assertFalse(win2.Selected)
+        self.assertEqual(board.FindFocusOrSelection(), win)
+
     def testScrollToCard(self):
         """`Board` should put the whole `Card` into view."""
         board = gui.board.Board(self.frame, py5.Deck())
