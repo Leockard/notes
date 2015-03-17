@@ -8,7 +8,7 @@ import wx
 import threepy5.utils as utils
 import threepy5.gui as gui
 from frame_test import TestFrame
-from random import randint
+from random import randint, sample
 
 
 def _r_class():
@@ -168,7 +168,7 @@ class testKindSelectMenu(unittest.TestCase):
         self.app = wx.App()
         self.frame = TestFrame(None)
 
-    def testNumberOfItems(self):
+    def testKindColours(self):
         """`KindSelectMenu` should have one item for every kind type, with the right label."""
         menu = gui.board.ContentWin.KindButton.KindSelectMenu()
 
@@ -177,12 +177,30 @@ class testKindSelectMenu(unittest.TestCase):
         self.assertEqual(menu.MenuItemCount, len(py5.Content.KIND_LBLS))
         self.assertEqual(menu_labels, set(py5.Content.KIND_LBLS))
 
+    def tearDown(self):
+        wx.CallAfter(self.app.Exit)
+        
+
+class testContentWinColours(unittest.TestCase):
+
+    def setUp(self):
+        self.app = wx.App()
+        self.frame = TestFrame(None)
+
+    def testNumberOfItems(self):
+        """`KindSelectMenu` should have one item for every kind type, with the right label."""
+        win = gui.board.ContentWin(self.frame, card=py5.Content())
+
+        self.assertEqual(win.BackgroundColour, (220, 218, 213, 255))
+
+        for k in py5.Content.KIND_LBLS:
+            win.Card.kind = k
+            self.assertEqual(win.BackgroundColour, gui.board.ContentWin.COLOURS[k]["strong"])
 
     def tearDown(self):
         wx.CallAfter(self.app.Exit)
 
-
-
+        
 class testBoard(unittest.TestCase):
 
     def setUp(self):
@@ -422,6 +440,43 @@ class testSelectionManager(unittest.TestCase):
         self.assertEqual(board.Selector._last, c3)
         self.assertEqual(board.Selection, [])
         self.assertEqual(c3, wxutils.GetCardAncestor(board.FindFocus()))
+
+    def testSelectGroup(self):
+        """`SelectionManager` should correctly select a `CardGroup`."""
+        num = 20
+        board = gui.board.Board(self.frame, py5.Deck())
+
+        self.assertEqual(board.Selection, [])
+        self.assertFalse(board.Selector.Active)
+        board.Selector.SelectGroup(py5.CardGroup(members=[]))
+        self.assertEqual(board.Selection, [])
+        self.assertFalse(board.Selector.Active)
+        
+        for i in range(num):
+            board.Deck.NewCard(_r_class(), _r_pos())
+        
+        wins = sample(board.Cards, randint(1, num))
+        group = py5.CardGroup(members=[c.Card._id for c in wins])
+        board.Selector.SelectGroup(group)
+        self.assertTrue(board.Selector.Active)
+        self.assertEqual(board.Selection, wins)
+        
+        board.Selector.SelectGroup(group, False)
+        self.assertTrue(board.Selector.Active)
+        self.assertEqual(board.Selection, wins)
+
+        board.Deck.NewCard(_r_class(), _r_pos())
+        win = board.Cards[-1]
+        board.Selector.Select(win, False)
+        self.assertTrue(board.Selector.Active)
+        self.assertEqual(board.Selection, wins + [win])
+
+        board.Selector.SelectGroup(group, True)
+        self.assertTrue(board.Selector.Active)
+        self.assertEqual(board.Selection, wins)
+
+        board.Selector.UnselectAll()
+        self.assertEqual(board.Selection, [])
 
     def testSelectNearest(self):
         """`SelectionManager` should select the nearest card correctly."""
