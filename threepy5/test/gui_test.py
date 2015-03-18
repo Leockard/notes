@@ -737,7 +737,8 @@ class testCardView(unittest.TestCase):
         self.app = wx.App()
         self.frame = TestFrame(None)
 
-    def testAdd(self):
+    def testAddRestore(self):
+        """`CardView` shoud correctly `Add()` and `Restore()` windows."""
         vw = gui.workspace.CardView(self.frame)
         bd = gui.board.Board(self.frame)
         win = gui.board.ContentWin(bd, py5.Content())
@@ -805,6 +806,9 @@ class testWorkspace(unittest.TestCase):
 ### test coloured text
 ### Workspace: ctrl+ / ctrl-, Workspace.Canvas.Annotation.lines (¿?)
 ### test adding cards while zoomed
+### test Canvas/CanvasBase
+### test TagView
+### test workspace.ZoomCombo
 
 
 if __name__ == "__main__":
